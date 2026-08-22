@@ -92,7 +92,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 
 *13 tarefas · 5 P0 · 8 P1 · 0 P2*
 
-- [ ] **T-001** `P0` `M` `plataforma` Bootstrap do repositório: Next.js 16, TypeScript estrito e as três camadas
+- [~] **T-001** `P0` `M` `plataforma` Bootstrap do repositório: Next.js 16, TypeScript estrito e as três camadas  ⏳ 2026-08-21 23:09 · sessao-68c8
   · **Aceite:** Clone limpo passa typecheck e build; tsconfig com strict, noUncheckedIndexedAccess, noImplicitOverride e exactOptionalPropertyTypes; Node fixado; pastas de apresentação, semântica e acesso criadas.
   · **PRD:** D4, seção 8.1, seção 8.2, seção 16 F1
 - [ ] **T-002** `P0` `S` `decisao` Decidir P8: filtro de ano com dois valores fixos ou seleção livre
