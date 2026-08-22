@@ -91,6 +91,22 @@ mudança de código. É esse justamente o ponto de ter escolhido (b).
 | Barra de filtros            | O seletor de ano é populado por `getMeta`, como as demais dimensões                                                                                                                            |
 | RF-05                       | Passa a ser verificável: selecionar 2025 muda os valores de todos os painéis                                                                                                                   |
 
+## Efeito no backlog
+
+Aplicado por `T-004`, o portão de domínio que a própria seção 18 do PRD exigia
+antes de F1:
+
+| Tarefa  | O que mudou                                                                                                                                                                                             |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `T-101` | Aceite alinhado: `Query` deixa de exigir "2 anos" como literais de tipo. O ano é validado contra o que `getMeta` declara, e a matriz de recortes vem de `T-004`. Passa a depender de `T-002` e `T-004`. |
+| `T-103` | Passa a depender de `T-002` e `T-004`                                                                                                                                                                   |
+| `T-131` | Passa a depender de `T-002`                                                                                                                                                                             |
+| `T-140` | Passa a depender de `T-002` e `T-004`                                                                                                                                                                   |
+
+O módulo `src/semantica/recortes.ts` deriva a matriz canônica das dimensões e
+**conta** os recortes em vez de repetir 768. Um teste garante que o literal
+`768` não volta ao código de produção.
+
 ## Tarefas destravadas
 
 `T-002` · `T-004` · `T-101` · `T-103` · `T-131` · `T-140` · `T-152` · `T-153` ·

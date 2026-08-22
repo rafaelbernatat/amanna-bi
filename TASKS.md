@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 215 pendentes e 16 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 214 pendentes e 17 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -36,12 +36,12 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | Fase | Tarefas | P0 | P1 | P2 | Concluídas |
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
-| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 5 de 14 |
+| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 6 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **16 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **17 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -101,7 +101,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [ ] **T-003** `P0` `M` `decisao` Decidir P1: sistema de origem de cada uma das views  ⛔ H-12
   · **Aceite:** Arquivo versionado com, para cada uma das 7 linhas da tabela 10.1, sistema de origem, responsável na TI do cliente, forma de acesso e profundidade histórica; nenhuma linha 'a definir' e aceite formal da TI.
   · **PRD:** D-P1, seção 10.1, seção 18
-- [ ] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8
+- [X] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8
   · **Aceite:** T-101, T-103, T-131 e T-140 passam a depender de T-002; a matriz canônica de recortes é derivada de getMeta em vez de constante literal (contagem calculada, não escrita); o registro de P8 é citado no arquivo de domínio; e as duas saídas possíveis de P8 (ano parametrizável / ano fora do filtro) têm efeito verificado em teste.
   · **PRD:** Seção 18, decisão D-P8 (prazo 'Antes de F1') e Anexo D achado 6
 - [X] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit
@@ -146,14 +146,14 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 *94 tarefas · 53 P0 · 37 P1 · 4 P2*
 
 - [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
-  · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 2 anos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal.
-  · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1 · **Depende de:** T-001
+  · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal; o ano **não** é literal em tipo — é validado contra os anos que `getMeta` declara (D-P8), e a matriz canônica de recortes vem de T-004, com a contagem calculada.
+  · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1, D-P8 · **Depende de:** T-001, T-002, T-004
 - [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
   · **Aceite:** União discriminada cobre as 12 formas do Anexo A.1 com ao menos um exemplo validado cada, forma sem variante não compila, e o schema gerado no build e versionado reprova no CI se dessincronizar dos tipos ou se faltar unit, formula ou asOf.
   · **PRD:** seção 9.3, Anexo A.1, RF-04, RF-15 · **Depende de:** T-101
 - [ ] **T-103** `P0` `S` `dados` Validar e canonizar a Query, com chave de cache determinística
   · **Aceite:** Query fora do vocabulário da seção 6.2 é rejeitada antes do adaptador; queryKey() produz a mesma string para os mesmos filtros em qualquer ordem de chaves e chaves distintas para cada um dos 768 recortes.
-  · **PRD:** seção 9.1, seção 9.2 regra 5, seção 13 · **Depende de:** T-101
+  · **PRD:** seção 9.1, seção 9.2 regra 5, seção 13, D-P8 · **Depende de:** T-002, T-004, T-101
 - [ ] **T-104** `P0` `M` `dados` Implementar unidades declaradas, agregação sum/last/ratio e guardas de precisão
   · **Aceite:** BRL_mi, pct, pp, dias e FTE formam enum fechado; agg=ratio recomputa numerador e denominador em vez de somar, agg=last devolve o último mês do recorte, somar pct ou pp lança erro, divisão por zero devolve null com motivo e nenhum arredondamento ocorre fora da apresentação.
   · **PRD:** seção 9.2 regra 2, seção 9.2 regra 4, seção 13 · **Depende de:** T-101
@@ -237,7 +237,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** Anexo A.1, Anexo A.2, seção 8.2 gráficos · **Depende de:** T-129
 - [ ] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI
   · **Aceite:** A linha de fórmula é renderizada sempre que PanelResponse.formula existe, sem propriedade capaz de escondê-la; valor, delta, rodapé e sparkline do KPI vêm exclusivamente de getKpis, nenhuma tela renderiza mais de 6 cartões, e a análise estática falha diante de literal numérico formatado no código de KPI.
-  · **PRD:** RF-04, RF-07, PR-3, Anexo D achado 5, Anexo D achado 10 · **Depende de:** T-102, T-115, T-124
+  · **PRD:** RF-04, RF-07, PR-3, D-P8, Anexo D achado 5, Anexo D achado 10 · **Depende de:** T-002, T-102, T-115, T-124
 - [ ] **T-132** `P0` `L` `paineis` Implementar os seis estados obrigatórios de painel e KPI, com esqueletos
   · **Aceite:** Teste de interface exercita com dado forjado carregando, com dado, vazio no recorte, erro de fonte, sem permissão e defasado em ao menos uma forma de cada família; o vazio exibe o motivo e o atalho para ampliar o recorte, o sem permissão não contém agregado no HTML servido, e cada uma das 12 formas tem esqueleto com altura igual à do gráfico final dentro de 4 px, sem piscar valor.
   · **PRD:** seção 6.4, RF-06, PR-4, seção 13 desempenho · **Depende de:** T-105, T-131
@@ -264,7 +264,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** seção 11, seção 15, seção 8.3, seção 13 · **Depende de:** T-001, T-006
 - [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
-  · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total)
+  · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total), D-P8 · **Depende de:** T-002, T-004
 - [X] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
   · **Aceite:** qualquer literal numérico que alcance o módulo de formatação (pc, rs, n, sg) ou os campos value/delta/rodape de um Kpi reprova o CI; os cinco casos reais do protótipo (74, 54.3, 4.1, 40.0, -0.7) são apontados pelo teste num arquivo de exemplo; exceção só por allowlist nomeada (metas vindas do catálogo).
   · **PRD:** Anexo D achado 5 - cobertura da pesquisa 74%, concentração top 10 54,3%, inadimplência 4,1%
