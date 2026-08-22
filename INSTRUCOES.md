@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 42 itens, destravando 118 tarefas do backlog |
+| **Total** | 43 itens, destravando 119 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 6 | 4 | 31 |
+| Fase 1 · Contrato | 7 | 4 | 32 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **42** | **27** | **118** |
+| **Total** | **43** | **27** | **119** |
 
 **Por responsável**
 
@@ -51,7 +51,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|
 | TI do cliente | 13 |
 | Controladoria | 10 |
-| Produto | 7 |
+| Produto | 8 |
 | Engenharia | 6 |
 | Comercial | 4 |
 | RH | 1 |
@@ -73,7 +73,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*6 itens · 4 P0*
+*7 itens · 4 P0*
 
 ### [ ] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -166,6 +166,20 @@ A tarefa T-013 padronizou as referências do backlog e publicou a matriz em `doc
 | **Resultado esperado** | Decisão registrada com data e nome do aprovador de Produto, escolhendo entre autorizar as 13 dependências (nomeadas uma a uma) ou reescrever o terceiro critério de T-013; nenhuma das duas saídas deixa a contradição de pé |
 | **Onde o resultado vai** | docs/decisoes/D-F0-dependencias-de-decisao.md, e o resultado é aplicado no campo `Depende de:` das tarefas nomeadas em TASKS.md |
 | **Destrava** | T-013 *(1 tarefa)* |
+
+### [ ] H-43 · Decidir os três tokens de texto do protótipo que não alcançam 4.5:1
+
+`P1` · **Responsável:** Produto
+
+**O que fazer**
+
+A tarefa T-124 extraiu a paleta do protótipo para um tema tipado e, ao fazer isso, mediu a razão de contraste de cada par texto/fundo que a interface usa. Três não alcançam o mínimo de 4.5:1 que a seção 13 do PRD exige para texto: `textoTerciario` `#8a7f74` sobre superfície branca dá **3,91:1**; `textoFraco` `#a89c8e` dá **2,69:1** sobre superfície e **2,32:1** sobre o fundo da página; e `textoEmBarraFraco` `#8a7a66` sobre a barra lateral dá **4,36:1**. Não são cores decorativas: `textoFraco` é a cor dos rótulos de filtro, do *breadcrumb* e das legendas de eixo, e aparece 11 vezes no protótipo. O conflito é real e não se resolve sozinho — o PRD manda o protótipo vencer em comportamento de tela, e manda 4.5:1 em contraste. Traga a decisão para Produto com as três amostras impressas lado a lado e escolha uma saída por token: escurecer o token até alcançar 4.5:1, aceitando que a tela fica visivelmente diferente do protótipo; manter a cor e aumentar o tamanho da fonte acima do limite de texto grande, onde o mínimo cai para 3:1 (só resolve `textoTerciario` e `textoEmBarraFraco`, não `textoFraco`); ou registrar exceção assinada por token, com a justificativa. Registre a escolha com data e nome, e marque cada diferença resultante em relação ao protótipo como intencional, para entrar na checklist de paridade de H-05. Sem isso, a tarefa T-183 — que computa contraste e reprova o CI abaixo de 4.5:1 — nasce vermelha e não há critério para dizer se isso é defeito ou decisão.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão por token registrada com data e nome do aprovador de Produto — escurecer, tratar como texto grande ou registrar exceção assinada — com cada diferença em relação ao protótipo marcada como intencional |
+| **Onde o resultado vai** | docs/decisoes/D-F1-contraste.md, os valores em `src/apresentacao/tema/tema.ts` e a lista de exceções lida por T-183 |
+| **Destrava** | T-183 *(1 tarefa)* |
 
 ---
 
@@ -739,6 +753,7 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-171 | H-02 |
 | T-172 | H-02 |
 | T-175 | H-02 |
+| T-183 | H-43 |
 | T-184 | H-04 |
 | T-185 | H-01 |
 | T-188 | H-02 |

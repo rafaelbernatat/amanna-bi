@@ -33,6 +33,31 @@ export default tseslint.config(
   // Formatacao: divergencia do Prettier vira erro de lint.
   prettierRecomendado,
 
+  // T-124: cor hexadecimal literal so existe no arquivo de tema.
+  //
+  // Sem isto, a paleta volta a se espalhar em atributos style como no
+  // prototipo, onde 68 cores vivem soltas e nenhuma tem nome. O tema e a
+  // unica excecao, e e por isso que ele esta em `ignores`.
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"],
+    ignores: ["src/apresentacao/tema/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Literal[value=/#[0-9a-fA-F]{3,8}/]",
+          message:
+            "Cor hexadecimal literal fora do tema. Importe a chave de PALETA em src/apresentacao/tema/tema.ts (T-124).",
+        },
+        {
+          selector: "TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}/]",
+          message:
+            "Cor hexadecimal literal fora do tema. Importe a chave de PALETA em src/apresentacao/tema/tema.ts (T-124).",
+        },
+      ],
+    },
+  },
+
   {
     rules: {
       // O criterio de aceite de T-005 nomeia este caso explicitamente.
