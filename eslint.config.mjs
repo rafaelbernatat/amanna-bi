@@ -3,6 +3,8 @@ import tseslint from "typescript-eslint";
 import next from "eslint-config-next";
 import prettierRecomendado from "eslint-plugin-prettier/recommended";
 
+import painel from "./ferramentas/eslint/sem-literal-numerico.mjs";
+
 /**
  * Configuracao de lint do painel (T-005).
  *
@@ -23,6 +25,7 @@ export default tseslint.config(
       "coverage/**",
       "next-env.d.ts",
       "public/**",
+      "tests/exemplos/**",
     ],
   },
 
@@ -32,6 +35,26 @@ export default tseslint.config(
 
   // Formatacao: divergencia do Prettier vira erro de lint.
   prettierRecomendado,
+
+  // T-141: literal numerico nao chega ao formatador nem ao cartao de KPI.
+  //
+  // Achado 5 do Anexo D: o prototipo tem KPIs escritos a mao que nao reagem a
+  // filtro nenhum. Enquanto o numero puder ser digitado no componente, RF-07 e
+  // promessa. A allowlist existe para meta vinda do catalogo (PRD secao 9.4).
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    plugins: { painel },
+    rules: {
+      "painel/sem-literal-numerico": [
+        "error",
+        {
+          formatadores: ["formatarValor", "formatarMesAno"],
+          camposDeKpi: ["value", "valor", "delta", "rodape"],
+          allowlist: ["META_DE_TURNOVER", "meta"],
+        },
+      ],
+    },
+  },
 
   // T-124: cor hexadecimal literal so existe no arquivo de tema.
   //
