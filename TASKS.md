@@ -145,7 +145,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 
 *94 tarefas · 53 P0 · 37 P1 · 4 P2*
 
-- [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
+- [~] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface  ⏳ 2026-08-22 07:24 · sessao-68c8
   · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal; o ano **não** é literal em tipo — é validado contra os anos que `getMeta` declara (D-P8), e a matriz canônica de recortes vem de T-004, com a contagem calculada.
   · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1, D-P8 · **Depende de:** T-001, T-002, T-004
 - [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
