@@ -151,7 +151,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
   · **Aceite:** União discriminada cobre as 12 formas do Anexo A.1 com ao menos um exemplo validado cada, forma sem variante não compila, e o schema gerado no build e versionado reprova no CI se dessincronizar dos tipos ou se faltar unit, formula ou asOf.
   · **PRD:** seção 9.3, Anexo A.1, RF-04, RF-15 · **Depende de:** T-101
-- [ ] **T-103** `P0` `S` `dados` Validar e canonizar a Query, com chave de cache determinística
+- [~] **T-103** `P0` `S` `dados` Validar e canonizar a Query, com chave de cache determinística  ⏳ 2026-08-22 07:33 · sessao-68c8
   · **Aceite:** Query fora do vocabulário da seção 6.2 é rejeitada antes do adaptador; queryKey() produz a mesma string para os mesmos filtros em qualquer ordem de chaves e chaves distintas para cada um dos 768 recortes.
   · **PRD:** seção 9.1, seção 9.2 regra 5, seção 13, D-P8 · **Depende de:** T-002, T-004, T-101
 - [ ] **T-104** `P0` `M` `dados` Implementar unidades declaradas, agregação sum/last/ratio e guardas de precisão
