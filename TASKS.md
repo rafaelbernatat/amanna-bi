@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 224 pendentes e 7 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 223 pendentes e 8 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -36,12 +36,12 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | Fase | Tarefas | P0 | P1 | P2 | Concluídas |
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
-| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 2 de 14 |
+| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 3 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 0 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **7 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **8 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -107,7 +107,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [X] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit
   · **Aceite:** Lint sai zero no repositório e falha em arquivo com any explícito ou formatação divergente; o gancho de pre-commit bloqueia o commit nesse mesmo caso.
   · **PRD:** seção 8.2 · **Depende de:** T-001
-- [~] **T-005.1** `P0` `M` `plataforma` Instalar o runner de teste de unidade e o arnês de e2e  ⏳ 2026-08-21 23:37 · sessao-68c8
+- [X] **T-005.1** `P0` `M` `plataforma` Instalar o runner de teste de unidade e o arnês de e2e
   · **Aceite:** `npm test` e `npm run e2e` existem e executam ao menos um caso cada com contagem no relatório, cada comando sai diferente de zero quando um caso é quebrado de propósito, e o e2e sobe a aplicação e verifica uma rota servida sem intervenção manual.
   · **PRD:** seção 8.2 testes, seção 16 F1 · **Depende de:** T-001, T-005
 - [ ] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e
