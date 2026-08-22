@@ -1,0 +1,22 @@
+{
+  "forma": "barras",
+  "id": "orc-desvio",
+  "title": "Desvio por centro de custo",
+  "unit": "BRL_mi",
+  "formula": "desvio = realizado - orcado",
+  "categories": [
+    "Operacoes",
+    "Comercial",
+    "Tecnologia",
+    "Logistica",
+    "Financeiro",
+    "Marketing",
+    "RH"
+  ],
+  "series": [
+    { "name": "Desvio", "papel": "valor", "values": [26, 14, 9, 7, -3, -4, -4] }
+  ],
+  "total": 56,
+  "note": "Operacoes e Comercial respondem por 71% do estouro.",
+  "asOf": "2026-12-31"
+}

@@ -1,0 +1,44 @@
+{
+  "forma": "estatisticas",
+  "id": "rh-flash",
+  "title": "Leitura rápida do período",
+  "unit": "FTE",
+  "formula": "indicadores do fechamento de dezembro no recorte consolidado",
+  "estatisticas": [
+    {
+      "rotulo": "Headcount",
+      "valor": 1240,
+      "unidade": "FTE",
+      "formula": "headcount_fte = 1150 + 241 admissoes - 145 saidas",
+      "sentido": "neutro",
+      "rodape": "dezembro de 2026"
+    },
+    {
+      "rotulo": "Turnover 12m",
+      "valor": 18.4,
+      "unidade": "pct",
+      "formula": "turnover_12m = soma(desligamentos, 12m) / media(headcount_fte, 12m)",
+      "sentido": "menor_melhor",
+      "rodape": "meta 14,0%"
+    },
+    {
+      "rotulo": "Folha sobre receita",
+      "valor": 15.5,
+      "unidade": "pct",
+      "formula": "folha_sobre_receita = folha 186 / receita_liquida 1200",
+      "sentido": "menor_melhor",
+      "rodape": null
+    },
+    {
+      "rotulo": "Receita por FTE",
+      "valor": 0.968,
+      "unidade": "BRL_mi",
+      "formula": "receita_por_fte = receita_liquida 1200 / headcount_fte 1240",
+      "sentido": "maior_melhor",
+      "rodape": "R$ 968 mil por pessoa"
+    }
+  ],
+  "total": null,
+  "note": null,
+  "asOf": "2026-12-31"
+}

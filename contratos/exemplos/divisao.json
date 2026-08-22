@@ -1,0 +1,30 @@
+{
+  "forma": "divisao",
+  "id": "col-perfil",
+  "title": "Perfil do quadro",
+  "unit": "FTE",
+  "formula": "perfil = contagem(colaborador) por dimensao",
+  "grupos": [
+    {
+      "nome": "Gênero",
+      "total": 1240,
+      "partes": [
+        { "nome": "Feminino", "valor": 583 },
+        { "nome": "Masculino", "valor": 641 },
+        { "nome": "Não informado", "valor": 16 }
+      ]
+    },
+    {
+      "nome": "Modalidade",
+      "total": 1240,
+      "partes": [
+        { "nome": "Presencial", "valor": 546 },
+        { "nome": "Híbrido", "valor": 471 },
+        { "nome": "Remoto", "valor": 223 }
+      ]
+    }
+  ],
+  "total": 1240,
+  "note": "Quadro de dezembro; hibrido cresceu 9 p.p. no ano.",
+  "asOf": "2026-12-31"
+}

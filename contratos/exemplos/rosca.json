@@ -1,0 +1,17 @@
+{
+  "forma": "rosca",
+  "id": "sal-comp",
+  "title": "Composição da folha",
+  "unit": "BRL_mi",
+  "formula": "folha_total = salarios + encargos + beneficios + provisoes",
+  "fatias": [
+    { "nome": "Salários", "valor": 118.4 },
+    { "nome": "Encargos", "valor": 38.2 },
+    { "nome": "Benefícios", "valor": 21.1 },
+    { "nome": "Provisões", "valor": 8.3 }
+  ],
+  "centro": { "valor": 186, "rotulo": "Folha total" },
+  "total": 186,
+  "note": "Encargos equivalem a 32% dos salarios.",
+  "asOf": "2026-12-31"
+}

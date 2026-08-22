@@ -1,0 +1,21 @@
+{
+  "forma": "cascata",
+  "id": "fin-dre",
+  "title": "Ponte da DRE — receita líquida ao lucro líquido",
+  "unit": "BRL_mi",
+  "formula": "lucro_liquido = receita_liquida - cmv - despesas - depreciacao - resultado_financeiro - ir",
+  "passos": [
+    { "nome": "Receita líquida", "valor": 1200, "ehTotal": true },
+    { "nome": "CMV", "valor": -720, "ehTotal": false },
+    { "nome": "Despesas operacionais", "valor": -280, "ehTotal": false },
+    { "nome": "EBITDA", "valor": 200, "ehTotal": true },
+    { "nome": "Depreciação", "valor": -60, "ehTotal": false },
+    { "nome": "EBIT", "valor": 140, "ehTotal": true },
+    { "nome": "Resultado financeiro", "valor": -140, "ehTotal": false },
+    { "nome": "IR e CSLL", "valor": -8, "ehTotal": false },
+    { "nome": "Lucro líquido", "valor": -8, "ehTotal": true }
+  ],
+  "total": -8,
+  "note": "O resultado financeiro consome o EBIT inteiro.",
+  "asOf": "2026-12-31"
+}

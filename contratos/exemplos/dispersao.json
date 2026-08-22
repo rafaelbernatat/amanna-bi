@@ -1,0 +1,21 @@
+{
+  "forma": "dispersao",
+  "id": "int-scatter",
+  "title": "Custo de pessoal × retorno por área",
+  "unit": "pct",
+  "formula": "retorno = margem_contribuicao_area / receita_area; custo = folha_area / receita_area",
+  "eixoX": { "rotulo": "Folha sobre receita da área", "unidade": "pct" },
+  "eixoY": { "rotulo": "Margem de contribuição", "unidade": "pct" },
+  "pontos": [
+    { "rotulo": "Comercial", "x": 11.2, "y": 34.1, "tamanho": 296 },
+    { "rotulo": "Tecnologia", "x": 24.8, "y": 21.6, "tamanho": 178 },
+    { "rotulo": "Operacoes", "x": 18.4, "y": 27.3, "tamanho": 412 },
+    { "rotulo": "Logistica", "x": 21.7, "y": 12.9, "tamanho": 203 },
+    { "rotulo": "Marketing", "x": 15.1, "y": 18.4, "tamanho": 64 },
+    { "rotulo": "Financeiro", "x": 9.6, "y": 8.2, "tamanho": 51 },
+    { "rotulo": "RH", "x": 7.3, "y": 4.1, "tamanho": 36 }
+  ],
+  "total": null,
+  "note": "Logistica custa como Tecnologia e devolve metade da margem.",
+  "asOf": "2026-12-31"
+}

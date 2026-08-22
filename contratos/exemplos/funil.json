@@ -1,0 +1,17 @@
+{
+  "forma": "funil",
+  "id": "rec-funil",
+  "title": "Pipeline de recrutamento",
+  "unit": "FTE",
+  "formula": "funil = contagem(candidato) por etapa alcancada no ano",
+  "passos": [
+    { "nome": "Candidaturas", "valor": 4820 },
+    { "nome": "Triagem", "valor": 1446 },
+    { "nome": "Entrevista", "valor": 602 },
+    { "nome": "Proposta", "valor": 289 },
+    { "nome": "Contratação", "valor": 241 }
+  ],
+  "total": 241,
+  "note": "83% das propostas viram contratacao.",
+  "asOf": "2026-12-31"
+}

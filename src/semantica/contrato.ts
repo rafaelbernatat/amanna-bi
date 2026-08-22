@@ -16,6 +16,7 @@
  * ano é aceito porque o dado existe, não porque alguém o digitou num union.
  */
 
+import type { PanelResponse, Serie } from "@/semantica/painel";
 import type { Dimensoes } from "@/semantica/recortes";
 
 /* ------------------------------------------------------------------ *
@@ -145,27 +146,38 @@ export type Kpi = {
   readonly rodape: string;
 };
 
-/** Uma série de um painel. */
-export type Serie = {
-  readonly name: string;
-  /** Um valor por categoria, na mesma ordem de `categories`. */
-  readonly values: readonly (number | null)[];
-};
+/**
+ * O envelope de painel da seção 9.3, nas doze formas do Anexo A.1.
+ *
+ * Mora em `painel.ts` porque são doze variantes e o contrato ficaria ilegível
+ * com elas dentro. Reexportado aqui para que a fronteira do contrato continue
+ * sendo um arquivo só: quem consome importa de `contrato`, e não precisa saber
+ * onde a união foi escrita (T-102).
+ */
+export type {
+  CargaCartesiana,
+  EnvelopeBase,
+  Forma,
+  PainelBarras,
+  PainelBarrasEmpilhadas,
+  PainelBarrasHorizontais,
+  PainelCascata,
+  PainelDaForma,
+  PainelDispersao,
+  PainelDivisao,
+  PainelEstatisticas,
+  PainelFunil,
+  PainelLinha,
+  PainelMosaicoGeografico,
+  PainelReguaDeCiclo,
+  PainelRosca,
+  PanelResponse,
+  PapelDeSerie,
+  Parte,
+  Serie,
+} from "@/semantica/painel";
 
-/** O envelope de painel da seção 9.3. */
-export type PanelResponse = {
-  readonly id: string;
-  readonly title: string;
-  readonly unit: Unidade;
-  /** Obrigatória e não configurável em painel derivado (RF-04, PR-3). */
-  readonly formula: string;
-  readonly categories: readonly string[];
-  readonly series: readonly Serie[];
-  readonly total: number | null;
-  /** Leitura em prosa; nula quando não vale para o recorte (RF-09). */
-  readonly note: string | null;
-  readonly asOf: string;
-};
+export { FORMAS, formaValida, QUANTIDADE_DE_FORMAS } from "@/semantica/painel";
 
 /** Um número só, com a fórmula e a série que o sustentam (seção 9.1). */
 export type MetricValue = {
