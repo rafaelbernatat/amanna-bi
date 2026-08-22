@@ -1,0 +1,18 @@
+# Fim de linha normalizado (T-005).
+#
+# Sem isto, um clone em Windows recebe CRLF no working tree e `npm run lint`
+# reprova em toda linha de todo arquivo — 87 erros prettier/prettier medidos.
+# LF no repositorio e no working tree, em qualquer sistema operacional.
+* text=auto eol=lf
+
+# Binarios: nunca converter
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.pdf  binary
+*.woff  binary
+*.woff2 binary
+*.xlsx binary
