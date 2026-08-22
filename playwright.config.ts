@@ -43,6 +43,16 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run build && npx next start --port ${PORTA}`,
+    /*
+     * O boot valida a configuracao e aborta sem `DATA_SOURCE` (T-139).
+     *
+     * Estava so no workflow do CI, e por isso o e2e local subia sem ela --
+     * mas so porque o servidor era reaproveitado de antes de a validacao
+     * existir. Num clone limpo, `npm run e2e` nao subia. Declarar aqui deixa
+     * local e pipeline com o mesmo ambiente, que e a unica forma de o verde
+     * local significar alguma coisa.
+     */
+    env: { DATA_SOURCE: "fixtures" },
     url: BASE_URL,
     reuseExistingServer: !process.env["CI"],
     timeout: 180_000,
