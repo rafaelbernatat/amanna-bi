@@ -145,7 +145,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 
 *94 tarefas · 53 P0 · 37 P1 · 4 P2*
 
-- [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
+- [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface  ⛔ H-01
   · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 2 anos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal.
   · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1 · **Depende de:** T-001
 - [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
@@ -172,10 +172,10 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-109** `P0` `S` `dados` Tornar a fórmula obrigatória no contrato e remover a chave que a desliga
   · **Aceite:** O tipo exige fórmula não vazia em todo painel de indicador derivado, um teste enumera os 71 painéis e falha se algum derivado vier sem fórmula, e a busca por mostrarMemoria no repositório retorna zero ocorrências.
   · **PRD:** Anexo D achado 10, RF-04, PR-3, seção 9.3 · **Depende de:** T-102, T-107
-- [ ] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade
+- [ ] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade  ⛔ H-03
   · **Aceite:** vw_fato_rh_mes, vw_fato_vagas e vw_fato_treinamento existem com uma linha por combinação; somar todas as linhas de 2026 reproduz o Anexo C: 1.240 FTE em dezembro, 241 admissões, 145 desligamentos, folha R$ 186 mi e 21.400 horas de treinamento.
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1, seção 9.1 · **Depende de:** T-001
-- [ ] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo
+- [ ] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo  ⛔ H-03
   · **Aceite:** vw_fato_fin_mes, vw_fato_orcamento e vw_fato_contas existem no grão mensal e a soma consolidada de 2026 reproduz receita líquida R$ 1.200 mi, EBITDA R$ 200 mi, lucro líquido -R$ 8 mi, desvio +R$ 56 mi e ciclo de 76 dias (PMR 52 + PME 75 - PMP 51).
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1 · **Depende de:** T-001
 - [ ] **T-112** `P0` `M` `dados` Definir o esquema do catálogo de métricas em YAML e o carregador validado
@@ -214,7 +214,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
   · **Aceite:** O CI roda a suíte com DATA_SOURCE=fixtures em job próprio cobrindo os 71 painéis, e o job falha quando qualquer regra da seção 9.2 é violada, com o relatório arquivado como artefato.
   · **PRD:** RF-21, RF-03, seção 10.4, Anexo A · **Depende de:** T-006, T-121, T-122
-- [ ] **T-124** `P0` `S` `paineis` Extrair os tokens visuais do protótipo para um tema tipado
+- [~] **T-124** `P0` `S` `paineis` Extrair os tokens visuais do protótipo para um tema tipado  ⏳ 2026-08-21 23:56 · sessao-68c8
   · **Aceite:** As 24 chaves da paleta e as três famílias tipográficas do protótipo existem no tema, e uma regra de lint falha se houver cor hexadecimal literal fora do arquivo de tema.
   · **PRD:** Anexo A, seção 13 acessibilidade, protótipo · **Depende de:** T-001
 - [ ] **T-125** `P0` `M` `plataforma` Criar o módulo único de formatação pt-BR e fixar locale e fuso
