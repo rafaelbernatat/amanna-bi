@@ -148,7 +148,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
   · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal; o ano **não** é literal em tipo — é validado contra os anos que `getMeta` declara (D-P8), e a matriz canônica de recortes vem de T-004, com a contagem calculada.
   · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1, D-P8 · **Depende de:** T-001, T-002, T-004
-- [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
+- [~] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema   ⏳ 2026-08-22 09:14 · sessao-68c8
   · **Aceite:** União discriminada cobre as 12 formas do Anexo A.1 com ao menos um exemplo validado cada, forma sem variante não compila, e o schema gerado no build e versionado reprova no CI se dessincronizar dos tipos ou se faltar unit, formula ou asOf.
   · **PRD:** seção 9.3, Anexo A.1, RF-04, RF-15 · **Depende de:** T-101
 - [X] **T-103** `P0` `S` `dados` Validar e canonizar a Query, com chave de cache determinística
