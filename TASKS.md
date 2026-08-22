@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 219 pendentes e 12 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 220 pendentes e 11 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 3 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 4 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 3 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **12 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **11 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -229,8 +229,8 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-128** `P0` `M` `paineis` Construir a barra de filtros com os cinco controles e o banner de recorte ativo
   · **Aceite:** Cada controle expõe exatamente os valores da tabela 6.2 com o padrão selecionado e é percorrível por Tab, setas e Enter sem mouse; o banner aparece se e somente se ao menos um filtro difere do padrão, lista os que diferem, e um clique em 'Voltar ao consolidado' restaura os cinco, coberto em 5 casos isolados mais um combinado.
   · **PRD:** seção 6.2, RF-02, Anexo D achado 1, Anexo D achado 2 · **Depende de:** T-127
-- [X] **T-129** `P0` `L` `paineis` Construir o núcleo de renderização SVG no servidor com viewBox responsivo
-  · **Aceite:** O núcleo produz grade, escala e rótulos determinísticos em Server Component, coberto por 20 casos (min<0, faixa nula, valores iguais, rótulos longos), sem chamada a API de DOM nem biblioteca de gráficos no package.json; nenhuma ocorrência de ResizeObserver ou medição de largura no código de painel e o CLS medido é zero entre 1280 e 1920 px.
+- [~] **T-129** `P0` `L` `paineis` Construir o núcleo de gráficos sobre recharts, com caixa reservada  ⏳ 2026-08-22 00:52 · sessao-68c8
+  · **Aceite:** O núcleo produz domínio, escala e rótulos determinísticos, coberto por 20 casos (min<0, faixa nula, valores iguais, rótulos longos), e monta os gráficos sobre recharts recebendo séries já calculadas e formatadas pelo servidor; a caixa do painel é reservada por proporção antes de o gráfico montar, o CLS medido é zero entre 1280 e 1920 px, e nenhum componente de gráfico lê dado (PR-1).
   · **PRD:** seção 8.2 gráficos, Anexo A.1, seção 13 desempenho, protótipo ax() e cw() · **Depende de:** T-124
 - [ ] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha
   · **Aceite:** As três formas reproduzem rh-headcount com eixo secundário, rec-vagas empilhada com legenda e tov-12m com linha de referência de meta, com snapshot SVG estável; série vazia devolve o estado 'sem dado neste recorte' em vez de gráfico em branco.
@@ -416,7 +416,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **Aceite:** arquivo versionado com id, tela, rótulo, unidade, métrica do catálogo, sentido e painel que o detalha para cada KPI; um teste reprova se uma tela declarar mais de 6, se um KPI apontar para métrica inexistente no catálogo, se um KPI renderizado não constar do registro, ou se algum dos 15 KPIs do achado 5 estiver ausente; T-108 e T-128 passam a consumir esse registro em vez de pressupô-lo.
   · **PRD:** seção 5 ('Cada tela carrega até 6 KPIs no topo'), RF-07 e Anexo D achado 5
 - [ ] **T-191** `P2` `M` `paineis` Cobrir o grid responsivo e travar o orçamento de bundle
-  · **Aceite:** Em 1440, 1024 e 768 px as 13 telas reempilham sem overflow horizontal no body e a tira de abas rola dentro de si; e o CI falha se o JavaScript inicial de qualquer rota passar do orçamento ou se um pacote de gráficos aparecer no grafo do cliente.
+  · **Aceite:** Em 1440, 1024 e 768 px as 13 telas reempilham sem overflow horizontal no body e a tira de abas rola dentro de si; e o CI falha se o JavaScript inicial de qualquer rota passar do orçamento, com o teto declarado em arquivo versionado e o custo do pacote de gráficos medido à parte.
   · **PRD:** seção 5, seção 13, seção 8.2 · **Depende de:** T-006, T-107, T-129
 - [ ] **T-192** `P2` `S` `plataforma` Documentar o contrato de dados, o roteiro de nova métrica e as decisões de arquitetura
   · **Aceite:** O documento descreve as quatro funções, as cinco regras e os cinco passos da seção 10.5, e alguém que não escreveu o contrato acrescenta uma métrica seguindo só ele com a suíte passando a cobri-la; o README leva do clone à aplicação com fixtures em três comandos e D1 a D5 estão registradas como ADRs.
@@ -787,7 +787,7 @@ Exportações, alertas por métrica fora de meta, novas dimensões — e a instr
 - [ ] **T-408** `P1` `M` `auditoria` Definir e coletar o denominador do O2
   · **Aceite:** documento versionado define o que conta como 'pergunta do comitê' e o instrumento de captura da via analista (registro leve pelo próprio analista ou marcação na reunião); o relatório semanal passa a publicar numerador, denominador e percentual com a série histórica; e existem quatro semanas de coleta antes de qualquer afirmação sobre a meta de 70%.
   · **PRD:** O2 — '% de perguntas respondidas sem analista', linha de base 0%, meta >= 70%
-- [ ] **T-409** `P2` `M` `paineis` Exportar painel em PNG a partir do SVG do servidor
+- [ ] **T-409** `P2` `M` `paineis` Exportar painel em PNG a partir do SVG desenhado pela biblioteca
   · **Aceite:** O PNG é gerado do mesmo SVG servido e contém título, fórmula e o recorte impressos; o teste verifica saída estável em 3 painéis de formas diferentes e falha se o PNG divergir do SVG de origem.
   · **PRD:** RF-11, seção 16 F4 · **Depende de:** T-129, T-402
 - [ ] **T-410** `P2` `M` `paineis` Exportar o recorte da tela em PDF
