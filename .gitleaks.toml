@@ -1,0 +1,38 @@
+# Varredura de segredo (T-139).
+#
+# A base sao as regras padrao do gitleaks. O que se acrescenta aqui e o que e
+# especifico deste produto: as variaveis que a secao 11 do PRD chama de segredo
+# ("credencial do banco e chave da API nunca no codigo nem na imagem").
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "url-de-postgres-com-senha"
+description = "DATABASE_URL com senha embutida no codigo"
+# Casa postgres://usuario:senha@host — o que a secao 11 proibe explicitamente.
+regex = '''postgres(?:ql)?:\/\/[^\s:@\/]+:[^\s:@\/]+@[^\s\/]+'''
+tags = ["banco", "secao-11"]
+
+[[rules]]
+id = "chave-da-anthropic"
+description = "Chave da API da Anthropic no codigo"
+regex = '''sk-ant-[A-Za-z0-9_\-]{20,}'''
+tags = ["api", "secao-11"]
+
+[allowlist]
+description = "O que nao e segredo, apesar de parecer"
+paths = [
+  # O arquivo de configuracao da propria varredura carrega os padroes.
+  '''\.gitleaks\.toml''',
+  # Artefatos de build e dependencias: nao sao versionados, e varre-los
+  # rendia 18 falsos positivos em manifestos gerados pelo Next. No CI eles
+  # nem existem quando o job roda -- excluir aqui deixa a varredura local
+  # identica a do pipeline, que e o que faz alguem confiar nela.
+  '''\.next/.*''',
+  '''node_modules/.*''',
+  '''test-results/.*''',
+  '''playwright-report/.*''',
+  # O prototipo e HTML estatico com dado ficticio, sem credencial nenhuma.
+  '''public/design/.*\.html''',
+]

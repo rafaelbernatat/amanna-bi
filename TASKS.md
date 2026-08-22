@@ -259,7 +259,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-138** `P0` `M` `seguranca` Impor o grão mínimo área x mês na fronteira da camada de dados
   · **Aceite:** Um validador recusa com erro tipado qualquer consulta com breakdown fora de {none, area, mes, centro_custo, faixa} ou que peça linha individual, e um teste tenta 10 formas de pedir grão individual (colaborador, cpf, matricula, nome, id) sem que nenhuma toque o adaptador.
   · **PRD:** seção 11, seção 7.5, RF-18, seção 7.2 · **Depende de:** T-103, T-106
-- [ ] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP
+- [~] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP   ⏸ aguardando H-46
   · **Aceite:** O boot valida todas as variáveis por esquema e aborta em menos de 2 segundos nomeando as ausentes ou inválidas, sem ler credencial de arquivo versionado ou da imagem; um scanner de segredo no CI reprova um segredo plantado de propósito; e as respostas trazem CSP sem unsafe-inline, HSTS, X-Content-Type-Options, Referrer-Policy e frame-ancestors restrito.
   · **PRD:** seção 11, seção 15, seção 8.3, seção 13 · **Depende de:** T-001, T-006
 - [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação

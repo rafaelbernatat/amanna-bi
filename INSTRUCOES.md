@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 45 itens (3 resolvidos), destravando 121 tarefas do backlog |
+| **Total** | 46 itens (3 resolvidos), destravando 121 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -73,7 +73,37 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*9 itens · 4 P0 abertos · 2 resolvidos*
+*10 itens · 4 P0 abertos · 1 P1 · 2 resolvidos*
+
+### [ ] H-46 · Decidir sobre o `unsafe-inline` em `style-src`
+
+`P1` · **Responsável:** Produto, com Engenharia
+
+**O que fazer**
+
+O aceite de T-139 pede CSP **sem `unsafe-inline`**. Foi cumprido onde o risco mora e onde é possível hoje, e medido contra o servidor de verdade:
+
+| Diretiva | Estado | Verificado |
+|---|---|---|
+| `script-src` | sem `unsafe-inline`, sem `unsafe-eval`, com *nonce* por resposta | e2e: zero violação de CSP com a tela carregada |
+| `style-src` | **com** `unsafe-inline` | fixado em teste como a única diretiva permissiva |
+
+A razão não é descuido. Os painéis desenham com objetos de estilo em linha — decisão de T-124 e T-129, que colocou as cores em `PALETA` e proibiu hex fora do tema. Objeto de estilo vira atributo `style=`, e atributo `style=` exige `unsafe-inline`. Tirar a permissão obriga a migrar as 13 telas para folha de estilo, o que muda a forma como o tema é aplicado.
+
+Escolha uma:
+
+1. **Aceitar a dívida**, registrando que `style-src 'unsafe-inline'` é permitido e por quê. O risco residual é exfiltração por seletor de CSS, que precisa de injeção de marcação para começar — e essa a `script-src` estrita já barra.
+2. **Financiar a migração** para folha de estilo (CSS Modules ou equivalente), com uma tarefa própria no backlog, revisitando como o tema de T-124 é aplicado.
+
+**Por que não dá para decidir sem uma pessoa:** a opção 2 é refatoração que toca todos os componentes de painel e reabre uma decisão de arquitetura já tomada. Fazer isso por conta própria, dentro de uma tarefa de cabeçalhos HTTP, seria decidir por quem devia decidir.
+
+**Consequência de renderização, já aplicada:** para que o *nonce* funcione, as rotas passaram a renderizar por requisição em vez de pré-renderizar na build (`export const dynamic` no layout raiz). Isso foi medido: com pré-renderização, a política bloqueava sete *chunks* e dois scripts de hidratação por página, e os gráficos não desenhavam. Não é sacrifício — a partir da Fase 2 as telas leem por `Query` e por perfil, e conteúdo que depende da sessão nunca poderia ser pré-renderizado. Tudo continua renderizado **no servidor**.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador: aceitar a dívida com justificativa escrita, ou abrir a tarefa de migração |
+| **Onde o resultado vai** | docs/decisoes/, `src/seguranca/cabecalhos.ts` e o teste que fixa `style-src` como única diretiva permissiva |
+| **Destrava** | T-139 *(1 tarefa)* |
 
 ### [ ] H-45 · Decidir a unidade de horas, candidatos, vagas e pontos de eNPS
 
