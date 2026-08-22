@@ -262,25 +262,25 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP
   · **Aceite:** O boot valida todas as variáveis por esquema e aborta em menos de 2 segundos nomeando as ausentes ou inválidas, sem ler credencial de arquivo versionado ou da imagem; um scanner de segredo no CI reprova um segredo plantado de propósito; e as respostas trazem CSP sem unsafe-inline, HSTS, X-Content-Type-Options, Referrer-Policy e frame-ancestors restrito.
   · **PRD:** seção 11, seção 15, seção 8.3, seção 13 · **Depende de:** T-001, T-006
-- [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação
+- [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação  ⛔ H-01
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
   · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total)
 - [ ] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
   · **Aceite:** qualquer literal numérico que alcance o módulo de formatação (pc, rs, n, sg) ou os campos value/delta/rodape de um Kpi reprova o CI; os cinco casos reais do protótipo (74, 54.3, 4.1, 40.0, -0.7) são apontados pelo teste num arquivo de exemplo; exceção só por allowlist nomeada (metas vindas do catálogo).
   · **PRD:** Anexo D achado 5 - cobertura da pesquisa 74%, concentração top 10 54,3%, inadimplência 4,1%
-- [ ] **T-142** `P0` `M` `auditoria` Decidir e implementar o tratamento de métricas posicionais (mediana/percentil)
+- [ ] **T-142** `P0` `M` `auditoria` Decidir e implementar o tratamento de métricas posicionais (mediana/percentil)  ⛔ H-04
   · **Aceite:** ou existe um quarto agg (precomputado) com o valor materializado por área x mês na view, ou a métrica sai do catálogo e o KPI vira faixa modal; a mediana salarial e sal-faixas respondem nos 768 recortes; um teste prova que a mediana de 'Todas' não é a média das medianas por área; a supressão k<5 continua valendo sobre as faixas.
   · **PRD:** Anexo D achado 5 - mediana salarial R$ 6.240 (e o painel sal-faixas)
 - [ ] **T-143** `P0` `M` `auditoria` Levantamento de medidas ausentes (não só dimensões) e extensão de 10.1 e das fixtures
   · **Aceite:** para cada um dos 15 KPIs do achado 5 estão declarados view, coluna-medida e denominador; custo de recrutamento entra em vw_fato_vagas; respondentes e elegíveis entram em vw_fato_rh_mes; soma de idade e soma de tempo de casa (ou média ponderada declarada) entram em vw_fato_rh_mes; T-117 passa a depender das tarefas de fixture e nenhuma das 15 métricas fica sem coluna de origem.
   · **PRD:** Anexo D achado 5 - custo por contratação R$ 8,6 mil, cobertura da pesquisa 74%, idade média 34,2 anos, tempo médio de casa 3,1 anos
-- [ ] **T-144** `P0` `M` `auditoria` Decidir e implementar a semântica de Area no módulo Financeiro
+- [ ] **T-144** `P0` `M` `auditoria` Decidir e implementar a semântica de Area no módulo Financeiro  ⛔ H-04
   · **Aceite:** ou vw_fato_fin_mes ganha área e vw_fato_orcamento ganha o de-para centro de custo -> área (com o 8o centro tratado explicitamente), ou os 22 painéis financeiros e os 5 de Integração declaram 'filtro não se aplica a este painel'; a soma dos centros de custo reconcilia com o consolidado; a mudança em relação ao comportamento do protótipo entra como diferença intencional na checklist de paridade de T-156.
   · **PRD:** Anexo D achado 3 aplicado ao Financeiro (fctx: rev = ar.rec/1200, money = ar.folha/186) + seção 10.1 vw_fato_fin_mes
 - [ ] **T-145** `P0` `M` `auditoria` Registro de KPIs por tela, no mesmo padrão do registro de painéis
   · **Aceite:** id, tela, métrica do catálogo, unidade, sentido, rodapé e painel que o detalha. um teste compara o registro com as 13 telas e falha em KPI faltante, extra, tela com mais de 6, ou métrica fora do catálogo; T-108, T-117, T-128 e T-156 passam a se parametrizar por ele.
   · **PRD:** Anexo D achado 5 (kpisRaw) + seção 5 'ate 6 KPIs no topo' + RF-07
-- [ ] **T-146** `P0` `M` `auditoria` Reconciliar o Anexo C e publicar o dataset de referência fechado
+- [ ] **T-146** `P0` `M` `auditoria` Reconciliar o Anexo C e publicar o dataset de referência fechado  ⛔ H-03
   · **Aceite:** uma planilha versionada deriva TODOS os valores do Anexo C de um único conjunto de fatos mensais; o headcount de dezembro fecha como saldo inicial + admissões - desligamentos, o turnover_12m fecha como soma(desligamentos,12m)/média(headcount_fte,12m) com os mesmos números, e cada divergência com o texto atual do anexo vira errata aprovada por Produto e Controladoria, com data, antes de T-110 e T-111 começarem.
   · **PRD:** Anexo C — linhas 'Headcount (dez) 1.240 FTE = 1.150 + 241 admissões - 145 saídas' e 'Turnover 12m 18,4% = saídas 12m / headcount médio'
 - [ ] **T-147** `P1` `M` `dados` Modelar as dimensões vw_dim_* e as faixas usadas pelos painéis de perfil
@@ -391,13 +391,13 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-182** `P1` `M` `auditoria` Acrescentar o motivo denominador_zero ao enum fechado da camada de dados e definir seu estado de tela
   · **Aceite:** para cada métrica com agg=ratio no catálogo, uma fixture com denominador zero devolve null com motivo denominador_zero, o painel e o cartão de KPI exibem texto próprio (nunca 0, nunca traço mudo), e a suíte da regra 3 percorre todas as métricas ratio; a suíte de contrato falha se alguma expuser Infinity, NaN ou 0.
   · **PRD:** seção 13 precisão (divisão por zero)
-- [ ] **T-183** `P1` `M` `auditoria` Verificar contraste por cálculo sobre o tema e sobre o SVG servido
+- [ ] **T-183** `P1` `M` `auditoria` Verificar contraste por cálculo sobre o tema e sobre o SVG servido  ⛔ H-43
   · **Aceite:** um teste computa a razão de cada par texto/fundo declarado no tema e reprova abaixo de 4.5:1 (3:1 para texto grande), e um segundo teste percorre o SVG de cada uma das 12 formas na galeria de verificação extraindo fill de texto contra o fill imediatamente abaixo, reprovando qualquer rótulo fora do limite. escurecer um token de fundo em um ponto reprova o CI nomeando o par.
   · **PRD:** seção 13 acessibilidade (contraste 4.5:1)
-- [ ] **T-184** `P1` `M` `auditoria` Fechar modalidade como dimensão de recorte
+- [ ] **T-184** `P1` `M` `auditoria` Fechar modalidade como dimensão de recorte  ⛔ H-04
   · **Aceite:** cada métrica declara se modalidade se aplica (insumo de T-142); soma(Presencial) + soma(Híbrido) + soma(Remoto) = 'Todas' para toda medida aditiva com modalidade aplicável; grep por hcA, vagas e modS na apresentação retorna zero; folha e receita mudam sob modalidade nas métricas em que ela se aplica e os demais painéis devolvem 'filtro não se aplica a este painel'.
   · **PRD:** Anexo D achado 3 - modalidade também é fator de escala (fctx: modS = md.v / 1240)
-- [ ] **T-185** `P1` `M` `auditoria` Definir a série de comparação no primeiro ano carregado
+- [ ] **T-185** `P1` `M` `auditoria` Definir a série de comparação no primeiro ano carregado  ⛔ H-01
   · **Aceite:** ou 36 meses são carregados (2024 apenas como base de comparação), ou a série LY e os KPIs derivados dela devolvem null com motivo sem_dado_no_recorte; com ano=2025, fin-receita, o KPI de crescimento e a intenção 1 do chat mostram o estado vazio com motivo (nunca zero nem a série de 2026); a lista de invariantes de T-129 vira arquivo versionado com justificativa por item.
   · **PRD:** Anexo D achado 6 / RF-05 e Anexo B intenção 1 (crescimento_yoy) sob ano = 2025
 - [ ] **T-186** `P1` `M` `auditoria` Fixar código canônico e rótulo de exibição por valor de dimensão num único arquivo
@@ -406,10 +406,10 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-187** `P1` `M` `auditoria` Estender o escopo de narrativa aos KPIs
   · **Aceite:** rodapé e delta declaram o recorte em que são válidos e são suprimidos quando o recorte muda. o mesmo detector de valor absoluto de T-150 roda sobre rodapé e delta dos KPIs das 13 telas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
   · **PRD:** Anexo D achado 5 / RF-09 - rodapé e delta dos KPIs (kpisFor aplica hasAbs sobre k.f e k.d)
-- [ ] **T-188** `P1` `M` `auditoria` Renderizar as 13 telas sob o segundo adaptador ainda em F1
+- [ ] **T-188** `P1` `M` `auditoria` Renderizar as 13 telas sob o segundo adaptador ainda em F1  ⛔ H-02
   · **Aceite:** um job de CI sobe o Postgres semeado com as mesmas fixtures, executa as 13 rotas com DATA_SOURCE=warehouse e compara o HTML e o SVG servidos com a execução em fixtures no recorte padrão e em dois recortes fora do padrão; qualquer diferença de valor, categoria, nota, fórmula ou estado em qualquer dos 71 painéis reprova o pipeline.
   · **PRD:** seção 16, critério de saída de F1: 'A mesma tela roda com dois adaptadores distintos, e a suíte passa nos dois'
-- [ ] **T-189** `P1` `M` `auditoria` Sessão de aprovação do catálogo de métricas com Controladoria e RH, como gate de entrada de F2
+- [ ] **T-189** `P1` `M` `auditoria` Sessão de aprovação do catálogo de métricas com Controladoria e RH, como gate de entrada de F2  ⛔ H-06, H-07, H-08
   · **Aceite:** as 36 métricas (21 do Anexo B mais as 15 do achado 5) são percorridas uma a uma com rótulo, fonte, fórmula, unidade, agg, sentido e grao_minimo; cada uma sai aprovada ou com linha decisão registrada com data e áreas aprovadoras; a versão semântica do catálogo aprovada é nomeada e é ela que T-219 e T-220 citam ao preencher o mapeamento.
   · **PRD:** Cabeçalho do PRD, 'Decisão pedida: aprovar o catálogo de métricas (seção 9) e o mapeamento das views (seção 10) antes de F2', combinado com seção 9.4 ('arquivo versionado, revisado por Controladoria e RH em conjunto')
 - [ ] **T-190** `P1` `M` `auditoria` Publicar o registro dos KPIs das 13 telas
@@ -421,7 +421,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-192** `P2` `S` `plataforma` Documentar o contrato de dados, o roteiro de nova métrica e as decisões de arquitetura
   · **Aceite:** O documento descreve as quatro funções, as cinco regras e os cinco passos da seção 10.5, e alguém que não escreveu o contrato acrescenta uma métrica seguindo só ele com a suíte passando a cobri-la; o README leva do clone à aplicação com fixtures em três comandos e D1 a D5 estão registradas como ADRs.
   · **PRD:** seção 0, seção 9, seção 10.5, seção 8 · **Depende de:** T-113, T-121
-- [ ] **T-193** `P2` `M` `auditoria` Fixar em T-131 que a reconciliação KPI x painel (regra 1) roda sempre na matriz exaustiva de 768
+- [ ] **T-193** `P2` `M` `auditoria` Fixar em T-131 que a reconciliação KPI x painel (regra 1) roda sempre na matriz exaustiva de 768  ⛔ H-05
   · **Aceite:** restringindo a amostragem às regras 2 a 5, e registrar no próprio arquivo de matriz a justificativa de cada dimensão amostrada com responsável e data. marcar qualquer combinação como amostrada na suíte da regra 1 reprova o CI.
   · **PRD:** RF-03
 - [ ] **T-194** `P2` `M` `auditoria` Governança do inventário: o registro de painéis (e o de KPIs) ganha campo de justificativa e data para
@@ -591,10 +591,10 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 - [ ] **T-251** `P1` `M` `auditoria` Travar a contagem num único artefato
   · **Aceite:** arquivo versionado com os 15 KPIs do achado 5 (id, tela, métrica do catálogo), referenciado por T-117, T-128 e T-222. o teste é parametrizado por esse arquivo e falha se a contagem divergir de 15; exige variação em pelo menos dois valores de cada um dos cinco filtros; roda nos dois modos de DATA_SOURCE.
   · **PRD:** Anexo D achado 5 - contagem dos KPIs literais (RF-07)
-- [ ] **T-252** `P1` `M` `auditoria` Kit de apoio à construção das views e caminho alternativo direto do ERP
+- [ ] **T-252** `P1` `M` `auditoria` Kit de apoio à construção das views e caminho alternativo direto do ERP  ⛔ H-10, H-12, H-18, H-19
   · **Aceite:** para cada uma das 7 views existe SQL de referência parametrizável e roteiro de origem por sistema (folha/HCM, ERP contábil, ATS, LMS, Planejamento, cadastros); um ensaio sobre a cópia de homologação produz as 7 views a partir das tabelas do ERP e passa no validador de T-210 sem nenhuma não conformidade; e horas de apoio, responsável e prazo estão alocados no plano de F2 com gatilho definido de acionamento.
   · **PRD:** seção 17, risco 'O cliente não consegue produzir as views' (probabilidade Alta, mitigação 'Escopo de apoio previsto em F2') e seção 10.1 ('se o cliente já tem warehouse... se não tem, as mesmas podem sair direto do ERP')
-- [ ] **T-253** `P1` `M` `auditoria` Procedimento de atualização e retorno de versão no modo Docker no cliente
+- [ ] **T-253** `P1` `M` `auditoria` Procedimento de atualização e retorno de versão no modo Docker no cliente  ⛔ H-25
   · **Aceite:** um ensaio parte da versão N-1 instalada com réplica carregada e trilha de auditoria populada, sobe a versão N, aplica a migração no start sem perda de dado e sem exigir carga completa nova, e o retorno para N-1 restaura a aplicação funcional com a réplica intacta; o roteiro registra o tempo de indisponibilidade e é executado do zero por quem não escreveu o código.
   · **PRD:** seção 15, linha 'Atualização' na coluna 'Docker no cliente': 'Imagem versionada; migração de esquema no start, idempotente'
 - [ ] **T-254** `P2` `M` `plataforma` Definir backup e recuperação da réplica
@@ -689,7 +689,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [ ] **T-324** `P0` `M` `seguranca` Implementar retenção configurável com expurgo e tratar o texto da pergunta como dado do cliente
   · **Aceite:** Os prazos decididos em P7 para trilha, telemetria e texto de pergunta são configuráveis por ambiente, um job agendado apaga o que passou do prazo com teste de relógio adiantado confirmando o expurgo, e uma pergunta percorrida ponta a ponta aparece apenas na trilha de auditoria e em chat.sem_resposta, nunca em log de aplicação.
   · **PRD:** D-P7, seção 11, seção 14, RF-19 · **Depende de:** T-012, T-176, T-224, T-323
-- [ ] **T-325** `P0` `M` `auditoria` Estender o executor do conjunto de avaliação para reprovar por rota e painel
+- [ ] **T-325** `P0` `M` `auditoria` Estender o executor do conjunto de avaliação para reprovar por rota e painel  ⛔ H-30
   · **Aceite:** além das quatro métricas atuais, o relatório de T-335 compara, para cada uma das 100 perguntas não-recusadas, os cinco filtros aplicados, a rota de actions.view e o id de actions.panel contra os rótulos de T-334, e falha se o acerto de rota+painel ficar abaixo de 95% ou se qualquer painel citado não existir no registro dos 71 do Anexo A. executar o conjunto com um painel deliberadamente trocado no pipeline reprova o job.
   · **PRD:** RF-12
 - [ ] **T-326** `P0` `M` `auditoria` Prover sessão e trilha de auditoria em modo fixtures para destravar F3
@@ -763,7 +763,7 @@ Exportações, alertas por métrica fora de meta, novas dimensões — e a instr
 
 *17 tarefas · 1 P0 · 7 P1 · 9 P2*
 
-- [ ] **T-401** `P0` `M` `auditoria` Rodar a adoção guiada das quatro personas da seção 3
+- [ ] **T-401** `P0` `M` `auditoria` Rodar a adoção guiada das quatro personas da seção 3  ⛔ H-35
   · **Aceite:** cada persona (CFO/Diretoria, Controller, BP de RH, Analista de BI) recebe sessão de onboarding com o seu recorte padrão e as três sugestões contextuais da sua tela de entrada; existe um responsável nomeado por persona; e o relatório de T-413 mostra sessões e perguntas em quatro semanas consecutivas para os quatro perfis, com plano de correção escrito para qualquer perfil abaixo do limiar.
   · **PRD:** seção 16, critério de saída de F4: 'Uso recorrente semanal pelos quatro perfis da seção 3'
 - [ ] **T-402** `P1` `M` `paineis` Exportar painel em CSV com unidade e recorte declarados
@@ -781,10 +781,10 @@ Exportações, alertas por métrica fora de meta, novas dimensões — e a instr
 - [ ] **T-406** `P1` `S` `plataforma` Produzir o relatório de uso recorrente semanal pelos quatro perfis
   · **Aceite:** Relatório semanal derivado de painel.visto e chat.pergunta mostra sessões e perguntas por semana para cada persona da seção 3, e o critério de saída de F4 é verificável por ele em quatro semanas consecutivas.
   · **PRD:** seção 16 F4, seção 14, seção 3, O2 · **Depende de:** T-405
-- [ ] **T-407** `P1` `M` `auditoria` Instrumentar e reportar o tempo pergunta-para-número (O1)
+- [ ] **T-407** `P1` `M` `auditoria` Instrumentar e reportar o tempo pergunta-para-número (O1)  ⛔ H-34, H-35
   · **Aceite:** a telemetria deriva, de chat.pergunta, chat.intencao e painel.visto, o intervalo entre a pergunta e a exibição do número já verificado; o painel de observabilidade publica a mediana por semana e por perfil com a meta de 30 s marcada; e a linha de base atual é medida com as quatro personas em pelo menos cinco perguntas reais e registrada no mesmo relatório antes de F3 entrar em produção.
   · **PRD:** O1 — 'Reduzir o tempo entre pergunta e número confiável', métrica 'Tempo mediano', linha de base 'Horas', meta '< 30 s'
-- [ ] **T-408** `P1` `M` `auditoria` Definir e coletar o denominador do O2
+- [ ] **T-408** `P1` `M` `auditoria` Definir e coletar o denominador do O2  ⛔ H-34
   · **Aceite:** documento versionado define o que conta como 'pergunta do comitê' e o instrumento de captura da via analista (registro leve pelo próprio analista ou marcação na reunião); o relatório semanal passa a publicar numerador, denominador e percentual com a série histórica; e existem quatro semanas de coleta antes de qualquer afirmação sobre a meta de 70%.
   · **PRD:** O2 — '% de perguntas respondidas sem analista', linha de base 0%, meta >= 70%
 - [ ] **T-409** `P2` `M` `paineis` Exportar painel em PNG a partir do SVG desenhado pela biblioteca
