@@ -1,33 +1,62 @@
 import type { Metadata } from "next";
 
-import { Moldura } from "@/apresentacao/svg/Moldura";
-import { eixo, larguraDoSpan, type Margens } from "@/apresentacao/svg/nucleo";
 import { formatarValor } from "@/apresentacao/formato/formato";
+import { CaixaDeGrafico } from "@/apresentacao/graficos/CaixaDeGrafico";
+import { GraficoDeLinha } from "@/apresentacao/graficos/GraficoDeLinha";
+import { configuracaoDeEixo } from "@/apresentacao/graficos/nucleo";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 
 /**
- * Galeria de verificacao do nucleo SVG (T-129).
+ * Galeria de verificacao do nucleo de graficos (T-129).
  *
  * Nao e tela de produto — nao esta no Anexo A e nao aparece na navegacao.
- * Existe porque o criterio de aceite de T-129 exige CLS zero entre 1280 e
- * 1920 px, e isso so se mede sobre algo desenhado. T-183 volta aqui para medir
- * contraste sobre o SVG servido.
+ * Existe porque o criterio de aceite exige CLS zero entre 1280 e 1920 px, e
+ * isso so se mede sobre algo desenhado. T-183 volta aqui para medir contraste.
+ *
+ * As series abaixo sao formas, nao dados de negocio: existem para exercitar a
+ * geometria. Os numeros do Anexo C entram com as fixtures de T-110 e T-111,
+ * que esperam a errata de H-03.
  */
 
 export const metadata: Metadata = {
-  title: "Verificação · núcleo SVG",
+  title: "Verificação · núcleo de gráficos",
   robots: { index: false, follow: false },
 };
 
-const MARGENS: Margens = { esquerda: 44, direita: 12, topo: 12, base: 24 };
+const MESES = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
 
 const CASOS = [
-  { nome: "faixa comum", span: 6, min: 0, max: 200 },
-  { nome: "minimo negativo", span: 6, min: -40, max: 120 },
-  { nome: "faixa nula", span: 4, min: 75, max: 75 },
-  { nome: "tudo zero", span: 4, min: 0, max: 0 },
-  { nome: "valores grandes", span: 4, min: 0, max: 1234567 },
-  { nome: "span estreito", span: 2, min: 0, max: 50 },
+  {
+    nome: "faixa comum",
+    valores: [12, 40, 33, 61, 58, 74, 69, 88, 81, 96, 92, 110],
+  },
+  {
+    nome: "minimo negativo",
+    valores: [-40, -22, -8, 5, 18, 30, 12, -6, -18, 22, 41, 60],
+  },
+  { nome: "faixa nula", valores: Array.from({ length: 12 }, () => 75) },
+  { nome: "tudo zero", valores: Array.from({ length: 12 }, () => 0) },
+  {
+    nome: "valores grandes",
+    valores: [
+      120000, 340000, 512000, 733000, 690000, 880000, 910000, 1020000, 998000,
+      1180000, 1204000, 1234567,
+    ],
+  },
+  { nome: "ponto unico", valores: [42] },
 ] as const;
 
 export default function Pagina() {
@@ -46,7 +75,7 @@ export default function Pagina() {
           color: PALETA.texto,
         }}
       >
-        Verificação do núcleo SVG
+        Verificação do núcleo de gráficos
       </h1>
       <p
         style={{
@@ -55,26 +84,29 @@ export default function Pagina() {
           color: PALETA.textoSecundario,
         }}
       >
-        Seis casos de geometria servidos pelo servidor, sem medição de largura.
+        Seis casos de geometria sobre recharts, com a caixa reservada pelo
+        servidor antes de o gráfico montar.
       </p>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
           gap: 16,
         }}
       >
         {CASOS.map((caso) => {
-          const largura = larguraDoSpan(caso.span);
-          const desenho = eixo({
-            largura,
-            altura: 200,
-            margens: MARGENS,
-            min: caso.min,
-            max: caso.max,
-            formatar: (v) => formatarValor(v, "FTE"),
+          const categorias = MESES.slice(0, caso.valores.length);
+          const eixo = configuracaoDeEixo({
+            valores: caso.valores,
+            categorias,
           });
+          const pontos = caso.valores.map((valor, i) => ({
+            categoria: categorias[i] ?? "",
+            valor,
+            rotulo: formatarValor(valor, "FTE"),
+          }));
+
           return (
             <figure
               key={caso.nome}
@@ -97,9 +129,12 @@ export default function Pagina() {
                   marginBottom: 8,
                 }}
               >
-                {caso.nome} · span {caso.span}
+                {caso.nome}
+                {eixo.degenerada ? " · faixa aberta" : ""}
               </figcaption>
-              <Moldura eixo={desenho} titulo={`Caso ${caso.nome}`} />
+              <CaixaDeGrafico altura={200} rotulo={`Caso ${caso.nome}`}>
+                <GraficoDeLinha pontos={pontos} eixo={eixo} />
+              </CaixaDeGrafico>
             </figure>
           );
         })}

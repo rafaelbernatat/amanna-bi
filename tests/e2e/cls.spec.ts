@@ -66,11 +66,33 @@ test.describe("Deslocamento de layout do desenho servido", () => {
     }
   }
 
-  test("a galeria serve os seis casos de geometria", async ({ page }) => {
+  test("a galeria desenha os seis casos de geometria", async ({ page }) => {
     await page.goto("/verificacao/svg");
     await expect(page.locator("[data-caso]")).toHaveCount(6);
-    // Todo desenho e servido pelo servidor: existe no HTML, sem hidratacao.
-    const svgs = await page.locator("svg[viewBox]").count();
-    expect(svgs).toBeGreaterThanOrEqual(6);
+    // Depois da revisao de D4 o desenho vem do recharts, no cliente.
+    await expect(page.locator("svg.recharts-surface")).toHaveCount(6);
+  });
+
+  test("o servidor ja manda a caixa reservada, antes de o grafico montar", async ({
+    request,
+    baseURL,
+  }) => {
+    // Sem JavaScript: e o HTML servido, nao a pagina hidratada.
+    const resposta = await request.get(`${String(baseURL)}/verificacao/svg`);
+    expect(resposta.status()).toBe(200);
+    const html = await resposta.text();
+
+    // A caixa existe no HTML inicial, uma por caso...
+    const caixas = html.match(/data-grafico/g) ?? [];
+    expect(
+      caixas.length,
+      "o servidor nao reservou nenhuma caixa",
+    ).toBeGreaterThanOrEqual(6);
+
+    // ...com altura explicita, que e o que impede o deslocamento.
+    expect(html, "a caixa foi servida sem altura").toMatch(/height:\s*200px/);
+
+    // ...e o grafico ainda nao existe: quem segura o espaco e a caixa.
+    expect(html).not.toContain("recharts-surface");
   });
 });
