@@ -412,7 +412,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-189** `P1` `M` `auditoria` Sessão de aprovação do catálogo de métricas com Controladoria e RH, como gate de entrada de F2  ⛔ H-06, H-07, H-08
   · **Aceite:** as 36 métricas (21 do Anexo B mais as 15 do achado 5) são percorridas uma a uma com rótulo, fonte, fórmula, unidade, agg, sentido e grao_minimo; cada uma sai aprovada ou com linha decisão registrada com data e áreas aprovadoras; a versão semântica do catálogo aprovada é nomeada e é ela que T-219 e T-220 citam ao preencher o mapeamento.
   · **PRD:** Cabeçalho do PRD, 'Decisão pedida: aprovar o catálogo de métricas (seção 9) e o mapeamento das views (seção 10) antes de F2', combinado com seção 9.4 ('arquivo versionado, revisado por Controladoria e RH em conjunto')
-- [ ] **T-190** `P1` `M` `auditoria` Publicar o registro dos KPIs das 13 telas
+- [ ] **T-190** `P1` `M` `auditoria` Publicar o registro dos KPIs das 13 telas   ⛔ H-48
   · **Aceite:** arquivo versionado com id, tela, rótulo, unidade, métrica do catálogo, sentido e painel que o detalha para cada KPI; um teste reprova se uma tela declarar mais de 6, se um KPI apontar para métrica inexistente no catálogo, se um KPI renderizado não constar do registro, ou se algum dos 15 KPIs do achado 5 estiver ausente; T-108 e T-128 passam a consumir esse registro em vez de pressupô-lo.
   · **PRD:** seção 5 ('Cada tela carrega até 6 KPIs no topo'), RF-07 e Anexo D achado 5
 - [ ] **T-191** `P2` `M` `paineis` Cobrir o grid responsivo e travar o orçamento de bundle
@@ -588,7 +588,7 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 - [ ] **T-250** `P1` `M` `seguranca` Anexar ao contrato as views, a fronteira de dados e o registro LGPD
   · **Aceite:** O anexo técnico com as 7 views, dicionário de colunas e prazo de entrega pela TI está no contrato assinado; um documento versionado declara o que sai do ambiente (catálogo, pergunta e números agregados), o que nunca sai, o subprocessador da API e a retenção; e o registro LGPD lista categorias, finalidade, base legal e retenção apontando o controle técnico correspondente.
   · **PRD:** seção 11, seção 14, seção 17, D1, D5, D-P7 · **Depende de:** T-201
-- [ ] **T-251** `P1` `M` `auditoria` Travar a contagem num único artefato
+- [ ] **T-251** `P1` `M` `auditoria` Travar a contagem num único artefato   ⛔ H-48
   · **Aceite:** arquivo versionado com os 15 KPIs do achado 5 (id, tela, métrica do catálogo), referenciado por T-117, T-128 e T-222. o teste é parametrizado por esse arquivo e falha se a contagem divergir de 15; exige variação em pelo menos dois valores de cada um dos cinco filtros; roda nos dois modos de DATA_SOURCE.
   · **PRD:** Anexo D achado 5 - contagem dos KPIs literais (RF-07)
 - [ ] **T-252** `P1` `M` `auditoria` Kit de apoio à construção das views e caminho alternativo direto do ERP  ⛔ H-10, H-12, H-18, H-19

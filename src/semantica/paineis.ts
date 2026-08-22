@@ -17,6 +17,19 @@
  * | `span` | `span:` do protótipo | a grade de 12 colunas da seção 5 |
  * | `unidade` | `tag:` do protótipo, mapeada ao enum fechado | parcial, ver H-45 |
  *
+ * ## `BRL_mi` em painel rotulado "R$ mil"
+ *
+ * Quatro painéis (`sal-medio`, `int-rpc`, `int-ebitda-pc`, `int-scatter`) trazem
+ * `tag: 'R$ mil'` no protótipo e `unidade: "BRL_mi"` aqui. Não é erro de escala:
+ * `BRL_mi` é a **única** unidade monetária do enum fechado da seção 9.2, e é a
+ * unidade canônica do valor — a escala de exibição é escolha do formatador
+ * (T-125), que mostra `R$ 7,5 mil` para `0,0075`.
+ *
+ * A armadilha, e é real: um adaptador que devolva `7,5` para "sete e meio mil"
+ * erra por mil, e o tipo não tem como perceber. O Anexo C fixa a convenção
+ * ("Receita por FTE · R$ 968 mil" = `0,968`), e a suíte de contrato de F2
+ * precisa conferir a ordem de grandeza destes quatro contra ele.
+ *
  * Mora em `semantica` e não em `apresentacao` porque é inventário de produto,
  * não de tela: quem precisa dele primeiro é o adaptador, que tem de servir os
  * 71. Por isso também **não importa a navegação** — a conferência entre registro

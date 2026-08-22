@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 47 itens (3 resolvidos), destravando 121 tarefas do backlog |
+| **Total** | 48 itens (3 resolvidos), destravando 127 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,33 +39,35 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 8 (2 resolvidos) | 3 | 34 |
+| Fase 1 · Contrato | 12 (3 resolvidos) | 6 | 40 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **44** | **26** | **121** |
+| **Total** | **48** | **29** | **127** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
 | TI do cliente | 13 |
+| Produto | 11 |
 | Controladoria | 10 |
-| Produto | 9 |
 | Engenharia | 6 |
 | Comercial | 4 |
-| RH | 1 |
 | Juridico do cliente | 1 |
+| Produto, com Controladoria e RH | 1 |
+| Produto, com Engenharia | 1 |
+| RH | 1 |
 
 **Os cinco que mais destravam** — se a fila estiver parada, comece por estes:
 
 | Item | Destrava | Responsável |
 |---|---:|---|
 | **H-28** Criar a conta na Anthropic e emitir as chaves de API | 14 tarefas | Produto |
-
-| **H-02** Habilitar o GitHub Actions e tornar os cinco checks obrigatórios em main | 9 tarefas | Engenharia |
 | **H-12** Levantar com a TI do cliente o sistema de origem de cada uma das 7 views (P1) | 8 tarefas | TI do cliente |
 | **H-08** Sessão de aprovação do catálogo de métricas e do mapeamento das views | 7 tarefas | Controladoria |
+| **H-18** Obter do cliente as 7 views publicadas e populadas na origem | 7 tarefas | TI do cliente |
+| **H-06** Decidir P2: transferência interna conta como desligamento | 6 tarefas | RH |
 
 ---
 
@@ -73,7 +75,39 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*11 itens · 4 P0 abertos · 1 P1 · 1 P2 · 2 resolvidos*
+*12 itens · 3 P0 abertos · 5 P1 abertos · 1 P2 aberto · 3 resolvidos*
+
+### [ ] H-48 · Corrigir o Anexo D achado 5 e o título de `cx-diario` no PRD
+
+`P1` · **Responsável:** Produto
+
+**O que fazer**
+
+Duas correções no PRD, as duas verificadas contra o protótipo, nenhuma delas de engenharia — o EXECUTE §11 reserva a edição do PRD.
+
+**1. O achado 5 subconta.** O Anexo D diz que os KPIs com valor fixo em texto são 15 e os nomeia. A medição no protótipo encontra **23** KPIs que não respondem a filtro nenhum. A diferença não é de opinião, é de critério: o achado procurou valor em texto literal (`'34,2 anos'`), e não pega número literal **passado a um formatador** (`this.pc(54.3)`), que parece calculado e não é.
+
+| | |
+|---:|---|
+| 11 | estão nas duas listas |
+| 3 | só o Anexo achou — `Cobertura da pesquisa`, `Concentração top 10`, `Inadimplência` |
+| 3 | só a medição achou — `Estados atendidos`, `Tempo até a saída`, `Ciclo de conversão` |
+| **6** | **não estão em nenhuma das duas** — `Superior ou mais`, `Custo por hora`, `Promotores`, `Margem bruta`, `Margem líquida`, `Conversão de Dez` |
+| **23** | total medido |
+
+Além disso, um dos 15 itens do achado — "mediana salarial `R$ 6.240`" — **não é KPI**: é texto de nota do painel `sal-faixas`. Confirmado no protótipo.
+
+**Por que importa além do texto:** os aceites de **T-190** e **T-251** são parametrizados por "os 15 KPIs do achado 5". Implementá-los como estão escritos produz um teste que passa contra uma contagem que subconta em 9 — e a promessa "nenhum KPI é literal" fica valendo para dois terços dos casos.
+
+**2. O título de `cx-diario` diverge.** O Anexo A escreve "Movimentação diária — últimos 30 dias"; o protótipo constrói o painel com "Movimentação diária **de caixa** — últimos 30 dias". Dos 71 painéis é o único que diverge — os outros 70 batem caractere a caractere (três usam título condicional, e o Anexo adotou o ramo consolidado nos três, de forma consistente).
+
+A linha 14 do PRD diz que, onde os dois divergem, **o protótipo vence**, e que as divergências estão todas no Anexo D. Esta não está.
+
+| | |
+|---|---|
+| **Resultado esperado** | Anexo D achado 5 reescrito com os 23 e com o critério de contagem ("a expressão não consulta filtro"), a nota sobre a mediana salarial corrigida, e `PRD.md:607` alinhado ao protótipo — ou o Anexo D registrando a divergência de título como achado próprio |
+| **Onde o resultado vai** | PRD.md (Anexo D achado 5 e a linha do `cx-diario` no Anexo A.3), depois `src/semantica/kpis.ts` e `src/semantica/paineis.ts` na mesma revisão |
+| **Destrava** | T-190, T-251 *(2 tarefas)* |
 
 ### [ ] H-47 · Decidir se o protótipo é editado para remover a chave que desliga a fórmula
 
@@ -83,7 +117,7 @@ Sem estes, a Fase 1 não fecha o critério de saída.
 
 O achado 10 do Anexo D diz: *"a propriedade `mostrarMemoria` esconde a linha de fórmula de todos os painéis, o que conflita com 'todo painel declara a fórmula'"*, e o tratamento é *"a propriedade sai"*. T-109 aplicou isso ao produto — a fórmula agora é um tipo marcado que não aceita vazio, o JSON Schema publicado traz `minLength: 1`, e uma varredura reprova qualquer chave nova com a mesma função.
 
-Sobrou uma pergunta que não é de engenharia. O critério de aceite de T-109 diz *"a busca por `mostrarMemoria` no repositório retorna zero ocorrências"*, e o nome ainda aparece **uma vez**, em `public/design/Dashboard BI v2.dc.html` — o protótipo da Fase 0.
+Sobrou uma pergunta que não é de engenharia. O critério de aceite de T-109 diz *"a busca por `mostrarMemoria` no repositório retorna zero ocorrências"*, e o nome ainda aparece **duas vezes** em `public/design/Dashboard BI v2.dc.html` — o protótipo da Fase 0: uma na declaração da propriedade (metadados da ferramenta de design) e outra no uso que troca a fórmula por vazio.
 
 Não editei o arquivo, por três razões:
 
@@ -142,13 +176,17 @@ Escolha uma:
 
 A regra 2 da seção 9.2 do PRD fixa cinco unidades como enum fechado: `BRL_mi`, `pct`, `pp`, `dias` e `FTE`. Ao montar o registro dos 71 painéis (T-107), cinco painéis do protótipo mostraram medidas que nenhuma dessas cinco nomeia:
 
-| Painel | Tela | O que mede | Rótulo no protótipo |
-|---|---|---|---|
-| `tre-horas` | `rh/trein` | horas de treinamento e participação | `horas · %` |
-| `tre-area` | `rh/trein` | horas por área e investimento por trilha | `horas · R$ mi` |
-| `rec-funil` | `rh/recrut` | candidatos por etapa do pipeline | `candidatos` |
-| `rec-vagas` | `rh/recrut` | vagas por status e área | `vagas` |
-| `eng-enps` | `rh/engaj` | eNPS em 12 meses | `pontos` |
+| Onde | O que mede | Grandeza que falta |
+|---|---|---|
+| `tre-horas`, `tre-area` (painéis) e 2 KPIs de `rh/trein` | horas de treinamento | **horas** |
+| `rec-funil` (painel) e 1 KPI de `rh/recrut` | candidatos por etapa | **contagem** |
+| `rec-vagas` (painel) e 3 KPIs de `rh/recrut` | vagas por status | **contagem** |
+| `eng-enps` (painel) e 2 KPIs de `rh/engaj` | eNPS | **pontos** |
+| 1 KPI de `rh/turnover` | desligamentos no período | **contagem** |
+| 2 KPIs de `rh/colab` | idade média e tempo de casa | **anos** |
+| 1 KPI de `rh/colab` | estados atendidos | **contagem** |
+
+São **5 painéis** (T-107) e **13 KPIs** (T-145) — os dois registros penduram neste item, e a lista acima cobre os dois. A primeira versão deste item citava só quatro grandezas e teria deixado `anos` e `contagem` sem decisão.
 
 São medidas reais do produto, não enfeite do protótipo: horas de treinamento é a métrica 10 do Anexo B, e eNPS é a 14. Nenhuma sai do enum atual sem distorção — `FTE` conta pessoas, não candidaturas nem vagas abertas, e forçar horas em `dias` inventa uma conversão que ninguém aprovou.
 
@@ -323,7 +361,7 @@ A tarefa T-124 extraiu a paleta do protótipo para um tema tipado e, ao fazer is
 
 Quase tudo aqui depende do cliente. É a fila mais longa e a que costuma atrasar o projeto inteiro — comece cedo.
 
-*22 itens · 18 P0*
+*22 itens · 18 P0 abertos · 4 P1 abertos*
 
 ### [ ] H-06 · Decidir P2: transferência interna conta como desligamento
 
@@ -639,7 +677,7 @@ Contrate um fornecedor de teste de intrusão, ou aloque um time interno independ
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*8 itens · 3 P0 abertos · 2 resolvidos*
+*7 itens · 4 P0 abertos · 3 P1 abertos*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -745,7 +783,7 @@ A Controladoria precisa entregar duas coisas antes de a Fase 3 entrar em produç
 
 Itens de adoção e operação contínua.
 
-*7 itens · 1 P0*
+*7 itens · 1 P0 aberto · 1 P1 aberto · 5 P2 abertos*
 
 ### [ ] H-35 · Indicar as pessoas reais das quatro personas e agendar a adoção guiada
 
@@ -866,14 +904,17 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-013 | H-42 |
 | T-101 | H-01 |
 | T-103 | H-01 |
+| T-109 | H-47 |
 | T-110 | H-03 |
 | T-111 | H-03 |
 | T-113 | H-06, H-07, H-08 |
 | T-114 | H-03 |
 | T-119 | H-03 |
 | T-123 | H-02 |
+| T-129 | H-44 |
+| T-130 | H-44 |
 | T-131 | H-01 |
-| T-139 | H-02 |
+| T-139 | H-46, H-02 |
 | T-140 | H-01 |
 | T-142 | H-04 |
 | T-144 | H-04 |
@@ -884,16 +925,20 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-155 | H-06, H-07, H-08 |
 | T-161 | H-02 |
 | T-162 | H-04 |
+| T-164 | H-45 |
+| T-165 | H-45 |
 | T-166 | H-23 |
 | T-170 | H-05 |
 | T-171 | H-02 |
 | T-172 | H-02 |
 | T-175 | H-02 |
+| T-182 | H-42 |
 | T-183 | H-43 |
 | T-184 | H-04 |
 | T-185 | H-01 |
 | T-188 | H-02 |
 | T-189 | H-06, H-07, H-08 |
+| T-190 | H-48 |
 | T-191 | H-02 |
 | T-193 | H-05 |
 | T-201 | H-08, H-10, H-12 |
@@ -933,6 +978,7 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-248 | H-19, H-20 |
 | T-249 | H-09, H-15, H-16, H-17, H-25 |
 | T-250 | H-10, H-11 |
+| T-251 | H-48 |
 | T-252 | H-10, H-12, H-18, H-19 |
 | T-253 | H-25 |
 | T-254 | H-16 |
