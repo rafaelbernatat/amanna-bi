@@ -113,22 +113,22 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [~] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e  ⏸ aguardando H-02
   · **Aceite:** Um pull request executa as cinco etapas com cache de dependências, qualquer etapa falhando reprova o merge, e o job completo termina em menos de 15 minutos.
   · **PRD:** seção 8.2, RF-21 · **Depende de:** T-001, T-005
-- [ ] **T-007** `P1` `S` `decisao` Decidir P2: transferência interna conta como desligamento
+- [ ] **T-007** `P1` `S` `decisao` Decidir P2: transferência interna conta como desligamento  ⛔ H-06
   · **Aceite:** Decisão aprovada por RH e Controladoria, com data e áreas aprovadoras, registrada como linha decisão no catálogo de turnover_12m; reabri-la exige nova versão do catálogo.
   · **PRD:** P2, seção 9.4, seção 18, Anexo B intenção 2
-- [ ] **T-008** `P1` `S` `decisao` Decidir P3: rescisão entra na folha por competência ou por pagamento
+- [ ] **T-008** `P1` `S` `decisao` Decidir P3: rescisão entra na folha por competência ou por pagamento  ⛔ H-07
   · **Aceite:** Decisão da Controladoria registrada com data como linha decisão no catálogo de folha_total, definindo a base que o mapeamento vai aplicar em F2.
   · **PRD:** P3, seção 9.4, seção 18, Anexo B intenção 11
-- [ ] **T-009** `P1` `S` `decisao` Decidir P4: janela e cadência de sincronização aceitáveis
+- [ ] **T-009** `P1` `S` `decisao` Decidir P4: janela e cadência de sincronização aceitáveis  ⛔ H-12, H-13
   · **Aceite:** Cadência, horário e duração máxima da janela acordados com a TI do cliente e registrados em documento versionado que a configuração do job de sync passa a citar.
   · **PRD:** P4, seção 10.2, seção 18 · **Depende de:** T-003
-- [ ] **T-010** `P1` `S` `decisao` Decidir P5: limite de defasagem que dispara o aviso no selo de frescor
+- [ ] **T-010** `P1` `S` `decisao` Decidir P5: limite de defasagem que dispara o aviso no selo de frescor  ⛔ H-23
   · **Aceite:** Limite em horas decidido pela Controladoria e registrado; vira valor de configuração único, usado tanto pelo selo quanto pelo estado 'dado defasado' da seção 6.4.
   · **PRD:** P5, seção 10.2, RF-10, seção 18
-- [ ] **T-011** `P1` `S` `decisao` Decidir P6: Docker no cliente ou nuvem dedicada para este contrato
+- [ ] **T-011** `P1` `S` `decisao` Decidir P6: Docker no cliente ou nuvem dedicada para este contrato  ⛔ H-09
   · **Aceite:** Escolha comercial registrada com data no contrato; a decisão seleciona o modo de hospedagem e a trilha de segredos, sem que nenhuma diferença de cliente exista no código.
   · **PRD:** P6, D5, seção 15, seção 18
-- [ ] **T-012** `P1` `S` `decisao` Decidir P7: retenção do registro de auditoria e das perguntas do chat
+- [ ] **T-012** `P1` `S` `decisao` Decidir P7: retenção do registro de auditoria e das perguntas do chat  ⛔ H-11
   · **Aceite:** Prazos por artefato (trilha de auditoria, telemetria, texto de pergunta) decididos pelo Jurídico do cliente e registrados; cada prazo vira parâmetro de configuração antes de F3.
   · **PRD:** P7, seção 11, seção 14, seção 18
 - [ ] **T-013** `P1` `M` `auditoria` Desambiguar a referência e publicar a matriz de rastreabilidade
