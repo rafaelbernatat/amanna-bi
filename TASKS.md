@@ -229,7 +229,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-128** `P0` `M` `paineis` Construir a barra de filtros com os cinco controles e o banner de recorte ativo
   · **Aceite:** Cada controle expõe exatamente os valores da tabela 6.2 com o padrão selecionado e é percorrível por Tab, setas e Enter sem mouse; o banner aparece se e somente se ao menos um filtro difere do padrão, lista os que diferem, e um clique em 'Voltar ao consolidado' restaura os cinco, coberto em 5 casos isolados mais um combinado.
   · **PRD:** seção 6.2, RF-02, Anexo D achado 1, Anexo D achado 2 · **Depende de:** T-127
-- [ ] **T-129** `P0` `L` `paineis` Construir o núcleo de renderização SVG no servidor com viewBox responsivo
+- [~] **T-129** `P0` `L` `paineis` Construir o núcleo de renderização SVG no servidor com viewBox responsivo  ⏳ 2026-08-22 00:26 · sessao-68c8
   · **Aceite:** O núcleo produz grade, escala e rótulos determinísticos em Server Component, coberto por 20 casos (min<0, faixa nula, valores iguais, rótulos longos), sem chamada a API de DOM nem biblioteca de gráficos no package.json; nenhuma ocorrência de ResizeObserver ou medição de largura no código de painel e o CLS medido é zero entre 1280 e 1920 px.
   · **PRD:** seção 8.2 gráficos, Anexo A.1, seção 13 desempenho, protótipo ax() e cw() · **Depende de:** T-124
 - [ ] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha
