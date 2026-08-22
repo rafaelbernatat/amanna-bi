@@ -104,7 +104,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [ ] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8  ⛔ H-01
   · **Aceite:** T-101, T-103, T-131 e T-140 passam a depender de T-002; a matriz canônica de recortes é derivada de getMeta em vez de constante literal (contagem calculada, não escrita); o registro de P8 é citado no arquivo de domínio; e as duas saídas possíveis de P8 (ano parametrizável / ano fora do filtro) têm efeito verificado em teste.
   · **PRD:** Seção 18, decisão P8 (prazo 'Antes de F1') e Anexo D achado 6
-- [ ] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit
+- [~] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit  ⏳ 2026-08-21 23:18 · sessao-68c8
   · **Aceite:** Lint sai zero no repositório e falha em arquivo com any explícito ou formatação divergente; o gancho de pre-commit bloqueia o commit nesse mesmo caso.
   · **PRD:** seção 8.2 · **Depende de:** T-001
 - [ ] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e
