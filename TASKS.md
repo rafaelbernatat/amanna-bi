@@ -217,7 +217,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-124** `P0` `S` `paineis` Extrair os tokens visuais do protótipo para um tema tipado
   · **Aceite:** As 24 chaves da paleta e as três famílias tipográficas do protótipo existem no tema, e uma regra de lint falha se houver cor hexadecimal literal fora do arquivo de tema.
   · **PRD:** Anexo A, seção 13 acessibilidade, protótipo · **Depende de:** T-001
-- [ ] **T-125** `P0` `M` `plataforma` Criar o módulo único de formatação pt-BR e fixar locale e fuso
+- [~] **T-125** `P0` `M` `plataforma` Criar o módulo único de formatação pt-BR e fixar locale e fuso  ⏳ 2026-08-22 00:08 · sessao-68c8
   · **Aceite:** Um único módulo formata BRL_mi, pct, pp, dias e FTE com vírgula decimal, ponto de milhar, R$ em milhões com uma casa e data em mês/ano abreviado, validado por tabela de 30 casos com negativos, zero e valores grandes; teste de arquitetura falha se Intl, toLocaleString ou toFixed forem usados fora dele, e a suíte produz saída idêntica com TZ e LANG diferentes.
   · **PRD:** seção 13, seção 9.2 regra 2 · **Depende de:** T-001
 - [ ] **T-126** `P0` `M` `paineis` Construir o shell de aplicação e as rotas das 13 telas
