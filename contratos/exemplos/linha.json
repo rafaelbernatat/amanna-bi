@@ -1,0 +1,40 @@
+{
+  "forma": "linha",
+  "id": "tov-12m",
+  "title": "Taxa de turnover — 12 meses",
+  "unit": "pct",
+  "formula": "turnover_12m = soma(desligamentos, 12m) / media(headcount_fte, 12m)",
+  "categories": [
+    "jan",
+    "fev",
+    "mar",
+    "abr",
+    "mai",
+    "jun",
+    "jul",
+    "ago",
+    "set",
+    "out",
+    "nov",
+    "dez"
+  ],
+  "series": [
+    {
+      "name": "Turnover acumulado",
+      "papel": "valor",
+      "values": [
+        14.1, 14.6, 15.2, 15.4, 15.9, 16.3, 16.8, 17.1, 17.5, 17.9, 18.1, 18.4
+      ]
+    },
+    {
+      "name": "Meta",
+      "papel": "referencia",
+      "values": [
+        14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0, 14.0
+      ]
+    }
+  ],
+  "total": 18.4,
+  "note": "Doze meses acima da meta, sem inflexao.",
+  "asOf": "2026-12-31"
+}

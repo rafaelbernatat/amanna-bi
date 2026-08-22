@@ -1,0 +1,31 @@
+{
+  "forma": "barras-horizontais",
+  "id": "sal-medio",
+  "title": "Salário médio por área",
+  "unit": "BRL_mi",
+  "formula": "salario_medio = folha_area / headcount_fte_area",
+  "categories": [
+    "Tecnologia",
+    "Financeiro",
+    "Comercial",
+    "Marketing",
+    "RH",
+    "Operacoes",
+    "Logistica"
+  ],
+  "series": [
+    {
+      "name": "Salário médio",
+      "papel": "valor",
+      "values": [0.0142, 0.0118, 0.0104, 0.0097, 0.0091, 0.0068, 0.0061]
+    },
+    {
+      "name": "Mediana de mercado",
+      "papel": "referencia",
+      "values": [0.0135, 0.0121, 0.0109, 0.0094, 0.0088, 0.0072, 0.0064]
+    }
+  ],
+  "total": null,
+  "note": "Tecnologia acima da mediana; Operacoes e Logistica abaixo.",
+  "asOf": "2026-12-31"
+}

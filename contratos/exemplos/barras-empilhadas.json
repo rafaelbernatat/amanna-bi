@@ -1,0 +1,22 @@
+{
+  "forma": "barras-empilhadas",
+  "id": "rec-vagas",
+  "title": "Vagas por status e área",
+  "unit": "FTE",
+  "formula": "vagas = contagem(vaga) por area e status",
+  "categories": [
+    "Operacoes",
+    "Comercial",
+    "Tecnologia",
+    "Logistica",
+    "Financeiro"
+  ],
+  "series": [
+    { "name": "Abertas", "papel": "valor", "values": [12, 8, 14, 5, 3] },
+    { "name": "Em processo", "papel": "valor", "values": [9, 11, 7, 4, 2] },
+    { "name": "Fechadas", "papel": "valor", "values": [31, 24, 19, 12, 8] }
+  ],
+  "total": 169,
+  "note": "Tecnologia concentra as vagas abertas ha mais de 60 dias.",
+  "asOf": "2026-12-31"
+}

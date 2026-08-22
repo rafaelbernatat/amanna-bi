@@ -1,0 +1,42 @@
+{
+  "forma": "regua-de-ciclo",
+  "id": "ct-ciclo",
+  "title": "Ciclo de conversão de caixa",
+  "unit": "dias",
+  "formula": "ciclo_financeiro = PMR 52 + PME 75 - PMP 51",
+  "marcos": [
+    { "dia": 0, "rotulo": "Compra e estoca" },
+    { "dia": 51, "rotulo": "Paga o fornecedor" },
+    { "dia": 75, "rotulo": "Vende e fatura" },
+    { "dia": 127, "rotulo": "Recebe do cliente" }
+  ],
+  "faixas": [
+    {
+      "de": 0,
+      "ate": 51,
+      "rotulo": "PMP — prazo do fornecedor",
+      "sentido": "maior_melhor"
+    },
+    {
+      "de": 0,
+      "ate": 75,
+      "rotulo": "PME — giro do estoque",
+      "sentido": "menor_melhor"
+    },
+    {
+      "de": 75,
+      "ate": 127,
+      "rotulo": "PMR — recebimento",
+      "sentido": "menor_melhor"
+    },
+    {
+      "de": 51,
+      "ate": 127,
+      "rotulo": "Ciclo financeiro — sem caixa",
+      "sentido": "menor_melhor"
+    }
+  ],
+  "total": 76,
+  "note": "Sao 76 dias financiando o cliente.",
+  "asOf": "2026-12-31"
+}

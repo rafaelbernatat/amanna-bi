@@ -1,0 +1,944 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/PanelResponse",
+  "definitions": {
+    "PanelResponse": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PainelBarras"
+        },
+        {
+          "$ref": "#/definitions/PainelLinha"
+        },
+        {
+          "$ref": "#/definitions/PainelBarrasHorizontais"
+        },
+        {
+          "$ref": "#/definitions/PainelBarrasEmpilhadas"
+        },
+        {
+          "$ref": "#/definitions/PainelDivisao"
+        },
+        {
+          "$ref": "#/definitions/PainelEstatisticas"
+        },
+        {
+          "$ref": "#/definitions/PainelFunil"
+        },
+        {
+          "$ref": "#/definitions/PainelMosaicoGeografico"
+        },
+        {
+          "$ref": "#/definitions/PainelRosca"
+        },
+        {
+          "$ref": "#/definitions/PainelCascata"
+        },
+        {
+          "$ref": "#/definitions/PainelDispersao"
+        },
+        {
+          "$ref": "#/definitions/PainelReguaDeCiclo"
+        }
+      ],
+      "description": "O envelope de painel (seção 9.3).\n\nUnião discriminada por `forma`: quem consome precisa olhar a forma antes de chegar na carga, e o compilador recusa ler `fatias` de um painel de barras."
+    },
+    "PainelBarras": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "barras"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Serie"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "categories",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "series",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Barras verticais por categoria. É a forma do exemplo da seção 9.3."
+    },
+    "Serie": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": ["number", "null"]
+          }
+        },
+        "papel": {
+          "$ref": "#/definitions/PapelDeSerie"
+        }
+      },
+      "required": ["name", "values", "papel"],
+      "additionalProperties": false,
+      "description": "Uma série de um painel: um valor por categoria, na ordem de `categories`."
+    },
+    "PapelDeSerie": {
+      "type": "string",
+      "enum": ["valor", "referencia"],
+      "description": "O papel de uma série no painel.\n\n`referencia` é meta, orçado ou benchmark de mercado — o traço contra o qual se lê o resto. É distinção de **dado**, não de estilo: a série de meta não é uma medição do período, e somá-la ao total seria erro. Sem este campo, a apresentação precisaria adivinhar pelo nome da série."
+    },
+    "Unidade": {
+      "type": "string",
+      "enum": ["BRL_mi", "pct", "pp", "dias", "FTE"]
+    },
+    "PainelLinha": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "linha"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Serie"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "categories",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "series",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Série temporal contínua."
+    },
+    "PainelBarrasHorizontais": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "barras-horizontais"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Serie"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "categories",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "series",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Ranking horizontal — categorias longas que não cabem num eixo vertical."
+    },
+    "PainelBarrasEmpilhadas": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "barras-empilhadas"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Serie"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "categories",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "series",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Composição por categoria: as séries somam ao total de cada categoria."
+    },
+    "PainelDivisao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "divisao"
+        },
+        "grupos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              },
+              "total": {
+                "type": ["number", "null"],
+                "description": "O total do grupo; nulo quando o grupo não tem dado."
+              },
+              "partes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Parte"
+                }
+              }
+            },
+            "required": ["nome", "total", "partes"],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "forma",
+        "formula",
+        "grupos",
+        "id",
+        "note",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Divisão: a proporção interna de cada grupo, cada parte com o próprio rótulo.\n\nDiferente de `barras-empilhadas`: ali as séries são as mesmas em toda categoria e o eixo é comparável entre elas; aqui cada grupo tem as suas partes e o que se lê é a repartição de 100% dentro do grupo."
+    },
+    "Parte": {
+      "type": "object",
+      "properties": {
+        "nome": {
+          "type": "string"
+        },
+        "valor": {
+          "type": "number"
+        }
+      },
+      "required": ["nome", "valor"],
+      "additionalProperties": false,
+      "description": "Uma parte de um todo, em `divisao` e `rosca`."
+    },
+    "PainelEstatisticas": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "estatisticas"
+        },
+        "estatisticas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rotulo": {
+                "type": "string"
+              },
+              "valor": {
+                "type": ["number", "null"]
+              },
+              "unidade": {
+                "$ref": "#/definitions/Unidade"
+              },
+              "formula": {
+                "type": "string"
+              },
+              "sentido": {
+                "$ref": "#/definitions/Sentido"
+              },
+              "rodape": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": [
+              "rotulo",
+              "valor",
+              "unidade",
+              "formula",
+              "sentido",
+              "rodape"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "estatisticas",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Estatísticas: números soltos, cada um com unidade e fórmula próprias.\n\nA única forma em que a unidade varia item a item — um painel de resumo mistura `BRL_mi` e `pct` na mesma caixa. Cada estatística declara a sua fórmula porque PR-3 vale por número, não por painel."
+    },
+    "Sentido": {
+      "type": "string",
+      "enum": ["maior_melhor", "menor_melhor", "neutro"],
+      "description": "Para onde o número aponta quando sobe."
+    },
+    "PainelFunil": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "funil"
+        },
+        "passos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              },
+              "valor": {
+                "type": ["number", "null"]
+              }
+            },
+            "required": ["nome", "valor"],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "passos",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Funil: passos em ordem, cada um subconjunto do anterior.\n\nA conversão entre passos **não** vem no envelope: é derivada, e derivar em dois lugares é como dois números diferentes chegam à mesma reunião. A apresentação calcula a partir dos valores."
+    },
+    "PainelMosaicoGeografico": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "mosaico-geografico"
+        },
+        "celulas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "uf": {
+                "type": "string",
+                "description": "Sigla de duas letras."
+              },
+              "valor": {
+                "type": ["number", "null"],
+                "description": "Nulo é \"sem dado nesta UF\" e não zero — a célula fica vazia (PR-4)."
+              }
+            },
+            "required": ["uf", "valor"],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "celulas",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Mosaico geográfico: uma célula por UF.\n\nA posição de cada UF na grade **não** vem aqui. É constante cartográfica, igual em todo painel desta forma, e repeti-la em cada envelope seria convidar duas grades divergentes. A apresentação tem a grade; o dado tem o valor."
+    },
+    "PainelRosca": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "rosca"
+        },
+        "fatias": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Parte"
+          }
+        },
+        "centro": {
+          "type": "object",
+          "properties": {
+            "valor": {
+              "type": ["number", "null"]
+            },
+            "rotulo": {
+              "type": "string"
+            }
+          },
+          "required": ["valor", "rotulo"],
+          "additionalProperties": false
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "centro",
+        "fatias",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Rosca: partes de um todo, com um número no centro."
+    },
+    "PainelCascata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "cascata"
+        },
+        "passos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              },
+              "valor": {
+                "type": "number"
+              },
+              "ehTotal": {
+                "type": "boolean"
+              }
+            },
+            "required": ["nome", "valor", "ehTotal"],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "passos",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Cascata: a ponte de um total a outro.\n\n`ehTotal` marca os degraus que assentam no eixo (receita líquida, lucro líquido) e não empilham sobre o acumulado. Sem essa marca, a ponte da DRE desenha errado — e desenha errado *plausivelmente*, que é pior."
+    },
+    "PainelDispersao": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "dispersao"
+        },
+        "eixoX": {
+          "type": "object",
+          "properties": {
+            "rotulo": {
+              "type": "string"
+            },
+            "unidade": {
+              "$ref": "#/definitions/Unidade"
+            }
+          },
+          "required": ["rotulo", "unidade"],
+          "additionalProperties": false
+        },
+        "eixoY": {
+          "type": "object",
+          "properties": {
+            "rotulo": {
+              "type": "string"
+            },
+            "unidade": {
+              "$ref": "#/definitions/Unidade"
+            }
+          },
+          "required": ["rotulo", "unidade"],
+          "additionalProperties": false
+        },
+        "pontos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rotulo": {
+                "type": "string"
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "tamanho": {
+                "type": ["number", "null"],
+                "description": "Terceira medida, quando existe (bolha). Nulo desenha ponto simples."
+              }
+            },
+            "required": ["rotulo", "x", "y", "tamanho"],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "eixoX",
+        "eixoY",
+        "forma",
+        "formula",
+        "id",
+        "note",
+        "pontos",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Dispersão: duas medidas por ponto, com unidade em cada eixo."
+    },
+    "PainelReguaDeCiclo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "forma": {
+          "type": "string",
+          "const": "regua-de-ciclo"
+        },
+        "marcos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dia": {
+                "type": "number"
+              },
+              "rotulo": {
+                "type": "string"
+              }
+            },
+            "required": ["dia", "rotulo"],
+            "additionalProperties": false
+          }
+        },
+        "faixas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "de": {
+                "type": "number"
+              },
+              "ate": {
+                "type": "number"
+              },
+              "rotulo": {
+                "type": "string"
+              },
+              "sentido": {
+                "$ref": "#/definitions/Sentido"
+              }
+            },
+            "required": ["de", "ate", "rotulo", "sentido"],
+            "additionalProperties": false
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unidade",
+          "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+        },
+        "total": {
+          "type": ["number", "null"],
+          "description": "O agregado do painel; nulo quando o recorte não tem dado (PR-4)."
+        },
+        "note": {
+          "type": ["string", "null"],
+          "description": "Leitura em prosa; nula quando não vale para o recorte (RF-09)."
+        },
+        "asOf": {
+          "type": "string",
+          "description": "Data do fechamento que originou estes números (seção 10.2)."
+        }
+      },
+      "required": [
+        "asOf",
+        "faixas",
+        "forma",
+        "formula",
+        "id",
+        "marcos",
+        "note",
+        "title",
+        "total",
+        "unit"
+      ],
+      "description": "Régua de ciclo: marcos numa linha de dias e as faixas entre eles.\n\nO ciclo financeiro é a única leitura do produto em que o eixo é *duração* e não período. `sentido` diz se a faixa é boa quando cresce (prazo do fornecedor) ou ruim (ciclo sem caixa) — assim a apresentação sabe o que destacar sem que o adaptador escolha cor."
+    }
+  }
+}

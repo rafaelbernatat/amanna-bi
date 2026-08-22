@@ -1,0 +1,24 @@
+{
+  "forma": "mosaico-geografico",
+  "id": "col-mapa",
+  "title": "Distribuição geográfica por estado",
+  "unit": "FTE",
+  "formula": "headcount_uf = contagem(colaborador) por uf de lotacao",
+  "celulas": [
+    { "uf": "SP", "valor": 468 },
+    { "uf": "MG", "valor": 176 },
+    { "uf": "RJ", "valor": 149 },
+    { "uf": "PR", "valor": 112 },
+    { "uf": "RS", "valor": 94 },
+    { "uf": "SC", "valor": 71 },
+    { "uf": "BA", "valor": 58 },
+    { "uf": "PE", "valor": 41 },
+    { "uf": "CE", "valor": 33 },
+    { "uf": "GO", "valor": 21 },
+    { "uf": "DF", "valor": 17 },
+    { "uf": "ES", "valor": null }
+  ],
+  "total": 1240,
+  "note": "SP concentra 38% do quadro.",
+  "asOf": "2026-12-31"
+}
