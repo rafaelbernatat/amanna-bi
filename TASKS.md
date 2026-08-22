@@ -232,7 +232,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-129** `P0` `L` `paineis` Construir o núcleo de gráficos sobre recharts, com caixa reservada
   · **Aceite:** O núcleo produz domínio, escala e rótulos determinísticos, coberto por 20 casos (min<0, faixa nula, valores iguais, rótulos longos), e monta os gráficos sobre recharts recebendo séries já calculadas e formatadas pelo servidor; a caixa do painel é reservada por proporção antes de o gráfico montar, o CLS medido é zero entre 1280 e 1920 px, e nenhum componente de gráfico lê dado (PR-1).
   · **PRD:** seção 8.2 gráficos, Anexo A.1, seção 13 desempenho, protótipo ax() e cw() · **Depende de:** T-124
-- [ ] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha
+- [~] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha  ⏳ 2026-08-22 01:24 · sessao-68c8
   · **Aceite:** As três formas reproduzem rh-headcount com eixo secundário, rec-vagas empilhada com legenda e tov-12m com linha de referência de meta, com snapshot SVG estável; série vazia devolve o estado 'sem dado neste recorte' em vez de gráfico em branco.
   · **PRD:** Anexo A.1, Anexo A.2, seção 8.2 gráficos · **Depende de:** T-129
 - [ ] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI
