@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 203 pendentes e 28 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 201 pendentes e 30 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 17 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 19 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **28 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **30 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -250,10 +250,10 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-135** `P0` `S` `seguranca` Definir os contratos de identidade, perfil e escopo em TypeScript estrito
   · **Aceite:** Existe um módulo com Session, Profile (diretoria, controller, rh, area, auditor) e AccessScope derivado dos valores de Query; tsc --strict passa e um teste de tipos rejeita perfil ou entidade fora do enum em tempo de compilação.
   · **PRD:** seção 11, seção 9.1, RF-23 · **Depende de:** T-001, T-101
-- [ ] **T-136** `P0` `M` `seguranca` Criar o provedor de sessão plugável com modo fixtures
+- [X] **T-136** `P0` `M` `seguranca` Criar o provedor de sessão plugável com modo fixtures
   · **Aceite:** getSession() devolve Session pelo provedor escolhido por AUTH_PROVIDER=fixtures|oidc, com um perfil de desenvolvimento selecionável sem IdP, e um teste prova que nenhuma tela ou rota muda entre os dois modos.
   · **PRD:** seção 8.2, seção 8.3, RF-20, RF-23 · **Depende de:** T-135
-- [ ] **T-137** `P0` `M` `seguranca` Implementar o interceptador de escopo no servidor entre a chamada e o adaptador
+- [X] **T-137** `P0` `M` `seguranca` Implementar o interceptador de escopo no servidor entre a chamada e o adaptador
   · **Aceite:** Toda chamada a getKpis, getPanel, getMetric e getMeta passa por applyScope(query, session), que restringe entidade e área ou devolve Denied, e uma regra de arquitetura reprova qualquer caminho de código que chame o DataSource sem passar por ele.
   · **PRD:** seção 11, RF-23, seção 9.1, seção 7.5 · **Depende de:** T-103, T-106, T-135
 - [X] **T-138** `P0` `M` `seguranca` Impor o grão mínimo área x mês na fronteira da camada de dados
