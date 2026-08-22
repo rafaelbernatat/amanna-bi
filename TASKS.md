@@ -101,7 +101,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [ ] **T-003** `P0` `M` `decisao` Decidir P1: sistema de origem de cada uma das views  ⛔ H-12
   · **Aceite:** Arquivo versionado com, para cada uma das 7 linhas da tabela 10.1, sistema de origem, responsável na TI do cliente, forma de acesso e profundidade histórica; nenhuma linha 'a definir' e aceite formal da TI.
   · **PRD:** D-P1, seção 10.1, seção 18
-- [ ] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8
+- [~] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8  ⏳ 2026-08-22 07:04 · sessao-68c8
   · **Aceite:** T-101, T-103, T-131 e T-140 passam a depender de T-002; a matriz canônica de recortes é derivada de getMeta em vez de constante literal (contagem calculada, não escrita); o registro de P8 é citado no arquivo de domínio; e as duas saídas possíveis de P8 (ano parametrizável / ano fora do filtro) têm efeito verificado em teste.
   · **PRD:** Seção 18, decisão D-P8 (prazo 'Antes de F1') e Anexo D achado 6
 - [X] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit
