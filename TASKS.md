@@ -220,7 +220,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-125** `P0` `M` `plataforma` Criar o módulo único de formatação pt-BR e fixar locale e fuso
   · **Aceite:** Um único módulo formata BRL_mi, pct, pp, dias e FTE com vírgula decimal, ponto de milhar, R$ em milhões com uma casa e data em mês/ano abreviado, validado por tabela de 30 casos com negativos, zero e valores grandes; teste de arquitetura falha se Intl, toLocaleString ou toFixed forem usados fora dele, e a suíte produz saída idêntica com TZ e LANG diferentes.
   · **PRD:** seção 13, seção 9.2 regra 2 · **Depende de:** T-001
-- [ ] **T-126** `P0` `M` `paineis` Construir o shell de aplicação e as rotas das 13 telas
+- [~] **T-126** `P0` `M` `paineis` Construir o shell de aplicação e as rotas das 13 telas  ⏳ 2026-08-22 00:13 · sessao-68c8
   · **Aceite:** Em 1440x900 e 1280x720 a barra lateral fixa lista os três módulos, o conteúdo rola independente do cabeçalho e o body nunca rola horizontalmente; as 13 URLs de rh/visao a int/cruz resolvem no servidor, clicar num módulo abre a primeira tela dele, título e breadcrumb refletem a rota e slug inválido devolve 404.
   · **PRD:** seção 6.1, seção 5, Anexo A.2, Anexo A.3, Anexo A.4 · **Depende de:** T-124
 - [ ] **T-127** `P0` `M` `paineis` Modelar a Query na URL do servidor e tornar o recorte compartilhável
