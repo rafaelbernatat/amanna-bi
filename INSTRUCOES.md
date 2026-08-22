@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 44 itens (3 resolvidos), destravando 121 tarefas do backlog |
+| **Total** | 45 itens (3 resolvidos), destravando 121 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -73,7 +73,41 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*8 itens · 3 P0 abertos · 2 resolvidos*
+*9 itens · 4 P0 abertos · 2 resolvidos*
+
+### [ ] H-45 · Decidir a unidade de horas, candidatos, vagas e pontos de eNPS
+
+`P0` · **Responsável:** Produto, com Controladoria e RH
+
+**O que fazer**
+
+A regra 2 da seção 9.2 do PRD fixa cinco unidades como enum fechado: `BRL_mi`, `pct`, `pp`, `dias` e `FTE`. Ao montar o registro dos 71 painéis (T-107), cinco painéis do protótipo mostraram medidas que nenhuma dessas cinco nomeia:
+
+| Painel | Tela | O que mede | Rótulo no protótipo |
+|---|---|---|---|
+| `tre-horas` | `rh/trein` | horas de treinamento e participação | `horas · %` |
+| `tre-area` | `rh/trein` | horas por área e investimento por trilha | `horas · R$ mi` |
+| `rec-funil` | `rh/recrut` | candidatos por etapa do pipeline | `candidatos` |
+| `rec-vagas` | `rh/recrut` | vagas por status e área | `vagas` |
+| `eng-enps` | `rh/engaj` | eNPS em 12 meses | `pontos` |
+
+São medidas reais do produto, não enfeite do protótipo: horas de treinamento é a métrica 10 do Anexo B, e eNPS é a 14. Nenhuma sai do enum atual sem distorção — `FTE` conta pessoas, não candidaturas nem vagas abertas, e forçar horas em `dias` inventa uma conversão que ninguém aprovou.
+
+Escolha uma das três saídas, e registre a escolha:
+
+1. **Estender o enum** com as unidades que faltam — por exemplo `horas`, `contagem` e `pontos`. É a saída mais direta; custa reabrir a regra 2 da seção 9.2 e ajustar T-104.
+2. **Reinterpretar as medidas** dentro do enum atual, dizendo exatamente como — por exemplo eNPS como `pct` e candidatos como `FTE`. Barato em código, mas cada reinterpretação é uma afirmação sobre o significado do número, e é preciso escrever qual.
+3. **Tirar os painéis do escopo de F1**, se as medidas não forem para a primeira entrega.
+
+**Por que não dá para decidir sem uma pessoa:** o enum é fechado *de propósito* — é o que impede unidade nova entrar por digitação. Acrescentar uma é decisão de produto, e reinterpretar uma medida é decisão de negócio: dizer que eNPS é percentual muda o que o número significa na reunião.
+
+**Enquanto não for decidido:** o registro em `src/semantica/paineis.ts` traz `unidade: null` nesses cinco painéis, e o conjunto exato está fixado em teste para que **só encolha**. Os outros sete painéis com `unidade: null` são de forma `estatisticas`, onde cada número declara a própria unidade — esses não são pendência.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador, dizendo qual das três saídas e, se for a 2, o significado de cada reinterpretação |
+| **Onde o resultado vai** | docs/decisoes/, PRD seção 9.2 regra 2, `UNIDADES` em `src/semantica/contrato.ts` e a lista fixada no teste de T-107 |
+| **Destrava** | T-164, T-165 *(2 tarefas, parcialmente)* |
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 
