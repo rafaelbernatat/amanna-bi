@@ -95,13 +95,13 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [X] **T-001** `P0` `M` `plataforma` Bootstrap do repositório: Next.js 16, TypeScript estrito e as três camadas
   · **Aceite:** Clone limpo passa typecheck e build; tsconfig com strict, noUncheckedIndexedAccess, noImplicitOverride e exactOptionalPropertyTypes; Node fixado; pastas de apresentação, semântica e acesso criadas.
   · **PRD:** D4, seção 8.1, seção 8.2, seção 16 F1
-- [ ] **T-002** `P0` `S` `decisao` Decidir P8: filtro de ano com dois valores fixos ou seleção livre  ⛔ H-01
+- [ ] **T-002** `P0` `S` `decisao` Decidir P8: filtro de ano com dois valores fixos ou seleção livre
   · **Aceite:** Decisão registrada com data e responsável de Produto; a escolha determina se o ano vira dimensão parametrizável ou sai do filtro, e o registro é referenciado pelas tarefas de F1.
   · **PRD:** D-P8, seção 18, seção 6.2, Anexo D achado 6
 - [ ] **T-003** `P0` `M` `decisao` Decidir P1: sistema de origem de cada uma das views  ⛔ H-12
   · **Aceite:** Arquivo versionado com, para cada uma das 7 linhas da tabela 10.1, sistema de origem, responsável na TI do cliente, forma de acesso e profundidade histórica; nenhuma linha 'a definir' e aceite formal da TI.
   · **PRD:** D-P1, seção 10.1, seção 18
-- [ ] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8  ⛔ H-01
+- [ ] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8
   · **Aceite:** T-101, T-103, T-131 e T-140 passam a depender de T-002; a matriz canônica de recortes é derivada de getMeta em vez de constante literal (contagem calculada, não escrita); o registro de P8 é citado no arquivo de domínio; e as duas saídas possíveis de P8 (ano parametrizável / ano fora do filtro) têm efeito verificado em teste.
   · **PRD:** Seção 18, decisão D-P8 (prazo 'Antes de F1') e Anexo D achado 6
 - [X] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit
@@ -145,7 +145,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 
 *94 tarefas · 53 P0 · 37 P1 · 4 P2*
 
-- [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface  ⛔ H-01
+- [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
   · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 2 anos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal.
   · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1 · **Depende de:** T-001
 - [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
@@ -262,7 +262,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP
   · **Aceite:** O boot valida todas as variáveis por esquema e aborta em menos de 2 segundos nomeando as ausentes ou inválidas, sem ler credencial de arquivo versionado ou da imagem; um scanner de segredo no CI reprova um segredo plantado de propósito; e as respostas trazem CSP sem unsafe-inline, HSTS, X-Content-Type-Options, Referrer-Policy e frame-ancestors restrito.
   · **PRD:** seção 11, seção 15, seção 8.3, seção 13 · **Depende de:** T-001, T-006
-- [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação  ⛔ H-01
+- [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
   · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total)
 - [X] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
@@ -397,7 +397,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-184** `P1` `M` `auditoria` Fechar modalidade como dimensão de recorte  ⛔ H-04
   · **Aceite:** cada métrica declara se modalidade se aplica (insumo de T-142); soma(Presencial) + soma(Híbrido) + soma(Remoto) = 'Todas' para toda medida aditiva com modalidade aplicável; grep por hcA, vagas e modS na apresentação retorna zero; folha e receita mudam sob modalidade nas métricas em que ela se aplica e os demais painéis devolvem 'filtro não se aplica a este painel'.
   · **PRD:** Anexo D achado 3 - modalidade também é fator de escala (fctx: modS = md.v / 1240)
-- [ ] **T-185** `P1` `M` `auditoria` Definir a série de comparação no primeiro ano carregado  ⛔ H-01
+- [ ] **T-185** `P1` `M` `auditoria` Definir a série de comparação no primeiro ano carregado
   · **Aceite:** ou 36 meses são carregados (2024 apenas como base de comparação), ou a série LY e os KPIs derivados dela devolvem null com motivo sem_dado_no_recorte; com ano=2025, fin-receita, o KPI de crescimento e a intenção 1 do chat mostram o estado vazio com motivo (nunca zero nem a série de 2026); a lista de invariantes de T-129 vira arquivo versionado com justificativa por item.
   · **PRD:** Anexo D achado 6 / RF-05 e Anexo B intenção 1 (crescimento_yoy) sob ano = 2025
 - [ ] **T-186** `P1` `M` `auditoria` Fixar código canônico e rótulo de exibição por valor de dimensão num único arquivo

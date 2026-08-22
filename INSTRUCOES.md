@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 44 itens, destravando 121 tarefas do backlog |
+| **Total** | 44 itens (2 resolvidos), destravando 121 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 8 | 5 | 34 |
+| Fase 1 · Contrato | 8 (1 resolvido) | 4 | 34 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **44** | **28** | **121** |
+| **Total** | **44** | **27** | **121** |
 
 **Por responsável**
 
@@ -62,7 +62,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Item | Destrava | Responsável |
 |---|---:|---|
 | **H-28** Criar a conta na Anthropic e emitir as chaves de API | 14 tarefas | Produto |
-| **H-01** Decidir P8: o alcance do filtro de ano | 10 tarefas | Produto |
+
 | **H-02** Habilitar o GitHub Actions e tornar os cinco checks obrigatórios em main | 9 tarefas | Engenharia |
 | **H-12** Levantar com a TI do cliente o sistema de origem de cada uma das 7 views (P1) | 8 tarefas | TI do cliente |
 | **H-08** Sessão de aprovação do catálogo de métricas e do mapeamento das views | 7 tarefas | Controladoria |
@@ -73,9 +73,9 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*8 itens · 5 P0*
+*8 itens · 4 P0 abertos · 1 resolvido*
 
-### [ ] H-01 · Decidir P8: o alcance do filtro de ano
+### [X] H-01 · Decidir P8: o alcance do filtro de ano
 
 `P0` · **Responsável:** Produto
 
@@ -88,6 +88,14 @@ Marque 30 minutos com a pessoa responsável por Produto e leve a pergunta P8 da 
 | **Resultado esperado** | Decisão P8 registrada com data e nome do aprovador de Produto, dizendo se o ano é dimensão parametrizável, valor fixo ou filtro removido, e quantos anos de fixture serão carregados |
 | **Onde o resultado vai** | Arquivo versionado docs/decisoes/D-P8-filtro-ano.md, citado por referência no módulo de domínio da Query criado por T-101 |
 | **Destrava** | T-002, T-004, T-101, T-103, T-131, T-140, T-152, T-153, T-185, T-237 *(10 tarefas)* |
+
+> **Resolvido em 2026-08-22.** Saída escolhida: **(b) o ano é dimensão
+> parametrizável**, com a lista vinda de `getMeta`. Fixture carrega 2 anos
+> completos e selecionáveis (2025 e 2026); o ano mais antigo devolve comparação
+> vazia com motivo, em vez de inventar série. Decisão registrada em
+> `docs/decisoes/D-P8-filtro-ano.md`, com o critério de escolha e as três
+> razões. Produto delegou a escolha por escrito à Engenharia — não houve sessão
+> de revisão de Produto, e isso está dito no próprio documento.
 
 ### [ ] H-02 · Habilitar o GitHub Actions e tornar os cinco checks obrigatórios em main
 
@@ -517,7 +525,7 @@ Contrate um fornecedor de teste de intrusão, ou aloque um time interno independ
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*8 itens · 5 P0*
+*8 itens · 4 P0 abertos · 1 resolvido*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
