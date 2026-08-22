@@ -23,7 +23,22 @@ const OPCOES = {
   allowlist: ["META_DE_TURNOVER", "meta"],
 };
 
-async function analisar(codigo: string, opcoes: unknown = OPCOES) {
+/**
+ * Uma instancia de ESLint por conjunto de opcoes, reaproveitada.
+ *
+ * Criar uma por chamada custava ~1,2 s cada, e sob a carga paralela do vitest
+ * as 12 chamadas estouravam o limite de 5 s do caso — o teste ficava
+ * intermitente, passando sozinho e falhando na suite inteira. Teste
+ * intermitente e veneno num portao de CI: reprova sem haver defeito, e ensina
+ * a ignorar vermelho.
+ */
+const INSTANCIAS = new Map<string, ESLint>();
+
+async function eslintPara(opcoes: unknown): Promise<ESLint> {
+  const chave = JSON.stringify(opcoes);
+  const existente = INSTANCIAS.get(chave);
+  if (existente !== undefined) return existente;
+
   const eslint = new ESLint({
     overrideConfigFile: true,
     overrideConfig: [
@@ -37,6 +52,12 @@ async function analisar(codigo: string, opcoes: unknown = OPCOES) {
       },
     ],
   });
+  INSTANCIAS.set(chave, eslint);
+  return eslint;
+}
+
+async function analisar(codigo: string, opcoes: unknown = OPCOES) {
+  const eslint = await eslintPara(opcoes);
   const [resultado] = await eslint.lintText(codigo, { filePath: "exemplo.ts" });
   return resultado?.messages ?? [];
 }
