@@ -110,7 +110,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [X] **T-005.1** `P0` `M` `plataforma` Instalar o runner de teste de unidade e o arnês de e2e
   · **Aceite:** `npm test` e `npm run e2e` existem e executam ao menos um caso cada com contagem no relatório, cada comando sai diferente de zero quando um caso é quebrado de propósito, e o e2e sobe a aplicação e verifica uma rota servida sem intervenção manual.
   · **PRD:** seção 8.2 testes, seção 16 F1 · **Depende de:** T-001, T-005
-- [ ] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e
+- [~] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e  ⏳ 2026-08-21 23:46 · sessao-68c8
   · **Aceite:** Um pull request executa as cinco etapas com cache de dependências, qualquer etapa falhando reprova o merge, e o job completo termina em menos de 15 minutos.
   · **PRD:** seção 8.2, RF-21 · **Depende de:** T-001, T-005
 - [ ] **T-007** `P1` `S` `decisao` Decidir P2: transferência interna conta como desligamento
