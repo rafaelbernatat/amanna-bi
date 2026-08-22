@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 41 itens, destravando 117 tarefas do backlog |
+| **Total** | 42 itens, destravando 118 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 5 | 4 | 30 |
+| Fase 1 · Contrato | 6 | 4 | 31 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **41** | **27** | **117** |
+| **Total** | **42** | **27** | **118** |
 
 **Por responsável**
 
@@ -51,7 +51,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|
 | TI do cliente | 13 |
 | Controladoria | 10 |
-| Produto | 6 |
+| Produto | 7 |
 | Engenharia | 6 |
 | Comercial | 4 |
 | RH | 1 |
@@ -73,7 +73,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*5 itens · 4 P0*
+*6 itens · 4 P0*
 
 ### [ ] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -152,6 +152,20 @@ No fechamento da Fase 1, antes de declarar o critério de saída cumprido, algu�
 | **Resultado esperado** | Checklist de paridade das 13 telas assinada com data, com cada diferença classificada como intencional ou como correção, e a matriz de recortes com justificativa e responsável de cada dimensão amostrada |
 | **Onde o resultado vai** | docs/qualidade/paridade-13-telas.md e tests/contrato/matriz-recortes.yaml |
 | **Destrava** | T-170, T-193 *(2 tarefas)* |
+
+### [ ] H-42 · Autorizar a correção das dependências que faltam entre decisão e tarefa
+
+`P1` · **Responsável:** Produto
+
+**O que fazer**
+
+A tarefa T-013 padronizou as referências do backlog e publicou a matriz em `docs/rastreabilidade/matriz-decisoes-principios.md`. Ao fazer isso ela mediu a terceira exigência do próprio critério de aceite — *nenhuma tarefa de F1/F2/F3 referencia decisão pendente sem depender da tarefa F0 correspondente* — e encontrou **13 tarefas que citam uma decisão sem declarar dependência dela**, mais 3 que dependem só por caminho transitivo. A lista completa, com o par tarefa → decisão, está na última tabela da matriz. O risco é concreto: uma tarefa de F2 que aplica D-P6 sem depender de T-011 pode ser escolhida pelo laço antes de a decisão de hospedagem existir, e então congela em código uma escolha que ninguém fez — exatamente o defeito que a auditoria apontou em P8 e que originou T-004. Corrigir exige editar o campo `Depende de:` dessas 13 tarefas, e a seção 11 do EXECUTE.md reserva a reescrita de dependências à T-004, restrita a T-101, T-103, T-131 e T-140; T-013 está autorizada apenas a padronizar os campos `PRD:`. Decida uma entre duas saídas e registre por escrito com data e nome: (a) autorizar a Engenharia a acrescentar as 13 dependências, nomeando-as uma a uma, o que faz o laço parar de oferecer essas tarefas antes da decisão correspondente; ou (b) declarar que a citação da decisão nessas tarefas é informativa e não é dependência real, caso em que o critério de aceite de T-013 precisa ser reescrito para dizer isso, porque hoje ele afirma o contrário. Não escolha (b) sem olhar a tabela linha a linha: as 13 não são um bloco homogêneo.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador de Produto, escolhendo entre autorizar as 13 dependências (nomeadas uma a uma) ou reescrever o terceiro critério de T-013; nenhuma das duas saídas deixa a contradição de pé |
+| **Onde o resultado vai** | docs/decisoes/D-F0-dependencias-de-decisao.md, e o resultado é aplicado no campo `Depende de:` das tarefas nomeadas em TASKS.md |
+| **Destrava** | T-013 *(1 tarefa)* |
 
 ---
 
@@ -699,6 +713,7 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-010 | H-23 |
 | T-011 | H-09 |
 | T-012 | H-11 |
+| T-013 | H-42 |
 | T-101 | H-01 |
 | T-103 | H-01 |
 | T-110 | H-03 |

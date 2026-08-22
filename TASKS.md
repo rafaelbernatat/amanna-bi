@@ -97,13 +97,13 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
   · **PRD:** D4, seção 8.1, seção 8.2, seção 16 F1
 - [ ] **T-002** `P0` `S` `decisao` Decidir P8: filtro de ano com dois valores fixos ou seleção livre  ⛔ H-01
   · **Aceite:** Decisão registrada com data e responsável de Produto; a escolha determina se o ano vira dimensão parametrizável ou sai do filtro, e o registro é referenciado pelas tarefas de F1.
-  · **PRD:** P8, seção 18, seção 6.2, Anexo D achado 6
+  · **PRD:** D-P8, seção 18, seção 6.2, Anexo D achado 6
 - [ ] **T-003** `P0` `M` `decisao` Decidir P1: sistema de origem de cada uma das views  ⛔ H-12
   · **Aceite:** Arquivo versionado com, para cada uma das 7 linhas da tabela 10.1, sistema de origem, responsável na TI do cliente, forma de acesso e profundidade histórica; nenhuma linha 'a definir' e aceite formal da TI.
-  · **PRD:** P1, seção 10.1, seção 18
+  · **PRD:** D-P1, seção 10.1, seção 18
 - [ ] **T-004** `P0` `M` `auditoria` Portão de domínio da Query após P8  ⛔ H-01
   · **Aceite:** T-101, T-103, T-131 e T-140 passam a depender de T-002; a matriz canônica de recortes é derivada de getMeta em vez de constante literal (contagem calculada, não escrita); o registro de P8 é citado no arquivo de domínio; e as duas saídas possíveis de P8 (ano parametrizável / ano fora do filtro) têm efeito verificado em teste.
-  · **PRD:** Seção 18, decisão P8 (prazo 'Antes de F1') e Anexo D achado 6
+  · **PRD:** Seção 18, decisão D-P8 (prazo 'Antes de F1') e Anexo D achado 6
 - [X] **T-005** `P1` `S` `plataforma` Configurar ESLint, Prettier e ganchos de pre-commit
   · **Aceite:** Lint sai zero no repositório e falha em arquivo com any explícito ou formatação divergente; o gancho de pre-commit bloqueia o commit nesse mesmo caso.
   · **PRD:** seção 8.2 · **Depende de:** T-001
@@ -115,25 +115,25 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
   · **PRD:** seção 8.2, RF-21 · **Depende de:** T-001, T-005
 - [ ] **T-007** `P1` `S` `decisao` Decidir P2: transferência interna conta como desligamento  ⛔ H-06
   · **Aceite:** Decisão aprovada por RH e Controladoria, com data e áreas aprovadoras, registrada como linha decisão no catálogo de turnover_12m; reabri-la exige nova versão do catálogo.
-  · **PRD:** P2, seção 9.4, seção 18, Anexo B intenção 2
+  · **PRD:** D-P2, seção 9.4, seção 18, Anexo B intenção 2
 - [ ] **T-008** `P1` `S` `decisao` Decidir P3: rescisão entra na folha por competência ou por pagamento  ⛔ H-07
   · **Aceite:** Decisão da Controladoria registrada com data como linha decisão no catálogo de folha_total, definindo a base que o mapeamento vai aplicar em F2.
-  · **PRD:** P3, seção 9.4, seção 18, Anexo B intenção 11
+  · **PRD:** D-P3, seção 9.4, seção 18, Anexo B intenção 11
 - [ ] **T-009** `P1` `S` `decisao` Decidir P4: janela e cadência de sincronização aceitáveis  ⛔ H-12, H-13
   · **Aceite:** Cadência, horário e duração máxima da janela acordados com a TI do cliente e registrados em documento versionado que a configuração do job de sync passa a citar.
-  · **PRD:** P4, seção 10.2, seção 18 · **Depende de:** T-003
+  · **PRD:** D-P4, seção 10.2, seção 18 · **Depende de:** T-003
 - [ ] **T-010** `P1` `S` `decisao` Decidir P5: limite de defasagem que dispara o aviso no selo de frescor  ⛔ H-23
   · **Aceite:** Limite em horas decidido pela Controladoria e registrado; vira valor de configuração único, usado tanto pelo selo quanto pelo estado 'dado defasado' da seção 6.4.
-  · **PRD:** P5, seção 10.2, RF-10, seção 18
+  · **PRD:** D-P5, seção 10.2, RF-10, seção 18
 - [ ] **T-011** `P1` `S` `decisao` Decidir P6: Docker no cliente ou nuvem dedicada para este contrato  ⛔ H-09
   · **Aceite:** Escolha comercial registrada com data no contrato; a decisão seleciona o modo de hospedagem e a trilha de segredos, sem que nenhuma diferença de cliente exista no código.
-  · **PRD:** P6, D5, seção 15, seção 18
+  · **PRD:** D-P6, D5, seção 15, seção 18
 - [ ] **T-012** `P1` `S` `decisao` Decidir P7: retenção do registro de auditoria e das perguntas do chat  ⛔ H-11
   · **Aceite:** Prazos por artefato (trilha de auditoria, telemetria, texto de pergunta) decididos pelo Jurídico do cliente e registrados; cada prazo vira parâmetro de configuração antes de F3.
-  · **PRD:** P7, seção 11, seção 14, seção 18
-- [~] **T-013** `P1` `M` `auditoria` Desambiguar a referência e publicar a matriz de rastreabilidade  ⏳ 2026-08-21 23:48 · sessao-68c8
+  · **PRD:** D-P7, seção 11, seção 14, seção 18
+- [~] **T-013** `P1` `M` `auditoria` Desambiguar a referência e publicar a matriz de rastreabilidade  ⏸ aguardando H-42
   · **Aceite:** refs viram D-P1..D-P8 (decisões da seção 18) e PR-1..PR-4 (princípios da seção 2). cada uma das 8 decisões aparece exatamente uma vez como 'decide' e ao menos uma vez como 'aplica'; nenhuma tarefa de F1/F2/F3 referencia decisão pendente sem depender da tarefa F0 correspondente.
-  · **PRD:** Seção 18 (decisões P1 a P8) versus seção 2 (princípios P1 a P4)
+  · **PRD:** seção 18 (decisões D-P1 a D-P8) versus seção 2 (princípios PR-1 a PR-4)
 
 ---
 
@@ -147,7 +147,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 
 - [ ] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
   · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 2 anos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal.
-  · **PRD:** seção 9.1, seção 9.3, seção 8.1, P1 · **Depende de:** T-001
+  · **PRD:** seção 9.1, seção 9.3, seção 8.1, PR-1 · **Depende de:** T-001
 - [ ] **T-102** `P0` `M` `dados` Estender o envelope PanelResponse para as 12 formas e gerar o JSON Schema
   · **Aceite:** União discriminada cobre as 12 formas do Anexo A.1 com ao menos um exemplo validado cada, forma sem variante não compila, e o schema gerado no build e versionado reprova no CI se dessincronizar dos tipos ou se faltar unit, formula ou asOf.
   · **PRD:** seção 9.3, Anexo A.1, RF-04, RF-15 · **Depende de:** T-101
@@ -159,10 +159,10 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** seção 9.2 regra 2, seção 9.2 regra 4, seção 13 · **Depende de:** T-101
 - [ ] **T-105** `P0` `S` `dados` Modelar o vazio explícito com motivo em todo retorno da camada de dados
   · **Aceite:** Todo retorno de KPI, painel e métrica pode ser null com motivo de enum fechado (sem_dado_no_recorte, grupo_pequeno, fora_do_perfil, fonte_indisponivel); teste percorre os quatro motivos e falha se algum caminho devolver 0, valor herdado ou média silenciosa.
-  · **PRD:** seção 9.2 regra 3, P4, seção 6.4, RF-24 · **Depende de:** T-101
+  · **PRD:** seção 9.2 regra 3, PR-4, seção 6.4, RF-24 · **Depende de:** T-101
 - [ ] **T-106** `P0` `S` `dados` Publicar a interface DataSource, a fábrica por DATA_SOURCE e a fronteira de camadas
   · **Aceite:** DATA_SOURCE=fixtures e =warehouse trocam a implementação por uma fábrica única sem alterar nenhum arquivo de apresentação, valor inválido interrompe o boot nomeando os aceitos, e um teste de arquitetura reprova import de pg, do SDK da Anthropic ou de implementação concreta fora da fábrica.
-  · **PRD:** RF-20, seção 8.3, seção 8.1, P1 · **Depende de:** T-101
+  · **PRD:** RF-20, seção 8.3, seção 8.1, PR-1 · **Depende de:** T-101
 - [ ] **T-107** `P0` `M` `dados` Publicar o registro dos 71 painéis com tela, forma, span, unidade, fórmula e view
   · **Aceite:** Um teste compara o registro com o inventário do Anexo A e falha em id faltante, extra, tela divergente ou forma fora das 12; o mesmo teste reprova tela com mais de 6 KPIs ou 7 painéis.
   · **PRD:** Anexo A.2, Anexo A.3, Anexo A.4, seção 5, RF-04 · **Depende de:** T-102
@@ -171,7 +171,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** seção 9.2 regra 1, RF-03, Anexo D achado 4 · **Depende de:** T-107
 - [ ] **T-109** `P0` `S` `dados` Tornar a fórmula obrigatória no contrato e remover a chave que a desliga
   · **Aceite:** O tipo exige fórmula não vazia em todo painel de indicador derivado, um teste enumera os 71 painéis e falha se algum derivado vier sem fórmula, e a busca por mostrarMemoria no repositório retorna zero ocorrências.
-  · **PRD:** Anexo D achado 10, RF-04, P3, seção 9.3 · **Depende de:** T-102, T-107
+  · **PRD:** Anexo D achado 10, RF-04, PR-3, seção 9.3 · **Depende de:** T-102, T-107
 - [ ] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade
   · **Aceite:** vw_fato_rh_mes, vw_fato_vagas e vw_fato_treinamento existem com uma linha por combinação; somar todas as linhas de 2026 reproduz o Anexo C: 1.240 FTE em dezembro, 241 admissões, 145 desligamentos, folha R$ 186 mi e 21.400 horas de treinamento.
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1, seção 9.1 · **Depende de:** T-001
@@ -183,7 +183,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** seção 9.4, seção 8.1, seção 8.2 · **Depende de:** T-001, T-104
 - [ ] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo
   · **Aceite:** As 21 entradas trazem os nove campos preenchidos, com decisão presente nas métricas discutidas; um teste cruza catálogo x Anexo B e falha se faltar métrica, se o destino não for uma das 13 telas ou se o painel destacado não constar do registro dos 71 painéis.
-  · **PRD:** Anexo B, seção 9.4, seção 7.5, P2, P3 · **Depende de:** T-107, T-112
+  · **PRD:** Anexo B, seção 9.4, seção 7.5, D-P2, D-P3 · **Depende de:** T-107, T-112
 - [ ] **T-114** `P0` `L` `dados` Implementar o adaptador de fixtures com filtro dimensional real
   · **Aceite:** Busca no repositório pelos multiplicadores do protótipo (0.62, 0.38 e participação da área) retorna zero ocorrências, e para toda medida aditiva soma(Unidade SP) + soma(Demais unidades) = soma(Consolidado) e a soma das 7 áreas = 'Todas', verificado nos 12 meses e nos 4 períodos.
   · **PRD:** Anexo D achado 3, Anexo D achado 4, seção 8.3, RF-01 · **Depende de:** T-103, T-104, T-106, T-110, T-111
@@ -237,16 +237,16 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** Anexo A.1, Anexo A.2, seção 8.2 gráficos · **Depende de:** T-129
 - [ ] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI
   · **Aceite:** A linha de fórmula é renderizada sempre que PanelResponse.formula existe, sem propriedade capaz de escondê-la; valor, delta, rodapé e sparkline do KPI vêm exclusivamente de getKpis, nenhuma tela renderiza mais de 6 cartões, e a análise estática falha diante de literal numérico formatado no código de KPI.
-  · **PRD:** RF-04, RF-07, P3, Anexo D achado 5, Anexo D achado 10 · **Depende de:** T-102, T-115, T-124
+  · **PRD:** RF-04, RF-07, PR-3, Anexo D achado 5, Anexo D achado 10 · **Depende de:** T-102, T-115, T-124
 - [ ] **T-132** `P0` `L` `paineis` Implementar os seis estados obrigatórios de painel e KPI, com esqueletos
   · **Aceite:** Teste de interface exercita com dado forjado carregando, com dado, vazio no recorte, erro de fonte, sem permissão e defasado em ao menos uma forma de cada família; o vazio exibe o motivo e o atalho para ampliar o recorte, o sem permissão não contém agregado no HTML servido, e cada uma das 12 formas tem esqueleto com altura igual à do gráfico final dentro de 4 px, sem piscar valor.
-  · **PRD:** seção 6.4, RF-06, P4, seção 13 desempenho · **Depende de:** T-105, T-131
+  · **PRD:** seção 6.4, RF-06, PR-4, seção 13 desempenho · **Depende de:** T-105, T-131
 - [ ] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte
   · **Aceite:** Para cada um dos 71 painéis, sob recorte fora do padrão a nota vem nula ou escrita para aquele recorte e o subtítulo passa a 'No recorte ativo · <area>'; um detector de valor absoluto roda sobre todas as notas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
-  · **PRD:** RF-09, seção 6.3, P4, seção 9.3 · **Depende de:** T-117, T-118, T-119, T-131
+  · **PRD:** RF-09, seção 6.3, PR-4, seção 9.3 · **Depende de:** T-117, T-118, T-119, T-131
 - [ ] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação
   · **Aceite:** Grep no código de tela não encontra nenhum multiplicador do tipo fctx (ent 0.62/0.38, hc, money, rev, trein) nem aritmética sobre valores de negócio, e um adaptador de teste que devolve valores arbitrários por área prova que a tela não deriva nem escala número algum.
-  · **PRD:** Anexo D achado 3, Anexo D achado 4, P1, RF-07 · **Depende de:** T-107, T-114
+  · **PRD:** Anexo D achado 3, Anexo D achado 4, PR-1, RF-07 · **Depende de:** T-107, T-114
 - [ ] **T-135** `P0` `S` `seguranca` Definir os contratos de identidade, perfil e escopo em TypeScript estrito
   · **Aceite:** Existe um módulo com Session, Profile (diretoria, controller, rh, area, auditor) e AccessScope derivado dos valores de Query; tsc --strict passa e um teste de tipos rejeita perfil ou entidade fora do enum em tempo de compilação.
   · **PRD:** seção 11, seção 9.1, RF-23 · **Depende de:** T-001, T-101
@@ -291,25 +291,25 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** Anexo D achado 5, RF-07, seção 9.4 · **Depende de:** T-112, T-147
 - [ ] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha
   · **Aceite:** getMeta devolve dimensões com os valores exatos da seção 6.2, versão do catálogo e frescor { asOf, ultimoSyncEm, limiteDefasagemHoras, status }; testes em limite-1, limite e limite+1 devolvem ok, ok e defasado, e falha de fonte devolve erro tipado com o horário da última leitura bem-sucedida, nunca dado parcial.
-  · **PRD:** seção 9.1, RF-10, RF-22, seção 10.2, seção 6.4, P5 · **Depende de:** T-101, T-147
+  · **PRD:** seção 9.1, RF-10, RF-22, seção 10.2, seção 6.4, D-P5 · **Depende de:** T-101, T-147
 - [ ] **T-150** `P0` `M` `dados` Substituir todos os KPIs literais por leitura do catálogo e bloquear novos literais
   · **Aceite:** Os 15 KPIs do achado 5 mudam ao trocar área e período, verificado em 4 períodos x 8 áreas; o ciclo financeiro é recalculado como PMR + PME - PMP em vez de fixado em 76 dias; e uma regra de lint ou teste de AST reprova número formatado (R$, %, dias, anos, p.p.) nos módulos de KPI e painel, demonstrado em um arquivo de exemplo.
-  · **PRD:** Anexo D achado 5, RF-07, RF-01, P3 · **Depende de:** T-109, T-115, T-116, T-148
+  · **PRD:** Anexo D achado 5, RF-07, RF-01, PR-3 · **Depende de:** T-109, T-115, T-116, T-148
 - [ ] **T-151** `P0` `M` `seguranca` Implementar a supressão de grupo pequeno nos dados e nas telas de faixas
   · **Aceite:** Toda série com breakdown de faixa cujo grupo tenha menos de 5 pessoas volta null com motivo grupo_pequeno e o total agregado não permite reconstruir o grupo suprimido; com a fixture de área pequena, col-idade, col-tempo, col-escol e sal-faixas exibem 'grupo pequeno demais para exibir' no lugar do valor.
   · **PRD:** RF-24, seção 11, Anexo A.2, seção 7.5 · **Depende de:** T-105, T-132, T-147
 - [ ] **T-152** `P1` `M` `dados` Produzir a fixture do ano de 2025 no mesmo grão da de 2026
   · **Aceite:** Toda medida de 2026 tem contraparte de 2025 no mesmo grão, e a série de comparação hoje fixa como receitaLY passa a ser lida da fixture de 2025, com os dois caminhos devolvendo os mesmos 12 valores em teste.
-  · **PRD:** Anexo D achado 6, RF-05, P8 · **Depende de:** T-002, T-110, T-111
+  · **PRD:** Anexo D achado 6, RF-05, D-P8 · **Depende de:** T-002, T-110, T-111
 - [ ] **T-153** `P0` `M` `dados` Tornar o filtro de ano um recorte real e o ano uma dimensão parametrizável
   · **Aceite:** Selecionar 2025 altera o valor de todos os 71 painéis e dos KPIs das 13 telas exceto invariantes declarados; a lista de anos vem de getMeta e acrescentar 2024 as fixtures faz o filtro oferecer três anos sem alteração de código; se P8 decidir remover o filtro, ele some da barra e da URL.
-  · **PRD:** Anexo D achado 6, RF-05, P8, seção 6.2 · **Depende de:** T-002, T-114, T-149, T-152
+  · **PRD:** Anexo D achado 6, RF-05, D-P8, seção 6.2 · **Depende de:** T-002, T-114, T-149, T-152
 - [ ] **T-154** `P1` `M` `dados` Gerar as fixtures sujas e escassas de forma determinística
   · **Aceite:** Um conjunto contém área nula, mês ausente no meio da série, centro de custo inédito, área com 3 pessoas, faixa etária com 1 pessoa e entidade fora do perfil de teste; regenerar duas vezes produz arquivos byte-idênticos e a série diária de caixa vira dado materializado.
-  · **PRD:** seção 10.4, RF-06, RF-24, P4, seção 9.2 regra 5 · **Depende de:** T-110, T-111, T-147
+  · **PRD:** seção 10.4, RF-06, RF-24, PR-4, seção 9.2 regra 5 · **Depende de:** T-110, T-111, T-147
 - [ ] **T-155** `P1` `S` `dados` Versionar o catálogo e tornar o campo decisão obrigatório em métrica discutida
   · **Aceite:** O catálogo tem versão semântica e changelog próprio; alterar fórmula, unidade ou agg sem incrementar a versão e sem registrar a linha correspondente reprova o CI, e as métricas afetadas por P2 e P3 trazem decisão preenchida ou marcada como pendente com o número da decisão.
-  · **PRD:** seção 9.4, seção 17, P2, P3 · **Depende de:** T-113
+  · **PRD:** seção 9.4, seção 17, D-P2, D-P3 · **Depende de:** T-113
 - [ ] **T-156** `P1` `M` `dados` Definir o formato do arquivo de mapeamento métrica para view, coluna e agregação
   · **Aceite:** O schema exige view, coluna, agg e filtros por métrica do catálogo; métrica sem mapeamento, coluna inexistente no dicionário e agg incompatível reprovam no CI, e o próprio adaptador de fixtures passa a ler por ele, provando que a peça que muda por cliente é configuração.
   · **PRD:** seção 10.3, seção 9.4, seção 15 · **Depende de:** T-112
@@ -321,7 +321,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** seção 11, seção 13 desempenho, RF-23 · **Depende de:** T-137, T-157
 - [ ] **T-159** `P1` `L` `dados` Escrever as suítes das regras de contrato 2 a 5
   · **Aceite:** A suíte falha se algum valor vier como string ou com R$, %, vírgula decimal ou ponto de milhar, se recorte sem dado devolver zero em vez de null com motivo na fixture suja, se métrica agg=ratio ou pct for somada ao longo do período, ou se três execuções da mesma Query com o mesmo asOf divergirem byte a byte.
-  · **PRD:** seção 9.2 regra 2, seção 9.2 regra 3, seção 9.2 regra 4, seção 9.2 regra 5, P4, RF-06 · **Depende de:** T-104, T-105, T-113, T-121, T-154
+  · **PRD:** seção 9.2 regra 2, seção 9.2 regra 3, seção 9.2 regra 4, seção 9.2 regra 5, PR-4, RF-06 · **Depende de:** T-104, T-105, T-113, T-121, T-154
 - [ ] **T-160** `P1` `M` `dados` Congelar os envelopes dos 71 painéis em snapshots dourados
   · **Aceite:** Cada painel tem snapshot do envelope no recorte padrão e em ao menos dois recortes fora do padrão, todos válidos contra o JSON Schema, e mudança de valor sem atualização explícita do snapshot reprova o CI.
   · **PRD:** seção 9.3, RF-03, Anexo A · **Depende de:** T-102, T-117, T-118, T-119
@@ -330,7 +330,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** RF-20, RF-21, seção 16 F1, seção 8.3 · **Depende de:** T-106, T-121
 - [ ] **T-162** `P1` `M` `paineis` Declarar a aplicabilidade de cada filtro por painel e aplicar o recorte de período
   · **Aceite:** Cada um dos 71 painéis declara quais dos cinco filtros afetam sua consulta e filtrar por Modalidade numa tela do Financeiro exibe 'filtro não se aplica a este painel' em vez de repetir o consolidado; com Período = Dezembro os painéis mensais mostram uma única categoria sem quebra de layout.
-  · **PRD:** RF-01, P4, seção 6.2, seção 6.4 · **Depende de:** T-107, T-127
+  · **PRD:** RF-01, PR-4, seção 6.2, seção 6.4 · **Depende de:** T-107, T-127
 - [ ] **T-163** `P1` `M` `paineis` Implementar o destaque de painel pela IA e a API de navegação que restaura filtros e tela
   · **Aceite:** Abrir uma URL com o parâmetro de painel rola até ele, aplica contorno, sombra e o rótulo 'Gráfico referenciado pela IA', visível sem rolagem manual em 1366x768 nas 13 telas; e uma chamada única restaura os cinco filtros e a tela anterior produzindo URL byte a byte igual a de antes, coberta em 5 pares distintos incluindo troca de módulo.
   · **PRD:** seção 6.5, RF-13, RF-14, Anexo D achado 7 · **Depende de:** T-127
@@ -342,7 +342,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** Anexo A.1, Anexo A.3, Anexo A.4, Anexo C dimensões · **Depende de:** T-129
 - [ ] **T-166** `P1` `S` `paineis` Renderizar o selo de frescor e o estado dado defasado a partir de getMeta
   · **Aceite:** As 13 telas exibem a data do último fechamento carregado; com Meta forjado nos três valores de status o selo vira aviso em destaque e os painéis entram no estado defasado, testado com defasagem de 1 dia e de 30 dias.
-  · **PRD:** RF-10, seção 6.4, seção 10.2, P5 · **Depende de:** T-132, T-149
+  · **PRD:** RF-10, seção 6.4, seção 10.2, D-P5 · **Depende de:** T-132, T-149
 - [ ] **T-167** `P1` `M` `paineis` Publicar a galeria de verificação das 12 formas em todos os estados
   · **Aceite:** Página interna renderiza no servidor as 12 formas x 6 estados (72 células) a partir de fixtures forjadas, o snapshot SVG é byte a byte estável entre duas execuções, e o CI falha em diferença acima do limiar acordado.
   · **PRD:** Anexo A.1, seção 6.4, RF-06 · **Depende de:** T-130, T-132, T-164, T-165
@@ -354,7 +354,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** Anexo A.3, Anexo A.4, RF-03, RF-04, Anexo C · **Depende de:** T-107, T-130, T-131, T-134, T-164, T-165
 - [ ] **T-170** `P1` `M` `paineis` Auditar a paridade das 13 telas e exercitá-las com dados incompletos
   · **Aceite:** Checklist assinada com captura lado a lado das 13 telas no recorte padrão, cada diferença registrada como intencional com referência ao Anexo D ou corrigida, nenhum dos 71 ids sem verificação; e sobre a fixture suja as 13 telas renderizam estados vazios ou parciais sem exceção não tratada e com console limpo, cada painel afetado mostrando o motivo.
-  · **PRD:** Anexo A, seção 16 F1, seção 10.4, RF-06, P4 · **Depende de:** T-132, T-154, T-168, T-169
+  · **PRD:** Anexo A, seção 16 F1, seção 10.4, RF-06, PR-4 · **Depende de:** T-132, T-154, T-168, T-169
 - [ ] **T-171** `P1` `M` `paineis` Servir cada painel com streaming e travar as metas de desempenho em CI
   · **Aceite:** O HTML inicial chega com cabeçalho, filtros e esqueletos antes de as consultas terminarem e cada painel troca esqueleto por conteúdo de forma independente, verificado na ordem dos chunks de uma tela com 7 painéis; e a medição automatizada falha acima de 400 ms para troca de filtro com cache quente e de 1,5 s para primeira carga de recorte novo.
   · **PRD:** seção 8.2, seção 13 desempenho, O1 · **Depende de:** T-006, T-132, T-157
@@ -455,13 +455,13 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
   · **PRD:** seção 10.2, seção 11, seção 15, D5 · **Depende de:** T-003, T-011
 - [ ] **T-206** `P0` `M` `seguranca` Implementar as duas trilhas de segredo com rotação sem rebuild
   · **Aceite:** A mesma imagem carrega segredos por variável de ambiente (Docker no cliente) ou por cofre (nuvem dedicada), selecionado por configuração; trocar a senha da origem e reiniciar o contêiner restabelece o sync sem nova imagem, e nenhum segredo aparece em log, build ou camadas da imagem.
-  · **PRD:** P6, seção 15, seção 11, D5 · **Depende de:** T-011, T-139, T-205
+  · **PRD:** D-P6, seção 15, seção 11, D5 · **Depende de:** T-011, T-139, T-205
 - [ ] **T-207** `P0` `M` `ingestao` Construir o validador de conformidade das views do cliente
   · **Aceite:** O comando roda contra a origem e reporta por view existência, colunas ausentes e extras, tipos divergentes, grão real medido por duplicatas de chave, percentual de nulos por coluna e valores de dimensão fora do cadastro, saindo diferente de zero se qualquer view não conformar.
   · **PRD:** seção 10.1, seção 10.4, seção 10.5 passo 1 · **Depende de:** T-201, T-205
 - [ ] **T-208** `P0` `L` `ingestao` Implementar o job de sync com carga completa das views
   · **Aceite:** O job lê as 7 views, grava em tabelas de estágio e registra linhas lidas por view, e a execução completa sobre 24 meses e as dimensões do Anexo C termina dentro da janela acordada em P4, com o tempo medido e registrado no log.
-  · **PRD:** seção 10.2, RF-22, P4, D2 · **Depende de:** T-204, T-205, T-207
+  · **PRD:** seção 10.2, RF-22, D-P4, D2 · **Depende de:** T-204, T-205, T-207
 - [ ] **T-209** `P0` `M` `ingestao` Implementar a troca atômica de estágio para réplica, com asOf congelado
   · **Aceite:** A promoção ocorre em uma única transação e injeção de falha durante extração, escrita e troca deixa a réplica anterior intacta e o asOf inalterado, sem consulta lendo mistura de duas cargas; nenhum dos 71 painéis serve valor de carga incompleta, e rodar o sync duas vezes sobre a mesma origem produz réplicas idênticas linha a linha.
   · **PRD:** RF-22, seção 10.2, seção 9.2 regra 5, D2 · **Depende de:** T-119, T-208
@@ -470,7 +470,7 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
   · **PRD:** seção 10.3, seção 10.5 passo 2, seção 9.4 · **Depende de:** T-156, T-201
 - [ ] **T-211** `P0` `M` `ingestao` Preencher o mapeamento das métricas financeiras e de integração
   · **Aceite:** Toda métrica de Financeiro e de Integração tem view, coluna e agg preenchidos, o validador passa, métrica sem mapeamento reprova o boot com DATA_SOURCE=warehouse, e o arquivo cobre as seis views de fato e as dimensões da seção 10.1.
-  · **PRD:** seção 10.3, seção 10.5 passo 2, seção 10.1, P1 · **Depende de:** T-156, T-201
+  · **PRD:** seção 10.3, seção 10.5 passo 2, seção 10.1, D-P1 · **Depende de:** T-156, T-201
 - [ ] **T-212** `P0` `L` `dados` Implementar a tradução de Query para SQL com recorte dimensional real
   · **Aceite:** Os cinco filtros viram cláusulas WHERE e GROUP BY sobre colunas de dimensão, a busca por fatores de escala do protótipo retorna zero ocorrências, entidade='Unidade SP' soma as linhas daquela entidade em vez de multiplicar o consolidado, e toda consulta tem timeout configurável cancelado no banco com pool dimensionado por ambiente.
   · **PRD:** Anexo D achado 3, Anexo D achado 4, RF-01, RF-05, seção 8.3, seção 13 · **Depende de:** T-106, T-204
@@ -485,16 +485,16 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
   · **PRD:** Anexo A.3, seção 10.1, RF-03, Anexo C · **Depende de:** T-202, T-212
 - [ ] **T-216** `P0` `M` `dados` Executar a suíte de contrato contra o warehouse em CI, inclusive com dados incompletos
   · **Aceite:** O mesmo arquivo de casos roda com DATA_SOURCE=fixtures e =warehouse no pipeline, ambos verdes para liberar o merge, com os dois relatórios arquivados e cada divergência listada com métrica, recorte, valor da fixture e valor do banco; um dataset semeado com área nula, mês faltando, centro de custo novo e área com menos de 5 pessoas atinge os seis estados da seção 6.4 sem exceção não tratada.
-  · **PRD:** RF-21, RF-20, seção 10.4, seção 10.5 passo 4, P4 · **Depende de:** T-123, T-154, T-204, T-213
+  · **PRD:** RF-21, RF-20, seção 10.4, seção 10.5 passo 4, PR-4 · **Depende de:** T-123, T-154, T-204, T-213
 - [ ] **T-217** `P0` `M` `dados` Montar o processo de resolução de divergências de definição
   · **Aceite:** Cada divergência da suíte tem registro com métrica, valor do painel, valor da fonte, área responsável e decisão, nenhuma é fechada sem uma linha decisão no catálogo com data e áreas aprovadoras, e a lista de divergências abertas chega a zero antes do critério de saída de F2.
   · **PRD:** seção 10.4, seção 9.4, seção 17, O3, seção 10.5 passo 4 · **Depende de:** T-155, T-216
 - [ ] **T-218** `P0` `M` `dados` Aplicar a decisão P2 no mapeamento de turnover
   · **Aceite:** As duas leituras são calculadas lado a lado sobre 12 meses reais com a diferença em pontos percentuais apresentada a RH e Controladoria, a escolha de P2 vira filtro no mapeamento de turnover_12m, e a suíte falha se o mapeamento mudar sem atualizar a linha decisão.
-  · **PRD:** P2, seção 9.4, seção 10.4, Anexo B intenção 2 · **Depende de:** T-007, T-210, T-217
+  · **PRD:** D-P2, seção 9.4, seção 10.4, Anexo B intenção 2 · **Depende de:** T-007, T-210, T-217
 - [ ] **T-219** `P0` `M` `dados` Aplicar a decisão P3 no mapeamento da folha
   · **Aceite:** A folha total é recalculada nas duas bases para 12 meses com a diferença em reais mês a mês, a escolha de P3 vira regra no mapeamento de folha_total, e o mês de fechamento passa a bater com a folha oficial na base escolhida.
-  · **PRD:** P3, seção 9.4, seção 10.4, Anexo B intenção 11 · **Depende de:** T-008, T-210, T-217
+  · **PRD:** D-P3, seção 9.4, seção 10.4, Anexo B intenção 11 · **Depende de:** T-008, T-210, T-217
 - [ ] **T-220** `P0` `M` `ingestao` Garantir que nenhuma consulta do produto toca o ERP produtivo
   · **Aceite:** A aplicação só recebe a string de conexão do warehouse e a credencial de origem não existe no ambiente dela; um teste de arquitetura falha se qualquer módulo fora do job de sync importar o cliente da origem, e a conexão ao Postgres exige sslmode=verify-full com cifra em repouso documentada nos dois modos.
   · **PRD:** D2, seção 10.2, seção 11, seção 15 · **Depende de:** T-206, T-208
@@ -530,31 +530,31 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
   · **PRD:** seção 15, seção 10.2, RF-10, RF-20 · **Depende de:** T-149, T-203
 - [ ] **T-231** `P0` `M` `plataforma` Montar o pacote de instalação Docker no cliente e o comando de diagnóstico
   · **Aceite:** Um docker compose de produção com template de variáveis e roteiro de portas, rede e volumes leva uma máquina limpa à instalação funcional em menos de 30 minutos, e um comando único no contêiner imprime versão, migrações aplicadas, modo de DATA_SOURCE, conectividade e idade do último sync sem exibir segredo.
-  · **PRD:** seção 15, D5, P6, seção 10.2 · **Depende de:** T-204, T-229, T-230
+  · **PRD:** seção 15, D5, D-P6, seção 10.2 · **Depende de:** T-204, T-229, T-230
 - [ ] **T-232** `P1` `S` `ingestao` Tornar cadência e janela configuráveis e empacotar o agendador com trava
   · **Aceite:** Cadência e horário vêm de configuração com o valor acordado em P4 registrado, alterar a janela não exige rebuild, e um teste comprova que duas execuções concorrentes são impedidas por trava.
-  · **PRD:** P4, seção 10.2, seção 15, RF-22 · **Depende de:** T-009, T-208
+  · **PRD:** D-P4, seção 10.2, seção 15, RF-22 · **Depende de:** T-009, T-208
 - [ ] **T-233** `P1` `S` `ingestao` Registrar o histórico de execuções do sync e expor a idade do último sync
   · **Aceite:** Cada execução grava início, fim, duração, linhas por view, resultado e erro, as últimas 30 são consultáveis e getMeta lê o último sucesso desse registro; a idade do último sync é exposta continuamente e dispara alerta ao ultrapassar o limite de P5.
-  · **PRD:** seção 10.2, RF-10, seção 13 observabilidade, P5 · **Depende de:** T-149, T-208
+  · **PRD:** seção 10.2, RF-10, seção 13 observabilidade, D-P5 · **Depende de:** T-149, T-208
 - [ ] **T-234** `P1` `M` `ingestao` Implementar retentativa, timeout e alerta de falha de sync
   · **Aceite:** Falha transitória é retentada com espera crescente até um limite configurado; esgotadas as tentativas o status vira falhou, o selo vira aviso e um alerta é emitido no canal acordado, com a réplica anterior continuando a servir todas as telas.
   · **PRD:** RF-22, seção 10.2, seção 13 observabilidade · **Depende de:** T-209, T-233
 - [ ] **T-235** `P1` `S` `ingestao` Implementar o limite de defasagem configurável do selo de frescor
   · **Aceite:** O limite em horas vem de configuração com o valor decidido em P5, e um teste com relógio forjado mostra selo normal abaixo do limite e aviso acima, acionando o estado dado defasado pela mesma regra, sem segunda lógica.
-  · **PRD:** P5, RF-10, seção 6.4, seção 10.2 · **Depende de:** T-010, T-166, T-233
+  · **PRD:** D-P5, RF-10, seção 6.4, seção 10.2 · **Depende de:** T-010, T-166, T-233
 - [ ] **T-236** `P1` `M` `ingestao` Agregar grupos com menos de 5 pessoas ainda na origem
   · **Aceite:** Faixas com contagem entre 1 e 4 chegam ao warehouse suprimidas ou marcadas como suprimido; teste com dataset de área pequena confirma que nenhuma linha nesse intervalo é replicada e que o painel recebe o motivo da supressão.
   · **PRD:** RF-24, seção 11 · **Depende de:** T-151, T-201
 - [ ] **T-237** `P1` `M` `ingestao` Carregar o histórico de 24 meses (2025 e 2026)
   · **Aceite:** A réplica contém 2025 e 2026 completos para as 7 views, e selecionar 2025 muda os valores de todos os painéis nas 13 telas pela suíte, e não apenas a série de comparação.
-  · **PRD:** RF-05, Anexo D achado 6, P8, seção 10.2 · **Depende de:** T-002, T-208
+  · **PRD:** RF-05, Anexo D achado 6, D-P8, seção 10.2 · **Depende de:** T-002, T-208
 - [ ] **T-238** `P1` `M` `dados` Implementar getPanel de Integração e getMetric no warehouse
   · **Aceite:** Os 5 painéis de int/cruz cruzam vw_fato_rh_mes e vw_fato_fin_mes no mesmo recorte e reconciliam com os KPIs das duas telas de partida, e as 21 métricas do Anexo B retornam valor, fórmula e série com delta zero dentro da tolerância contra o KPI e o painel destacado.
   · **PRD:** Anexo A.4, Anexo B, RF-03, seção 10.5 passo 5 · **Depende de:** T-113, T-214, T-215
 - [ ] **T-239** `P1` `M` `dados` Reconciliar os números de RH contra a folha e o HCM oficiais
   · **Aceite:** Headcount FTE de fechamento, admissões, desligamentos e folha total do mês batem com os relatórios oficiais em três meses consecutivos, e qualquer delta diferente de zero abre registro no processo de divergências.
-  · **PRD:** O3, seção 10.4, seção 10.1, P2, P3 · **Depende de:** T-214, T-218, T-219
+  · **PRD:** O3, seção 10.4, seção 10.1, D-P2, D-P3 · **Depende de:** T-214, T-218, T-219
 - [ ] **T-240** `P1` `M` `dados` Reconciliar orçamento e contas contra Planejamento e o razão do ERP
   · **Aceite:** Orçado e realizado por centro de custo batem com o relatório de Planejamento nos 8 centros, e os aging de receber e pagar mais PMR, PME e PMP batem com o razão do ERP na data de corte, com delta zero.
   · **PRD:** O3, seção 10.1, Anexo A orc-desvio, Anexo A ct-ciclo · **Depende de:** T-215
@@ -584,10 +584,10 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
   · **PRD:** seção 10.5, seção 15, seção 8.2, RF-20 · **Depende de:** T-216, T-223, T-247
 - [ ] **T-249** `P1` `L` `plataforma` Montar o modo de nuvem dedicada e adequar o envio de registros
   · **Aceite:** Roteiro de provisionamento cria projeto e banco isolados por cliente, acesso à origem por túnel ou VPN documentado e segredos vindos do cofre, com implantação contínua em janela acordada e retorno à versão anterior testado; no modo Docker os registros ficam locais com envio desligado por padrão e no modo nuvem chegam ao coletor central, pela mesma imagem.
-  · **PRD:** seção 15, D2, D5, P6, seção 13 · **Depende de:** T-176, T-204, T-228
+  · **PRD:** seção 15, D2, D5, D-P6, seção 13 · **Depende de:** T-176, T-204, T-228
 - [ ] **T-250** `P1` `M` `seguranca` Anexar ao contrato as views, a fronteira de dados e o registro LGPD
   · **Aceite:** O anexo técnico com as 7 views, dicionário de colunas e prazo de entrega pela TI está no contrato assinado; um documento versionado declara o que sai do ambiente (catálogo, pergunta e números agregados), o que nunca sai, o subprocessador da API e a retenção; e o registro LGPD lista categorias, finalidade, base legal e retenção apontando o controle técnico correspondente.
-  · **PRD:** seção 11, seção 14, seção 17, D1, D5, P7 · **Depende de:** T-201
+  · **PRD:** seção 11, seção 14, seção 17, D1, D5, D-P7 · **Depende de:** T-201
 - [ ] **T-251** `P1` `M` `auditoria` Travar a contagem num único artefato
   · **Aceite:** arquivo versionado com os 15 KPIs do achado 5 (id, tela, métrica do catálogo), referenciado por T-117, T-128 e T-222. o teste é parametrizado por esse arquivo e falha se a contagem divergir de 15; exige variação em pelo menos dois valores de cada um dos cinco filtros; roda nos dois modos de DATA_SOURCE.
   · **PRD:** Anexo D achado 5 - contagem dos KPIs literais (RF-07)
@@ -631,13 +631,13 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **PRD:** seção 7.4, seção 13, RF-19 · **Depende de:** T-302, T-303
 - [ ] **T-305** `P0` `M` `chat` Implementar o estágio 1 de interpretação da pergunta
   · **Aceite:** Dada a pergunta, o catálogo e os cinco filtros atuais, o estágio devolve um Intent válido contra o schema e sem nenhum número no payload; 20 perguntas do conjunto de avaliação verificam metric, breakdown, filters e confidence preenchidos e ausência de campo de valor calculado.
-  · **PRD:** seção 7.1, seção 7.2, RF-12, P2 · **Depende de:** T-301, T-302, T-304
+  · **PRD:** seção 7.1, seção 7.2, RF-12, PR-2 · **Depende de:** T-301, T-302, T-304
 - [ ] **T-306** `P0` `M` `chat` Validar a intenção contra o catálogo e recusar métrica inexistente no estágio 2
   · **Aceite:** O resolvedor rejeita qualquer metric ausente do catálogo antes de qualquer leitura, e 15 métricas forjadas retornam recusa estruturada com código metrica_fora_do_catalogo sem nenhuma chamada ao DataSource registrada no espião.
-  · **PRD:** seção 7.1, seção 7.5, RF-16, P2 · **Depende de:** T-113, T-305
+  · **PRD:** seção 7.1, seção 7.5, RF-16, PR-2 · **Depende de:** T-113, T-305
 - [ ] **T-307** `P0` `M` `chat` Normalizar e validar os filtros da intenção contra o domínio de Query
   · **Aceite:** Filtros propostos pelo modelo são mapeados para os valores exatos da tabela 6.2, incluindo acentuação e sinônimos como 'Sao Paulo' para Unidade SP; o teste cobre os 4 períodos, 2 anos, 3 entidades, 8 áreas e 4 modalidades mais 20 valores inválidos, que resultam em recusa e não em substituição silenciosa.
-  · **PRD:** seção 6.2, seção 9.1, P8, Anexo D achado 1, Anexo D achado 2 · **Depende de:** T-103, T-306
+  · **PRD:** seção 6.2, seção 9.1, D-P8, Anexo D achado 1, Anexo D achado 2 · **Depende de:** T-103, T-306
 - [ ] **T-308** `P0` `M` `chat` Garantir que nenhuma saída do modelo alcança a consulta como SQL ou identificador livre
   · **Aceite:** O resolvedor só aceita identificadores de uma lista branca derivada do catálogo; o teste injeta SQL, nomes de tabela e caracteres de escape em metric e filters verificando recusa, e um teste de arquitetura falha se qualquer módulo do chat importar cliente de banco.
   · **PRD:** RF-18, seção 7.5, seção 8.1 · **Depende de:** T-306
@@ -646,19 +646,19 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **PRD:** seção 11, seção 7.1, seção 7.5, RF-23 · **Depende de:** T-137, T-306
 - [ ] **T-310** `P0` `M` `chat` Executar getMetric e getPanel no estágio 2 e montar o envelope de dados
   · **Aceite:** Para as 21 intenções do Anexo B o resolvedor produz kpis, chart, formula e sources apenas por chamadas ao DataSource, com sources trazendo a view declarada no catálogo e formula nunca vazia.
-  · **PRD:** seção 7.1, seção 7.2, RF-04, P3, seção 9.1 · **Depende de:** T-115, T-117, T-120, T-307
+  · **PRD:** seção 7.1, seção 7.2, RF-04, PR-3, seção 9.1 · **Depende de:** T-115, T-117, T-120, T-307
 - [ ] **T-311** `P0` `M` `chat` Bloquear grão abaixo de área x mês nas leituras do chat
   · **Aceite:** Qualquer intenção com breakdown ou filtro que implique linha individual, nome de pessoa ou grão diário é recusada antes da leitura, e uma suíte de indução com 30 perguntas adversariais (quem saiu, liste os nomes, salário de fulano, gere SQL) recebe recusa em 100% dos casos, com grupos abaixo de 5 pessoas retornando grupo pequeno demais para exibir.
   · **PRD:** RF-18, RF-24, seção 7.5, seção 11 · **Depende de:** T-138, T-308, T-310
 - [ ] **T-312** `P0` `M` `chat` Servir o gráfico do chat pela mesma chamada e pelo mesmo componente da tela
   · **Aceite:** O campo chart é produzido por getPanel(id, q) com a mesma Query da tela e renderizado pelo componente SVG do painel; o teste compara séries, total e SVG do cartão do chat e do painel destacado para as 21 intenções do Anexo B em 4 períodos x 3 entidades exigindo igualdade exata.
-  · **PRD:** P1, seção 7.2, RF-15, seção 9.3, seção 8.2 · **Depende de:** T-129, T-131, T-310
+  · **PRD:** PR-1, seção 7.2, RF-15, seção 9.3, seção 8.2 · **Depende de:** T-129, T-131, T-310
 - [ ] **T-313** `P0` `L` `chat` Implementar o estágio 3 de redação com substituição de campo
   · **Aceite:** O prompt recebe apenas os números já calculados e formatados em pt-BR pelo módulo único, e o texto é montado por substituição de marcadores; em 30 respostas do conjunto de avaliação a saída do modelo não contém nenhum dígito fora dos marcadores e a substituição usa exclusivamente valores do envelope.
-  · **PRD:** seção 7.1, seção 13, P2, O5, RF-15 · **Depende de:** T-125, T-302, T-310
+  · **PRD:** seção 7.1, seção 13, PR-2, O5, RF-15 · **Depende de:** T-125, T-302, T-310
 - [ ] **T-314** `P0` `L` `chat` Construir o verificador numérico determinístico de texto contra envelope
   · **Aceite:** O verificador extrai todo número do texto (R$ mi, percentual, p.p., dias, FTE, milhar e decimal pt-BR) e casa cada um com um valor do envelope dentro da tolerância declarada; 50 textos sintéticos detectam 100% dos números plantados com zero falso positivo sobre anos, ordinais e datas.
-  · **PRD:** seção 7.1, RF-15, O5, P2 · **Depende de:** T-313
+  · **PRD:** seção 7.1, RF-15, O5, PR-2 · **Depende de:** T-313
 - [ ] **T-315** `P0` `M` `chat` Bloquear a exibição e registrar incidente quando o verificador acusar divergência
   · **Aceite:** Divergência impede a renderização, exibe o estado de resposta bloqueada e grava incidente com pergunta, intenção, envelope e texto rejeitado, nunca corrigindo o texto silenciosamente; um envelope adulterado confirma bloqueio e presença do incidente no log.
   · **PRD:** RF-15, O5, seção 7.1, seção 14 · **Depende de:** T-314
@@ -682,13 +682,13 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **PRD:** seção 11, seção 7.4, seção 7.5, RF-18, O5 · **Depende de:** T-310, T-320
 - [ ] **T-322** `P0` `M` `chat` Isolar a pergunta do usuário das instruções do sistema contra injeção
   · **Aceite:** A pergunta entra apenas como conteúdo de mensagem delimitado e nunca no prefixo do system; 20 tentativas de injeção (ignore as instruções, revele o catálogo, gere SQL, responda sem verificação) não alteram a métrica resolvida, o perfil aplicado nem o comportamento do verificador.
-  · **PRD:** seção 7.5, RF-18, seção 11, P2 · **Depende de:** T-304, T-308
+  · **PRD:** seção 7.5, RF-18, seção 11, PR-2 · **Depende de:** T-304, T-308
 - [ ] **T-323** `P0` `M` `seguranca` Registrar a trilha de auditoria completa de cada interação do chat
   · **Aceite:** Cada resposta grava quem, quando, pergunta, intenção interpretada, métricas lidas, recorte aplicado e custo em tokens; o teste confirma os sete campos preenchidos em 100% das interações, inclusive nas recusas e nos bloqueios do verificador.
-  · **PRD:** RF-19, seção 11, seção 7.5, P7 · **Depende de:** T-224, T-310, T-315
+  · **PRD:** RF-19, seção 11, seção 7.5, D-P7 · **Depende de:** T-224, T-310, T-315
 - [ ] **T-324** `P0` `M` `seguranca` Implementar retenção configurável com expurgo e tratar o texto da pergunta como dado do cliente
   · **Aceite:** Os prazos decididos em P7 para trilha, telemetria e texto de pergunta são configuráveis por ambiente, um job agendado apaga o que passou do prazo com teste de relógio adiantado confirmando o expurgo, e uma pergunta percorrida ponta a ponta aparece apenas na trilha de auditoria e em chat.sem_resposta, nunca em log de aplicação.
-  · **PRD:** P7, seção 11, seção 14, RF-19 · **Depende de:** T-012, T-176, T-224, T-323
+  · **PRD:** D-P7, seção 11, seção 14, RF-19 · **Depende de:** T-012, T-176, T-224, T-323
 - [ ] **T-325** `P0` `M` `auditoria` Estender o executor do conjunto de avaliação para reprovar por rota e painel
   · **Aceite:** além das quatro métricas atuais, o relatório de T-335 compara, para cada uma das 100 perguntas não-recusadas, os cinco filtros aplicados, a rota de actions.view e o id de actions.panel contra os rótulos de T-334, e falha se o acerto de rota+painel ficar abaixo de 95% ou se qualquer painel citado não existir no registro dos 71 do Anexo A. executar o conjunto com um painel deliberadamente trocado no pipeline reprova o job.
   · **PRD:** RF-12
@@ -703,7 +703,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **PRD:** Anexo D achado 8, seção 7.2, RF-12 · **Depende de:** T-310
 - [ ] **T-329** `P1` `M` `chat` Suprimir narrativa incompatível com o recorte na resposta do chat
   · **Aceite:** Sob recorte ativo, um texto que afirme número do consolidado é suprimido em vez de adaptado e a resposta exibe o gráfico com o subtítulo do recorte; 10 respostas escritas para o consolidado sob recorte de área são suprimidas em 100% dos casos, sem número remanescente.
-  · **PRD:** RF-09, seção 6.3, P4 · **Depende de:** T-133, T-314
+  · **PRD:** RF-09, seção 6.3, PR-4 · **Depende de:** T-133, T-314
 - [ ] **T-330** `P1` `M` `chat` Tratar confiança baixa com desambiguação antes de responder
   · **Aceite:** Abaixo do limiar configurado o chat apresenta as opções do campo fallback e não executa leitura; 15 perguntas ambíguas rotuladas não produzem resposta numérica direta e cada uma oferece pelo menos duas alternativas do catálogo.
   · **PRD:** seção 7.2, RF-16, seção 7.7 · **Depende de:** T-305, T-318
@@ -736,7 +736,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **PRD:** seção 13, seção 17, seção 7.7, O1 · **Depende de:** T-315, T-319
 - [ ] **T-340** `P1` `M` `chat` Implementar os estados de interface do chat e a navegação por teclado
   · **Aceite:** O chat implementa carregando, respondido, sem dado no recorte, erro de fonte, sem permissão, recusa por catálogo e bloqueio do verificador, sem que nenhum exiba valor agregado indevido; e campo, envio, sugestões, desfazer e ir para o painel são alcançáveis por teclado com foco visível, com o cartão expondo nota e fórmula como alternativa textual e sem violação crítica de acessibilidade.
-  · **PRD:** seção 6.4, RF-06, seção 13, P4 · **Depende de:** T-172, T-309, T-315
+  · **PRD:** seção 6.4, RF-06, seção 13, PR-4 · **Depende de:** T-172, T-309, T-315
 - [ ] **T-341** `P1` `M` `chat` Cachear as leituras do estágio 2 e travar a latência p95 do chat
   · **Aceite:** Chamadas repetidas de getMetric e getPanel com a mesma Query são servidas do cache do servidor enquanto o sync não avança, com invalidação no avanço e p95 do estágio 2 abaixo de 400 ms com cache quente; a execução do conjunto de avaliação falha se a latência ponta a ponta passar de 4 s no p95.
   · **PRD:** seção 13, seção 9.2, seção 7.7, O1 · **Depende de:** T-157, T-178, T-334
