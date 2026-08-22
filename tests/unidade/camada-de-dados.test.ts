@@ -42,12 +42,16 @@ const MES = (mes: string, valor: number | null): Ponto => ({ mes, valor });
  * ---------------------------------------------------------------- */
 
 describe("T-105 · recorte vazio é estado, nunca zero", () => {
-  it("os quatro motivos do contrato, e só eles", () => {
+  it("os cinco motivos do contrato, e só eles", () => {
+    // `denominador_zero` entrou em T-182. A lista fica escrita por extenso de
+    // propósito: motivo novo é decisão, e um enum que cresce sem alguém editar
+    // este teste é um enum que deixou de ser fechado.
     expect([...MOTIVOS_DE_VAZIO]).toEqual([
       "sem_dado_no_recorte",
       "grupo_pequeno",
       "fora_do_perfil",
       "fonte_indisponivel",
+      "denominador_zero",
     ]);
   });
 
@@ -170,7 +174,9 @@ describe("T-104 · ratio recompõe numerador e denominador", () => {
     ];
     const r = agregar(semDenominador, "ratio", "pct");
     expect(r.vazio).toBe(true);
-    if (r.vazio) expect(r.motivo).toBe("sem_dado_no_recorte");
+    // Motivo próprio desde T-182: "não veio linha nenhuma" e "veio linha e o
+    // divisor é zero" pedem ações diferentes da pessoa que está lendo.
+    if (r.vazio) expect(r.motivo).toBe("denominador_zero");
   });
 });
 

@@ -36,7 +36,25 @@ const TEXTO: Readonly<
     titulo: "Não foi possível ler a fonte",
     porque: "O adaptador de dados falhou nesta consulta.",
   },
+  denominador_zero: {
+    titulo: "Sem base para calcular",
+    porque:
+      "Há dado no numerador, mas o divisor é zero neste recorte — a taxa não existe.",
+  },
 };
+
+/**
+ * Motivos para os quais "ampliar o recorte" **não** é a ação certa (T-182).
+ *
+ * Divisor zero não some porque o recorte cresceu: a taxa continua sem base.
+ * Perfil não muda porque a pessoa olhou mais amplo. Oferecer o atalho nesses
+ * casos manda tentar de novo o que não vai dar certo, que é o pior tipo de
+ * mensagem de erro.
+ */
+const SEM_ATALHO_DE_AMPLIAR: readonly MotivoDeVazio[] = [
+  "denominador_zero",
+  "fora_do_perfil",
+];
 
 export function SemDado({
   motivo,
@@ -49,6 +67,8 @@ export function SemDado({
   readonly ampliarPara?: string;
 }) {
   const { titulo, porque } = TEXTO[motivo];
+  const podeAmpliar =
+    ampliarPara !== undefined && !SEM_ATALHO_DE_AMPLIAR.includes(motivo);
 
   return (
     <div
@@ -91,7 +111,7 @@ export function SemDado({
       >
         {porque}
       </span>
-      {ampliarPara !== undefined ? (
+      {podeAmpliar ? (
         <span
           style={{
             font: `500 9px/1.2 ${TIPOGRAFIA.mono}`,

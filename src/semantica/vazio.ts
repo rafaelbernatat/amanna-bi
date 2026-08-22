@@ -18,6 +18,7 @@ export const MOTIVOS_DE_VAZIO = [
   "grupo_pequeno",
   "fora_do_perfil",
   "fonte_indisponivel",
+  "denominador_zero",
 ] as const;
 
 export type MotivoDeVazio = (typeof MOTIVOS_DE_VAZIO)[number];
@@ -76,17 +77,34 @@ export function exigirValor<T>(t: Talvez<T>): T {
 /**
  * Divisão que não inventa número.
  *
- * Denominador zero devolve vazio com motivo, e não `Infinity`, `NaN` nem 0.
- * A seção 13 do PRD é explícita: nunca há divisão por zero visível.
+ * Denominador zero devolve vazio com motivo **próprio**, e não `Infinity`,
+ * `NaN` nem 0. A seção 13 do PRD é explícita: nunca há divisão por zero
+ * visível.
+ *
+ * O motivo é `denominador_zero` e não `sem_dado_no_recorte` porque as duas
+ * situações são diferentes na tela e diferentes para quem lê (T-182):
+ *
+ * - **sem dado no recorte** — a consulta é válida e não veio linha nenhuma.
+ *   A leitura útil é "amplie o recorte".
+ * - **denominador zero** — veio dado, e o divisor é zero. "Turnover da área
+ *   com zero pessoas no quadro" tem numerador legítimo e nenhuma base sobre a
+ *   qual dividir. Ampliar o recorte não resolve; o que a tela precisa dizer é
+ *   *qual* divisor faltou.
+ *
+ * Colapsar os dois num motivo só faria a tela sugerir uma ação que não
+ * funciona — e o pior tipo de mensagem de erro é a que manda tentar de novo o
+ * que não vai dar certo.
  */
 export function dividir(
   numerador: number,
   denominador: number,
-  motivo: MotivoDeVazio = "sem_dado_no_recorte",
+  motivo: MotivoDeVazio = "denominador_zero",
 ): Talvez<number> {
   if (denominador === 0 || !Number.isFinite(denominador)) {
     return vazio(motivo);
   }
-  if (!Number.isFinite(numerador)) return vazio(motivo);
+  // Numerador não finito não é divisão por zero: é dado corrompido chegando
+  // do adaptador, e merece o motivo da fonte, não o do divisor.
+  if (!Number.isFinite(numerador)) return vazio("fonte_indisponivel");
   return comValor(numerador / denominador);
 }
