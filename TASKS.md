@@ -388,7 +388,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-181** `P1` `M` `auditoria` Endurecer a regra de AST para proibir qualquer literal numérico (cru ou formatado) nos módulos de KPI e
   · **Aceite:** painel, com lista branca explícita e comentada de constantes estruturais (índices, spans de grade, limiares de layout). um arquivo de exemplo com 'const x = 34.2' seguido de chamada ao formatador reprova o lint, e a lista branca é revisada no CI quando cresce.
   · **PRD:** RF-07
-- [ ] **T-182** `P1` `M` `auditoria` Acrescentar o motivo denominador_zero ao enum fechado da camada de dados e definir seu estado de tela
+- [~] **T-182** `P1` `M` `auditoria` Acrescentar o motivo denominador_zero ao enum fechado da camada de dados e definir seu estado de tela   ⏸ aguardando H-42
   · **Aceite:** para cada métrica com agg=ratio no catálogo, uma fixture com denominador zero devolve null com motivo denominador_zero, o painel e o cartão de KPI exibem texto próprio (nunca 0, nunca traço mudo), e a suíte da regra 3 percorre todas as métricas ratio; a suíte de contrato falha se alguma expuser Infinity, NaN ou 0.
   · **PRD:** seção 13 precisão (divisão por zero)
 - [ ] **T-183** `P1` `M` `auditoria` Verificar contraste por cálculo sobre o tema e sobre o SVG servido  ⛔ H-43
