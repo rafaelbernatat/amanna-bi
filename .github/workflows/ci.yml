@@ -53,6 +53,22 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
 
+      # Varredura de segredo (T-139).
+      #
+      # Fica no `lint` de proposito: e uma das cinco checagens exigidas para
+      # merge, entao segredo commitado nao entra na main. Num job proprio,
+      # seria opcional ate alguem lembrar de exigi-lo.
+      #
+      # Binario com versao fixa, e nao action: sem licenca para organizacao,
+      # sem action de terceiro na cadeia de suprimentos, e o mesmo comando
+      # roda local. `--redact` para que o log do CI nunca imprima o valor
+      # encontrado — log de CI e publico neste repositorio.
+      - name: varredura de segredo
+        run: |
+          VERSAO=8.28.0
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSAO}/gitleaks_${VERSAO}_linux_x64.tar.gz"             | tar -xz gitleaks
+          ./gitleaks dir . --no-banner --redact --exit-code 1 --config .gitleaks.toml
+
   teste:
     name: teste
     runs-on: ubuntu-latest

@@ -9,7 +9,7 @@ import { defineConfig } from "vitest/config";
  */
 export default defineConfig({
   resolve: {
-    // Resolve os apelidos @/apresentacao, @/semantica e @/acesso do tsconfig.
+    // Resolve os apelidos @/apresentacao, @/semantica, @/acesso e @/seguranca.
     tsconfigPaths: true,
   },
   test: {
