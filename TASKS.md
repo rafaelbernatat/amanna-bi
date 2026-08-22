@@ -131,7 +131,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [ ] **T-012** `P1` `S` `decisao` Decidir P7: retenção do registro de auditoria e das perguntas do chat  ⛔ H-11
   · **Aceite:** Prazos por artefato (trilha de auditoria, telemetria, texto de pergunta) decididos pelo Jurídico do cliente e registrados; cada prazo vira parâmetro de configuração antes de F3.
   · **PRD:** P7, seção 11, seção 14, seção 18
-- [ ] **T-013** `P1` `M` `auditoria` Desambiguar a referência e publicar a matriz de rastreabilidade
+- [~] **T-013** `P1` `M` `auditoria` Desambiguar a referência e publicar a matriz de rastreabilidade  ⏳ 2026-08-21 23:48 · sessao-68c8
   · **Aceite:** refs viram D-P1..D-P8 (decisões da seção 18) e PR-1..PR-4 (princípios da seção 2). cada uma das 8 decisões aparece exatamente uma vez como 'decide' e ao menos uma vez como 'aplica'; nenhuma tarefa de F1/F2/F3 referencia decisão pendente sem depender da tarefa F0 correspondente.
   · **PRD:** Seção 18 (decisões P1 a P8) versus seção 2 (princípios P1 a P4)
 
