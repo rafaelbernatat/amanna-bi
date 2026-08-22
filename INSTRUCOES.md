@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 43 itens, destravando 119 tarefas do backlog |
+| **Total** | 44 itens, destravando 121 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 7 | 4 | 32 |
+| Fase 1 · Contrato | 8 | 5 | 34 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **43** | **27** | **119** |
+| **Total** | **44** | **28** | **121** |
 
 **Por responsável**
 
@@ -51,7 +51,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|
 | TI do cliente | 13 |
 | Controladoria | 10 |
-| Produto | 8 |
+| Produto | 9 |
 | Engenharia | 6 |
 | Comercial | 4 |
 | RH | 1 |
@@ -73,7 +73,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*7 itens · 4 P0*
+*8 itens · 5 P0*
 
 ### [ ] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -180,6 +180,20 @@ A tarefa T-124 extraiu a paleta do protótipo para um tema tipado e, ao fazer is
 | **Resultado esperado** | Decisão por token registrada com data e nome do aprovador de Produto — escurecer, tratar como texto grande ou registrar exceção assinada — com cada diferença em relação ao protótipo marcada como intencional |
 | **Onde o resultado vai** | docs/decisoes/D-F1-contraste.md, os valores em `src/apresentacao/tema/tema.ts` e a lista de exceções lida por T-183 |
 | **Destrava** | T-183 *(1 tarefa)* |
+
+### [X] H-44 · Decidir se os gráficos usam biblioteca ou SVG próprio (revisão de D4)
+
+`P0` · **Responsável:** Produto
+
+**O que fazer**
+
+*Resolvido em 2026-08-22 por Rafael Lang, por Produto.* A pergunta era se os gráficos continuam desenhados em SVG no servidor, como a seção 8.2 do PRD fixava, ou passam a usar biblioteca. Foram apresentadas por escrito as quatro consequências antes da escolha: o painel deixa de ser Server Component; passa a existir JavaScript de gráfico no cliente; o `ResponsiveContainer` usa `ResizeObserver`, o que ameaça o CLS zero medido em T-129; e a biblioteca cobre 7 das 12 formas do Anexo A.1, deixando `cascata`, `mosaico geográfico`, `régua de ciclo`, `divisão` e `estatísticas` ainda desenhadas à mão. **Decisão: adotar recharts**, aceitando as quatro consequências. A decisão reabre D4, que a seção 0 do PRD trata como travada, e por isso está registrada em documento próprio.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador de Produto, reabrindo D4 e adotando recharts, com as consequências aceitas por escrito |
+| **Onde o resultado vai** | docs/decisoes/D-D4-biblioteca-de-graficos.md; PRD seção 8.2 e linha D4 editadas; aceites de T-129, T-176 e T-409 reescritos para seguir o PRD novo |
+| **Destrava** | T-129, T-130 *(2 tarefas)* |
 
 ---
 
@@ -503,7 +517,7 @@ Contrate um fornecedor de teste de intrusão, ou aloque um time interno independ
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*7 itens · 4 P0*
+*8 itens · 5 P0*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 

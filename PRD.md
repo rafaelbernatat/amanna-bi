@@ -24,7 +24,7 @@ Estas decisões estão fechadas. Reabri-las exige nova versão deste documento.
 | D1 | Modelo de produto | **Instalação dedicada por cliente** (single-tenant) | Sem multi-tenancy no código. Isolamento vem da infraestrutura, não de uma coluna `tenant_id`. |
 | D2 | Acesso ao dado do cliente | **Réplica sincronizada em warehouse próprio** | Nenhuma consulta do produto toca o ERP produtivo. Latência previsível; dado defasado até o próximo *sync*, e essa defasagem é visível na tela. |
 | D3 | Escopo da v1 | **RH + Financeiro + Integração** | Espelha exatamente as 13 telas do protótipo. Comercial e Operações ficam fora. |
-| D4 | Stack | **Next.js + TypeScript + Postgres + Claude** | Detalhada na seção 8. |
+| D4 | Stack | **Next.js + TypeScript + Postgres + Claude** | Detalhada na seção 8. **Revisada em 2026-08-22:** os gráficos passam a usar recharts — ver [D-D4](docs/decisoes/D-D4-biblioteca-de-graficos.md). |
 | D5 | Hospedagem | **Docker no cliente *ou* nuvem dedicada**, definido por contrato | O empacotamento precisa ser portátil desde o primeiro dia (seção 15). |
 
 ---
@@ -290,7 +290,7 @@ Conjunto de 100 perguntas rotuladas, versionado junto do catálogo, cobrindo: as
 | Framework | **Next.js 16**, App Router, Server Components | O trabalho pesado (consulta, agregação, formatação) fica no servidor; o cliente recebe painel pronto. Atende o alvo de primeira carga e mantém o dado longe do navegador. |
 | Linguagem | **TypeScript**, modo estrito | O contrato de dados da seção 9 só tem valor se for verificado em tempo de compilação. |
 | Warehouse | **PostgreSQL 16** | Réplica das *views* do cliente (D2). Suficiente para o volume (grão mensal, 13 telas) e trivial de empacotar em Docker. |
-| Gráficos | **SVG renderizado no servidor**, sem biblioteca de charts | O protótipo já faz isso, com 12 formas fechadas. Sem dependência de runtime, sem *layout shift*, e o mesmo componente serve painel e chat. |
+| Gráficos | **recharts** no cliente, sobre séries já calculadas no servidor | Revisto em 2026-08-22 por Produto ([D-D4](docs/decisoes/D-D4-biblioteca-de-graficos.md)); a v2.0 fixava SVG no servidor sem biblioteca. O vocabulário segue fechado em 12 formas, e recharts cobre 7 delas — `cascata`, `mosaico geográfico`, `régua de ciclo`, `divisão` e `estatísticas` continuam desenhadas à mão. O painel reserva a caixa antes de montar, para o *layout shift* seguir em zero. |
 | IA | **Anthropic SDK** (`@anthropic-ai/sdk`), modelo `claude-opus-5` | Seção 7.3. |
 | Autenticação | Provedor de identidade do cliente via OIDC, com alternativa local | Em instalação dedicada, quase sempre já existe um IdP. |
 | Testes | Suíte de contrato executando contra *fixtures* **e** contra o banco | Seção 10.4. É o teste que impede a divergência de definição. |
