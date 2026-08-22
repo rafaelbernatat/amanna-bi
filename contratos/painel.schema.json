@@ -74,8 +74,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -133,6 +133,11 @@
       "type": "string",
       "enum": ["BRL_mi", "pct", "pp", "dias", "FTE"]
     },
+    "Formula": {
+      "type": "string",
+      "description": "Texto de fórmula, não vazio.",
+      "minLength": 1
+    },
     "PainelLinha": {
       "type": "object",
       "additionalProperties": false,
@@ -164,8 +169,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -225,8 +230,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -286,8 +291,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -358,8 +363,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -455,8 +460,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -524,8 +529,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -590,8 +595,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -657,8 +662,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -725,8 +730,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -822,8 +827,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],
@@ -910,8 +915,8 @@
           "description": "A unidade dominante do painel.\n\nEm `estatisticas` e `dispersao` há mais de uma unidade em jogo; ali cada item declara a sua, e esta é a do eixo principal. Continua obrigatória: o cabeçalho do painel precisa dizer em que se está lendo."
         },
         "formula": {
-          "type": "string",
-          "description": "Como o número foi obtido. Princípio PR-3, obrigatória em toda forma."
+          "$ref": "#/definitions/Formula",
+          "description": "Como o número foi obtido. Princípio PR-3, obrigatória e não vazia."
         },
         "total": {
           "type": ["number", "null"],

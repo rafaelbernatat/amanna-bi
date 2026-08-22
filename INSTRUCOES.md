@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 46 itens (3 resolvidos), destravando 121 tarefas do backlog |
+| **Total** | 47 itens (3 resolvidos), destravando 121 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -73,7 +73,36 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*10 itens · 4 P0 abertos · 1 P1 · 2 resolvidos*
+*11 itens · 4 P0 abertos · 1 P1 · 1 P2 · 2 resolvidos*
+
+### [ ] H-47 · Decidir se o protótipo é editado para remover a chave que desliga a fórmula
+
+`P2` · **Responsável:** Produto
+
+**O que fazer**
+
+O achado 10 do Anexo D diz: *"a propriedade `mostrarMemoria` esconde a linha de fórmula de todos os painéis, o que conflita com 'todo painel declara a fórmula'"*, e o tratamento é *"a propriedade sai"*. T-109 aplicou isso ao produto — a fórmula agora é um tipo marcado que não aceita vazio, o JSON Schema publicado traz `minLength: 1`, e uma varredura reprova qualquer chave nova com a mesma função.
+
+Sobrou uma pergunta que não é de engenharia. O critério de aceite de T-109 diz *"a busca por `mostrarMemoria` no repositório retorna zero ocorrências"*, e o nome ainda aparece **uma vez**, em `public/design/Dashboard BI v2.dc.html` — o protótipo da Fase 0.
+
+Não editei o arquivo, por três razões:
+
+1. **É a linha de base do porte.** T-164 e T-165 conferem as primitivas portadas contra o protótipo. Mudá-lo muda a referência no meio do trabalho.
+2. **É um artefato de ferramenta de design**, com metadados de propriedades embutidos no HTML. Editar à mão arrisca corromper o esquema que a ferramenta lê.
+3. **É a evidência do achado.** Apagar a propriedade apaga a prova de que o achado 10 existia, e o Anexo D deixa de ser verificável contra o código que o originou.
+
+Escolha uma:
+
+- **(a) Manter o protótipo como está.** A varredura de T-109 continua com uma exceção nominal e única, escrita e conferida em teste — se o protótipo for regerado sem a propriedade, o teste que fixa a exceção falha e ela sai junto.
+- **(b) Regerar o protótipo sem a propriedade**, na ferramenta de origem (não à mão), aceitando que a linha de base do porte muda e registrando a data da nova versão.
+
+**Por que não decidi:** a saída (b) altera um artefato entregue e aprovado na Fase 0, e a (a) deixa o aceite de T-109 literalmente descumprido em uma ocorrência. As duas são defensáveis; nenhuma é de engenharia.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador: manter o protótipo com exceção nominal, ou regerá-lo sem a propriedade |
+| **Onde o resultado vai** | docs/decisoes/, e a lista de exceções em `tests/unidade/formula-obrigatoria.test.ts` |
+| **Destrava** | nada — T-109 está concluída nas três camadas do produto |
 
 ### [ ] H-46 · Decidir sobre o `unsafe-inline` em `style-src`
 

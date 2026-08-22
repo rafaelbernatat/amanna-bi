@@ -58,10 +58,62 @@ export type Forma = (typeof FORMAS)[number];
  * ------------------------------------------------------------------ */
 
 /**
+ * A fórmula de um painel: texto **garantidamente não vazio** (T-109).
+ *
+ * Tipo marcado, e não `string`, porque `formula: ""` satisfazia `string` e
+ * violava PR-3 do mesmo jeito — a linha de fórmula sumia da tela e o tipo não
+ * tinha o que dizer. A marca é um símbolo declarado e nunca exportado: o único
+ * jeito de obter um valor destes é passar por `formula()`, que recusa vazio.
+ *
+ * O achado 10 do Anexo D é exatamente isto acontecendo no protótipo: uma
+ * propriedade de configuração trocava a fórmula por texto vazio, e nada
+ * reclamava. A propriedade não existe mais neste código — nem o nome dela,
+ * para que a varredura de T-109 não tenha exceção a abrir.
+ */
+declare const FORMULA: unique symbol;
+
+/*
+ * A anotação abaixo não é enfeite. A marca de tipo **some** no JSON Schema:
+ * `Formula` vira `{"type":"string"}`, e um consumidor fora do TypeScript não
+ * saberia que vazio é proibido. `@minLength 1` é o que o gerador traduz para o
+ * contrato publicado — sem ela, a garantia valeria só de um lado da fronteira.
+ */
+
+/**
+ * Texto de fórmula, não vazio.
+ *
+ * @minLength 1
+ */
+export type Formula = string & { readonly [FORMULA]: true };
+
+export class FormulaVazia extends Error {
+  constructor(onde: string) {
+    super(
+      `Fórmula vazia em '${onde}'. Todo painel declara como chegou ao número ` +
+        "(RF-04, princípio PR-3): um painel que não sabe dizer isso não " +
+        "deveria estar na tela.",
+    );
+    this.name = "FormulaVazia";
+  }
+}
+
+/** Constrói uma `Formula`, ou lança. É a única porta. */
+export function formula(texto: string, onde = "(sem id)"): Formula {
+  if (texto.trim() === "") throw new FormulaVazia(onde);
+  return texto as Formula;
+}
+
+/** A fórmula é utilizável? Usado por quem valida sem querer lançar. */
+export function formulaValida(texto: unknown): texto is Formula {
+  return typeof texto === "string" && texto.trim() !== "";
+}
+
+/**
  * O que toda forma declara.
  *
- * `formula` não é opcional e não é configurável em painel derivado (RF-04):
- * um painel que não sabe dizer como chegou ao número não deveria estar na tela.
+ * `formula` não é opcional, não é vazia e não é configurável em painel
+ * derivado (RF-04): um painel que não sabe dizer como chegou ao número não
+ * deveria estar na tela.
  */
 export type EnvelopeBase = {
   readonly id: string;
@@ -74,8 +126,8 @@ export type EnvelopeBase = {
    * o cabeçalho do painel precisa dizer em que se está lendo.
    */
   readonly unit: Unidade;
-  /** Como o número foi obtido. Princípio PR-3, obrigatória em toda forma. */
-  readonly formula: string;
+  /** Como o número foi obtido. Princípio PR-3, obrigatória e não vazia. */
+  readonly formula: Formula;
   /** O agregado do painel; nulo quando o recorte não tem dado (PR-4). */
   readonly total: number | null;
   /** Leitura em prosa; nula quando não vale para o recorte (RF-09). */
