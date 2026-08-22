@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 206 pendentes e 25 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 205 pendentes e 26 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 14 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 15 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **25 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **26 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -256,7 +256,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-137** `P0` `M` `seguranca` Implementar o interceptador de escopo no servidor entre a chamada e o adaptador
   · **Aceite:** Toda chamada a getKpis, getPanel, getMetric e getMeta passa por applyScope(query, session), que restringe entidade e área ou devolve Denied, e uma regra de arquitetura reprova qualquer caminho de código que chame o DataSource sem passar por ele.
   · **PRD:** seção 11, RF-23, seção 9.1, seção 7.5 · **Depende de:** T-103, T-106, T-135
-- [ ] **T-138** `P0` `M` `seguranca` Impor o grão mínimo área x mês na fronteira da camada de dados
+- [X] **T-138** `P0` `M` `seguranca` Impor o grão mínimo área x mês na fronteira da camada de dados
   · **Aceite:** Um validador recusa com erro tipado qualquer consulta com breakdown fora de {none, area, mes, centro_custo, faixa} ou que peça linha individual, e um teste tenta 10 formas de pedir grão individual (colaborador, cpf, matricula, nome, id) sem que nenhuma toque o adaptador.
   · **PRD:** seção 11, seção 7.5, RF-18, seção 7.2 · **Depende de:** T-103, T-106
 - [~] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP   ⏸ aguardando H-46
