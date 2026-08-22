@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 217 pendentes e 14 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 216 pendentes e 15 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -36,12 +36,12 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | Fase | Tarefas | P0 | P1 | P2 | Concluídas |
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
-| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 3 de 14 |
+| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 4 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 6 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **14 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **15 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -95,7 +95,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [X] **T-001** `P0` `M` `plataforma` Bootstrap do repositório: Next.js 16, TypeScript estrito e as três camadas
   · **Aceite:** Clone limpo passa typecheck e build; tsconfig com strict, noUncheckedIndexedAccess, noImplicitOverride e exactOptionalPropertyTypes; Node fixado; pastas de apresentação, semântica e acesso criadas.
   · **PRD:** D4, seção 8.1, seção 8.2, seção 16 F1
-- [ ] **T-002** `P0` `S` `decisao` Decidir P8: filtro de ano com dois valores fixos ou seleção livre
+- [X] **T-002** `P0` `S` `decisao` Decidir P8: filtro de ano com dois valores fixos ou seleção livre
   · **Aceite:** Decisão registrada com data e responsável de Produto; a escolha determina se o ano vira dimensão parametrizável ou sai do filtro, e o registro é referenciado pelas tarefas de F1.
   · **PRD:** D-P8, seção 18, seção 6.2, Anexo D achado 6
 - [ ] **T-003** `P0` `M` `decisao` Decidir P1: sistema de origem de cada uma das views  ⛔ H-12

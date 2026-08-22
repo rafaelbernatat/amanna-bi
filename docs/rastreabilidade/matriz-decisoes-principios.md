@@ -39,6 +39,18 @@ Regra verificada: **cada decisão aparece exatamente uma vez como `decide` e ao 
 | **D-P7** | Retenção do registro de auditoria e das perguntas do chat?             | Jurídico do cliente | `T-012`               | H-11      | `T-250`, `T-323`, `T-324`                            |
 | **D-P8** | O filtro de ano continua com dois valores fixos ou vira seleção livre? | Produto             | `T-002`               | H-01      | `T-004`, `T-013`, `T-152`, `T-153`, `T-237`, `T-307` |
 
+## Decisões já registradas
+
+Quando uma decisão é tomada, ela vira documento versionado — é ele que as
+tarefas de F1 citam quando escrevem `D-Pn` no campo `PRD:`.
+
+| Ref      | Documento                                            | Data       | Escolha                                                   |
+| -------- | ---------------------------------------------------- | ---------- | --------------------------------------------------------- |
+| **D-P8** | [D-P8-filtro-ano.md](../decisoes/D-P8-filtro-ano.md) | 2026-08-22 | O ano é dimensão parametrizável; a lista vem de `getMeta` |
+
+Fora da seção 18, a revisão de D4 seguiu o mesmo formato:
+[D-D4-biblioteca-de-graficos.md](../decisoes/D-D4-biblioteca-de-graficos.md).
+
 ## Os 4 princípios: quem os aplica
 
 Princípio não se decide nem se destrava — ele é portão de verificação de toda tarefa (EXECUTE.md seção 1).
