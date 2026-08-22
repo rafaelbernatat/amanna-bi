@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 200 pendentes e 31 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 199 pendentes e 32 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 20 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 21 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **31 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **32 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -361,7 +361,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-172** `P1` `L` `paineis` Entregar acessibilidade: alternativa textual, teclado, contraste e auditoria em CI
   · **Aceite:** Todo SVG de painel sai com role=img e rótulo acessível derivado de título, nota e fórmula, exigido nos 71 painéis; um teste percorre por teclado barra lateral, abas, os cinco filtros e o botão de voltar ao consolidado; o axe roda nas 13 telas sem violação séria ou crítica; e com a folha de cor neutralizada todo indicador crítico ainda traz rótulo ou seta.
   · **PRD:** seção 13 acessibilidade, RF-04 · **Depende de:** T-006, T-128, T-131
-- [ ] **T-173** `P1` `S` `seguranca` Declarar a matriz de autorização perfil x módulo x tela x painel
+- [X] **T-173** `P1` `S` `seguranca` Declarar a matriz de autorização perfil x módulo x tela x painel
   · **Aceite:** Arquivo versionado mapeia os 5 perfis para as 13 telas e os 71 painéis (controller: Financeiro e Integração; rh: RH e Integração; diretoria: tudo; area: tudo com recorte fixo; auditor: leitura e trilha), e o teste falha se algum id do Anexo A ficar sem entrada.
   · **PRD:** seção 11, Anexo A.2, Anexo A.3, Anexo A.4 · **Depende de:** T-107, T-135
 - [ ] **T-174** `P1` `M` `seguranca` Renderizar o estado sem permissão sem revelar valor agregado

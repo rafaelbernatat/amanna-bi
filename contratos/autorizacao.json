@@ -1,0 +1,509 @@
+{
+  "origem": "src/seguranca/autorizacao.ts (T-173) — derivado, nao editar a mao",
+  "regra": "PRD secao 11: concessao por modulo; excecoes explicitas com motivo",
+  "excecoes": [],
+  "totais": {
+    "diretoria": 71,
+    "controller": 27,
+    "rh": 49,
+    "area": 71,
+    "auditor": 71
+  },
+  "matriz": {
+    "diretoria": {
+      "rh/visao": {
+        "rh-headcount": "leitura",
+        "rh-turnover": "leitura",
+        "rh-retencao": "leitura",
+        "rh-flash": "leitura",
+        "rh-folha": "leitura",
+        "rh-areas": "leitura"
+      },
+      "rh/colab": {
+        "col-area": "leitura",
+        "col-perfil": "leitura",
+        "col-idade": "leitura",
+        "col-tempo": "leitura",
+        "col-escol": "leitura",
+        "col-mapa": "leitura",
+        "col-geo": "leitura"
+      },
+      "rh/turnover": {
+        "tov-12m": "leitura",
+        "tov-tipos": "leitura",
+        "tov-area": "leitura",
+        "tov-corte": "leitura",
+        "tov-resumo": "leitura",
+        "tov-custo": "leitura"
+      },
+      "rh/recrut": {
+        "rec-dias": "leitura",
+        "rec-status": "leitura",
+        "rec-funil": "leitura",
+        "rec-fontes": "leitura",
+        "rec-tempo": "leitura",
+        "rec-vagas": "leitura",
+        "rec-resumo": "leitura"
+      },
+      "rh/trein": {
+        "tre-horas": "leitura",
+        "tre-conclusao": "leitura",
+        "tre-modal": "leitura",
+        "tre-conclmod": "leitura",
+        "tre-invest": "leitura",
+        "tre-area": "leitura"
+      },
+      "rh/engaj": {
+        "eng-area": "leitura",
+        "eng-cat": "leitura",
+        "eng-enps": "leitura",
+        "eng-eng": "leitura",
+        "eng-abs": "leitura",
+        "eng-clima": "leitura"
+      },
+      "rh/sal": {
+        "sal-medio": "leitura",
+        "sal-comp": "leitura",
+        "sal-folha": "leitura",
+        "sal-faixas": "leitura",
+        "sal-benef": "leitura",
+        "sal-resumo": "leitura"
+      },
+      "fin/visao": {
+        "fin-receita": "leitura",
+        "fin-margens": "leitura",
+        "fin-ebitda": "leitura",
+        "fin-dre": "leitura"
+      },
+      "fin/caixa": {
+        "cx-diario": "leitura",
+        "cx-ponte": "leitura",
+        "cx-saldo": "leitura",
+        "cx-fluxo": "leitura",
+        "cx-cat": "leitura"
+      },
+      "fin/orc": {
+        "orc-vs": "leitura",
+        "orc-desvio": "leitura",
+        "orc-gastos": "leitura",
+        "orc-acum": "leitura"
+      },
+      "fin/contas": {
+        "ct-ciclo": "leitura",
+        "cr-aging": "leitura",
+        "cp-aging": "leitura",
+        "cr-inadim": "leitura",
+        "cp-fornec": "leitura"
+      },
+      "fin/fat": {
+        "fat-evolucao": "leitura",
+        "fat-segm": "leitura",
+        "fat-margem": "leitura",
+        "fat-risco": "leitura"
+      },
+      "int/cruz": {
+        "int-rpc": "leitura",
+        "int-ebitda-pc": "leitura",
+        "int-hc-desp": "leitura",
+        "int-scatter": "leitura",
+        "int-pct": "leitura"
+      }
+    },
+    "controller": {
+      "rh/visao": {
+        "rh-headcount": "nenhum",
+        "rh-turnover": "nenhum",
+        "rh-retencao": "nenhum",
+        "rh-flash": "nenhum",
+        "rh-folha": "nenhum",
+        "rh-areas": "nenhum"
+      },
+      "rh/colab": {
+        "col-area": "nenhum",
+        "col-perfil": "nenhum",
+        "col-idade": "nenhum",
+        "col-tempo": "nenhum",
+        "col-escol": "nenhum",
+        "col-mapa": "nenhum",
+        "col-geo": "nenhum"
+      },
+      "rh/turnover": {
+        "tov-12m": "nenhum",
+        "tov-tipos": "nenhum",
+        "tov-area": "nenhum",
+        "tov-corte": "nenhum",
+        "tov-resumo": "nenhum",
+        "tov-custo": "nenhum"
+      },
+      "rh/recrut": {
+        "rec-dias": "nenhum",
+        "rec-status": "nenhum",
+        "rec-funil": "nenhum",
+        "rec-fontes": "nenhum",
+        "rec-tempo": "nenhum",
+        "rec-vagas": "nenhum",
+        "rec-resumo": "nenhum"
+      },
+      "rh/trein": {
+        "tre-horas": "nenhum",
+        "tre-conclusao": "nenhum",
+        "tre-modal": "nenhum",
+        "tre-conclmod": "nenhum",
+        "tre-invest": "nenhum",
+        "tre-area": "nenhum"
+      },
+      "rh/engaj": {
+        "eng-area": "nenhum",
+        "eng-cat": "nenhum",
+        "eng-enps": "nenhum",
+        "eng-eng": "nenhum",
+        "eng-abs": "nenhum",
+        "eng-clima": "nenhum"
+      },
+      "rh/sal": {
+        "sal-medio": "nenhum",
+        "sal-comp": "nenhum",
+        "sal-folha": "nenhum",
+        "sal-faixas": "nenhum",
+        "sal-benef": "nenhum",
+        "sal-resumo": "nenhum"
+      },
+      "fin/visao": {
+        "fin-receita": "leitura",
+        "fin-margens": "leitura",
+        "fin-ebitda": "leitura",
+        "fin-dre": "leitura"
+      },
+      "fin/caixa": {
+        "cx-diario": "leitura",
+        "cx-ponte": "leitura",
+        "cx-saldo": "leitura",
+        "cx-fluxo": "leitura",
+        "cx-cat": "leitura"
+      },
+      "fin/orc": {
+        "orc-vs": "leitura",
+        "orc-desvio": "leitura",
+        "orc-gastos": "leitura",
+        "orc-acum": "leitura"
+      },
+      "fin/contas": {
+        "ct-ciclo": "leitura",
+        "cr-aging": "leitura",
+        "cp-aging": "leitura",
+        "cr-inadim": "leitura",
+        "cp-fornec": "leitura"
+      },
+      "fin/fat": {
+        "fat-evolucao": "leitura",
+        "fat-segm": "leitura",
+        "fat-margem": "leitura",
+        "fat-risco": "leitura"
+      },
+      "int/cruz": {
+        "int-rpc": "leitura",
+        "int-ebitda-pc": "leitura",
+        "int-hc-desp": "leitura",
+        "int-scatter": "leitura",
+        "int-pct": "leitura"
+      }
+    },
+    "rh": {
+      "rh/visao": {
+        "rh-headcount": "leitura",
+        "rh-turnover": "leitura",
+        "rh-retencao": "leitura",
+        "rh-flash": "leitura",
+        "rh-folha": "leitura",
+        "rh-areas": "leitura"
+      },
+      "rh/colab": {
+        "col-area": "leitura",
+        "col-perfil": "leitura",
+        "col-idade": "leitura",
+        "col-tempo": "leitura",
+        "col-escol": "leitura",
+        "col-mapa": "leitura",
+        "col-geo": "leitura"
+      },
+      "rh/turnover": {
+        "tov-12m": "leitura",
+        "tov-tipos": "leitura",
+        "tov-area": "leitura",
+        "tov-corte": "leitura",
+        "tov-resumo": "leitura",
+        "tov-custo": "leitura"
+      },
+      "rh/recrut": {
+        "rec-dias": "leitura",
+        "rec-status": "leitura",
+        "rec-funil": "leitura",
+        "rec-fontes": "leitura",
+        "rec-tempo": "leitura",
+        "rec-vagas": "leitura",
+        "rec-resumo": "leitura"
+      },
+      "rh/trein": {
+        "tre-horas": "leitura",
+        "tre-conclusao": "leitura",
+        "tre-modal": "leitura",
+        "tre-conclmod": "leitura",
+        "tre-invest": "leitura",
+        "tre-area": "leitura"
+      },
+      "rh/engaj": {
+        "eng-area": "leitura",
+        "eng-cat": "leitura",
+        "eng-enps": "leitura",
+        "eng-eng": "leitura",
+        "eng-abs": "leitura",
+        "eng-clima": "leitura"
+      },
+      "rh/sal": {
+        "sal-medio": "leitura",
+        "sal-comp": "leitura",
+        "sal-folha": "leitura",
+        "sal-faixas": "leitura",
+        "sal-benef": "leitura",
+        "sal-resumo": "leitura"
+      },
+      "fin/visao": {
+        "fin-receita": "nenhum",
+        "fin-margens": "nenhum",
+        "fin-ebitda": "nenhum",
+        "fin-dre": "nenhum"
+      },
+      "fin/caixa": {
+        "cx-diario": "nenhum",
+        "cx-ponte": "nenhum",
+        "cx-saldo": "nenhum",
+        "cx-fluxo": "nenhum",
+        "cx-cat": "nenhum"
+      },
+      "fin/orc": {
+        "orc-vs": "nenhum",
+        "orc-desvio": "nenhum",
+        "orc-gastos": "nenhum",
+        "orc-acum": "nenhum"
+      },
+      "fin/contas": {
+        "ct-ciclo": "nenhum",
+        "cr-aging": "nenhum",
+        "cp-aging": "nenhum",
+        "cr-inadim": "nenhum",
+        "cp-fornec": "nenhum"
+      },
+      "fin/fat": {
+        "fat-evolucao": "nenhum",
+        "fat-segm": "nenhum",
+        "fat-margem": "nenhum",
+        "fat-risco": "nenhum"
+      },
+      "int/cruz": {
+        "int-rpc": "leitura",
+        "int-ebitda-pc": "leitura",
+        "int-hc-desp": "leitura",
+        "int-scatter": "leitura",
+        "int-pct": "leitura"
+      }
+    },
+    "area": {
+      "rh/visao": {
+        "rh-headcount": "leitura",
+        "rh-turnover": "leitura",
+        "rh-retencao": "leitura",
+        "rh-flash": "leitura",
+        "rh-folha": "leitura",
+        "rh-areas": "leitura"
+      },
+      "rh/colab": {
+        "col-area": "leitura",
+        "col-perfil": "leitura",
+        "col-idade": "leitura",
+        "col-tempo": "leitura",
+        "col-escol": "leitura",
+        "col-mapa": "leitura",
+        "col-geo": "leitura"
+      },
+      "rh/turnover": {
+        "tov-12m": "leitura",
+        "tov-tipos": "leitura",
+        "tov-area": "leitura",
+        "tov-corte": "leitura",
+        "tov-resumo": "leitura",
+        "tov-custo": "leitura"
+      },
+      "rh/recrut": {
+        "rec-dias": "leitura",
+        "rec-status": "leitura",
+        "rec-funil": "leitura",
+        "rec-fontes": "leitura",
+        "rec-tempo": "leitura",
+        "rec-vagas": "leitura",
+        "rec-resumo": "leitura"
+      },
+      "rh/trein": {
+        "tre-horas": "leitura",
+        "tre-conclusao": "leitura",
+        "tre-modal": "leitura",
+        "tre-conclmod": "leitura",
+        "tre-invest": "leitura",
+        "tre-area": "leitura"
+      },
+      "rh/engaj": {
+        "eng-area": "leitura",
+        "eng-cat": "leitura",
+        "eng-enps": "leitura",
+        "eng-eng": "leitura",
+        "eng-abs": "leitura",
+        "eng-clima": "leitura"
+      },
+      "rh/sal": {
+        "sal-medio": "leitura",
+        "sal-comp": "leitura",
+        "sal-folha": "leitura",
+        "sal-faixas": "leitura",
+        "sal-benef": "leitura",
+        "sal-resumo": "leitura"
+      },
+      "fin/visao": {
+        "fin-receita": "leitura",
+        "fin-margens": "leitura",
+        "fin-ebitda": "leitura",
+        "fin-dre": "leitura"
+      },
+      "fin/caixa": {
+        "cx-diario": "leitura",
+        "cx-ponte": "leitura",
+        "cx-saldo": "leitura",
+        "cx-fluxo": "leitura",
+        "cx-cat": "leitura"
+      },
+      "fin/orc": {
+        "orc-vs": "leitura",
+        "orc-desvio": "leitura",
+        "orc-gastos": "leitura",
+        "orc-acum": "leitura"
+      },
+      "fin/contas": {
+        "ct-ciclo": "leitura",
+        "cr-aging": "leitura",
+        "cp-aging": "leitura",
+        "cr-inadim": "leitura",
+        "cp-fornec": "leitura"
+      },
+      "fin/fat": {
+        "fat-evolucao": "leitura",
+        "fat-segm": "leitura",
+        "fat-margem": "leitura",
+        "fat-risco": "leitura"
+      },
+      "int/cruz": {
+        "int-rpc": "leitura",
+        "int-ebitda-pc": "leitura",
+        "int-hc-desp": "leitura",
+        "int-scatter": "leitura",
+        "int-pct": "leitura"
+      }
+    },
+    "auditor": {
+      "rh/visao": {
+        "rh-headcount": "leitura_e_trilha",
+        "rh-turnover": "leitura_e_trilha",
+        "rh-retencao": "leitura_e_trilha",
+        "rh-flash": "leitura_e_trilha",
+        "rh-folha": "leitura_e_trilha",
+        "rh-areas": "leitura_e_trilha"
+      },
+      "rh/colab": {
+        "col-area": "leitura_e_trilha",
+        "col-perfil": "leitura_e_trilha",
+        "col-idade": "leitura_e_trilha",
+        "col-tempo": "leitura_e_trilha",
+        "col-escol": "leitura_e_trilha",
+        "col-mapa": "leitura_e_trilha",
+        "col-geo": "leitura_e_trilha"
+      },
+      "rh/turnover": {
+        "tov-12m": "leitura_e_trilha",
+        "tov-tipos": "leitura_e_trilha",
+        "tov-area": "leitura_e_trilha",
+        "tov-corte": "leitura_e_trilha",
+        "tov-resumo": "leitura_e_trilha",
+        "tov-custo": "leitura_e_trilha"
+      },
+      "rh/recrut": {
+        "rec-dias": "leitura_e_trilha",
+        "rec-status": "leitura_e_trilha",
+        "rec-funil": "leitura_e_trilha",
+        "rec-fontes": "leitura_e_trilha",
+        "rec-tempo": "leitura_e_trilha",
+        "rec-vagas": "leitura_e_trilha",
+        "rec-resumo": "leitura_e_trilha"
+      },
+      "rh/trein": {
+        "tre-horas": "leitura_e_trilha",
+        "tre-conclusao": "leitura_e_trilha",
+        "tre-modal": "leitura_e_trilha",
+        "tre-conclmod": "leitura_e_trilha",
+        "tre-invest": "leitura_e_trilha",
+        "tre-area": "leitura_e_trilha"
+      },
+      "rh/engaj": {
+        "eng-area": "leitura_e_trilha",
+        "eng-cat": "leitura_e_trilha",
+        "eng-enps": "leitura_e_trilha",
+        "eng-eng": "leitura_e_trilha",
+        "eng-abs": "leitura_e_trilha",
+        "eng-clima": "leitura_e_trilha"
+      },
+      "rh/sal": {
+        "sal-medio": "leitura_e_trilha",
+        "sal-comp": "leitura_e_trilha",
+        "sal-folha": "leitura_e_trilha",
+        "sal-faixas": "leitura_e_trilha",
+        "sal-benef": "leitura_e_trilha",
+        "sal-resumo": "leitura_e_trilha"
+      },
+      "fin/visao": {
+        "fin-receita": "leitura_e_trilha",
+        "fin-margens": "leitura_e_trilha",
+        "fin-ebitda": "leitura_e_trilha",
+        "fin-dre": "leitura_e_trilha"
+      },
+      "fin/caixa": {
+        "cx-diario": "leitura_e_trilha",
+        "cx-ponte": "leitura_e_trilha",
+        "cx-saldo": "leitura_e_trilha",
+        "cx-fluxo": "leitura_e_trilha",
+        "cx-cat": "leitura_e_trilha"
+      },
+      "fin/orc": {
+        "orc-vs": "leitura_e_trilha",
+        "orc-desvio": "leitura_e_trilha",
+        "orc-gastos": "leitura_e_trilha",
+        "orc-acum": "leitura_e_trilha"
+      },
+      "fin/contas": {
+        "ct-ciclo": "leitura_e_trilha",
+        "cr-aging": "leitura_e_trilha",
+        "cp-aging": "leitura_e_trilha",
+        "cr-inadim": "leitura_e_trilha",
+        "cp-fornec": "leitura_e_trilha"
+      },
+      "fin/fat": {
+        "fat-evolucao": "leitura_e_trilha",
+        "fat-segm": "leitura_e_trilha",
+        "fat-margem": "leitura_e_trilha",
+        "fat-risco": "leitura_e_trilha"
+      },
+      "int/cruz": {
+        "int-rpc": "leitura_e_trilha",
+        "int-ebitda-pc": "leitura_e_trilha",
+        "int-hc-desp": "leitura_e_trilha",
+        "int-scatter": "leitura_e_trilha",
+        "int-pct": "leitura_e_trilha"
+      }
+    }
+  }
+}
