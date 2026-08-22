@@ -103,6 +103,14 @@ Alguém com permissão de administrador no repositório github.com/rafaelbernata
 | **Onde o resultado vai** | Configuração do repositório em github.com/rafaelbernatat/amanna-bi (Settings > Actions, Settings > Billing e Settings > Rules), casando com os nomes dos jobs em .github/workflows/ci.yml |
 | **Destrava** | T-006, T-123, T-139, T-161, T-171, T-172, T-175, T-188, T-191 *(9 tarefas)* |
 
+> **Já pronto do lado da Engenharia (2026-08-21).** O arquivo
+> `.github/workflows/ci.yml` existe no repositório e traz exatamente os cinco
+> jobs a marcar como obrigatórios, com estes nomes: `typecheck`, `lint`,
+> `teste`, `build`, `e2e`. As cinco etapas passam localmente. Falta só o que
+> depende de permissão de administrador: habilitar o Actions, confirmar os
+> minutos e criar o ruleset em `main`. A tarefa T-006 está parada em `⏸`
+> esperando isto.
+
 ### [ ] H-03 · Aprovar a errata do Anexo C e fechar o dataset de referência
 
 `P0` · **Responsável:** Produto
