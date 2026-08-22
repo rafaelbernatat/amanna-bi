@@ -130,14 +130,19 @@ describe("o mapa KPI → painel (T-108)", () => {
     }
   });
 
-  it("são exatamente cinco sem detalhamento, e nenhum a mais", () => {
+  it("são exatamente dez sem detalhamento, e nenhum a mais", () => {
     // Fixado para só encolher: um KPI novo sem painel entra calado se ninguém
     // contar, e "sem detalhamento" vira o padrão em vez da exceção.
     expect(SEM_DETALHAMENTO.map((k) => k.id).sort()).toEqual([
+      "fin-caixa-conversao-de-dez",
+      "fin-fat-concentracao-top-10",
       "fin-fat-ticket-medio",
+      "fin-visao-receita-bruta",
       "rh-engaj-cobertura-da-pesquisa",
       "rh-recrut-custo-por-contratacao",
+      "rh-sal-custo-por-colaborador",
       "rh-trein-custo-por-hora",
+      "rh-turnover-tempo-ate-a-saida",
       "rh-visao-enps",
     ]);
   });
@@ -190,40 +195,122 @@ describe("unidade e sentido", () => {
   });
 });
 
-describe("os KPIs cravados no protótipo (Anexo D achado 5)", () => {
-  it("são catorze, e o conjunto está fixado para só encolher", () => {
+describe("os KPIs que não reagem a filtro (relacionado ao Anexo D achado 5)", () => {
+  it("são vinte e três, e o conjunto está fixado para só encolher", () => {
     /*
-     * Catorze dos setenta não respondem a filtro nenhum no protótipo.
+     * A primeira versão deste teste dizia catorze, e passava.
      *
-     * Fixar a lista transforma o achado em lista de verificação da Fase 2:
-     * cada um que passar a responder ao recorte sai daqui, e um KPI novo
-     * cravado não entra calado.
+     * O critério escrito era "não responde a filtro nenhum", mas a medição só
+     * pegava valor em string literal. Um número literal **passado a um
+     * formatador** — `this.pc(54.3)` — parecia calculado e escapava. Nove
+     * escaparam assim.
+     *
+     * O teste abaixo fixa a medição correta; o `describe` seguinte impede que
+     * o mesmo ponto cego volte.
      */
     expect(CONSTANTES_NO_PROTOTIPO.map((k) => k.id).sort()).toEqual([
+      "fin-caixa-conversao-de-dez",
       "fin-contas-ciclo-de-conversao",
+      "fin-contas-inadimplencia",
       "fin-contas-pme",
       "fin-contas-pmp",
       "fin-contas-pmr",
+      "fin-fat-concentracao-top-10",
       "fin-fat-ticket-medio",
+      "fin-visao-margem-bruta",
+      "fin-visao-margem-liquida",
       "rh-colab-estados-atendidos",
       "rh-colab-idade-media",
+      "rh-colab-superior-ou-mais",
       "rh-colab-tempo-medio-de-casa",
+      "rh-engaj-cobertura-da-pesquisa",
+      "rh-engaj-promotores",
       "rh-recrut-custo-por-contratacao",
       "rh-recrut-tempo-de-fechamento",
       "rh-sal-encargos",
       "rh-trein-conclusao-media",
+      "rh-trein-custo-por-hora",
       "rh-trein-participacao",
       "rh-turnover-tempo-ate-a-saida",
     ]);
   });
 
-  it("o ciclo financeiro inteiro está entre eles", () => {
-    // PMR, PME, PMP e o ciclo: os quatro números da tela `fin/contas` que a
+  it("os cinco números de fin/contas estão todos entre eles", () => {
+    // PMR, PME, PMP, o ciclo e a inadimplência: a tela inteira que a
     // Controladoria mais olha, e nenhum deles muda de recorte hoje.
-    const ciclo = CONSTANTES_NO_PROTOTIPO.filter(
-      (k) => k.tela === "fin/contas",
-    );
-    expect(ciclo.length).toBe(4);
+    expect(
+      CONSTANTES_NO_PROTOTIPO.filter((k) => k.tela === "fin/contas").length,
+    ).toBe(5);
+  });
+});
+
+describe("o ponto cego que produziu a contagem errada", () => {
+  /**
+   * A regressão que este bloco impede.
+   *
+   * Medir "constante" por string literal deixa passar `this.pc(54.3)`. A
+   * medição correta pergunta se a **expressão consulta filtro** — `F.`, `D.`,
+   * `AR` ou `S(...)`. Aqui isso é re-derivado do protótipo a cada rodada, e
+   * comparado com o registro: se alguém reescrever o registro pela regra
+   * errada, os dois divergem e o teste reprova.
+   */
+  const prototipo = readFileSync(
+    resolve(RAIZ, "public", "design", "Dashboard BI v2.dc.html"),
+    "utf8",
+  );
+
+  function kpisRaw(): string {
+    const i = prototipo.indexOf("kpisRaw(t, s, F) {");
+    return prototipo.slice(i, prototipo.indexOf("\n  }\n", i));
+  }
+
+  it("re-derivar do protótipo dá o mesmo conjunto que o registro", () => {
+    const corpo = kpisRaw();
+    // `vg` é helper que lê AR e F.ent: quem o chama reage a filtro.
+    const consultaFiltro =
+      /\bF\.|\bD\.|\bAR\b|\bS\(|\bvg\(|\bhc\b|\bfolha\b|\brec\b|\beb\b|\bor\b|\bre\b|\breclY\b|\bhc0\b/;
+
+    let constantes = 0;
+    for (const m of corpo.matchAll(/\{ l: '/g)) {
+      const inicio = m.index ?? 0;
+      let prof = 0;
+      let fim = inicio;
+      for (let k = inicio; k < corpo.length; k++) {
+        if (corpo[k] === "{") prof++;
+        else if (corpo[k] === "}") {
+          prof--;
+          if (prof === 0) {
+            fim = k + 1;
+            break;
+          }
+        }
+      }
+      const item = corpo.slice(inicio, fim);
+      // o valor de `v:`, até a vírgula de topo
+      const jv = item.indexOf("v: ") + 3;
+      let p2 = 0;
+      let v = item.slice(jv);
+      for (let k = jv; k < item.length; k++) {
+        const c = item[k] ?? "";
+        if (c === "(" || c === "[") p2++;
+        else if (c === ")" || c === "]") p2--;
+        else if (c === "," && p2 === 0) {
+          v = item.slice(jv, k);
+          break;
+        }
+      }
+      if (!consultaFiltro.test(v)) constantes++;
+    }
+
+    expect(constantes).toBe(CONSTANTES_NO_PROTOTIPO.length);
+  });
+
+  it("e a medição ingênua daria outro número — é por isso que ela não serve", () => {
+    // A prova de que o teste acima não é decorativo: contar só string literal
+    // dá 14, e 14 foi o que ficou commitado por engano.
+    const corpo = kpisRaw();
+    const soLiteral = [...corpo.matchAll(/v: '(?!\+'|R\$ ')[^']*'/g)].length;
+    expect(soLiteral).toBeLessThan(CONSTANTES_NO_PROTOTIPO.length);
   });
 });
 

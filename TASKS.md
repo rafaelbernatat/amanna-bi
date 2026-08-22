@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 198 pendentes e 33 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 197 pendentes e 34 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 22 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 23 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **33 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **34 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -166,7 +166,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-107** `P0` `M` `dados` Publicar o registro dos 71 painéis com tela, forma, span, unidade, fórmula e view
   · **Aceite:** Um teste compara o registro com o inventário do Anexo A e falha em id faltante, extra, tela divergente ou forma fora das 12; o mesmo teste reprova tela com mais de 6 KPIs ou 7 painéis.
   · **PRD:** Anexo A.2, Anexo A.3, Anexo A.4, seção 5, RF-04 · **Depende de:** T-102
-- [~] **T-108** `P0` `M` `dados` Mapear qual painel detalha qual KPI nas 13 telas   ⏳ 2026-08-22 18:40 · sessao-68c8
+- [X] **T-108** `P0` `M` `dados` Mapear qual painel detalha qual KPI nas 13 telas
   · **Aceite:** Cada KPI das 13 telas está mapeado ao painel que o detalha ou marcado como sem detalhamento com justificativa escrita; o mapa é o insumo da suíte de reconciliação e o teste falha se um KPI novo entrar sem classificação.
   · **PRD:** seção 9.2 regra 1, RF-03, Anexo D achado 4 · **Depende de:** T-107
 - [X] **T-109** `P0` `S` `dados` Tornar a fórmula obrigatória no contrato e remover a chave que a desliga
@@ -412,7 +412,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-189** `P1` `M` `auditoria` Sessão de aprovação do catálogo de métricas com Controladoria e RH, como gate de entrada de F2  ⛔ H-06, H-07, H-08
   · **Aceite:** as 36 métricas (21 do Anexo B mais as 15 do achado 5) são percorridas uma a uma com rótulo, fonte, fórmula, unidade, agg, sentido e grao_minimo; cada uma sai aprovada ou com linha decisão registrada com data e áreas aprovadoras; a versão semântica do catálogo aprovada é nomeada e é ela que T-219 e T-220 citam ao preencher o mapeamento.
   · **PRD:** Cabeçalho do PRD, 'Decisão pedida: aprovar o catálogo de métricas (seção 9) e o mapeamento das views (seção 10) antes de F2', combinado com seção 9.4 ('arquivo versionado, revisado por Controladoria e RH em conjunto')
-- [ ] **T-190** `P1` `M` `auditoria` Publicar o registro dos KPIs das 13 telas
+- [ ] **T-190** `P1` `M` `auditoria` Publicar o registro dos KPIs das 13 telas   ⛔ H-48
   · **Aceite:** arquivo versionado com id, tela, rótulo, unidade, métrica do catálogo, sentido e painel que o detalha para cada KPI; um teste reprova se uma tela declarar mais de 6, se um KPI apontar para métrica inexistente no catálogo, se um KPI renderizado não constar do registro, ou se algum dos 15 KPIs do achado 5 estiver ausente; T-108 e T-128 passam a consumir esse registro em vez de pressupô-lo.
   · **PRD:** seção 5 ('Cada tela carrega até 6 KPIs no topo'), RF-07 e Anexo D achado 5
 - [ ] **T-191** `P2` `M` `paineis` Cobrir o grid responsivo e travar o orçamento de bundle
@@ -588,7 +588,7 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 - [ ] **T-250** `P1` `M` `seguranca` Anexar ao contrato as views, a fronteira de dados e o registro LGPD
   · **Aceite:** O anexo técnico com as 7 views, dicionário de colunas e prazo de entrega pela TI está no contrato assinado; um documento versionado declara o que sai do ambiente (catálogo, pergunta e números agregados), o que nunca sai, o subprocessador da API e a retenção; e o registro LGPD lista categorias, finalidade, base legal e retenção apontando o controle técnico correspondente.
   · **PRD:** seção 11, seção 14, seção 17, D1, D5, D-P7 · **Depende de:** T-201
-- [ ] **T-251** `P1` `M` `auditoria` Travar a contagem num único artefato
+- [ ] **T-251** `P1` `M` `auditoria` Travar a contagem num único artefato   ⛔ H-48
   · **Aceite:** arquivo versionado com os 15 KPIs do achado 5 (id, tela, métrica do catálogo), referenciado por T-117, T-128 e T-222. o teste é parametrizado por esse arquivo e falha se a contagem divergir de 15; exige variação em pelo menos dois valores de cada um dos cinco filtros; roda nos dois modos de DATA_SOURCE.
   · **PRD:** Anexo D achado 5 - contagem dos KPIs literais (RF-07)
 - [ ] **T-252** `P1` `M` `auditoria` Kit de apoio à construção das views e caminho alternativo direto do ERP  ⛔ H-10, H-12, H-18, H-19

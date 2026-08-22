@@ -12,6 +12,8 @@
     "schema:check": "node ferramentas/schema/gerar.mjs --check",
     "autorizacao": "node ferramentas/schema/autorizacao.mjs",
     "autorizacao:check": "node ferramentas/schema/autorizacao.mjs --check",
+    "instrucoes": "node ferramentas/instrucoes/conferir.mjs",
+    "instrucoes:check": "node ferramentas/instrucoes/conferir.mjs --check",
     "catalogo:check": "tsx ferramentas/catalogo/conferir.mts",
     "build": "npm run schema:check && npm run autorizacao:check && next build",
     "start": "next start",
@@ -68,6 +70,9 @@
     ],
     "src/seguranca/autorizacao.ts": [
       "node ferramentas/schema/autorizacao.mjs --check"
+    ],
+    "INSTRUCOES.md": [
+      "node ferramentas/instrucoes/conferir.mjs --check"
     ]
   }
 }

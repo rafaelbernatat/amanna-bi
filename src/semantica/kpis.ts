@@ -23,13 +23,30 @@
  * diferente de uma fórmula errada, que produz um número errado em silêncio —
  * por isso fórmula não está aqui, e sim no catálogo (seção 9.4).
  *
- * ## `constanteNoPrototipo`: o achado 5 do Anexo D, contado
+ * ## `constanteNoPrototipo`: 23, e o Anexo D achado 5 subconta
  *
- * Catorze dos setenta KPIs têm o valor **cravado** no protótipo: não respondem
- * a filtro nenhum. `Idade média` é sempre `'34,2 anos'`, o `Ciclo de conversão`
- * é sempre `'76 dias'`. Marcá-los aqui transforma o achado numa lista de
- * verificação: quando o adaptador entrar, são exatamente estes que precisam
- * passar a mudar com o recorte, e o teste segura a linha.
+ * **Vinte e três** dos setenta KPIs não respondem a filtro nenhum no
+ * protótipo. O critério não é "o valor é uma string literal" — é *a expressão
+ * não consulta filtro (`F.`), série (`D.`), área (`AR`) nem `S(...)`*.
+ *
+ * A distinção importa porque a primeira versão deste registro dizia 14, e
+ * errava justamente onde é mais fácil errar: um número literal **passado a um
+ * formatador** parece calculado.
+ *
+ * ```js
+ * v: this.pc(54.3)   // Concentração top 10 — constante, parece calculado
+ * v: this.pc(4.1)    // Inadimplência       — idem
+ * v: this.pc(D.eng[L]) // Engajamento       — este sim vem de dado
+ * ```
+ *
+ * O Anexo D achado 5 nomeia 15 itens. Confrontado com os 23 medidos: 11 estão
+ * nas duas listas, 3 só o Anexo achou, 3 só a medição achou, e **6 não estão
+ * em nenhuma das duas** (`Superior ou mais`, `Custo por hora`, `Promotores`,
+ * `Margem bruta`, `Margem líquida`, `Conversão de Dez`). Um dos 15 do Anexo —
+ * "mediana salarial R$ 6.240" — não é KPI: é texto de nota de painel.
+ *
+ * Corrigir o Anexo D é edição do PRD, reservada pelo EXECUTE §11. Está em
+ * **H-48**. Até lá, esta lista é a medida, e o Anexo é a referência histórica.
  */
 
 import type { Sentido, Unidade } from "@/semantica/contrato";
@@ -180,7 +197,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     sentido: "neutro",
     rodape: "maior titulação declarada",
     detalhadoPor: "col-escol",
-    constanteNoPrototipo: false,
+    constanteNoPrototipo: true,
   },
   {
     id: "rh-turnover-turnover-12m",
@@ -239,7 +256,9 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: null,
     sentido: "maior_melhor",
     rodape: "faixa mais volátil",
-    detalhadoPor: "tov-corte",
+    detalhadoPor: null,
+    semDetalhamentoPorque:
+      "O KPI e tempo de casa na saida, medido em anos. tov-corte mede taxa de turnover por genero e faixa etaria, em percentual: quebra a populacao pelo criterio certo mas mede outra grandeza.",
     constanteNoPrototipo: true,
   },
   {
@@ -259,7 +278,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: null,
     sentido: "neutro",
     rodape: "triagem a proposta",
-    detalhadoPor: "rec-funil",
+    detalhadoPor: "rec-status",
     constanteNoPrototipo: false,
   },
   {
@@ -353,8 +372,8 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     rodape: "investimento ÷ horas",
     detalhadoPor: null,
     semDetalhamentoPorque:
-      "E razao entre investimento e horas, e os dois lados aparecem em paineis diferentes desta tela (tre-area e tre-horas). Nenhum quebra a razao, e apontar para um dos lados sozinho reconciliaria contra o numero errado.",
-    constanteNoPrototipo: false,
+      "E razao entre investimento e horas. tre-area carrega os dois lados (horas por area e investimento por trilha), mas em eixos e recortes diferentes: nenhum ponto do painel e a razao, e reconciliar contra ele compararia grandezas distintas.",
+    constanteNoPrototipo: true,
   },
   {
     id: "rh-trein-horas-por-fte",
@@ -404,7 +423,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     sentido: "maior_melhor",
     rodape: "da última pesquisa",
     detalhadoPor: "eng-cat",
-    constanteNoPrototipo: false,
+    constanteNoPrototipo: true,
   },
   {
     id: "rh-engaj-cobertura-da-pesquisa",
@@ -416,7 +435,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     detalhadoPor: null,
     semDetalhamentoPorque:
       "Nenhum dos 6 paineis quebra cobertura: e metadado da pesquisa (quantos responderam), nao medida do quadro.",
-    constanteNoPrototipo: false,
+    constanteNoPrototipo: true,
   },
   {
     id: "rh-engaj-area-mais-critica",
@@ -455,7 +474,9 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: "BRL_mi",
     sentido: "menor_melhor",
     rodape: "folha ÷ FTE anualizado",
-    detalhadoPor: "sal-folha",
+    detalhadoPor: null,
+    semDetalhamentoPorque:
+      "sal-folha soma R$ 186 mi no ano e o KPI vale cerca de R$ 150 mil por pessoa. Nenhum painel de rh/sal decompoe custo por pessoa: sal-medio mostra salario, que e outra medida.",
     constanteNoPrototipo: false,
   },
   {
@@ -495,7 +516,9 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: "BRL_mi",
     sentido: "maior_melhor",
     rodape: "vs. mesmo período do ano anterior",
-    detalhadoPor: "fin-receita",
+    detalhadoPor: null,
+    semDetalhamentoPorque:
+      "fin-receita mostra a receita liquida, e ja e o detalhamento do KPI de receita liquida logo abaixo. Nenhum painel de fin/visao abre a receita bruta, e dois KPIs de totais diferentes nao podem reconciliar contra o mesmo painel.",
     constanteNoPrototipo: false,
   },
   {
@@ -526,7 +549,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     sentido: "maior_melhor",
     rodape: "CMV em 60% da receita",
     detalhadoPor: "fin-margens",
-    constanteNoPrototipo: false,
+    constanteNoPrototipo: true,
   },
   {
     id: "fin-visao-margem-liquida",
@@ -536,7 +559,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     sentido: "maior_melhor",
     rodape: "juros consomem todo o EBIT",
     detalhadoPor: "fin-margens",
-    constanteNoPrototipo: false,
+    constanteNoPrototipo: true,
   },
   {
     id: "fin-visao-lucro-liquido",
@@ -554,7 +577,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     rotulo: "Saldo de caixa",
     unidade: "BRL_mi",
     sentido: "maior_melhor",
-    rodape: "vs. saldo inicial de ",
+    rodape: "vs. saldo inicial de {valor}",
     detalhadoPor: "cx-saldo",
     constanteNoPrototipo: false,
   },
@@ -584,7 +607,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     rotulo: "Financiamento (FCF)",
     unidade: "BRL_mi",
     sentido: "neutro",
-    rodape: "amortização ",
+    rodape: "amortização {valor} · juros {valor}",
     detalhadoPor: "cx-ponte",
     constanteNoPrototipo: false,
   },
@@ -595,8 +618,10 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: "pct",
     sentido: "maior_melhor",
     rodape: "abaixo do gatilho de 80%",
-    detalhadoPor: "cx-ponte",
-    constanteNoPrototipo: false,
+    detalhadoPor: null,
+    semDetalhamentoPorque:
+      "O KPI e a razao FCO sobre EBITDA de um mes, em percentual. A ponte e os saldos da tela estao em R$ mi no ano, e nenhum painel de fin/caixa decompoe o percentual de conversao.",
+    constanteNoPrototipo: true,
   },
   {
     id: "fin-orc-orcado",
@@ -685,8 +710,8 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: "pct",
     sentido: "menor_melhor",
     rodape: "R$ 7 mi sobre R$ 171 mi",
-    detalhadoPor: "cr-inadim",
-    constanteNoPrototipo: false,
+    detalhadoPor: "cr-aging",
+    constanteNoPrototipo: true,
   },
   {
     id: "fin-fat-faturamento",
@@ -704,7 +729,7 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     rotulo: "Crescimento YoY",
     unidade: "pct",
     sentido: "maior_melhor",
-    rodape: "base do ano anterior: ",
+    rodape: "base do ano anterior: {valor}",
     detalhadoPor: "fat-evolucao",
     constanteNoPrototipo: false,
   },
@@ -727,8 +752,10 @@ export const REGISTRO_DE_KPIS: readonly RegistroDeKpi[] = [
     unidade: "pct",
     sentido: "menor_melhor",
     rodape: "risco moderado de dependência",
-    detalhadoPor: "fat-risco",
-    constanteNoPrototipo: false,
+    detalhadoPor: null,
+    semDetalhamentoPorque:
+      "Nenhum dos 4 paineis de fin/fat ordena a carteira por cliente: fat-risco quebra por faixa de rating e fat-segm por segmento. Nem um nem outro soma aos 10 maiores, entao nenhum reconcilia com o KPI.",
+    constanteNoPrototipo: true,
   },
   {
     id: "int-cruz-receita-por-colaborador",
@@ -799,10 +826,11 @@ export const SEM_DETALHAMENTO: readonly RegistroDeKpi[] =
   REGISTRO_DE_KPIS.filter((k) => k.detalhadoPor === null);
 
 /**
- * Os KPIs cravados no protótipo (Anexo D achado 5).
+ * Os KPIs que não respondem a filtro nenhum no protótipo.
  *
  * Fixado em teste para **só encolher**: cada um que passar a responder ao
- * recorte sai desta lista, e a lista só cresce por decisão.
+ * recorte sai desta lista, e a lista só cresce por decisão. Relacionado ao
+ * Anexo D achado 5, que subconta — ver o cabeçalho deste arquivo e H-48.
  */
 export const CONSTANTES_NO_PROTOTIPO: readonly RegistroDeKpi[] =
   REGISTRO_DE_KPIS.filter((k) => k.constanteNoPrototipo);
