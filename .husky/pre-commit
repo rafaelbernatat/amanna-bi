@@ -1,0 +1,6 @@
+# Gancho de pre-commit (T-005).
+#
+# Roda lint-staged apenas sobre o que esta preparado para o commit. Bloqueia os
+# dois casos que o criterio de aceite nomeia: `any` explicito e formatacao
+# divergente. Sair diferente de zero cancela o commit.
+npx --no-install lint-staged

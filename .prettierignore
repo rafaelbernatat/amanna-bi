@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+package-lock.json
+next-env.d.ts
+
+# Protótipo — entrada somente leitura do laço (EXECUTE.md seção 4)
+public/
+
+# Documentos de entrada — o laço não os reformata (EXECUTE.md seção 11)
+PRD.md
+PRD-Painel-BI.md
+TASKS.md
+INSTRUCOES.md
+EXECUTE.md
