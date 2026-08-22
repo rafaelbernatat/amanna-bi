@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 216 pendentes e 15 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 215 pendentes e 16 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -36,12 +36,12 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | Fase | Tarefas | P0 | P1 | P2 | Concluídas |
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
-| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 4 de 14 |
+| [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 5 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 6 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **15 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **16 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -110,7 +110,7 @@ Nada aqui é código de produto, e tudo aqui destrava F1 ou F2. As oito decisõe
 - [X] **T-005.1** `P0` `M` `plataforma` Instalar o runner de teste de unidade e o arnês de e2e
   · **Aceite:** `npm test` e `npm run e2e` existem e executam ao menos um caso cada com contagem no relatório, cada comando sai diferente de zero quando um caso é quebrado de propósito, e o e2e sobe a aplicação e verifica uma rota servida sem intervenção manual.
   · **PRD:** seção 8.2 testes, seção 16 F1 · **Depende de:** T-001, T-005
-- [~] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e  ⏸ aguardando H-02
+- [X] **T-006** `P0` `M` `plataforma` Montar o pipeline de CI com typecheck, lint, teste, build e e2e
   · **Aceite:** Um pull request executa as cinco etapas com cache de dependências, qualquer etapa falhando reprova o merge, e o job completo termina em menos de 15 minutos.
   · **PRD:** seção 8.2, RF-21 · **Depende de:** T-001, T-005
 - [ ] **T-007** `P1` `S` `decisao` Decidir P2: transferência interna conta como desligamento  ⛔ H-06
@@ -406,7 +406,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-187** `P1` `M` `auditoria` Estender o escopo de narrativa aos KPIs
   · **Aceite:** rodapé e delta declaram o recorte em que são válidos e são suprimidos quando o recorte muda. o mesmo detector de valor absoluto de T-150 roda sobre rodapé e delta dos KPIs das 13 telas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
   · **PRD:** Anexo D achado 5 / RF-09 - rodapé e delta dos KPIs (kpisFor aplica hasAbs sobre k.f e k.d)
-- [ ] **T-188** `P1` `M` `auditoria` Renderizar as 13 telas sob o segundo adaptador ainda em F1  ⛔ H-02
+- [ ] **T-188** `P1` `M` `auditoria` Renderizar as 13 telas sob o segundo adaptador ainda em F1
   · **Aceite:** um job de CI sobe o Postgres semeado com as mesmas fixtures, executa as 13 rotas com DATA_SOURCE=warehouse e compara o HTML e o SVG servidos com a execução em fixtures no recorte padrão e em dois recortes fora do padrão; qualquer diferença de valor, categoria, nota, fórmula ou estado em qualquer dos 71 painéis reprova o pipeline.
   · **PRD:** seção 16, critério de saída de F1: 'A mesma tela roda com dois adaptadores distintos, e a suíte passa nos dois'
 - [ ] **T-189** `P1` `M` `auditoria` Sessão de aprovação do catálogo de métricas com Controladoria e RH, como gate de entrada de F2  ⛔ H-06, H-07, H-08

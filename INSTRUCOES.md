@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 44 itens (2 resolvidos), destravando 121 tarefas do backlog |
+| **Total** | 44 itens (3 resolvidos), destravando 121 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 8 (1 resolvido) | 4 | 34 |
+| Fase 1 · Contrato | 8 (2 resolvidos) | 3 | 34 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **44** | **27** | **121** |
+| **Total** | **44** | **26** | **121** |
 
 **Por responsável**
 
@@ -73,7 +73,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*8 itens · 4 P0 abertos · 1 resolvido*
+*8 itens · 3 P0 abertos · 2 resolvidos*
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -97,7 +97,7 @@ Marque 30 minutos com a pessoa responsável por Produto e leve a pergunta P8 da 
 > razões. Produto delegou a escolha por escrito à Engenharia — não houve sessão
 > de revisão de Produto, e isso está dito no próprio documento.
 
-### [ ] H-02 · Habilitar o GitHub Actions e tornar os cinco checks obrigatórios em main
+### [X] H-02 · Habilitar o GitHub Actions e tornar os cinco checks obrigatórios em main
 
 `P0` · **Responsável:** Engenharia
 
@@ -110,6 +110,25 @@ Alguém com permissão de administrador no repositório github.com/rafaelbernata
 | **Resultado esperado** | GitHub Actions habilitado com minutos disponíveis e ruleset ativo em main exigindo pull request e as cinco checagens como obrigatórias, comprovado por um pull request de teste que não pode ser mesclado |
 | **Onde o resultado vai** | Configuração do repositório em github.com/rafaelbernatat/amanna-bi (Settings > Actions, Settings > Billing e Settings > Rules), casando com os nomes dos jobs em .github/workflows/ci.yml |
 | **Destrava** | T-006, T-123, T-139, T-161, T-171, T-172, T-175, T-188, T-191 *(9 tarefas)* |
+
+> **Resolvido em 2026-08-22.** O repositório foi publicado (36 commits) e o
+> Actions já estava habilitado — a primeira execução em `main` saiu verde nos
+> cinco jobs em **2 min 15 s**, dentro do teto de 15 minutos de T-006.
+> Ruleset `21192375` ativo em `main`, exigindo pull request e as cinco
+> checagens. Validado como o item pede: PR #1 com a etapa `teste` quebrada de
+> propósito → `teste` vermelho, os outros quatro verdes,
+> `mergeStateStatus: BLOCKED`, e a tentativa real de merge recusada com
+> *"the base branch policy prohibits the merge"*. `main` ficou intacta e o PR
+> foi fechado sem mesclar.
+>
+> ⚠️ **O portão depende da visibilidade.** Proteção de branch não existe em
+> repositório privado no plano Free — as duas APIs devolvem
+> *"Upgrade to GitHub Pro or make this repository public"*. O repositório está
+> **público** por decisão de 2026-08-22, com a intenção declarada de torná-lo
+> privado depois. **Se isso acontecer sem assinar o GitHub Pro, o ruleset deixa
+> de valer e as cinco checagens voltam a apenas reportar, sem bloquear merge** —
+> silenciosamente. Nesse dia, T-006 precisa voltar para `⏸` e este item
+> reabrir.
 
 > **Já pronto do lado da Engenharia (2026-08-21).** O arquivo
 > `.github/workflows/ci.yml` existe no repositório e traz exatamente os cinco
@@ -525,7 +544,7 @@ Contrate um fornecedor de teste de intrusão, ou aloque um time interno independ
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*8 itens · 4 P0 abertos · 1 resolvido*
+*8 itens · 3 P0 abertos · 2 resolvidos*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
