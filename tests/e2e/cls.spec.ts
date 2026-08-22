@@ -66,11 +66,18 @@ test.describe("Deslocamento de layout do desenho servido", () => {
     }
   }
 
-  test("a galeria desenha os seis casos de geometria", async ({ page }) => {
+  test("a galeria desenha todas as formas e os quatro estados vazios", async ({
+    page,
+  }) => {
     await page.goto("/verificacao/svg");
-    await expect(page.locator("[data-caso]")).toHaveCount(6);
+    // 3 primitivas + 4 estados vazios + 6 casos de geometria.
+    await expect(page.locator("[data-caso]")).toHaveCount(13);
     // Depois da revisao de D4 o desenho vem do recharts, no cliente.
-    await expect(page.locator("svg.recharts-surface")).toHaveCount(6);
+    // 9 desenhos: os 4 estados vazios nao desenham nada, e e esse o ponto.
+    await expect(
+      page.locator(".recharts-wrapper > svg.recharts-surface"),
+    ).toHaveCount(9);
+    await expect(page.locator("[data-sem-dado]")).toHaveCount(4);
   });
 
   test("o servidor ja manda a caixa reservada, antes de o grafico montar", async ({
@@ -87,7 +94,7 @@ test.describe("Deslocamento de layout do desenho servido", () => {
     expect(
       caixas.length,
       "o servidor nao reservou nenhuma caixa",
-    ).toBeGreaterThanOrEqual(6);
+    ).toBeGreaterThanOrEqual(9);
 
     // ...com altura explicita, que e o que impede o deslocamento.
     expect(html, "a caixa foi servida sem altura").toMatch(/height:\s*200px/);

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 219 pendentes e 12 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 218 pendentes e 13 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 3 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 4 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 5 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **12 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **13 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -232,7 +232,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-129** `P0` `L` `paineis` Construir o núcleo de gráficos sobre recharts, com caixa reservada
   · **Aceite:** O núcleo produz domínio, escala e rótulos determinísticos, coberto por 20 casos (min<0, faixa nula, valores iguais, rótulos longos), e monta os gráficos sobre recharts recebendo séries já calculadas e formatadas pelo servidor; a caixa do painel é reservada por proporção antes de o gráfico montar, o CLS medido é zero entre 1280 e 1920 px, e nenhum componente de gráfico lê dado (PR-1).
   · **PRD:** seção 8.2 gráficos, Anexo A.1, seção 13 desempenho, protótipo ax() e cw() · **Depende de:** T-124
-- [~] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha  ⏳ 2026-08-22 01:24 · sessao-68c8
+- [X] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha
   · **Aceite:** As três formas reproduzem rh-headcount com eixo secundário, rec-vagas empilhada com legenda e tov-12m com linha de referência de meta, com snapshot SVG estável; série vazia devolve o estado 'sem dado neste recorte' em vez de gráfico em branco.
   · **PRD:** Anexo A.1, Anexo A.2, seção 8.2 gráficos · **Depende de:** T-129
 - [ ] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI
