@@ -25,7 +25,8 @@
     "paths": {
       "@/apresentacao/*": ["src/apresentacao/*"],
       "@/semantica/*": ["src/semantica/*"],
-      "@/acesso/*": ["src/acesso/*"]
+      "@/acesso/*": ["src/acesso/*"],
+      "@/seguranca/*": ["src/seguranca/*"]
     },
     "plugins": [
       {
