@@ -10,7 +10,8 @@
     "dev": "next dev",
     "schema": "node ferramentas/schema/gerar.mjs",
     "schema:check": "node ferramentas/schema/gerar.mjs --check",
-    "build": "npm run schema:check && next build",
+    "catalogo:check": "tsx ferramentas/catalogo/conferir.mts",
+    "build": "npm run schema:check && npm run catalogo:check && next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint .",
@@ -43,9 +44,11 @@
     "lint-staged": "17.3.0",
     "prettier": "3.9.6",
     "ts-json-schema-generator": "2.9.0",
+    "tsx": "4.23.12",
     "typescript": "5.9.3",
     "typescript-eslint": "8.67.0",
-    "vitest": "4.1.11"
+    "vitest": "4.1.11",
+    "yaml": "2.9.0"
   },
   "lint-staged": {
     "src/semantica/painel.ts": [
@@ -56,6 +59,9 @@
     ],
     "*.{json,css,md,yaml,yml}": [
       "prettier --check"
+    ],
+    "catalogo/*.yaml": [
+      "tsx ferramentas/catalogo/conferir.mts"
     ]
   }
 }

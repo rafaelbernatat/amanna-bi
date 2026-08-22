@@ -1,0 +1,50 @@
+# O catálogo de métricas (PRD seção 9.4, T-112)
+#
+# "Um arquivo versionado, revisado por Controladoria e RH em conjunto. É aqui
+# que a divergência de definição entre áreas vira uma decisão registrada em vez
+# de um ajuste silencioso."
+#
+# ---------------------------------------------------------------------------
+# ESTE ARQUIVO ESTÁ INCOMPLETO DE PROPÓSITO
+# ---------------------------------------------------------------------------
+#
+# Traz **uma** métrica: a que a seção 9.4 do PRD escreve por extenso, campo a
+# campo. As outras 35 — as 21 do Anexo B mais as 15 do achado 5 do Anexo D —
+# esperam a sessão de Controladoria e RH descrita em **H-08**.
+#
+# Não foram preenchidas por conta própria, e a razão é o próprio ponto da seção
+# 9.4: `sentido` diz se o número subindo é bom ou ruim, `meta` é um alvo
+# acordado, e `formula` é a definição que as áreas precisam assinar. Escrever
+# esses campos aqui produziria um catálogo com aparência de aprovado que
+# ninguém aprovou — exatamente o "ajuste silencioso" que o arquivo existe para
+# impedir.
+#
+# O que T-112 entrega é o esquema e o carregador: quando a sessão acontecer, as
+# 35 entradas entram e o carregador reprova qualquer uma que chegue incompleta.
+#
+# Ao acrescentar uma métrica:
+#
+#   rotulo       obrigatório  como aparece na tela
+#   fonte        obrigatório  a view da seção 10.1
+#   formula      obrigatório  como o número é obtido (PR-3)
+#   unidade      obrigatório  BRL_mi | pct | pp | dias | FTE
+#   agg          obrigatório  sum | last | ratio
+#   sentido      obrigatório  maior_melhor | menor_melhor | neutro
+#   grao_minimo  obrigatório  nunca mais fino que [area, mes] (seção 11)
+#   sinonimos    obrigatório  como as pessoas chamam; sem isto o chat não acha
+#   meta         opcional     ausente é "não há meta", nunca "meta zero"
+#   decisao      opcional     obrigatória quando a definição foi discutida
+
+turnover_12m:
+  rotulo: Turnover 12 meses
+  fonte: vw_fato_rh_mes
+  formula: soma(desligamentos, 12m) / media(headcount_fte, 12m)
+  unidade: pct
+  agg: ratio
+  sentido: menor_melhor
+  meta: 14.0
+  grao_minimo: [area, mes]
+  sinonimos: [turnover, rotatividade, saidas, atrito, quem sai]
+  decisao: >-
+    Transferencia interna NAO conta como desligamento.
+    Aprovado por RH e Controladoria em 2026-08.
