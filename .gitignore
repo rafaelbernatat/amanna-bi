@@ -1,0 +1,46 @@
+# Segredos — nunca versionados (EXECUTE.md secao 8, PRD secao 11)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencias e artefatos de build
+node_modules/
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+
+# Testes e cobertura
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+/blob-report/
+.playwright/
+
+# Cache de ferramentas
+.eslintcache
+*.tsbuildinfo
+.turbo/
+
+# Registros
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operacional e editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Configuracao local do agente
+.claude/settings.local.json

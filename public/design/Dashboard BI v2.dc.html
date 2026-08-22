@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet"><style>*{box-sizing:border-box}body{margin:0;background:#f2eee7;font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#17130f}a{color:#6b4a2f;text-decoration:none}a:hover{color:#3d2b1d;text-decoration:underline}select{font-family:"IBM Plex Sans",sans-serif}input,textarea,button{font-family:inherit}::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:#eae4dc}::-webkit-scrollbar-thumb{background:#d6ccbe;border-radius:8px;border:2px solid #eae4dc}.tabstrip{scrollbar-width:none}.tabstrip::-webkit-scrollbar{display:none;width:0;height:0}@keyframes ringIn{0%{box-shadow:0 0 0 0 rgba(143,107,69,.45)}100%{box-shadow:0 0 0 10px rgba(143,107,69,0)}}</style></helmet>
+<div style="display:grid;grid-template-columns:236px minmax(660px,1fr);height:100%;min-height:520px;overflow:hidden;background:#f2eee7">
+
+<nav style="background:#1a1510;min-height:0;overflow:hidden">
+<div style="height:100%;overflow-y:auto;overflow-x:hidden;padding:24px 0 26px;display:flex;flex-direction:column;gap:26px">
+<div style="padding:0 20px 0 24px;display:flex;flex-direction:column;gap:4px">
+<div style="font:500 18px/1.1 Newsreader,serif;color:#f7f2e8;letter-spacing:.005em">Controladoria</div>
+<div style="font:500 8.5px/1.2 'IBM Plex Mono',monospace;color:#8a7a66;text-transform:uppercase;letter-spacing:.14em">Painel executivo · BI</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="padding:0 24px 8px;font:500 8.5px/1.2 'IBM Plex Mono',monospace;color:#6d5f4e;text-transform:uppercase;letter-spacing:.13em">Módulos</div>
+<sc-for list="{{ nav }}" as="g" hint-placeholder-count="3">
+<button onClick="{{ g.go }}" style="text-align:left;border:0;background:{{ g.bg }};color:{{ g.fg }};margin:0 12px;border-radius:13px;padding:12px 13px 13px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;box-shadow:{{ g.bar }}">
+<span style="font:500 9px/1.5 'IBM Plex Mono',monospace;color:{{ g.numC }};flex:none">{{ g.num }}</span>
+<span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+<span style="font:{{ g.font }}">{{ g.name }}</span>
+<span style="font:400 9.5px/1.35 'IBM Plex Sans',sans-serif;color:{{ g.descC }}">{{ g.desc }}</span>
+</span>
+</button>
+</sc-for>
+</div>
+<div style="margin-top:auto;padding:0 24px;display:flex;flex-direction:column;gap:6px;border-top:1px solid #2b231a;padding-top:18px">
+<div style="font:500 8.5px/1.2 'IBM Plex Mono',monospace;color:#6d5f4e;text-transform:uppercase;letter-spacing:.13em">Base</div>
+<div style="font:400 10px/1.5 'IBM Plex Sans',sans-serif;color:#9b8d79">Fechamento contábil Dez/2026 · dados ilustrativos reconciliados com o catálogo de controladoria.</div>
+</div>
+</div>
+</nav>
+
+<main style="display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden">
+<header style="background:#f2eee7;border-bottom:1px solid #e7e1d7;padding:22px 28px 0;flex:none;z-index:5">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="font:500 9px/1.2 'IBM Plex Mono',monospace;color:#a89c8e;text-transform:uppercase;letter-spacing:.13em">{{ crumb }}</div>
+<h1 style="margin:0;font:500 32px/1.08 Newsreader,serif;color:#17130f;letter-spacing:-.012em">{{ viewTitle }}</h1>
+</div>
+<div style="display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap">
+<sc-for list="{{ filterDefs }}" as="f" hint-placeholder-count="5">
+<label style="display:flex;flex-direction:column;gap:4px">
+<span style="font:500 8px/1.2 'IBM Plex Mono',monospace;color:#a89c8e;text-transform:uppercase;letter-spacing:.1em">{{ f.label }}</span>
+<span style="position:relative;display:block">
+<select value="{{ f.value }}" onChange="{{ f.onChange }}" style="appearance:none;-webkit-appearance:none;background:{{ f.bg }};border:1px solid {{ f.bc }};border-radius:999px;padding:7px 30px 7px 14px;font:500 11.5px/1.2 'IBM Plex Sans',sans-serif;color:{{ f.fg }};cursor:pointer;min-width:114px;width:100%">
+<sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+</select>
+<span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:8px;color:#a89c8e;pointer-events:none">&#9660;</span>
+</span>
+</label>
+</sc-for>
+<button onClick="{{ resetFilters }}" style="border:1px solid #e3dbd1;background:#fff;color:#8a7f74;border-radius:999px;padding:7px 14px;font:500 10.5px 'IBM Plex Sans',sans-serif;cursor:pointer;height:33px">Limpar</button>
+</div>
+</div>
+<div class="tabstrip" style="display:flex;gap:2px;margin-top:18px;background:#e8e2d8;border-radius:999px;padding:4px;width:fit-content;max-width:100%;overflow-x:auto;overflow-y:hidden">
+<sc-for list="{{ subTabs }}" as="t" hint-placeholder-count="5">
+<button onClick="{{ t.go }}" style="border:0;background:{{ t.bar }};color:{{ t.fg }};padding:7px 11px 8px;border-radius:999px;box-shadow:{{ t.sh }};font:{{ t.font }};cursor:pointer;white-space:nowrap">{{ t.label }}</button>
+</sc-for>
+</div>
+</header>
+
+<div data-scroll-region="{{ regionMain }}" style="flex:1;min-height:0;overflow-y:scroll;overflow-x:hidden;padding:22px 28px 46px;position:relative">
+<sc-if value="{{ hasBanner }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #ece4d6;border-left:3px solid #b8853a;border-radius:15px;padding:11px 15px;margin-bottom:16px;box-shadow:0 1px 2px rgba(28,23,18,.04)">
+<span style="font:500 9px 'IBM Plex Mono',monospace;color:#8f6b45;text-transform:uppercase;letter-spacing:.1em">Recorte ativo</span>
+<span style="font:400 11.5px 'IBM Plex Sans',sans-serif;color:#4a423a">{{ bannerText }}</span>
+<button onClick="{{ resetFilters }}" style="margin-left:auto;border:1px solid #e3d8c6;background:#fff;color:#6b4a2f;border-radius:999px;padding:5px 12px;font:500 10px 'IBM Plex Sans',sans-serif;cursor:pointer">Voltar ao consolidado</button>
+</div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:13px;margin-bottom:18px">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+<div style="min-width:0;background:#fff;border:1px solid #efe8de;border-radius:17px;padding:14px 15px 13px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 2px rgba(28,23,18,.04),0 16px 32px -26px rgba(28,23,18,.6);overflow:hidden">
+<div style="display:flex;align-items:center;gap:6px"><span style="width:5px;height:5px;border-radius:50%;background:{{ k.dot }};flex:none"></span><span style="font:500 9.5px/1.2 'IBM Plex Sans',sans-serif;color:#8a7f74;letter-spacing:.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ k.l }}</span></div>
+<div style="font:500 28px/1.02 Newsreader,serif;color:#17130f;letter-spacing:-.014em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.v }}</div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font:600 10px/1.2 'IBM Plex Mono',monospace;color:{{ k.dc }};background:{{ k.dBg }};border-radius:999px;padding:3px 8px;white-space:nowrap;flex:none">{{ k.d }}</span><span style="font:400 9.5px/1.3 'IBM Plex Sans',sans-serif;color:#a89c8e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ k.f }}</span></div>
+<sc-if value="{{ k.hasSpark }}" hint-placeholder-val="{{ false }}">
+<svg viewBox="0 0 100 26" preserveAspectRatio="none" style="height:36px;display:block;margin:5px -15px -13px;width:calc(100% + 30px);overflow:visible"><path d="{{ k.sparkFill }}" fill="{{ k.sparkBg }}" stroke="none"></path><path d="{{ k.spark }}" fill="none" stroke="{{ k.sparkC }}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></svg>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start">
+<sc-for list="{{ panels }}" as="p" hint-placeholder-count="5">
+<div data-panel="{{ p.id }}" data-hi="{{ p.hiFlag }}" style="grid-column:span {{ p.span }};background:#fff;border:1px solid {{ p.bc }};border-radius:19px;padding:17px 18px 18px;box-shadow:{{ p.shadow }};outline:{{ p.ring }};outline-offset:2px;min-width:0">
+<sc-if value="{{ p.isHi }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:6px;margin:-2px 0 8px"><span style="width:5px;height:5px;border-radius:50%;background:#8f6b45"></span><span style="font:600 8.5px/1.2 'IBM Plex Mono',monospace;color:#8f6b45;text-transform:uppercase;letter-spacing:.11em">Gráfico referenciado pela IA</span></div>
+</sc-if>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+<div style="font:600 13.5px/1.3 'IBM Plex Sans',sans-serif;color:#17130f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0">{{ p.title }}</div>
+<div style="font:500 8.5px/1.3 'IBM Plex Mono',monospace;color:#a1958a;background:#f5f1ea;border-radius:999px;padding:4px 9px;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex:none">{{ p.tag }}</div>
+</div>
+<div style="font:400 10.5px/1.45 'IBM Plex Sans',sans-serif;color:#7a6f64;margin:5px 0 12px;display:block;clear:both">{{ p.sub }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:9px;margin-bottom:8px">
+<sc-for list="{{ p.legend }}" as="l" hint-placeholder-count="0">
+<span style="display:flex;align-items:center;gap:5px;font:500 9.5px/1.2 'IBM Plex Sans',sans-serif;color:#6b6158"><span style="width:11px;height:3px;border-radius:2px;background:{{ l.color }};flex:none"></span>{{ l.name }}</span>
+</sc-for>
+</div>
+
+<sc-if value="{{ p.isSvg }}" hint-placeholder-val="{{ true }}">
+<svg viewBox="{{ p.vb }}" style="width:100%;height:auto;display:block;overflow:visible">
+<sc-for list="{{ p.grid }}" as="g" hint-placeholder-count="4"><line x1="{{ g.x1 }}" y1="{{ g.y1 }}" x2="{{ g.x2 }}" y2="{{ g.y2 }}" stroke="{{ g.c }}" stroke-width="1" stroke-dasharray="{{ g.dash }}"></line></sc-for>
+<sc-for list="{{ p.rects }}" as="r" hint-placeholder-count="6"><rect x="{{ r.x }}" y="{{ r.y }}" width="{{ r.w }}" height="{{ r.h }}" rx="{{ r.rx }}" fill="{{ r.f }}" opacity="{{ r.o }}"></rect></sc-for>
+<sc-for list="{{ p.paths }}" as="s" hint-placeholder-count="1"><path d="{{ s.d }}" fill="{{ s.f }}" stroke="{{ s.c }}" stroke-width="{{ s.w }}" stroke-dasharray="{{ s.dash }}" stroke-linejoin="round" stroke-linecap="round" opacity="{{ s.o }}"></path></sc-for>
+<sc-for list="{{ p.circles }}" as="c" hint-placeholder-count="0"><circle cx="{{ c.cx }}" cy="{{ c.cy }}" r="{{ c.r }}" fill="{{ c.f }}" stroke="{{ c.c }}" stroke-width="{{ c.w }}" stroke-dasharray="{{ c.dash }}" stroke-dashoffset="{{ c.off }}" transform="{{ c.tr }}"></circle></sc-for>
+<sc-for list="{{ p.texts }}" as="t" hint-placeholder-count="0"><text x="{{ t.x }}" y="{{ t.y }}" fill="{{ t.f }}" font-size="{{ t.s }}" text-anchor="{{ t.a }}" font-weight="{{ t.w }}" font-family="{{ t.ff }}">{{ t.t }}</text></sc-for>
+</svg>
+</sc-if>
+
+<sc-if value="{{ p.isHBars }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:7px">
+<sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:{{ p.lw }}px 1fr {{ p.vw }}px;align-items:center;gap:9px">
+<div style="font:500 10.5px/1.3 'IBM Plex Sans',sans-serif;color:#4a423a;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.label }}</div>
+<div style="height:11px;background:#f4f0e9;border-radius:999px;position:relative;overflow:hidden">
+<div style="position:absolute;left:0;top:0;bottom:0;width:{{ r.pct }}%;background:{{ r.color }};border-radius:999px"></div>
+<div style="position:absolute;left:{{ r.mark }}%;top:0;bottom:0;width:1.5px;background:{{ r.markC }}"></div>
+</div>
+<div style="font:600 10.5px/1.3 'IBM Plex Mono',monospace;color:{{ r.vc }};text-align:right">{{ r.val }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ p.isStack }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:{{ p.lw }}px 1fr {{ p.vw }}px;align-items:center;gap:9px">
+<div style="font:500 10.5px/1.3 'IBM Plex Sans',sans-serif;color:#4a423a;text-align:right;white-space:nowrap">{{ r.label }}</div>
+<div style="display:flex;height:13px;border-radius:999px;overflow:hidden;background:#f4f0e9">
+<sc-for list="{{ r.parts }}" as="s" hint-placeholder-count="3"><div style="width:{{ s.pct }}%;background:{{ s.color }}"></div></sc-for>
+</div>
+<div style="font:600 10.5px/1.3 'IBM Plex Mono',monospace;color:#17130f;text-align:right">{{ r.total }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ p.isSplit }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:15px">
+<sc-for list="{{ p.groups }}" as="g" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;gap:7px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span style="font:600 9px/1.2 'IBM Plex Mono',monospace;color:#8f6b45;text-transform:uppercase;letter-spacing:.1em">{{ g.n }}</span><span style="font:400 10px/1.2 'IBM Plex Sans',sans-serif;color:#a89c8e">{{ g.tot }}</span></div>
+<div style="display:flex;height:27px;border-radius:999px;overflow:hidden;background:#f4f0e9;gap:2px">
+<sc-for list="{{ g.parts }}" as="s" hint-placeholder-count="3">
+<div style="width:{{ s.pct }}%;background:{{ s.color }};display:flex;align-items:center;justify-content:center;font:600 9.5px/1 'IBM Plex Mono',monospace;color:#fffdfa;overflow:hidden;white-space:nowrap">{{ s.inl }}</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px">
+<sc-for list="{{ g.parts }}" as="s" hint-placeholder-count="3">
+<span style="display:flex;align-items:center;gap:5px;font:400 10px/1.2 'IBM Plex Sans',sans-serif;color:#6b6158"><span style="width:8px;height:8px;border-radius:2px;background:{{ s.color }};flex:none"></span>{{ s.n }}<span style="font:600 10px/1.2 'IBM Plex Mono',monospace;color:#17130f">{{ s.t }}</span></span>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ p.isStat }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:{{ p.statCols }};gap:10px">
+<sc-for list="{{ p.stats }}" as="s" hint-placeholder-count="3">
+<div style="min-width:0;display:flex;flex-direction:column;gap:3px;padding:14px 15px 15px;background:#faf7f1;border:1px solid #f1ebe1;border-radius:15px;border-left:3px solid {{ s.c }}">
+<div style="font:500 9.5px/1.25 'IBM Plex Sans',sans-serif;color:#8a7f74;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.l }}</div>
+<div style="font:500 25px/1.05 Newsreader,serif;color:{{ s.c }};letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.v }}</div>
+<div style="font:400 9.5px/1.45 'IBM Plex Sans',sans-serif;color:#a89c8e">{{ s.f }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ p.isFunnel }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:5px">
+<sc-for list="{{ p.steps }}" as="s" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:{{ s.pct }}%;min-width:66px;height:34px;background:{{ s.color }};border-radius:999px;display:flex;align-items:center;padding:0 13px;font:600 11.5px/1 'IBM Plex Mono',monospace;color:#fffdfa">{{ s.val }}</div>
+<div style="font:500 11px/1.2 'IBM Plex Sans',sans-serif;color:#4a423a;white-space:nowrap">{{ s.label }}</div>
+<div style="font:500 10px/1.2 'IBM Plex Mono',monospace;color:#b3a595;white-space:nowrap">{{ s.conv }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ p.isTiles }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:5px;max-width:360px;margin:0 auto">
+<sc-for list="{{ p.tiles }}" as="t" hint-placeholder-count="12">
+<div style="grid-column:{{ t.col }};grid-row:{{ t.row }};aspect-ratio:1;background:{{ t.bg }};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;color:{{ t.fg }}">{{ t.uf }}</div>
+<div style="font:500 8px/1 'IBM Plex Mono',monospace;color:{{ t.fg }};opacity:.75">{{ t.v }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ p.note }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:12px;padding-top:11px;border-top:1px solid #f2ece3;font:400 10.5px/1.5 'IBM Plex Sans',sans-serif;color:#7d7267">{{ p.note }}</div>
+</sc-if>
+<sc-if value="{{ p.formula }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:7px;font:400 9.5px/1.5 'IBM Plex Mono',monospace;color:#a89c8e">{{ p.formula }}</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</main>
+
+<aside style="position:fixed;right:22px;bottom:22px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:12px;pointer-events:none">
+
+<sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+<div style="pointer-events:auto;width:392px;height:min(672px, calc(100vh - 116px));background:#faf7f1;border:1px solid #e9e1d6;border-radius:24px;box-shadow:0 36px 80px -24px rgba(28,23,18,.45), 0 2px 8px rgba(28,23,18,.08);display:flex;flex-direction:column;overflow:hidden">
+<div style="padding:15px 16px 14px;border-bottom:1px solid #eee7dc;display:flex;align-items:center;gap:10px;background:#fff">
+<span style="width:27px;height:27px;border-radius:9px;background:#1a1510;display:flex;align-items:center;justify-content:center;font:600 10px 'IBM Plex Mono',monospace;color:#e8dcc8;flex:none">IA</span>
+<div style="flex:1;min-width:0">
+<div style="font:600 12px/1.2 'IBM Plex Sans',sans-serif;color:#17130f">Converse com os dados</div>
+<div style="font:400 9.5px/1.3 'IBM Plex Sans',sans-serif;color:#a89c8e">Responde, filtra e abre o gráfico</div>
+</div>
+<button onClick="{{ toggleChat }}" style="border:1px solid #e6ded3;background:#fff;color:#8a7f74;border-radius:999px;width:27px;height:27px;font:600 12px 'IBM Plex Sans',sans-serif;cursor:pointer;flex:none">&#10005;</button>
+</div>
+<div data-chat-log="{{ regionChat }}" style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ msgs }}" as="m" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;align-items:{{ m.align }};gap:7px;min-width:0;max-width:100%">
+<div style="max-width:{{ m.maxw }};background:{{ m.bg }};border:1px solid {{ m.bc }};border-radius:{{ m.radius }};padding:10px 12px;font:400 11.5px/1.55 'IBM Plex Sans',sans-serif;color:{{ m.fg }};white-space:pre-line">{{ m.text }}</div>
+
+<sc-if value="{{ m.hasKpis }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%">
+<sc-for list="{{ m.kpis }}" as="k" hint-placeholder-count="2">
+<div style="background:#fff;border:1px solid #ece5da;border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px">
+<div style="font:500 8.5px/1.2 'IBM Plex Mono',monospace;color:#a89c8e;text-transform:uppercase;letter-spacing:.07em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ k.l }}</div>
+<div style="font:600 15px/1.05 'IBM Plex Mono',monospace;color:{{ k.c }}">{{ k.v }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ m.hasChart }}" hint-placeholder-val="{{ false }}">
+<div style="width:100%;background:#fff;border:1px solid #ece5da;border-radius:14px;padding:11px 12px 12px">
+<div style="font:600 10.5px/1.3 'IBM Plex Sans',sans-serif;color:#17130f;margin-bottom:7px">{{ m.chart.title }}</div>
+<svg viewBox="{{ m.chart.vb }}" style="width:100%;height:auto;display:block;overflow:visible">
+<sc-for list="{{ m.chart.grid }}" as="g" hint-placeholder-count="3"><line x1="{{ g.x1 }}" y1="{{ g.y1 }}" x2="{{ g.x2 }}" y2="{{ g.y2 }}" stroke="{{ g.c }}" stroke-width="1" stroke-dasharray="{{ g.dash }}"></line></sc-for>
+<sc-for list="{{ m.chart.rects }}" as="r" hint-placeholder-count="6"><rect x="{{ r.x }}" y="{{ r.y }}" width="{{ r.w }}" height="{{ r.h }}" rx="{{ r.rx }}" fill="{{ r.f }}" opacity="{{ r.o }}"></rect></sc-for>
+<sc-for list="{{ m.chart.paths }}" as="s" hint-placeholder-count="1"><path d="{{ s.d }}" fill="{{ s.f }}" stroke="{{ s.c }}" stroke-width="{{ s.w }}" stroke-dasharray="{{ s.dash }}" stroke-linejoin="round" stroke-linecap="round" opacity="{{ s.o }}"></path></sc-for>
+<sc-for list="{{ m.chart.texts }}" as="t" hint-placeholder-count="0"><text x="{{ t.x }}" y="{{ t.y }}" fill="{{ t.f }}" font-size="{{ t.s }}" text-anchor="{{ t.a }}" font-weight="{{ t.w }}" font-family="{{ t.ff }}">{{ t.t }}</text></sc-for>
+</svg>
+</div>
+</sc-if>
+
+<sc-if value="{{ m.hasAction }}" hint-placeholder-val="{{ false }}">
+<div style="width:100%;display:flex;flex-direction:column;gap:6px;background:#f4efe6;border:1px solid #e7ded0;border-radius:14px;padding:10px 12px">
+<div style="font:500 8.5px/1.2 'IBM Plex Mono',monospace;color:#8f6b45;text-transform:uppercase;letter-spacing:.09em">Ações aplicadas</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px">
+<sc-for list="{{ m.chips }}" as="c" hint-placeholder-count="2">
+<span style="background:#fff;border:1px solid #e5ddd2;border-radius:999px;padding:4px 10px;font:500 9.5px/1.3 'IBM Plex Sans',sans-serif;color:#4a423a">{{ c }}</span>
+</sc-for>
+</div>
+<div style="display:flex;gap:6px;margin-top:2px;flex-wrap:wrap">
+<button onClick="{{ m.goTo }}" style="border:0;background:#1a1510;color:#f4ede2;border-radius:999px;padding:6px 12px;font:500 10px 'IBM Plex Sans',sans-serif;cursor:pointer">Ver o gráfico</button>
+<button onClick="{{ m.undo }}" style="border:1px solid #e5ddd2;background:#fff;color:#6b4a2f;border-radius:999px;padding:6px 12px;font:500 10px 'IBM Plex Sans',sans-serif;cursor:pointer">Desfazer filtros</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ m.hasFormula }}" hint-placeholder-val="{{ false }}">
+<div style="width:100%;font:400 9.5px/1.55 'IBM Plex Mono',monospace;color:#a89c8e;padding-left:2px">{{ m.formula }}</div>
+</sc-if>
+
+<sc-if value="{{ m.hasSug }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:5px;width:100%">
+<sc-for list="{{ m.sug }}" as="s" hint-placeholder-count="3">
+<button onClick="{{ s.go }}" style="text-align:left;border:1px solid #eae2d4;background:#fff;color:#6b4a2f;border-radius:12px;padding:8px 11px;font:400 10.5px/1.4 'IBM Plex Sans',sans-serif;cursor:pointer">{{ s.q }}</button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+<div style="border-top:1px solid #eee7dc;padding:12px 16px 16px;background:#faf7f1">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font:600 8.5px/1.2 'IBM Plex Mono',monospace;color:#8f6b45;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap">Guia desta tela</span><span style="flex:1;height:1px;background:#e7dfd4"></span></div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px">
+<sc-for list="{{ ctxSug }}" as="s" hint-placeholder-count="3">
+<button onClick="{{ s.go }}" style="border:1px solid #e5ddd2;background:#fff;color:#6b4a2f;border-radius:999px;padding:6px 12px;font:400 10px/1.3 'IBM Plex Sans',sans-serif;cursor:pointer;text-align:left">{{ s.q }}</button>
+</sc-for>
+</div>
+<div style="display:flex;gap:7px;align-items:flex-end">
+<textarea value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" placeholder="Ex: qual a taxa de crescimento este ano?" rows="2" style="flex:1;resize:none;border:1px solid #e4dcd1;background:#fff;border-radius:14px;padding:9px 12px;font:400 11.5px/1.5 'IBM Plex Sans',sans-serif;color:#17130f;outline:none"></textarea>
+<button onClick="{{ send }}" style="border:0;background:#1a1510;color:#f4ede2;border-radius:999px;padding:0 17px;height:40px;font:500 11px 'IBM Plex Sans',sans-serif;cursor:pointer;flex:none">Enviar</button>
+</div>
+<div style="margin-top:7px;font:400 9px/1.4 'IBM Plex Sans',sans-serif;color:#b3a595">Respostas geradas sobre o dataset ilustrativo do catálogo de controladoria.</div>
+</div>
+</div>
+</sc-if>
+
+<div style="pointer-events:auto;display:flex;align-items:center;gap:10px">
+<sc-if value="{{ chatClosed }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toggleChat }}" style="border:1px solid #e5ddd2;background:#fff;color:#4a423a;border-radius:999px;padding:10px 16px;font:500 11.5px/1.2 'IBM Plex Sans',sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(33,26,19,.14);white-space:nowrap" style-hover="border-color:#b39069;color:#17130f">Pergunte sobre os dados</button>
+</sc-if>
+<button onClick="{{ toggleChat }}" style="border:0;background:#1a1510;color:#f4ede2;width:58px;height:58px;border-radius:50%;cursor:pointer;box-shadow:0 14px 34px -8px rgba(28,23,18,.45);display:flex;align-items:center;justify-content:center;font:600 14px/1 'IBM Plex Mono',monospace;letter-spacing:.02em" style-hover="background:#3a2d20">{{ chatIcon }}</button>
+</div>
+</aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;acento&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#6b4a2f&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#6b4a2f&quot;,&quot;#8f6b45&quot;,&quot;#3f5f8a&quot;,&quot;#211a13&quot;],&quot;section&quot;:&quot;Visual&quot;},&quot;painelInicial&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;RH&quot;,&quot;options&quot;:[&quot;RH&quot;,&quot;Financeiro&quot;,&quot;Integração&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Comportamento&quot;},&quot;chatAberto&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Comportamento&quot;},&quot;mostrarMemoria&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Comportamento&quot;}}">
+class Component extends DCLogic {
+  state = {
+    tab: 'rh', sub: 'visao', input: '',
+    filters: { periodo: '12 meses', ano: '2026', entidade: 'Consolidado', area: 'Todas', modalidade: 'Todas' },
+    prev: null, hi: null, W: 0, chatOpen: false,
+    msgs: [{ role: 'ai', text: 'Pergunte sobre qualquer número desta tela. Eu respondo com o valor, aplico os filtros correspondentes e abro o gráfico exato.', sug: ['Qual a taxa de crescimento da empresa este ano?', 'Onde estou estourando o orçamento?', 'Qual área tem o pior turnover?', 'Mostre o headcount versus a despesa de pessoal'] }]
+  };
+
+  componentDidMount() {
+    const p = this.props.painelInicial;
+    if (p === 'Financeiro') this.setState({ tab: 'fin', sub: 'visao' });
+    else if (p === 'Integração') this.setState({ tab: 'int', sub: 'cruz' });
+    if (this.props.chatAberto === true) this.setState({ chatOpen: true });
+    this.measure();
+    this._onR = () => this.measure();
+    window.addEventListener('resize', this._onR);
+    setTimeout(() => {
+      const el = this.region(); if (!el || typeof ResizeObserver === 'undefined') return this.measure();
+      this._ro = new ResizeObserver(() => this.measure());
+      this._ro.observe(el);
+    }, 300);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._onR); if (this._ro) this._ro.disconnect(); }
+  region() { const m = document.querySelector('main'); return m && m.lastElementChild; }
+  measure() {
+    const el = this.region(); if (!el) return;
+    const cs = getComputedStyle(el);
+    const w = Math.round(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+    if (w > 200 && Math.abs(w - this.state.W) > 14) this.setState({ W: w });
+  }
+
+  /* ---------- tokens ---------- */
+  get C() {
+    const a = this.props.acento || '#6b4a2f';
+    return { ink: '#17130f', ink2: '#4a423a', mut: '#8a7f74', faint: '#a89c8e', br: '#e7dfd4', grid: '#efe8de', z: '#d8cfc4',
+      a, b1: '#3d2b1d', b2: '#6b4a2f', b3: '#8f6b45', b4: '#b39069', b5: '#d3b895', b6: '#e8dcc8',
+      g1: '#55504a', g2: '#7d766e', g3: '#a9a29a', g4: '#cfc8c0',
+      blue: '#3f5f8a', red: '#a8402f', green: '#4d7a52', amber: '#b8853a' };
+  }
+  n(v, d) { d = d || 0; return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  rs(v, d) { return 'R$ ' + this.n(v, d) + ' mi'; }
+  pc(v, d) { return this.n(v, d === undefined ? 1 : d) + '%'; }
+  sg(v, d) { return (v > 0 ? '+' : '') + this.n(v, d === undefined ? 1 : d) + '%'; }
+  sum(a) { return a.reduce((x, y) => x + y, 0); }
+
+  /* ---------- dataset ---------- */
+  get D() { return this._D || (this._D = this.build()); }
+  build() {
+    const M = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return {
+      M,
+      receita: [88, 92, 96, 99, 104, 112, 104, 101, 98, 102, 101, 103],
+      receitaLY: [78, 81, 86, 88, 92, 99, 93, 90, 88, 91, 90, 92],
+      ebitda: [14, 15, 16, 16, 17, 19, 18, 17, 16, 17, 17, 18],
+      fco: [14, 15, 17, 15, 17, 20, 17, 18, 14, 14, 13, 11],
+      mBruta: [40.1, 40.3, 40.0, 39.8, 40.2, 40.6, 40.0, 39.7, 39.5, 39.9, 39.8, 40.1],
+      mEbitda: [15.9, 16.3, 16.7, 16.2, 16.3, 17.0, 17.3, 16.8, 16.3, 16.7, 16.8, 17.5],
+      mLiq: [1.2, 1.0, 0.8, 0.6, 0.4, 0.9, 0.2, -0.4, -1.4, -1.9, -2.3, -3.1],
+      hc: [1150, 1162, 1174, 1181, 1195, 1203, 1198, 1210, 1222, 1231, 1236, 1240],
+      adm: [18, 22, 25, 16, 28, 20, 12, 26, 24, 20, 14, 16],
+      des: [12, 10, 13, 9, 14, 12, 17, 14, 12, 11, 9, 12],
+      folha: [14.8, 15.0, 15.1, 15.2, 15.4, 15.5, 15.5, 15.6, 15.7, 15.8, 15.9, 16.5],
+      tov: [15.2, 15.6, 16.1, 16.4, 16.9, 17.2, 17.6, 17.9, 18.0, 18.2, 18.3, 18.4],
+      abs: [2.2, 2.3, 2.5, 2.4, 2.6, 2.5, 2.8, 2.9, 3.0, 2.8, 2.7, 2.7],
+      enps: [21, 23, 22, 26, 28, 30, 27, 29, 31, 30, 33, 32],
+      eng: [68, 69, 70, 71, 72, 73, 71, 72, 73, 74, 75, 74],
+      horas: [1420, 1680, 1910, 1740, 2050, 2210, 1580, 1490, 1830, 1960, 1780, 1750],
+      entradas: [92, 94, 98, 100, 105, 110, 103, 100, 99, 101, 100, 104],
+      saidas: [96, 97, 99, 102, 104, 106, 105, 104, 105, 107, 108, 108],
+      orc: [94, 94, 95, 95, 95, 95, 95, 95, 95, 96, 95, 96],
+      real: [92, 93, 96, 97, 98, 99, 100, 101, 103, 105, 106, 106],
+      areas: [
+        { n: 'Operações', hc: 486, folha: 58, tov: 22.4, horas: 7800, rec: 540, dias: 29, vagas: [14, 7, 38], eng: 72 },
+        { n: 'Comercial', hc: 214, folha: 34, tov: 24.1, horas: 4200, rec: 396, dias: 38, vagas: [11, 5, 22], eng: 73 },
+        { n: 'Tecnologia', hc: 168, folha: 41, tov: 14.2, horas: 4600, rec: 108, dias: 61, vagas: [13, 6, 14], eng: 80 },
+        { n: 'Logística', hc: 142, folha: 17, tov: 19.8, horas: 2100, rec: 84, dias: 26, vagas: [5, 2, 11], eng: 70 },
+        { n: 'Financeiro', hc: 96, folha: 18, tov: 9.4, horas: 1300, rec: 18, dias: 44, vagas: [2, 1, 5], eng: 79 },
+        { n: 'Marketing', hc: 78, folha: 12, tov: 16.7, horas: 900, rec: 42, dias: 47, vagas: [2, 1, 4], eng: 77 },
+        { n: 'RH', hc: 56, folha: 6, tov: 8.9, horas: 500, rec: 12, dias: 33, vagas: [1, 1, 2], eng: 82 }
+      ],
+      diasMes: [46, 44, 45, 43, 42, 41, 43, 40, 41, 39, 40, 42],
+      partTrein: [71, 69, 72, 68, 74, 77, 73, 71, 75, 76, 72, 78],
+      statusV: [{ n: 'Fechadas', v: 96 }, { n: 'Em andamento', v: 23 }, { n: 'Abertas', v: 48 }, { n: 'Canceladas', v: 12 }],
+      enpsCat: [{ n: 'Promotores', v: 41 }, { n: 'Neutros', v: 50 }, { n: 'Detratores', v: 9 }],
+      genero: [{ n: 'Masculino', v: 706, tov: 19.2 }, { n: 'Feminino', v: 512, tov: 17.2 }, { n: 'Outro / n/i', v: 22, tov: 15.0 }],
+      idade: [{ n: '18–24', v: 138, tov: 31.4 }, { n: '25–34', v: 486, tov: 21.8 }, { n: '35–44', v: 372, tov: 13.6 }, { n: '45–54', v: 174, tov: 9.2 }, { n: '55+', v: 70, tov: 6.8 }],
+      tempo: [{ n: '< 1 ano', v: 268 }, { n: '1–3 anos', v: 412 }, { n: '3–5 anos', v: 291 }, { n: '5–10 anos', v: 198 }, { n: '10+ anos', v: 71 }],
+      modal: [{ n: 'Presencial', v: 604 }, { n: 'Híbrido', v: 472 }, { n: 'Remoto', v: 164 }],
+      escol: [{ n: 'Superior', v: 452 }, { n: 'Médio', v: 386 }, { n: 'Técnico', v: 214 }, { n: 'Pós-graduação', v: 154 }, { n: 'Mestrado+', v: 34 }],
+      uf: { SP: 468, MG: 152, PR: 124, RJ: 112, SC: 96, RS: 88, BA: 62, PE: 44, GO: 34, CE: 28, ES: 18, DF: 14 },
+      ufGrid: [['RR', 3, 1], ['AP', 4, 1], ['AM', 2, 2], ['PA', 3, 2], ['MA', 4, 2], ['CE', 5, 2], ['RN', 6, 2], ['AC', 1, 3], ['RO', 2, 3], ['TO', 3, 3], ['PI', 4, 3], ['PE', 5, 3], ['PB', 6, 3], ['MT', 3, 4], ['GO', 4, 4], ['BA', 5, 4], ['AL', 6, 4], ['SE', 7, 4], ['MS', 3, 5], ['DF', 4, 5], ['MG', 5, 5], ['ES', 6, 5], ['PR', 4, 6], ['SP', 5, 6], ['RJ', 6, 6], ['RS', 4, 7], ['SC', 5, 7]],
+      deslig: [{ n: 'Voluntário', v: 90 }, { n: 'Sem justa causa', v: 42 }, { n: 'Aposentadoria', v: 8 }, { n: 'Outros', v: 5 }],
+      custoTov: [{ n: 'Rescisão', v: 4.8 }, { n: 'Ramp-up', v: 3.4 }, { n: 'Produtividade', v: 2.3 }, { n: 'Recrutamento', v: 1.9 }],
+      funil: [{ n: 'Candidaturas', v: 4820 }, { n: 'Triagem', v: 1180 }, { n: 'Entrevistas', v: 412 }, { n: 'Propostas', v: 128 }, { n: 'Contratados', v: 96 }],
+      fontes: [{ n: 'Indicação', v: 34 }, { n: 'LinkedIn', v: 27 }, { n: 'Banco de talentos', v: 14 }, { n: 'Agência', v: 11 }, { n: 'Site próprio', v: 9 }, { n: 'Outros', v: 5 }],
+      trilhas: [{ n: 'Técnico', v: 1.6 }, { n: 'Liderança', v: 1.4 }, { n: 'Compliance', v: 0.5 }, { n: 'Idiomas', v: 0.4 }, { n: 'Soft skills', v: 0.3 }],
+      modalTrein: [{ n: 'Online', h: 11800, c: 58 }, { n: 'Presencial', h: 6200, c: 86 }, { n: 'Híbrido', h: 3400, c: 71 }],
+      compFolha: [{ n: 'Salários', v: 112 }, { n: 'Encargos', v: 42 }, { n: 'Benefícios', v: 21 }, { n: 'Variável', v: 11 }],
+      benef: [{ n: 'Saúde', v: 9.8 }, { n: 'Alimentação', v: 5.2 }, { n: 'Transporte', v: 2.4 }, { n: 'Odontológico', v: 1.4 }, { n: 'Previdência', v: 1.2 }, { n: 'Outros', v: 1.0 }],
+      salFx: [{ n: '≤ 3k', v: 214 }, { n: '3–6k', v: 402 }, { n: '6–10k', v: 328 }, { n: '10–18k', v: 196 }, { n: '18–30k', v: 76 }, { n: '> 30k', v: 24 }],
+      diario: Array.from({ length: 30 }, (_, i) => Math.round((Math.sin(i * 1.7) * 4.2 + Math.cos(i * 0.9) * 2.6 + (i % 7 === 5 ? -6.4 : 0) + 0.4) * 10) / 10),
+      catDesp: [{ n: 'Matéria-prima', v: 396 }, { n: 'Pessoal', v: 186 }, { n: 'Juros', v: 160 }, { n: 'Serviços de terceiros', v: 118 }, { n: 'Impostos', v: 96 }, { n: 'Fretes e logística', v: 74 }, { n: 'Marketing', v: 42 }, { n: 'Outros', v: 58 }],
+      cc: [{ n: 'Operações', real: 412, orc: 386 }, { n: 'Comercial', real: 198, orc: 184 }, { n: 'Tecnologia', real: 154, orc: 143 }, { n: 'Logística', real: 132, orc: 126 }, { n: 'Financeiro', real: 96, orc: 99 }, { n: 'Corporativo', real: 88, orc: 78 }, { n: 'Marketing', real: 74, orc: 79 }, { n: 'RH', real: 42, orc: 45 }],
+      agingRec: [{ n: 'A vencer', v: 118 }, { n: '1–30d', v: 26 }, { n: '31–60d', v: 12 }, { n: '61–90d', v: 8 }, { n: '> 90d', v: 7 }],
+      agingPag: [{ n: 'A vencer', v: 74 }, { n: '1–30d', v: 15 }, { n: '31–60d', v: 7 }, { n: '61–90d', v: 3 }, { n: '> 90d', v: 2 }],
+      inadim: [{ n: 'Cliente A', v: 4.2 }, { n: 'Cliente B', v: 3.1 }, { n: 'Cliente C', v: 2.4 }, { n: 'Cliente D', v: 1.8 }, { n: 'Cliente E', v: 1.4 }, { n: 'Cliente F', v: 1.1 }],
+      fornec: [{ n: 'Fornecedor 1', v: 22 }, { n: 'Fornecedor 2', v: 17 }, { n: 'Fornecedor 3', v: 14 }, { n: 'Fornecedor 4', v: 11 }, { n: 'Fornecedor 5', v: 9 }, { n: 'Fornecedor 6', v: 7 }],
+      segm: [{ n: 'Indústria', v: 468 }, { n: 'Varejo', v: 312 }, { n: 'Serviços', v: 234 }, { n: 'Governo', v: 122 }, { n: 'Outros', v: 64 }],
+      clientes: [{ n: 'C1', r: 118, m: 32.4 }, { n: 'C2', r: 96, m: 28.1 }, { n: 'C3', r: 84, m: 35.2 }, { n: 'C4', r: 72, m: 19.6 }, { n: 'C5', r: 66, m: 24.8 }, { n: 'C6', r: 54, m: 12.4 }, { n: 'C7', r: 48, m: 29.7 }, { n: 'C8', r: 42, m: 8.9 }, { n: 'C9', r: 38, m: 22.1 }, { n: 'C10', r: 34, m: 31.5 }],
+      rating: [{ n: 'AAA–A', v: 62 }, { n: 'BBB', v: 21 }, { n: 'BB', v: 11 }, { n: 'B ou inferior', v: 6 }]
+    };
+  }
+
+  /* ---------- filtros ---------- */
+  fctx() {
+    const f = this.state.filters, D = this.D;
+    const per = ({ '12 meses': [0, 12], '6 meses': [6, 12], '4º trimestre': [9, 12], 'Dezembro': [11, 12] })[f.periodo] || [0, 12];
+    const ar = f.area === 'Todas' ? null : D.areas.find(a => a.n === f.area);
+    const md = f.modalidade === 'Todas' ? null : D.modal.find(m => m.n === f.modalidade);
+    const ent = f.entidade === 'Consolidado' ? 1 : (f.entidade === 'Unidade SP' ? 0.62 : 0.38);
+    const modS = md ? md.v / 1240 : 1;
+    return { i: per[0], j: per[1], hcA: modS * ent, trein: (ar ? ar.horas / 21400 : 1) * ent, vagas: ent, hc: (ar ? ar.hc / 1240 : 1) * modS * ent, money: (ar ? ar.folha / 186 : 1) * ent, rev: (ar ? ar.rec / 1200 : 1) * ent, ar, md, ent, on: f.periodo !== '12 meses' || f.area !== 'Todas' || f.modalidade !== 'Todas' || f.entidade !== 'Consolidado' };
+  }
+  S(a, F, k) { return a.slice(F.i, F.j).map(v => k === undefined ? v : Math.round(v * k * 100) / 100); }
+  CM(F) { return this.D.M.slice(F.i, F.j); }
+
+  /* ---------- geometria ---------- */
+  labStep(slot, cats) {
+    let mx = 0;
+    cats.forEach(c => { mx = Math.max(mx, String(c == null ? '' : c).length); });
+    if (mx === 0) return 1;
+    return Math.max(1, Math.ceil((mx * 5.7 + 5) / Math.max(slot, 1)));
+  }
+  cw(span) { const inner = this.state.W || 1150, col = (inner - 11 * 14) / 12; return Math.max(160, Math.round(span * col + (span - 1) * 14 - 28)); }
+  ax(w, h, pl, pr, pt, pb, min, max, ticks, fmt) {
+    const iw = w - pl - pr, ih = h - pt - pb, C = this.C;
+    const y = v => pt + ih - (v - min) / (max - min || 1) * ih;
+    const grid = [], texts = [];
+    for (let i = 0; i <= ticks; i++) {
+      const v = min + (max - min) * i / ticks, yy = y(v);
+      grid.push({ x1: pl, y1: yy, x2: w - pr, y2: yy, c: C.grid, dash: '' });
+      texts.push({ x: pl - 7, y: yy + 3.5, t: fmt(v), f: C.faint, s: 9.5, a: 'end', w: '500', ff: '"IBM Plex Mono",monospace' });
+    }
+    if (min < 0 && max > 0) grid.push({ x1: pl, y1: y(0), x2: w - pr, y2: y(0), c: C.z, dash: '' });
+    return { iw, ih, y, grid, texts, pl, pr, pt, pb };
+  }
+  hasAbs(x) { return /R\$\s?[\d.,]+|\b\d[\d.,]*\s?(mi|mil|FTE|h|pessoas|colaboradores|vagas|dias|horas|notas|sa[íi]das|desligamentos|contrata[çc][õo]es|clientes|candidatos)\b/.test(String(x || '')); }
+  base(o, w, h) {
+    const F = this._F || {};
+    const note = (F.on && this.hasAbs(o.note)) ? '' : (o.note || '');
+    const sub = (F.on && this.hasAbs(o.sub)) ? 'No recorte ativo' + (F.ar ? ' · ' + F.ar.n : '') : (o.sub || '');
+    return { id: o.id, title: o.title, sub: sub, tag: o.tag || '', span: o.span, note: note, formula: this.props.mostrarMemoria === false ? '' : (o.formula || ''), isSvg: false, isHBars: false, isStack: false, isFunnel: false, isTiles: false, vb: '0 0 ' + w + ' ' + h, grid: [], rects: [], paths: [], circles: [], texts: [], legend: o.legend || [], rows: [], steps: [], tiles: [], lw: o.lw || 96, vw: o.vw || 62 };
+  }
+
+  mkBars(o) {
+    const C = this.C, w = o.w || this.cw(o.span), h = o.h || 200;
+    const pl = o.pl === undefined ? 44 : o.pl, pr = o.y2 ? 42 : 12, pt = o.labels ? 20 : 14, pb = 24;
+    const bars = o.bars || [], lines = o.lines || [];
+    let all = [];
+    if (o.stacked) all = o.cats.map((_, i) => bars.reduce((a, s) => a + s.vals[i], 0));
+    else bars.forEach(s => { all = all.concat(s.vals); });
+    if (!o.y2) lines.forEach(s => { all = all.concat(s.vals); });
+    (o.refs || []).forEach(r => all.push(r.v));
+    let max = o.max === undefined ? Math.max.apply(null, all.concat([0])) : o.max;
+    let min = o.min === undefined ? Math.min.apply(null, all.concat([0])) : o.min;
+    const sp = (max - min) || 1; max += sp * 0.14; if (min < 0) min -= sp * 0.08;
+    const fmt = o.fmtY || (v => this.n(v, sp < 6 ? 1 : 0));
+    const A = this.ax(w, h, pl, pr, pt, pb, min, max, o.ticks || 4, fmt);
+    const slot = A.iw / o.cats.length, rects = [], texts = A.texts.slice(), paths = [];
+    const step = this.labStep(slot, o.cats);
+    const zero = A.y(Math.max(min, 0));
+    o.cats.forEach((c, i) => {
+      const x0 = pl + slot * i;
+      if (i % step === 0) texts.push({ x: x0 + slot / 2, y: h - 7, t: c, f: C.faint, s: 9.5, a: 'middle', w: '500', ff: '"IBM Plex Sans",sans-serif' });
+      if (o.stacked) {
+        let acc = zero;
+        bars.forEach(s => { const hh = Math.abs(A.y(s.vals[i]) - zero); acc -= hh; rects.push({ x: x0 + slot * 0.16, y: acc, w: slot * 0.68, h: hh, rx: 1, f: s.color, o: 1 }); });
+      } else {
+        const nb = bars.length, gap = slot * (nb > 1 ? 0.3 : 0.42), bw = (slot - gap) / nb;
+        bars.forEach((s, j) => {
+          const v = s.vals[i], yv = A.y(v), col = (s.colors && s.colors[i]) || s.color;
+          rects.push({ x: x0 + gap / 2 + bw * j, y: Math.min(yv, zero), w: Math.max(bw - 1.5, 1), h: Math.max(Math.abs(zero - yv), 1), rx: 2, f: col, o: 1 });
+          if (o.labels) texts.push({ x: x0 + gap / 2 + bw * j + bw / 2, y: (v >= 0 ? Math.min(yv, zero) - 5 : Math.max(yv, zero) + 11), t: (o.fmtV || fmt)(v), f: C.ink2, s: 9, a: 'middle', w: '600', ff: '"IBM Plex Mono",monospace' });
+        });
+      }
+    });
+    (o.refs || []).forEach(r => {
+      paths.push({ d: 'M' + pl + ' ' + A.y(r.v).toFixed(1) + 'L' + (w - pr) + ' ' + A.y(r.v).toFixed(1), f: 'none', c: r.color, w: 1.2, dash: '4 4', o: 1 });
+      texts.push({ x: w - pr - 2, y: A.y(r.v) - 5, t: r.label, f: r.color, s: 9, a: 'end', w: '600', ff: '"IBM Plex Mono",monospace' });
+    });
+    let Y2 = A.y;
+    if (o.y2 && lines.length) {
+      let la = []; lines.forEach(s => { la = la.concat(s.vals); });
+      let l1 = Math.max.apply(null, la), l0 = Math.min.apply(null, la);
+      const lsp = (l1 - l0) || 1; l1 += lsp * 0.3; l0 -= lsp * 0.22;
+      Y2 = v => pt + A.ih - (v - l0) / (l1 - l0) * A.ih;
+      const f2 = o.fmtY2 || (v => this.n(v, (l1 - l0) < 8 ? 1 : 0));
+      for (let i = 0; i <= (o.ticks || 4); i++) { const v = l0 + (l1 - l0) * i / (o.ticks || 4); texts.push({ x: w - pr + 6, y: Y2(v) + 3.5, t: f2(v), f: C.g3, s: 9.5, a: 'start', w: '500', ff: '"IBM Plex Mono",monospace' }); }
+    }
+    lines.forEach(s => {
+      const d = o.cats.map((c, i) => (i ? 'L' : 'M') + (pl + slot * i + slot / 2).toFixed(1) + ' ' + Y2(s.vals[i]).toFixed(1)).join(' ');
+      paths.push({ d, f: 'none', c: s.color, w: s.w || 1.8, dash: s.dash || '', o: 1 });
+    });
+    const p = this.base(o, w, h);
+    p.isSvg = true; p.grid = A.grid; p.rects = rects; p.paths = paths; p.texts = texts; p.h = h;
+    p.legend = o.legend || bars.map(s => ({ name: s.name, color: s.color })).concat(lines.map(s => ({ name: s.name, color: s.color })));
+    return p;
+  }
+
+  mkLine(o) {
+    const C = this.C, w = o.w || this.cw(o.span), h = o.h || 200, pl = o.pl === undefined ? 44 : o.pl, pr = 12, pt = 14, pb = 24;
+    let all = []; o.series.forEach(s => { all = all.concat(s.vals); });
+    (o.refs || []).forEach(r => all.push(r.v));
+    let max = o.max === undefined ? Math.max.apply(null, all) : o.max, min = o.min === undefined ? Math.min.apply(null, all) : o.min;
+    const sp = (max - min) || 1; max += sp * 0.16; min -= sp * 0.16;
+    const fmt = o.fmtY || (v => this.n(v, sp < 8 ? 1 : 0));
+    const A = this.ax(w, h, pl, pr, pt, pb, min, max, o.ticks || 4, fmt);
+    const slot = A.iw / o.cats.length, texts = A.texts.slice(), paths = [], circles = [];
+    const lstep = this.labStep(slot, o.cats);
+    o.cats.forEach((c, i) => { if (i % lstep === 0) texts.push({ x: pl + slot * i + slot / 2, y: h - 7, t: c, f: C.faint, s: 9.5, a: 'middle', w: '500', ff: '"IBM Plex Sans",sans-serif' }); });
+    (o.refs || []).forEach(r => {
+      paths.push({ d: 'M' + pl + ' ' + A.y(r.v).toFixed(1) + 'L' + (w - pr) + ' ' + A.y(r.v).toFixed(1), f: 'none', c: r.color, w: 1.2, dash: '4 4', o: 1 });
+      texts.push({ x: w - pr - 2, y: A.y(r.v) - 5, t: r.label, f: r.color, s: 9, a: 'end', w: '600', ff: '"IBM Plex Mono",monospace' });
+    });
+    o.series.forEach(s => {
+      const pts = o.cats.map((c, i) => [pl + slot * i + slot / 2, A.y(s.vals[i])]);
+      const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+      if (s.fill) paths.push({ d: d + 'L' + pts[pts.length - 1][0].toFixed(1) + ' ' + A.y(Math.max(min, 0)).toFixed(1) + 'L' + pts[0][0].toFixed(1) + ' ' + A.y(Math.max(min, 0)).toFixed(1) + 'Z', f: s.fill, c: 'none', w: 0, dash: '', o: 1 });
+      paths.push({ d, f: 'none', c: s.color, w: s.w || 2, dash: s.dash || '', o: 1 });
+      if (s.dots !== false) pts.forEach(p => circles.push({ cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: 2.6, f: '#fffdfa', c: s.color, w: 1.6, dash: '', off: 0, tr: '' }));
+    });
+    const p = this.base(o, w, h);
+    p.isSvg = true; p.grid = A.grid; p.paths = paths; p.circles = circles; p.texts = texts; p.h = h;
+    p.legend = o.legend || o.series.map(s => ({ name: s.name, color: s.color }));
+    return p;
+  }
+
+  mkWF(o) {
+    const C = this.C, w = o.w || this.cw(o.span), h = o.h || 220, pl = 44, pr = 12, pt = 22, pb = 34;
+    let cum = 0; const vals = [];
+    o.steps.forEach(s => { if (s.total) { vals.push([0, s.v]); cum = s.v; } else { vals.push([cum, cum + s.v]); cum += s.v; } });
+    let flat = []; vals.forEach(v => { flat = flat.concat(v); });
+    let max = Math.max.apply(null, flat.concat([0])), min = Math.min.apply(null, flat.concat([0]));
+    const sp = max - min || 1; max += sp * 0.16; min -= sp * 0.06;
+    const A = this.ax(w, h, pl, pr, pt, pb, min, max, 4, v => this.n(v, 0));
+    const slot = A.iw / o.steps.length, rects = [], texts = A.texts.slice(), paths = [];
+    o.steps.forEach((s, i) => {
+      const x0 = pl + slot * i + slot * 0.16, bw = slot * 0.68;
+      const y1 = A.y(vals[i][0]), y2 = A.y(vals[i][1]);
+      rects.push({ x: x0, y: Math.min(y1, y2), w: bw, h: Math.max(Math.abs(y2 - y1), 1.5), rx: 2, f: s.color, o: 1 });
+      texts.push({ x: x0 + bw / 2, y: Math.min(y1, y2) - 6, t: (s.total ? '' : (s.v > 0 ? '+' : '')) + this.n(s.v, 0), f: C.ink2, s: 9.5, a: 'middle', w: '600', ff: '"IBM Plex Mono",monospace' });
+      const lines = (s.short && slot < 58 ? s.short : s.n).split('|');
+      const fs = Math.max(6.8, Math.min(9, slot / (Math.max.apply(null, lines.map(l => l.length)) * 0.62)));
+      lines.forEach((ln, k) => texts.push({ x: x0 + bw / 2, y: h - 21 + k * (fs + 1.4), t: ln, f: C.faint, s: fs, a: 'middle', w: '500', ff: '"IBM Plex Sans",sans-serif' }));
+      if (i < o.steps.length - 1 && !o.steps[i + 1].total) paths.push({ d: 'M' + (x0 + bw) + ' ' + y2.toFixed(1) + 'L' + (pl + slot * (i + 1) + slot * 0.16) + ' ' + y2.toFixed(1), f: 'none', c: C.g4, w: 1, dash: '3 3', o: 1 });
+    });
+    const p = this.base(o, w, h);
+    p.isSvg = true; p.grid = A.grid; p.rects = rects; p.paths = paths; p.texts = texts; p.h = h;
+    return p;
+  }
+
+  mkDonut(o) {
+    const C = this.C, w = o.w || this.cw(o.span), h = o.h || 196;
+    const cx = w / 2, cy = h / 2 + 2, r = Math.min(h / 2 - 16, 62), sw = 20;
+    const tot = this.sum(o.slices.map(s => s.v)), circ = 2 * Math.PI * r;
+    const circles = [{ cx, cy, r, f: 'none', c: '#f2ece3', w: sw, dash: '', off: 0, tr: '' }];
+    let acc = 0;
+    o.slices.forEach(s => { const len = circ * s.v / tot; circles.push({ cx, cy, r, f: 'none', c: s.c, w: sw, dash: Math.max(len - 1.5, 0.5) + ' ' + (circ - len + 1.5), off: -acc, tr: 'rotate(-90 ' + cx + ' ' + cy + ')' }); acc += len; });
+    const texts = [{ x: cx, y: cy + 1, t: o.center.v, f: C.ink, s: 19, a: 'middle', w: '600', ff: '"IBM Plex Mono",monospace' }, { x: cx, y: cy + 16, t: o.center.l, f: C.mut, s: 9.5, a: 'middle', w: '500', ff: '"IBM Plex Sans",sans-serif' }];
+    const p = this.base(o, w, h);
+    p.isSvg = true; p.circles = circles; p.texts = texts; p.h = h;
+    p.legend = o.slices.map(s => ({ name: s.n + ' · ' + s.lbl, color: s.c }));
+    return p;
+  }
+
+  mkScat(o) {
+    const C = this.C, w = o.w || this.cw(o.span), h = o.h || 220, pl = 44, pr = 14, pt = 16, pb = 34;
+    const xs = o.pts.map(p => p.x), ys = o.pts.map(p => p.y);
+    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    const dx = (x1 - x0) * 0.18 || 1, dy = (y1 - y0) * 0.2 || 1; x0 -= dx; x1 += dx; y0 -= dy; y1 += dy;
+    const A = this.ax(w, h, pl, pr, pt, pb, y0, y1, 4, o.fmtY || (v => this.n(v, 0)));
+    const X = v => pl + (v - x0) / (x1 - x0) * A.iw;
+    const circles = [], texts = A.texts.slice();
+    for (let i = 0; i <= 4; i++) { const v = x0 + (x1 - x0) * i / 4; texts.push({ x: X(v), y: h - 18, t: (o.fmtX || (q => this.n(q, 0)))(v), f: C.faint, s: 9.5, a: 'middle', w: '500', ff: '"IBM Plex Mono",monospace' }); }
+    texts.push({ x: pl + A.iw / 2, y: h - 4, t: o.xLabel, f: C.mut, s: 9.5, a: 'middle', w: '500', ff: '"IBM Plex Sans",sans-serif' });
+    o.pts.forEach(p => {
+      circles.push({ cx: X(p.x).toFixed(1), cy: A.y(p.y).toFixed(1), r: p.r || 6, f: p.color, c: '#fffdfa', w: 1.4, dash: '', off: 0, tr: '' });
+      texts.push({ x: X(p.x), y: A.y(p.y) - (p.r || 6) - 4, t: p.label, f: C.ink2, s: 9, a: 'middle', w: '600', ff: '"IBM Plex Sans",sans-serif' });
+    });
+    const pn = this.base(o, w, h);
+    pn.isSvg = true; pn.grid = A.grid; pn.circles = circles; pn.texts = texts; pn.h = h;
+    return pn;
+  }
+
+  mkCycle(o) {
+    const C = this.C, w = o.w || this.cw(o.span), h = 168, pl = 24, pr = 24, y = 86;
+    const maxD = 140, X = d => pl + d / maxD * (w - pl - pr);
+    const rects = [], texts = [], paths = [], circles = [];
+    rects.push({ x: pl, y: y - 2, w: X(127) - pl, h: 4, rx: 2, f: '#efe8de', o: 1 });
+    rects.push({ x: X(0), y: y - 16, w: X(51) - X(0), h: 12, rx: 3, f: C.b5, o: 1 });
+    rects.push({ x: X(51), y: y - 16, w: X(127) - X(51), h: 12, rx: 3, f: C.red, o: 1 });
+    rects.push({ x: X(75), y: y + 6, w: X(127) - X(75), h: 12, rx: 3, f: C.b3, o: 1 });
+    texts.push({ x: X(25), y: y - 22, t: 'PMP 51d · prazo do fornecedor', f: C.ink2, s: 9.5, a: 'middle', w: '600', ff: '"IBM Plex Sans",sans-serif' });
+    texts.push({ x: (X(51) + X(127)) / 2, y: y - 22, t: 'Ciclo financeiro 76d · sem caixa', f: C.red, s: 9.5, a: 'middle', w: '600', ff: '"IBM Plex Sans",sans-serif' });
+    texts.push({ x: (X(75) + X(127)) / 2, y: y + 29, t: 'PMR 52d · recebimento', f: C.ink2, s: 9.5, a: 'middle', w: '600', ff: '"IBM Plex Sans",sans-serif' });
+    [[0, 'Compra e estoca'], [51, 'Paga o fornecedor'], [75, 'Vende e fatura'], [127, 'Recebe do cliente']].forEach(m => {
+      circles.push({ cx: X(m[0]), cy: y, r: 4, f: '#fffdfa', c: C.b1, w: 1.8, dash: '', off: 0, tr: '' });
+      texts.push({ x: X(m[0]), y: y + 50, t: 'dia ' + m[0], f: C.ink, s: 9.5, a: 'middle', w: '600', ff: '"IBM Plex Mono",monospace' });
+      texts.push({ x: X(m[0]), y: y + 62, t: m[1], f: C.faint, s: 8.5, a: 'middle', w: '500', ff: '"IBM Plex Sans",sans-serif' });
+    });
+    const p = this.base(o, w, h);
+    p.isSvg = true; p.rects = rects; p.texts = texts; p.paths = paths; p.circles = circles; p.h = h;
+    return p;
+  }
+
+  mkHB(o) {
+    const C = this.C, max = o.max || Math.max.apply(null, o.rows.map(r => Math.abs(r.v)));
+    const p = this.base(o, 10, 10);
+    p.isHBars = true;
+    p.rows = o.rows.map(r => ({ label: r.n, pct: Math.min(Math.abs(r.v) / max * 100, 100), color: r.c || C.b3, val: r.t, vc: r.vc || C.ink, mark: r.mark === undefined ? -5 : r.mark / max * 100, markC: C.blue }));
+    return p;
+  }
+  mkStack(o) {
+    const p = this.base(o, 10, 10);
+    p.isStack = true;
+    p.rows = o.rows.map(r => { const t = this.sum(r.parts.map(x => x.v)); return { label: r.n, total: r.t, parts: r.parts.map(x => ({ pct: x.v / t * 100, color: x.c })) }; });
+    return p;
+  }
+  mkSplit(o) {
+    const p = this.base(o, 10, 10);
+    p.isSplit = true;
+    p.groups = o.groups.map(g => {
+      const t = this.sum(g.parts.map(x => x.v));
+      return { n: g.n, tot: g.tot || '', parts: g.parts.map(x => { const sh = x.v / t * 100; return { n: x.n, color: x.c, pct: sh, t: x.t || this.pc(sh), inl: sh >= 13 ? this.pc(sh, 0) : '' }; }) };
+    });
+    return p;
+  }
+  mkStat(o) {
+    const p = this.base(o, 10, 10);
+    p.isStat = true;
+    p.statCols = o.cols || ('repeat(' + (o.stats.length > 2 && (o.span || 4) >= 8 ? o.stats.length : 1) + ',minmax(0,1fr))');
+    p.stats = o.stats.map(s => ({ l: s.l, v: s.v, f: s.f || '', c: s.c || this.C.ink }));
+    return p;
+  }
+  mkFunnel(o) {
+    const C = this.C, max = o.steps[0].v, cols = [C.b1, C.b2, C.b3, C.b4, C.b5];
+    const p = this.base(o, 10, 10);
+    p.isFunnel = true;
+    p.steps = o.steps.map((s, i) => ({ pct: Math.max(s.v / max * 100, 14), color: cols[i % cols.length], val: this.n(s.v), label: s.n, conv: i ? '↳ ' + this.pc(s.v / o.steps[i - 1].v * 100, 1) + ' do passo anterior' : '100%' }));
+    return p;
+  }
+  mkTiles(o) {
+    const C = this.C, D = this.D, max = 468;
+    const p = this.base(o, 10, 10);
+    p.isTiles = true;
+    p.tiles = D.ufGrid.map(g => {
+      const v = Math.round((D.uf[g[0]] || 0) * (o.k || 1));
+      const t = v / max;
+      const bg = v === 0 ? '#f2ece3' : (t > .6 ? C.b1 : t > .28 ? C.b2 : t > .12 ? C.b3 : t > .05 ? C.b4 : C.b5);
+      return { uf: g[0], col: g[1], row: g[2], bg, fg: v === 0 ? '#bdb1a1' : (t > .12 ? '#f4ede2' : '#3d2b1d'), v: v ? this.n(v) : '–' };
+    });
+    return p;
+  }
+
+  /* ---------- painéis ---------- */
+  kpisFor(t, s, F) {
+    let out = this.kpisRaw(t, s, F);
+    if (F.on) {
+      const lbl = 'no recorte ativo' + (F.ar ? ' · ' + F.ar.n : '');
+      out = out.map(k => {
+        const o = Object.assign({}, k);
+        if (this.hasAbs(o.f)) o.f = lbl;
+        if (this.hasAbs(o.d)) o.d = 'no recorte';
+        return o;
+      });
+    }
+    return out.map(k => this.spark(Object.assign({}, k, { dBg: this.tint(k.dc) })));
+  }
+  canc(AR, F) { return Math.round(12 * (this.sum(AR.map(a => a.vagas[0] + a.vagas[1] + a.vagas[2])) / 167) * F.ent); }
+  spark(k) {
+    if (!k.sv || k.sv.length < 3) return k;
+    const v = k.sv, mn = Math.min.apply(null, v), mx = Math.max.apply(null, v), sp = (mx - mn) || 1;
+    const X = i => (i / (v.length - 1) * 100).toFixed(2);
+    const Y = x => (23 - (x - mn) / sp * 19).toFixed(2);
+    const d = v.map((x, i) => (i ? 'L' : 'M') + X(i) + ' ' + Y(x)).join(' ');
+    const c = k.sc || k.dot || this.C.b3;
+    return Object.assign({}, k, { hasSpark: true, spark: d, sparkFill: d + ' L100 26 L0 26 Z', sparkC: c, sparkBg: this.tint(c) });
+  }
+  tint(c) {
+    const M = { '#a8402f': 'rgba(168,64,47,.10)', '#4d7a52': 'rgba(77,122,82,.12)', '#b8853a': 'rgba(184,133,58,.13)', '#3f5f8a': 'rgba(63,95,138,.11)', '#8a7f74': 'rgba(122,111,100,.09)' };
+    return M[c] || 'rgba(107,74,47,.09)';
+  }
+  kpisRaw(t, s, F) {
+    const D = this.D, C = this.C, S = (a, k) => this.S(a, F, k), L = F.j - 1;
+    const hc = Math.round(D.hc[L] * F.hc), hc0 = Math.round(D.hc[F.i] * F.hc);
+    const folha = this.sum(S(D.folha, F.money)), rec = this.sum(S(D.receita, F.rev)), reclY = this.sum(S(D.receitaLY, F.rev));
+    const eb = this.sum(S(D.ebitda, F.rev));
+    if (t === 'rh' && s === 'visao') { const tk = F.ar ? F.ar.tov / D.tov[L] : 1; return [
+      { l: 'Headcount', v: this.n(hc), d: this.sg((hc / hc0 - 1) * 100), f: 'FTE no período', dot: C.b2, dc: C.green, sv: S(D.hc, F.hc), sc: C.b2 },
+      { l: 'Turnover 12m', v: this.pc(F.ar ? F.ar.tov : D.tov[L]), d: '+' + this.n((F.ar ? F.ar.tov : D.tov[L]) - 14, 1) + ' p.p.', f: 'vs. meta 14%', dot: C.red, dc: C.red, sv: S(D.tov, tk), sc: C.red },
+      { l: 'Retenção 12m', v: this.pc(100 - (F.ar ? F.ar.tov : D.tov[L])), d: this.n(-(D.tov[L] - D.tov[F.i]) * tk, 1) + ' p.p.', f: 'meta 86%', dot: C.green, dc: C.red, sv: S(D.tov, tk).map(v => 100 - v), sc: C.green },
+      { l: 'eNPS', v: '+' + D.enps[L], d: (D.enps[L] - D.enps[0] > 0 ? '+' : '') + this.n(D.enps[L] - D.enps[0], 0) + ' pts', f: 'zona favorável', dot: C.green, dc: C.green, sv: S(D.enps), sc: C.green },
+      { l: 'Custo por FTE', v: 'R$ ' + this.n(folha * 1000 / (F.j - F.i) * 12 / hc, 0) + ' mil', d: 'ao ano', f: 'folha ÷ FTE', dot: C.b3, dc: C.mut, sv: D.folha.slice(F.i, F.j).map((v, i) => Math.round(v * 12 / D.hc[F.i + i] * 1000)), sc: C.b3 },
+      { l: 'Folha total', v: this.rs(folha, 1), d: this.pc(folha / rec * 100), f: 'da receita', dot: C.b1, dc: C.mut, sv: S(D.folha, F.money), sc: C.b1 }
+    ]; }
+    if (t === 'rh' && s === 'colab') return [
+      { l: 'Colaboradores', v: this.n(hc), d: 'FTE', f: F.ar ? F.ar.n : '7 áreas', dot: C.b2, dc: C.mut },
+      { l: 'Idade média', v: '34,2 anos', d: '25–34 = 39%', f: 'faixa predominante', dot: C.b3, dc: C.mut },
+      { l: 'Tempo médio de casa', v: '3,1 anos', d: '22% < 1 ano', f: 'base jovem de contrato', dot: C.b4, dc: C.amber },
+      { l: 'Trabalho flexível', v: this.pc((D.modal[1].v + D.modal[2].v) / 1240 * 100), d: 'híbrido + remoto', f: this.n(Math.round((D.modal[1].v + D.modal[2].v) * F.hc)) + ' pessoas', dot: C.g2, dc: C.mut },
+      { l: 'Estados atendidos', v: '12', d: 'SP = 37,7%', f: 'concentração geográfica', dot: C.b1, dc: C.mut },
+      { l: 'Superior ou mais', v: this.pc(48.9), d: '12,4% com pós', f: 'maior titulação declarada', dot: C.b5, dc: C.mut }
+    ];
+    if (t === 'rh' && s === 'turnover') { const tk = F.ar ? F.ar.tov / D.tov[L] : 1; return [
+      { l: 'Turnover 12m', v: this.pc(F.ar ? F.ar.tov : D.tov[L]), d: '+' + this.n((F.ar ? F.ar.tov : D.tov[L]) - 14, 1) + ' p.p.', f: 'vs. meta de 14,0%', dot: C.red, dc: C.red, sv: S(D.tov, tk), sc: C.red },
+      { l: 'Retenção 12m', v: this.pc(100 - (F.ar ? F.ar.tov : D.tov[L])), d: 'meta 86,0%', f: '100% − turnover', dot: C.green, dc: C.mut, sv: S(D.tov, tk).map(v => 100 - v), sc: C.green },
+      { l: 'Desligamentos', v: this.n(Math.round(145 * F.hc)), d: '62% voluntários', f: 'no período de 12 meses', dot: C.b2, dc: C.mut, sv: S(D.des, F.hc), sc: C.b2 },
+      { l: 'Custo do turnover', v: this.rs(12.4 * F.hc, 1), d: this.pc(12.4 / 186 * 100), f: 'da folha anual', dot: C.red, dc: C.red },
+      { l: 'Custo de reposição', v: this.rs(7.6 * F.hc, 1), d: 'estimado', f: 'ramp-up + produtividade', dot: C.amber, dc: C.mut },
+      { l: 'Tempo até a saída', v: '2,1 anos', d: '31,4% aos 18–24', f: 'faixa mais volátil', dot: C.amber, dc: C.amber }
+    ]; }
+    if (t === 'rh' && s === 'recrut') { const AR = F.ar ? [F.ar] : D.areas, vg = j => Math.round(this.sum(AR.map(a => a.vagas[j])) * F.ent); return [
+      { l: 'Vagas abertas', v: this.n(vg(0)), d: 'hoje', f: 'sem candidato em etapa final', dot: C.b2, dc: C.mut },
+      { l: 'Em andamento', v: this.n(vg(1)), d: 'pipeline ativo', f: 'triagem a proposta', dot: C.b3, dc: C.mut },
+      { l: 'Fechadas (12m)', v: this.n(vg(2)), d: '+' + this.n(Math.round(vg(2) * 0.1875)) + ' vs. ano anterior', f: 'contratações efetivadas', dot: C.green, dc: C.green },
+      { l: 'Tempo de fechamento', v: '42 dias', d: '+2 dias vs. meta', f: 'meta de 40 dias', dot: C.amber, dc: C.red },
+      { l: 'Custo por contratação', v: 'R$ 8,6 mil', d: '−4,4%', f: 'vs. ano anterior', dot: C.green, dc: C.green },
+      { l: 'Canceladas', v: this.n(this.canc(AR, F)), d: this.pc(this.canc(AR, F) / (vg(0) + vg(1) + vg(2) + this.canc(AR, F)) * 100), f: 'do total movimentado no ano', dot: C.red, dc: C.mut }
+    ]; }
+    if (t === 'rh' && s === 'trein') return [
+      { l: 'Horas de treinamento', v: this.n(Math.round(this.sum(S(D.horas, F.trein)))), d: this.n(this.sum(S(D.horas, F.trein)) / (D.hc[L] * F.hc), 1) + ' h/FTE', f: 'no período', dot: C.b2, dc: C.mut },
+      { l: 'Participação', v: '78,0%', d: '+6,0 p.p.', f: 'dos FTE com ao menos 1 trilha', dot: C.green, dc: C.green },
+      { l: 'Conclusão média', v: '64,0%', d: 'online = 58%', f: 'gargalo no autoinstrucional', dot: C.amber, dc: C.red },
+      { l: 'Investimento', v: this.rs(4.2 * F.money, 1), d: this.pc(4.2 / 186 * 100), f: 'da folha anual', dot: C.b1, dc: C.mut },
+      { l: 'Custo por hora', v: 'R$ ' + this.n(4.2e6 / 21400, 0), d: 'média das trilhas', f: 'investimento ÷ horas', dot: C.b5, dc: C.mut },
+      { l: 'Horas por FTE', v: this.n(this.sum(S(D.horas, F.trein)) / (D.hc[L] * F.hc), 1) + ' h', d: 'meta 20 h', f: 'no período', dot: C.b4, dc: C.amber }
+    ];
+    if (t === 'rh' && s === 'engaj') return [
+      { l: 'eNPS', v: '+' + D.enps[L], d: (D.enps[L] - D.enps[0] > 0 ? '+' : '') + this.n(D.enps[L] - D.enps[0], 0) + ' pts', f: 'histórico de 12 meses', dot: C.green, dc: C.green, sv: S(D.enps), sc: C.green },
+      { l: 'Engajamento', v: this.pc(D.eng[L], 0), d: '+' + this.n(D.eng[L] - D.eng[0], 0) + ' p.p.', f: 'pesquisa trimestral', dot: C.b2, dc: C.green, sv: S(D.eng), sc: C.b2 },
+      { l: 'Absenteísmo', v: this.pc(D.abs[L]), d: '+' + this.n(D.abs[L] - D.abs[0], 1) + ' p.p.', f: 'horas não trabalhadas', dot: C.amber, dc: C.red, sv: S(D.abs), sc: C.amber },
+      { l: 'Promotores', v: this.pc(41, 0), d: 'detratores 9%', f: 'da última pesquisa', dot: C.green, dc: C.mut },
+      { l: 'Cobertura da pesquisa', v: this.pc(74, 0), d: this.n(Math.round(918 * F.hc)) + ' respostas', f: 'do quadro elegível', dot: C.b3, dc: C.mut },
+      { l: 'Área mais crítica', v: this.pc(Math.min.apply(null, D.areas.map(a => a.eng)), 0), d: D.areas.slice().sort((a, b) => a.eng - b.eng)[0].n, f: 'menor engajamento', dot: C.red, dc: C.red }
+    ];
+    if (t === 'rh' && s === 'sal') return [
+      { l: 'Folha total', v: this.rs(folha, 1), d: this.pc(folha / rec * 100), f: 'da receita líquida', dot: C.b1, dc: C.mut, sv: S(D.folha, F.money), sc: C.b1 },
+      { l: 'Salário médio', v: 'R$ ' + this.n(112e6 * F.money / 12 / (F.ar ? F.ar.hc : 1240), 0), d: 'mediana R$ 6.240', f: 'base mensal, sem encargos', dot: C.b2, dc: C.mut },
+      { l: 'Custo por colaborador', v: 'R$ ' + this.n(folha * 1000 / (F.j - F.i) * 12 / hc, 0) + ' mil', d: 'ano', f: 'folha ÷ FTE anualizado', dot: C.b3, dc: C.mut, sv: D.folha.slice(F.i, F.j).map((v, i) => Math.round(v * 12 / D.hc[F.i + i] * 1000)), sc: C.b3 },
+      { l: 'Encargos', v: '37,5%', d: 'sobre salários', f: 'R$ 42 mi sobre R$ 112 mi', dot: C.g2, dc: C.mut },
+      { l: 'Benefícios', v: this.rs(21 * F.money, 0), d: '11,3% da folha', f: 'saúde = 47% do pacote', dot: C.b4, dc: C.mut },
+      { l: 'Variável', v: this.rs(11 * F.money, 0), d: '5,9% da folha', f: 'bônus e horas extras', dot: C.b5, dc: C.mut }
+    ];
+    if (t === 'fin' && s === 'visao') return [
+      { l: 'Receita bruta', v: this.rs(rec * 1.1767, 0), d: this.sg((rec / reclY - 1) * 100), f: 'vs. mesmo período do ano anterior', dot: C.b1, dc: C.green },
+      { l: 'Receita líquida', v: this.rs(rec, 0), d: this.sg((rec / reclY - 1) * 100), f: 'após deduções de 15%', dot: C.b2, dc: C.green },
+      { l: 'EBITDA', v: this.rs(eb, 0), d: this.pc(eb / rec * 100), f: 'margem EBITDA', dot: C.b3, dc: C.green },
+      { l: 'Margem bruta', v: this.pc(40.0), d: '−0,2 p.p.', f: 'CMV em 60% da receita', dot: C.b4, dc: C.red },
+      { l: 'Margem líquida', v: this.pc(-0.7), d: '−1,9 p.p.', f: 'juros consomem todo o EBIT', dot: C.red, dc: C.red },
+      { l: 'Lucro líquido', v: this.rs(-8 * F.rev, 0), d: 'prejuízo', f: 'cobertura de juros 1,0x', dot: C.red, dc: C.red }
+    ];
+    if (t === 'fin' && s === 'caixa') return [
+      { l: 'Saldo de caixa', v: this.rs(100 * F.rev, 0), d: '−' + this.rs(35 * F.rev, 0), f: 'vs. saldo inicial de ' + this.n(135 * F.rev, 0), dot: C.red, dc: C.red },
+      { l: 'Geração operacional', v: this.rs(this.sum(S(D.fco, F.rev)), 0), d: '92,5% conv.', f: 'FCO ÷ EBITDA no ano', dot: C.b2, dc: C.green },
+      { l: 'Investimento (FCI)', v: this.rs(-140 * F.rev, 0), d: 'CAPEX', f: 'manutenção e expansão', dot: C.b3, dc: C.mut },
+      { l: 'Financiamento (FCF)', v: this.rs(-80 * F.rev, 0), d: '+' + this.n(210 * F.rev, 0) + ' captados', f: 'amortização ' + this.n(130 * F.rev, 0) + ' · juros ' + this.n(160 * F.rev, 0), dot: C.red, dc: C.red },
+      { l: 'Conversão de Dez', v: this.pc(62.5), d: '−30 p.p.', f: 'abaixo do gatilho de 80%', dot: C.red, dc: C.red }
+    ];
+    if (t === 'fin' && s === 'orc') {
+      const CC = F.ar ? D.cc.filter(c => c.n === F.ar.n) : D.cc;
+      const eco = CC.filter(c => c.real < c.orc);
+      const pShare = (F.j - F.i) / 12;
+      const or = this.sum(CC.map(c => c.orc)) * F.ent * pShare, re = this.sum(CC.map(c => c.real)) * F.ent * pShare;
+      return [
+      { l: 'Orçado', v: this.rs(or, 0), d: 'aprovado', f: F.ar ? F.ar.n : 'todos os centros de custo', dot: C.blue, dc: C.mut },
+      { l: 'Realizado', v: this.rs(re, 0), d: this.sg((re / or - 1) * 100), f: 'vs. orçado do período', dot: C.g2, dc: C.red },
+      { l: 'Desvio', v: this.rs(re - or, 0), d: this.pc((re / or - 1) * 100), f: 'estouro acumulado', dot: C.red, dc: C.red },
+      { l: 'Economia obtida', v: this.rs(this.sum(eco.map(c => c.orc - c.real)) * F.ent * pShare, 0), d: eco.length + (eco.length === 1 ? ' centro' : ' centros'), f: eco.map(c => c.n).join(', ') || 'nenhum centro abaixo do orçado', dot: C.green, dc: C.green }
+    ]; }
+    if (t === 'fin' && s === 'contas') return [
+      { l: 'PMR', v: '52 dias', d: '+3 dias', f: 'contas a receber R$ 171 mi', dot: C.amber, dc: C.red },
+      { l: 'PME', v: '75 dias', d: '+5 dias', f: 'estoques R$ 148 mi', dot: C.red, dc: C.red },
+      { l: 'PMP', v: '51 dias', d: '−1 dia', f: 'fornecedores R$ 101 mi', dot: C.b3, dc: C.red },
+      { l: 'Ciclo de conversão', v: '76 dias', d: '+9 dias', f: 'PMR + PME − PMP', dot: C.red, dc: C.red },
+      { l: 'Inadimplência', v: this.pc(4.1), d: '> 90 dias', f: 'R$ 7 mi sobre R$ 171 mi', dot: C.red, dc: C.red }
+    ];
+    if (t === 'fin' && s === 'fat') return [
+      { l: 'Faturamento', v: this.rs(rec, 0), d: this.sg((rec / reclY - 1) * 100), f: 'receita líquida do período', dot: C.b1, dc: C.green },
+      { l: 'Crescimento YoY', v: this.sg((rec / reclY - 1) * 100), d: 'ano contra ano', f: 'base do ano anterior: ' + this.rs(reclY, 0), dot: C.green, dc: C.green },
+      { l: 'Ticket médio', v: 'R$ 65,2 mil', d: '+6,8%', f: '18.400 notas emitidas', dot: C.b3, dc: C.green },
+      { l: 'Concentração top 10', v: this.pc(54.3), d: 'da carteira', f: 'risco moderado de dependência', dot: C.amber, dc: C.mut }
+    ];
+    return [
+      { l: 'Receita por colaborador', v: 'R$ ' + this.n(rec / (F.j - F.i) * 12 * 1000 / hc, 0) + ' mil', d: '+4,2%', f: 'anualizado por FTE', dot: C.b2, dc: C.green },
+      { l: 'EBITDA per capita', v: 'R$ ' + this.n(eb / (F.j - F.i) * 12 * 1000 / hc, 0) + ' mil', d: '+2,8%', f: 'anualizado por FTE', dot: C.b3, dc: C.green },
+      { l: 'Despesa de pessoal', v: this.pc(folha / rec * 100), d: '+0,4 p.p.', f: 'sobre a receita líquida', dot: C.amber, dc: C.red },
+      { l: 'Headcount', v: this.n(hc), d: this.sg((hc / hc0 - 1) * 100), f: 'FTE no fim do período', dot: C.b1, dc: C.green }
+    ];
+  }
+
+  panelsFor(t, s, F) {
+    this._F = F;
+    const D = this.D, C = this.C, S = (a, k) => this.S(a, F, k), cats = this.CM(F), L = F.j - 1;
+    const areas = F.ar ? [F.ar] : D.areas;
+    const K = t + '/' + s;
+    const pct = (v, tot) => this.pc(v / tot * 100);
+
+    if (K === 'rh/visao') return [
+      this.mkBars({ id: 'rh-headcount', span: 8, h: 216, y2: true, title: 'Headcount nos últimos 12 meses', sub: 'Barras = admissões e desligamentos do mês (eixo esquerdo) · linha = headcount FTE (eixo direito)', tag: 'FTE', cats, bars: [{ name: 'Admissões', vals: S(D.adm, F.hc), color: C.green }, { name: 'Desligamentos', vals: S(D.des, F.hc), color: C.red }], lines: [{ name: 'Headcount (FTE)', vals: S(D.hc, F.hc), color: C.b1, w: 2 }], note: 'Crescimento líquido de ' + this.n(Math.round((D.hc[L] - D.hc[F.i]) * F.hc)) + ' FTE no período: ' + this.n(Math.round(this.sum(S(D.adm, F.hc)))) + ' admissões contra ' + this.n(Math.round(this.sum(S(D.des, F.hc)))) + ' desligamentos.' }),
+      this.mkLine({ id: 'rh-turnover', span: 4, h: 216, title: 'Turnover (12 meses)', sub: F.ar ? 'Taxa móvel da área ' + F.ar.n + ' contra a meta anual' : 'Taxa móvel de 12 meses contra a meta anual', tag: '%', cats, series: [{ name: 'Turnover', vals: S(D.tov, F.ar ? F.ar.tov / D.tov[L] : 1), color: C.red, fill: 'rgba(168,64,47,.07)' }], refs: [{ v: 14, label: 'meta 14%', color: C.blue }], fmtY: v => this.n(v, 1) + '%', formula: 'turnover = desligamentos 12m ÷ headcount médio 12m' }),
+      this.mkBars({ id: 'rh-retencao', span: 8, h: 206, y2: true, title: 'Retenção e saldo líquido de pessoas', sub: 'Barras = admissões menos desligamentos no mês (eixo esquerdo) · linha = retenção 12m em % (eixo direito)', tag: '% · FTE', cats, bars: [{ name: 'Saldo líquido', vals: cats.map((c, i) => Math.round((D.adm[F.i + i] - D.des[F.i + i]) * F.hc)), color: C.b3, colors: cats.map((c, i) => D.adm[F.i + i] - D.des[F.i + i] >= 0 ? C.green : C.red) }], lines: [{ name: 'Retenção 12m', vals: S(D.tov, F.ar ? F.ar.tov / D.tov[L] : 1).map(v => Math.round((100 - v) * 10) / 10), color: C.b1, w: 2 }], formula: 'retenção = 100% − turnover 12m', note: 'O saldo é positivo em quase todos os meses, mas a retenção cai — a empresa cresce contratando mais rápido do que perde, não retendo melhor.' }),
+      this.mkStat({ id: 'rh-flash', span: 4, title: 'Leitura rápida do período', sub: 'Três números que resumem a gestão de pessoas', tag: 'resumo', stats: [
+        { l: 'Saldo do período', v: (D.hc[L] - D.hc[F.i] >= 0 ? '+' : '') + this.n(Math.round((D.hc[L] - D.hc[F.i]) * F.hc)) + ' FTE', f: this.n(Math.round(this.sum(S(D.adm, F.hc)))) + ' admissões · ' + this.n(Math.round(this.sum(S(D.des, F.hc)))) + ' desligamentos', c: C.green },
+        { l: 'Melhor retenção', v: this.pc(100 - Math.min.apply(null, D.areas.map(a => a.tov))), f: D.areas.slice().sort((a, b) => a.tov - b.tov)[0].n, c: C.b2 },
+        { l: 'Maior risco', v: this.pc(Math.max.apply(null, D.areas.map(a => a.tov))), f: D.areas.slice().sort((a, b) => b.tov - a.tov)[0].n + ' · turnover mais alto', c: C.red }
+      ], note: 'A IA usa esses três recortes como ponto de partida quando você pergunta “onde está o problema de pessoas”.' }),
+      this.mkBars({ id: 'rh-folha', span: 6, h: 210, y2: true, title: 'Folha total e custo por colaborador', sub: 'Barras = folha mensal em R$ mi (esquerda) · linha = custo anualizado por FTE em R$ mil (direita)', tag: 'R$ mi · R$ mil', cats, bars: [{ name: 'Folha mensal', vals: S(D.folha, F.money), color: C.b3 }], lines: [{ name: 'Custo por FTE (ano)', vals: cats.map((c, i) => Math.round(D.folha[F.i + i] * 12 / D.hc[F.i + i] * 1000)), color: C.b1, w: 2 }], formula: 'custo por colaborador = folha × 12 ÷ headcount FTE' }),
+      this.mkHB({ id: 'rh-areas', span: 6, title: 'Distribuição por área', sub: 'Headcount FTE e participação no total', tag: 'FTE', lw: 78, vw: 74, rows: areas.map((a, i) => ({ n: a.n, v: a.hc, t: this.n(Math.round(a.hc * F.hcA)) + ' · ' + pct(a.hc, 1240), c: [C.b1, C.b2, C.b3, C.b4, C.b5, C.g3, C.g4][i % 7] })), note: F.ar ? F.ar.n + ' representa ' + pct(F.ar.hc, 1240) + ' do quadro total, com turnover de ' + this.pc(F.ar.tov) + '.' : 'Operações concentra 39,2% do quadro — qualquer variação de turnover nessa área move o indicador consolidado.' })
+    ];
+
+    if (K === 'rh/colab') { const hs = v => Math.round(v * F.hc), TOT = Math.round(1240 * F.hc); return [
+      this.mkHB({ id: 'col-area', span: 4, title: 'Por área', sub: 'Headcount FTE', tag: 'FTE', lw: 74, vw: 44, rows: areas.map((a, i) => ({ n: a.n, v: a.hc, t: this.n(Math.round(a.hc * F.hcA)), c: [C.b1, C.b2, C.b3, C.b4, C.b5, C.g3, C.g4][i % 7] })) }),
+      this.mkSplit({ id: 'col-perfil', span: 4, title: 'Perfil do quadro', sub: 'Composição em barras de 100% — gênero e modalidade de trabalho', tag: '%', groups: [
+        { n: 'Gênero', tot: this.n(TOT) + ' FTE', parts: D.genero.map((g, i) => ({ n: g.n, v: g.v, t: pct(g.v, 1240), c: [C.b2, C.b4, C.g3][i] })) },
+        { n: 'Modalidade', tot: this.pc(51.3, 0) + ' flexível', parts: D.modal.map((g, i) => ({ n: g.n, v: g.v, t: pct(g.v, 1240), c: [C.b1, C.b3, C.b5][i] })) }
+      ], note: 'Uma linha por corte: 51,3% do quadro está em algum modelo flexível, híbrido ou remoto.' }),
+      this.mkHB({ id: 'col-idade', span: 4, title: 'Por faixa etária', sub: 'Headcount por faixa', tag: 'FTE', lw: 52, vw: 66, rows: D.idade.map((g, i) => ({ n: g.n, v: g.v, t: this.n(hs(g.v)) + ' · ' + pct(g.v, 1240), c: [C.b5, C.b2, C.b3, C.b4, C.g3][i] })) }),
+      this.mkBars({ id: 'col-tempo', span: 8, h: 186, title: 'Tempo de empresa', sub: 'Headcount por faixa de permanência', tag: 'FTE', cats: D.tempo.map(t2 => t2.n), labels: true, bars: [{ name: 'FTE', vals: D.tempo.map(t2 => hs(t2.v)), color: C.b3 }], note: '22% do quadro tem menos de 1 ano — reflexo direto do turnover de 18,4%.' }),
+      this.mkHB({ id: 'col-escol', span: 4, title: 'Escolaridade', sub: 'Maior titulação declarada', tag: 'FTE', lw: 86, vw: 60, rows: D.escol.map((g, i) => ({ n: g.n, v: g.v, t: this.n(hs(g.v)) + ' · ' + pct(g.v, 1240), c: [C.b2, C.b3, C.b4, C.b5, C.g3][i] })) }),
+      this.mkTiles({ id: 'col-mapa', span: 8, title: 'Distribuição geográfica por estado', sub: 'Headcount FTE por UF — intensidade proporcional ao volume', tag: 'FTE por UF', k: F.hc, note: 'São Paulo responde por 37,7% do quadro. Os 12 estados com presença cobrem 100% do headcount; os demais aparecem em cinza.' }),
+      this.mkStat({ id: 'col-geo', span: 4, title: 'Concentração geográfica', sub: 'O que o mapa está dizendo', tag: 'resumo', stats: [
+        { l: 'Estados com presença', v: '12', f: 'de 27 unidades federativas', c: C.b2 },
+        { l: 'São Paulo', v: this.n(Math.round(468 * F.hc)) + ' FTE', f: pct(468, 1240) + ' do quadro total', c: C.b1 },
+        { l: 'Top 4 estados', v: this.pc(68.5), f: 'SP, MG, PR e RJ somados', c: C.amber }
+      ], note: 'Concentração alta amplifica exposição a dissídio regional e ao mercado local de talentos.' })
+    ]; }
+
+    if (K === 'rh/turnover') return [
+      this.mkLine({ id: 'tov-12m', span: 8, h: 216, title: 'Taxa de turnover — 12 meses', sub: F.ar ? 'Taxa móvel da área ' + F.ar.n + ' contra a meta anual de 14,0%' : 'Taxa móvel contra a meta anual de 14,0%', tag: '%', cats, series: [{ name: 'Turnover', vals: S(D.tov, F.ar ? F.ar.tov / D.tov[L] : 1), color: C.red, fill: 'rgba(168,64,47,.07)' }], refs: [{ v: 14, label: 'meta', color: C.blue }], fmtY: v => this.n(v, 1) + '%', note: 'Deterioração contínua: +' + this.n((D.tov[L] - D.tov[F.i]) * (F.ar ? F.ar.tov / D.tov[L] : 1), 1) + ' p.p. no período, sem um único mês de reversão — padrão estrutural, não evento pontual.' }),
+      this.mkDonut({ id: 'tov-tipos', span: 4, title: 'Tipos de desligamento', sub: '145 saídas no período', tag: '%', slices: D.deslig.map((g, i) => ({ n: g.n, v: g.v, lbl: pct(g.v, 145), c: [C.red, C.b3, C.b5, C.g3][i] })), center: { v: this.pc(62.1, 0), l: 'voluntário' }, note: '62% de saídas voluntárias indica problema de retenção, não de gestão de performance.' }),
+      this.mkHB({ id: 'tov-area', span: 6, title: 'Turnover por área', sub: 'Traço azul = meta de 14,0%', tag: '%', lw: 78, vw: 48, max: 30, rows: D.areas.map(a => ({ n: a.n, v: a.tov, t: this.pc(a.tov), c: a.tov > 14 ? C.red : C.green, mark: 14 })), note: 'Comercial (24,1%) e Operações (22,4%) explicam a maior parte do indicador consolidado.' }),
+      this.mkHB({ id: 'tov-corte', span: 6, title: 'Turnover por gênero e faixa etária', sub: 'Mesmo eixo para comparar os dois cortes', tag: '%', lw: 78, vw: 48, max: 34, rows: D.genero.map(g => ({ n: g.n, v: g.tov, t: this.pc(g.tov), c: C.b3, mark: 14 })).concat(D.idade.map(g => ({ n: g.n + ' anos', v: g.tov, t: this.pc(g.tov), c: g.tov > 20 ? C.red : C.b5, mark: 14 }))), note: 'A faixa 18–24 sai 4,6× mais que a de 55+ — o corte etário discrimina muito mais que o de gênero.' }),
+      this.mkStat({ id: 'tov-resumo', span: 4, title: 'Custo do turnover em reais', sub: 'O indicador traduzido em dinheiro', tag: 'resumo', stats: [
+        { l: 'Custo total com rescisões', v: this.rs(4.8 * F.hc, 1), f: 'verbas rescisórias pagas no período', c: C.red },
+        { l: 'Custo estimado de reposição', v: this.rs(7.6 * F.hc, 1), f: 'recrutamento, ramp-up e produtividade', c: C.amber },
+        { l: 'Total', v: this.rs(12.4 * F.hc, 1), f: '6,7% da folha anual · 3× o investimento em treinamento', c: C.ink }
+      ], note: 'Principais motivos declarados: proposta melhor, clima e gestão direta.' }),
+      this.mkBars({ id: 'tov-custo', span: 8, h: 190, title: 'Custo financeiro do turnover', sub: 'Composição dos R$ 12,4 mi perdidos no período', tag: 'R$ mi', cats: D.custoTov.map(c => c.n), labels: true, fmtV: v => this.n(v, 1), bars: [{ name: 'Custo', vals: D.custoTov.map(c => c.v * F.hc), color: C.red, colors: [C.red, C.b2, C.b3, C.b4] }], formula: 'custo do turnover = rescisões + recrutamento + ramp-up + produtividade perdida', note: 'Equivale a 6,7% da folha anual — mais que o investimento total em treinamento (R$ 4,2 mi).' })
+    ];
+
+    if (K === 'rh/recrut') { const fk = this.sum(areas.map(a => a.vagas[2])) / 96 * F.ent; const vg = j => Math.round(this.sum(areas.map(a => a.vagas[j])) * F.ent); return [
+      this.mkBars({ id: 'rec-dias', span: 8, h: 206, title: 'Tempo médio de fechamento por mês', sub: 'Dias entre a abertura da vaga e o aceite da proposta · traço = meta de 40 dias', tag: 'dias', cats, labels: true, fmtV: v => this.n(v, 0), bars: [{ name: 'Dias', vals: S(D.diasMes), color: C.b3, colors: S(D.diasMes).map(v => v > 40 ? C.amber : C.green) }], refs: [{ v: 40, label: 'meta 40d', color: C.blue }], note: 'A curva melhora ao longo do ano (46 → 42 dias), mas ainda fecha acima da meta em 8 dos 12 meses.' }),
+      this.mkDonut({ id: 'rec-status', span: 4, title: 'Status das vagas no ano', sub: 'Abertas, em andamento, fechadas e canceladas', tag: '%', slices: [{ n: 'Fechadas', v: vg(2), c: C.green }, { n: 'Em andamento', v: vg(1), c: C.amber }, { n: 'Abertas', v: vg(0), c: C.b3 }, { n: 'Canceladas', v: this.canc(areas, F), c: C.red }].map(s => Object.assign(s, { lbl: pct(s.v, vg(0) + vg(1) + vg(2) + this.canc(areas, F)) })), center: { v: pct(vg(2), vg(0) + vg(1) + vg(2) + this.canc(areas, F)), l: 'fechadas' }, note: 'As canceladas saem do funil sem contratação — normalmente por remanejamento interno.' }),
+      this.mkFunnel({ id: 'rec-funil', span: 6, title: 'Pipeline de recrutamento', sub: 'Conversão de candidatura a contratação nos 12 meses', tag: 'candidatos', steps: D.funil.map(f => ({ n: f.n, v: Math.round(f.v * fk) })), note: 'Conversão de ponta a ponta de 2,0%. A maior perda está na triagem (75,5% descartados) — sinal de anúncio pouco específico.' }),
+      this.mkHB({ id: 'rec-fontes', span: 6, title: 'Fontes de aquisição de talentos', sub: 'Participação nas contratações efetivadas', tag: '%', lw: 104, vw: 44, rows: D.fontes.map((f, i) => ({ n: f.n, v: f.v, t: this.pc(f.v, 0), c: [C.b1, C.b2, C.b3, C.b4, C.b5, C.g3][i] })), note: 'Indicação é a maior fonte (34%) e a mais barata — vale ampliar o programa antes de aumentar verba de agência.' }),
+      this.mkHB({ id: 'rec-tempo', span: 6, title: 'Tempo médio de fechamento por área', sub: 'Dias entre abertura e aceite · traço azul = meta de 40 dias', tag: 'dias', lw: 78, vw: 52, max: 70, rows: D.areas.map(a => ({ n: a.n, v: a.dias, t: this.n(a.dias) + 'd', c: a.dias > 40 ? C.red : C.green, mark: 40 })), note: 'Tecnologia leva 61 dias — 53% acima da meta. É onde o custo de vaga aberta é maior.' }),
+      this.mkStack({ id: 'rec-vagas', span: 6, title: F.ar ? 'Vagas por status' : 'Vagas por status e área', sub: 'Abertas · em andamento · fechadas', tag: 'vagas', lw: 78, vw: 44, rows: areas.map(a => ({ n: a.n, t: this.n(Math.round((a.vagas[0] + a.vagas[1] + a.vagas[2]) * F.ent)), parts: [{ v: a.vagas[0], c: C.red }, { v: a.vagas[1], c: C.amber }, { v: a.vagas[2], c: C.b4 }] })), legend: [{ name: 'Abertas', color: C.red }, { name: 'Em andamento', color: C.amber }, { name: 'Fechadas', color: C.b4 }] }),
+      this.mkStat({ id: 'rec-resumo', span: 12, title: 'Resumo do funil', sub: 'Fechamento do ciclo de recrutamento no período', tag: 'resumo', cols: 'repeat(4,minmax(0,1fr))', stats: [
+        { l: 'Vagas movimentadas', v: this.n(vg(0) + vg(1) + vg(2) + this.canc(areas, F)), f: 'abertas, em andamento, fechadas e canceladas', c: C.b1 },
+        { l: 'Taxa de conversão', v: pct(vg(2), vg(0) + vg(1) + vg(2) + this.canc(areas, F)), f: 'fechadas ÷ vagas movimentadas', c: C.green },
+        { l: 'Custo médio de contratação', v: 'R$ 8,6 mil', f: '−4,4% vs. ano anterior', c: C.b3 },
+        { l: 'Tempo médio', v: '42 dias', f: '2 dias acima da meta de 40', c: C.amber }
+      ] })
+    ]; }
+
+    if (K === 'rh/trein') return [
+      this.mkBars({ id: 'tre-horas', span: 8, h: 210, y2: true, title: 'Horas de treinamento e participação', sub: 'Barras = horas realizadas no mês (eixo esquerdo) · linha = % do quadro que participou (eixo direito)', tag: 'horas · %', cats, bars: [{ name: 'Horas', vals: S(D.horas, F.trein), color: C.b3 }], lines: [{ name: 'Participação', vals: S(D.partTrein), color: C.b1, w: 2 }], note: 'Volume e participação sobem juntos: os meses de mais horas são também os de maior alcance no quadro.' }),
+      this.mkDonut({ id: 'tre-conclusao', span: 4, title: 'Conclusão das trilhas', sub: 'Trilhas iniciadas que foram concluídas', tag: '%', slices: [{ n: 'Concluído', v: 64, lbl: this.pc(64, 0), c: C.green }, { n: 'Não concluído', v: 36, lbl: this.pc(36, 0), c: C.red }], center: { v: this.pc(64, 0), l: 'conclusão' }, note: 'Um terço das trilhas iniciadas não chega ao fim — perda direta do investimento.' }),
+      this.mkSplit({ id: 'tre-modal', span: 4, title: 'Horas por modalidade', sub: 'Composição das horas realizadas no período', tag: '%', groups: [
+        { n: 'Modalidade', tot: this.n(Math.round(21400 * F.trein)) + ' h', parts: D.modalTrein.map((m, i) => ({ n: m.n, v: m.h, t: pct(m.h, 21400), c: [C.b2, C.b4, C.g3][i] })) }
+      ], note: 'Online concentra 55% das horas — é o formato que escala.' }),
+      this.mkHB({ id: 'tre-conclmod', span: 4, title: 'Conclusão por modalidade', sub: '% das trilhas iniciadas que foram concluídas · traço azul = média de 64%', tag: '%', lw: 66, vw: 44, max: 100, rows: D.modalTrein.map(m => ({ n: m.n, v: m.c, t: this.pc(m.c, 0), c: m.c >= 64 ? C.green : C.red, mark: 64 })), note: 'Online tem o maior volume e a pior conclusão (58%) — escala, mas não engaja.' }),
+      this.mkStat({ id: 'tre-invest', span: 4, title: 'Investimento em desenvolvimento', sub: 'Volume, verba e alcance no período', tag: 'resumo', stats: [
+        { l: 'Investimento total', v: this.rs(4.2 * F.money, 1), f: '2,3% da folha anual', c: C.b1 },
+        { l: 'Horas realizadas', v: this.n(Math.round(this.sum(S(D.horas, F.trein)))) + ' h', f: this.n(this.sum(S(D.horas, F.trein)) / (D.hc[L] * F.hc), 1) + ' h por colaborador', c: C.b3 },
+        { l: 'Participação', v: this.pc(D.partTrein[L], 0), f: 'do quadro com ao menos 1 trilha', c: C.green }
+      ] }),
+      this.mkHB({ id: 'tre-area', span: 12, title: 'Horas por área e investimento por trilha', sub: 'Horas realizadas (topo) e R$ mi investidos (base)', tag: 'horas · R$ mi', lw: 84, vw: 58, max: Math.max.apply(null, areas.map(a => a.horas * F.ent)), rows: areas.map(a => ({ n: a.n, v: a.horas * F.ent, t: this.n(Math.round(a.horas * F.ent)) + ' h', c: C.b4 })).concat(D.trilhas.map(t2 => ({ n: t2.n, v: t2.v / 4.2 * Math.max.apply(null, areas.map(a => a.horas * F.ent)), t: this.rs(t2.v * F.money, 1), c: C.b2 }))), note: 'Investimento equivale a 2,3% da folha. Trilhas técnicas e de liderança concentram 71% da verba.' })
+    ];
+
+    if (K === 'rh/engaj') return [
+      this.mkHB({ id: 'eng-area', span: 8, title: 'Engajamento por área', sub: 'Índice da pesquisa interna · traço azul = consolidado de ' + this.pc(D.eng[L], 0), tag: '%', lw: 78, vw: 48, max: 100, rows: areas.map(a => ({ n: a.n, v: a.eng, t: this.pc(a.eng, 0), c: a.eng >= D.eng[L] ? C.green : (a.eng >= 70 ? C.b3 : C.red), mark: D.eng[L] })), note: F.ar ? '' : 'Logística (70%) e Operações (72%) ficam abaixo do consolidado — as duas áreas com maior peso operacional e menor autonomia.' }),
+      this.mkSplit({ id: 'eng-cat', span: 4, title: 'Categorias do eNPS', sub: 'Promotores, neutros e detratores na última pesquisa', tag: '%', groups: [
+        { n: 'Distribuição', tot: this.n(Math.round(918 * F.hc)) + ' respostas', parts: D.enpsCat.map((c, i) => ({ n: c.n, v: c.v, t: this.pc(c.v, 0), c: [C.green, C.b4, C.red][i] })) }
+      ], formula: 'eNPS = % promotores − % detratores = 41 − 9 = +32', note: 'Metade do quadro está na zona neutra: é ali que uma ação de clima tem o maior retorno.' }),
+      this.mkLine({ id: 'eng-enps', span: 4, h: 200, title: 'eNPS (12 meses)', sub: 'Net Promoter Score interno', tag: 'pontos', cats, series: [{ name: 'eNPS', vals: S(D.enps), color: C.green, fill: 'rgba(77,122,82,.08)' }], refs: [{ v: 30, label: 'zona boa', color: C.blue }], fmtY: v => this.n(v, 0) }),
+      this.mkLine({ id: 'eng-eng', span: 4, h: 200, title: 'Engajamento (12 meses)', sub: 'Índice da pesquisa interna', tag: '%', cats, series: [{ name: 'Engajamento', vals: S(D.eng), color: C.b2, fill: 'rgba(107,74,47,.07)' }], fmtY: v => this.n(v, 0) + '%', note: 'eNPS e engajamento sobem enquanto o turnover também sobe — quem fica está mais satisfeito; quem sai, sai cedo.' }),
+      this.mkLine({ id: 'eng-abs', span: 4, h: 200, title: 'Absenteísmo (12 meses)', sub: 'Horas não trabalhadas sobre horas contratadas', tag: '%', cats, series: [{ name: 'Absenteísmo', vals: S(D.abs), color: C.amber, fill: 'rgba(184,133,58,.10)' }], fmtY: v => this.n(v, 1) + '%', note: 'Sobe junto com o turnover: as equipes que absorvem o trabalho de quem saiu faltam mais.' }),
+      this.mkStat({ id: 'eng-clima', span: 12, title: 'Resumo de clima', sub: 'Leitura consolidada do período', tag: 'resumo', cols: 'repeat(4,minmax(0,1fr))', stats: [
+        { l: 'eNPS atual', v: '+' + D.enps[L], f: (D.enps[L] - D.enps[F.i] > 0 ? '+' : '') + this.n(D.enps[L] - D.enps[F.i], 0) + ' pontos no período', c: C.green },
+        { l: 'Engajamento médio', v: this.pc(this.sum(S(D.eng)) / (F.j - F.i)), f: 'média dos meses do recorte', c: C.b2 },
+        { l: 'Absenteísmo médio', v: this.pc(this.sum(S(D.abs)) / (F.j - F.i)), f: 'média dos meses do recorte', c: C.amber },
+        { l: 'Pior área', v: this.pc(Math.min.apply(null, D.areas.map(a => a.eng)), 0), f: D.areas.slice().sort((a, b) => a.eng - b.eng)[0].n + ' · engajamento mais baixo', c: C.red }
+      ] })
+    ];
+
+    if (K === 'rh/sal') { const salM = a => a.folha * 1e6 * 0.602 / a.hc / 12; return [
+      this.mkHB({ id: 'sal-medio', span: 8, title: 'Salário médio por área', sub: 'Base mensal sem encargos · traço azul = média da empresa (R$ 7,5 mil)', tag: 'R$ mil', lw: 78, vw: 62, rows: areas.map(a => ({ n: a.n, v: salM(a), t: 'R$ ' + this.n(salM(a) / 1000, 1) + ' mil', c: salM(a) >= 186e6 * 0.602 / 1240 / 12 ? C.b2 : C.b4, mark: 186e6 * 0.602 / 1240 / 12 })), note: F.ar ? '' : 'Tecnologia paga 2,3× o salário médio de RH, a área com a menor média — dispersão típica de quadro com perfis muito distintos.' }),
+      this.mkDonut({ id: 'sal-comp', span: 4, title: 'Composição da folha', sub: 'R$ 186 mi no ano', tag: '%', slices: D.compFolha.map((c, i) => ({ n: c.n, v: c.v, lbl: pct(c.v, 186), c: [C.b1, C.b3, C.b4, C.b5][i] })), center: { v: this.rs(186 * F.money, 0), l: 'folha anual' } }),
+      this.mkHB({ id: 'sal-folha', span: 6, title: 'Folha por área', sub: 'Custo total anual, com encargos e benefícios', tag: 'R$ mi', lw: 78, vw: 74, rows: areas.map((a, i) => ({ n: a.n, v: a.folha, t: this.rs(a.folha * F.ent, 0) + ' · ' + pct(a.folha, 186), c: [C.b1, C.b2, C.b3, C.b4, C.b5, C.g3, C.g4][i % 7] })), note: F.ar ? '' : 'Operações responde por 31% da folha com 39% do quadro; Tecnologia inverte a relação (22% da folha, 14% do quadro).' }),
+      this.mkBars({ id: 'sal-faixas', span: 6, h: 196, title: 'Faixas salariais', sub: 'Distribuição do quadro por faixa mensal', tag: 'FTE', cats: D.salFx.map(f => f.n), labels: true, bars: [{ name: 'FTE', vals: D.salFx.map(f => Math.round(f.v * F.hc)), color: C.b3 }], note: '59% do quadro está entre R$ 3 mil e R$ 10 mil — mediana coerente com o custo médio por FTE.' }),
+      this.mkHB({ id: 'sal-benef', span: 8, title: 'Benefícios e encargos', sub: 'Valor anual por rubrica', tag: 'R$ mi', lw: 92, vw: 62, rows: D.benef.map((b, i) => ({ n: b.n, v: b.v, t: this.rs(b.v * F.money, 1), c: [C.b1, C.b2, C.b3, C.b4, C.b5, C.g3][i] })), formula: 'encargos = 37,5% sobre salários (R$ 42 mi ÷ R$ 112 mi)' }),
+      this.mkStat({ id: 'sal-resumo', span: 4, title: 'Indicadores de salário', sub: 'Referências da política de remuneração', tag: 'resumo', stats: [
+        { l: 'Maior salário base', v: 'R$ 28,4 mil', f: 'Gerência sênior · Tecnologia', c: C.b1 },
+        { l: 'Menor salário base', v: 'R$ 2,1 mil', f: 'Auxiliar operacional · Operações', c: C.b4 },
+        { l: 'Amplitude', v: '13,5×', f: 'entre o menor e o maior salário base', c: C.amber }
+      ] })
+    ]; }
+
+    if (K === 'fin/visao') return [
+      this.mkBars({ id: 'fin-receita', span: 8, h: 226, title: 'Receita líquida — ano atual vs. ano anterior', sub: 'Barras = ' + this.state.filters.ano + ' · linha = ano anterior', tag: 'R$ mi', cats, bars: [{ name: 'Ano atual', vals: S(D.receita, F.rev), color: C.b3 }], lines: [{ name: 'Ano anterior', vals: S(D.receitaLY, F.rev), color: C.g1, w: 1.8, dash: '5 3' }], note: 'Acumulado de ' + this.rs(this.sum(S(D.receita, F.rev)), 0) + ' contra ' + this.rs(this.sum(S(D.receitaLY, F.rev)), 0) + ' — crescimento de ' + this.sg((this.sum(S(D.receita)) / this.sum(S(D.receitaLY)) - 1) * 100) + '.', formula: 'crescimento YoY = receita do período ÷ mesmo período do ano anterior − 1' }),
+      this.mkLine({ id: 'fin-margens', span: 4, h: 226, title: 'Margens (12 meses)', sub: 'Bruta, EBITDA e líquida', tag: '%', cats, series: [{ name: 'Bruta', vals: S(D.mBruta), color: C.b1, dots: false }, { name: 'EBITDA', vals: S(D.mEbitda), color: C.b3, dots: false }, { name: 'Líquida', vals: S(D.mLiq), color: C.red, dots: false }], refs: [{ v: 0, label: '0', color: C.z }], fmtY: v => this.n(v, 0) + '%', note: 'Margem bruta e EBITDA estáveis; a líquida cai de +1,2% para −3,1% — o problema está abaixo do EBIT.' }),
+      this.mkBars({ id: 'fin-ebitda', span: 5, h: 200, title: 'EBITDA mensal e conversão em caixa', sub: 'Barras = EBITDA · linha = FCO do mês', tag: 'R$ mi', cats, bars: [{ name: 'EBITDA', vals: S(D.ebitda, F.rev), color: C.b4 }], lines: [{ name: 'FCO', vals: S(D.fco, F.rev), color: C.b1, w: 1.8 }], note: 'A partir de setembro o FCO descola do EBITDA — conversão cai de 106% para 62,5% em dezembro.' }),
+this.mkWF({ id: 'fin-dre', span: 7, h: 226, title: 'Ponte da DRE — receita líquida ao lucro líquido', sub: 'Onde cada real da receita é consumido no ano', tag: 'R$ mi', steps: [{ n: 'Receita|líquida', short: 'Rec.|líq.', v: Math.round(1200 * F.rev), total: true, color: C.b1 }, { n: 'CMV', short: 'CMV', v: -Math.round(720 * F.rev), color: C.b4 }, { n: 'Despesas|operacionais', short: 'Desp.|oper.', v: -Math.round(280 * F.rev), color: C.b5 }, { n: 'EBITDA', short: 'EBITDA', v: Math.round(200 * F.rev), total: true, color: C.b1 }, { n: 'D&A', short: 'D&A', v: -Math.round(60 * F.rev), color: C.b5 }, { n: 'Resultado|financeiro', short: 'Result.|fin.', v: -Math.round(140 * F.rev), color: C.red }, { n: 'Não|operacional', short: 'Não|oper.', v: -Math.round(8 * F.rev), color: C.red }, { n: 'Lucro|líquido', short: 'Lucro|líq.', v: -Math.round(8 * F.rev), total: true, color: C.red }], note: 'O EBITDA de ' + this.rs(200 * F.rev, 0) + ' é integralmente consumido por D&A e juros. A operação gera resultado; a estrutura de capital o anula.' })
+    ];
+
+    if (K === 'fin/caixa') return [
+      this.mkBars({ id: 'cx-diario', span: 12, h: 190, title: 'Movimentação diária de caixa — últimos 30 dias', sub: 'Entradas menos saídas por dia útil (R$ mi)', tag: 'R$ mi', pl: 40, cats: D.diario.map((v, i) => (i % 3 === 0 ? 'D' + (i + 1) : '')), bars: [{ name: 'Fluxo líquido do dia', vals: D.diario.map(v => v * F.rev), color: C.b3, colors: D.diario.map(v => v >= 0 ? C.green : C.red) }], note: '9 dos 30 dias fecharam negativos, concentrados nas datas de vencimento de folha e serviço da dívida.' }),
+      this.mkWF({ id: 'cx-ponte', span: 6, h: 216, title: 'Ponte do fluxo de caixa', sub: 'Saldo inicial até saldo final do ano', tag: 'R$ mi', steps: [{ n: 'Saldo|inicial', short: 'Saldo|ini.', v: Math.round(135 * F.rev), total: true, color: C.b1 }, { n: 'Operacional|FCO', short: 'FCO', v: Math.round(185 * F.rev), color: C.green }, { n: 'Investimento|FCI', short: 'FCI', v: -Math.round(140 * F.rev), color: C.red }, { n: 'Financiamento|FCF', short: 'FCF', v: -Math.round(80 * F.rev), color: C.red }, { n: 'Saldo|final', short: 'Saldo|fim', v: Math.round(100 * F.rev), total: true, color: C.b1 }], note: 'A operação (' + this.n(185 * F.rev, 0) + ') não cobre o CAPEX (' + this.n(140 * F.rev, 0) + ') mais o serviço da dívida. O caixa só termina em ' + this.n(100 * F.rev, 0) + ' porque ' + this.rs(210 * F.rev, 0) + ' de dívida nova entraram.' }),
+      this.mkLine({ id: 'cx-saldo', span: 6, h: 216, title: 'Saldo de caixa consolidado', sub: 'Saldo no fim de cada mês, partindo de R$ 135 mi', tag: 'R$ mi', cats, series: [{ name: 'Saldo', vals: cats.map((c, i) => { let sd = 135; for (let k = 0; k <= F.i + i; k++) sd += D.entradas[k] - D.saidas[k]; return Math.round(sd * F.rev); }), color: C.b1, fill: 'rgba(61,43,29,.06)' }], refs: [{ v: 100 * F.rev, label: 'saldo final', color: C.blue }], fmtY: v => this.n(v, 0) }),
+      this.mkBars({ id: 'cx-fluxo', span: 8, h: 210, title: 'Entradas × saídas por mês', sub: 'Barras agrupadas · linha = saldo acumulado', tag: 'R$ mi', cats, bars: [{ name: 'Entradas', vals: S(D.entradas, F.rev), color: C.green }, { name: 'Saídas', vals: S(D.saidas, F.rev), color: C.red }], lines: [{ name: 'Saldo acumulado', vals: cats.map((c, i) => { let sd = 135; for (let k = 0; k <= F.i + i; k++) sd += D.entradas[k] - D.saidas[k]; return Math.round(sd * F.rev); }), color: C.b1, w: 1.8 }], note: 'As saídas superam as entradas em 10 dos 12 meses. O saldo só não colapsa por causa das captações.' }),
+      this.mkHB({ id: 'cx-cat', span: 4, title: 'Principais categorias de saída', sub: 'Desembolso anual por natureza', tag: 'R$ mi', lw: 96, vw: 58, rows: D.catDesp.map((c, i) => ({ n: c.n, v: c.v, t: this.rs(c.v * F.rev, 0), c: c.n === 'Juros' ? C.red : [C.b1, C.b2, C.b3, C.b3, C.b4, C.b5, C.g3, C.g4][i] })), note: 'Juros (R$ 160 mi) já são a 3ª maior saída — quase a mesma escala da folha inteira.' })
+    ];
+
+    if (K === 'fin/orc') {
+      const CC = F.ar ? D.cc.filter(c => c.n === F.ar.n) : D.cc;
+      const mk = this.sum(CC.map(c => c.real)) / 1196 * F.ent;
+      const desv = CC.map(c => Math.round((c.real - c.orc) * F.ent * 10) / 10);
+      return [
+      this.mkBars({ id: 'orc-vs', span: 8, h: 216, title: 'Orçado × Realizado por mês', sub: 'Azul = orçado (convenção do catálogo) · cinza = realizado', tag: 'R$ mi', cats, bars: [{ name: 'Orçado', vals: S(D.orc, mk), color: C.blue }, { name: 'Realizado', vals: S(D.real, mk), color: C.g2 }], note: 'O realizado cruza o orçado em março e nunca volta, e a distância entre as duas barras cresce mês a mês até dezembro.' }),
+      this.mkBars({ id: 'orc-desvio', span: 4, h: 216, title: F.ar ? 'Desvio do centro de custo' : 'Desvio por centro de custo', sub: 'Realizado menos orçado no ano (R$ mi)', tag: 'R$ mi', pl: 34, labels: !!F.ar, fmtV: v => this.n(v, 1), cats: CC.map(c => F.ar ? c.n : c.n.slice(0, 4)), bars: [{ name: 'Desvio', vals: desv, color: C.red, colors: desv.map(v => v > 0 ? C.red : C.green) }], note: F.ar ? '' : 'Operações e Comercial respondem por 71% do estouro; Financeiro, Marketing e RH devolveram orçamento.' }),
+      this.mkHB({ id: 'orc-gastos', span: 6, title: F.ar ? 'Gasto do centro de custo' : 'Gastos por centro de custo', sub: 'Realizado no ano · traço azul = orçado', tag: 'R$ mi', lw: 82, vw: 64, rows: CC.map((c, i) => ({ n: c.n, v: c.real * F.ent, t: this.rs(c.real * F.ent, 0), c: c.real > c.orc ? C.b3 : C.green, mark: c.orc * F.ent })), formula: 'desvio = realizado − orçado (por centro de custo, no acumulado)' }),
+      this.mkLine({ id: 'orc-acum', span: 6, h: 210, title: 'Orçamento acumulado × realizado', sub: 'Curvas acumuladas mês a mês', tag: 'R$ mi', cats, series: [{ name: 'Orçado acumulado', vals: cats.map((c, i) => Math.round(this.sum(D.orc.slice(0, F.i + i + 1)) * mk)), color: C.blue, dots: false }, { name: 'Realizado acumulado', vals: cats.map((c, i) => Math.round(this.sum(D.real.slice(0, F.i + i + 1)) * mk)), color: C.g1, dots: false }], fmtY: v => this.n(v, 0), note: 'A economia dos centros de apoio não compensa o estouro das áreas de linha.' })
+    ]; }
+
+    if (K === 'fin/contas') return [
+      this.mkCycle({ id: 'ct-ciclo', span: 12, title: 'Ciclo de conversão de caixa', sub: 'A régua em dias: compra, paga, fatura, recebe', tag: '76 dias sem caixa', formula: 'ciclo financeiro = PMR + PME − PMP = 52 + 75 − 51', note: 'São 76 dias entre pagar o fornecedor e receber do cliente. Cada 10 dias de ciclo equivalem a cerca de R$ 31 mi de necessidade de capital de giro.' }),
+      this.mkBars({ id: 'cr-aging', span: 6, h: 196, title: 'Aging de contas a receber', sub: 'Carteira de R$ 171 mi por faixa de vencimento', tag: 'R$ mi', labels: true, cats: D.agingRec.map(a => a.n), bars: [{ name: 'A receber', vals: D.agingRec.map(a => Math.round(a.v * F.rev)), color: C.b3, colors: [C.b5, C.b4, C.b3, C.amber, C.red] }], note: 'R$ 7 mi (4,1%) vencidos há mais de 90 dias — candidatos a provisão para perdas.' }),
+      this.mkBars({ id: 'cp-aging', span: 6, h: 196, title: 'Aging de contas a pagar', sub: 'Saldo de R$ 101 mi por faixa de vencimento', tag: 'R$ mi', labels: true, cats: D.agingPag.map(a => a.n), bars: [{ name: 'A pagar', vals: D.agingPag.map(a => Math.round(a.v * F.rev)), color: C.b3, colors: [C.b5, C.b4, C.b3, C.amber, C.red] }], note: 'R$ 27 mi já vencidos com fornecedores — alongar prazo de propósito é uma alavanca de caixa, atrasar sem acordo é risco de fornecimento.' }),
+      this.mkHB({ id: 'cr-inadim', span: 6, title: 'Top clientes inadimplentes', sub: 'Saldo vencido por cliente', tag: 'R$ mi', lw: 76, vw: 62, rows: D.inadim.map((c, i) => ({ n: c.n, v: c.v, t: this.rs(c.v * F.rev, 1), c: i < 2 ? C.red : C.b4 })), note: 'Os 3 maiores concentram 66% do vencido — cobrança dirigida resolve mais que política geral.' }),
+      this.mkHB({ id: 'cp-fornec', span: 6, title: 'Top fornecedores por saldo', sub: 'Exposição a pagar por fornecedor', tag: 'R$ mi', lw: 90, vw: 62, rows: D.fornec.map((c, i) => ({ n: c.n, v: c.v, t: this.rs(c.v * F.rev, 0), c: [C.b1, C.b2, C.b3, C.b4, C.b5, C.g3][i] })) })
+    ];
+
+    if (K === 'fin/fat') return [
+      this.mkBars({ id: 'fat-evolucao', span: 8, h: 226, title: 'Evolução do faturamento', sub: 'Barras = ano atual · linha = ano anterior · crescimento YoY do período', tag: 'R$ mi', cats, bars: [{ name: 'Ano atual', vals: S(D.receita, F.rev), color: C.b2 }], lines: [{ name: 'Ano anterior', vals: S(D.receitaLY, F.rev), color: C.g1, w: 1.8, dash: '5 3' }], note: 'Crescimento de ' + this.sg((this.sum(S(D.receita)) / this.sum(S(D.receitaLY)) - 1) * 100) + ' no período — ' + this.rs(this.sum(S(D.receita, F.rev)), 0) + ' contra ' + this.rs(this.sum(S(D.receitaLY, F.rev)), 0) + '. Junho é o pico do ano (R$ 112 mi).', formula: 'taxa de crescimento = receita do período ÷ mesmo período do ano anterior − 1' }),
+      this.mkDonut({ id: 'fat-segm', span: 4, title: 'Carteira por segmento', sub: 'Receita anual por segmento de cliente', tag: '%', slices: D.segm.map((s2, i) => ({ n: s2.n, v: s2.v, lbl: pct(s2.v, 1200), c: [C.b1, C.b2, C.b3, C.b4, C.g3][i] })), center: { v: this.pc(39, 0), l: 'indústria' } }),
+      this.mkScat({ id: 'fat-margem', span: 6, h: 226, title: 'Margem de contribuição por cliente', sub: 'Eixo X = receita (R$ mi) · eixo Y = margem de contribuição (%) · tamanho = receita', tag: 'top 10', xLabel: 'Receita do cliente (R$ mi)', fmtY: v => this.n(v, 0) + '%', pts: D.clientes.map(c => ({ x: Math.round(c.r * F.rev * 10) / 10, y: c.m, r: 4 + c.r / 22, label: c.n, color: c.m < 20 ? C.red : c.m > 30 ? C.green : C.b3 })), note: 'C8 e C6 são grandes em receita e fracos em margem — candidatos naturais a repactuação de preço.' }),
+      this.mkStack({ id: 'fat-risco', span: 6, title: 'Risco de crédito da carteira', sub: 'Participação por faixa de rating interno', tag: '%', lw: 30, vw: 66, rows: [{ n: '2026', t: this.pc(100, 0), parts: D.rating.map((r, i) => ({ v: r.v, c: [C.green, C.b4, C.amber, C.red][i] })) }, { n: '2025', t: this.pc(100, 0), parts: [{ v: 68, c: C.green }, { v: 19, c: C.b4 }, { v: 9, c: C.amber }, { v: 4, c: C.red }] }], legend: D.rating.map((r, i) => ({ name: r.n, color: [C.green, C.b4, C.amber, C.red][i] })), note: 'A faixa de risco alto (BB ou pior) cresceu de 13% para 17% da carteira em um ano.' })
+    ];
+
+    return [
+      this.mkLine({ id: 'int-rpc', span: 6, h: 210, title: 'Receita por colaborador', sub: 'Receita mensal anualizada ÷ headcount FTE (R$ mil)', tag: 'R$ mil', cats, series: [{ name: 'Receita por FTE', vals: cats.map((c, i) => Math.round(D.receita[F.i + i] * F.rev * 12 / (D.hc[F.i + i] * F.hc) * 1000)), color: C.b2, fill: 'rgba(107,74,47,.07)' }], fmtY: v => this.n(v, 0), formula: 'receita por colaborador = receita × 12 ÷ headcount FTE', note: 'Produtividade sobe de R$ ' + this.n(D.receita[F.i] * F.rev * 12 / (D.hc[F.i] * F.hc) * 1000, 0) + ' mil para R$ ' + this.n(D.receita[L] * F.rev * 12 / (D.hc[L] * F.hc) * 1000, 0) + ' mil por FTE — a receita cresce mais rápido que o quadro.' }),
+      this.mkBars({ id: 'int-ebitda-pc', span: 6, h: 210, title: 'EBITDA per capita', sub: 'EBITDA mensal anualizado por FTE (R$ mil)', tag: 'R$ mil', cats, bars: [{ name: 'EBITDA por FTE', vals: cats.map((c, i) => Math.round(D.ebitda[F.i + i] * F.rev * 12 / (D.hc[F.i + i] * F.hc) * 1000)), color: C.b3 }], note: 'Média de R$ ' + this.n(this.sum(S(D.ebitda, F.rev)) / (F.j - F.i) * 12 / (D.hc[L] * F.hc) * 1000, 0) + ' mil por FTE no período. Dezembro é o melhor mês, apesar da pior conversão de caixa.' }),
+      this.mkBars({ id: 'int-hc-desp', span: 12, h: 236, y2: true, title: 'Headcount versus despesa de pessoal', sub: 'Barras = folha e receita mensais em R$ mi (eixo esquerdo) · linha = headcount FTE (eixo direito)', tag: 'R$ mi · FTE', cats, bars: [{ name: 'Folha mensal', vals: S(D.folha, F.money), color: C.b3 }, { name: 'Receita mensal', vals: S(D.receita, F.rev), color: C.b5 }], lines: [{ name: 'Headcount (FTE)', vals: S(D.hc, F.hc), color: C.b1, w: 2.2 }], note: 'Headcount cresce ' + this.sg((D.hc[L] / D.hc[F.i] - 1) * 100) + ' e a folha ' + this.sg((D.folha[L] / D.folha[F.i] - 1) * 100) + ', enquanto a receita cresce ' + this.sg((this.sum(S(D.receita)) / this.sum(S(D.receitaLY)) - 1) * 100) + ' — a despesa de pessoal acompanha o negócio, mas o custo por cabeça sobe acima do crescimento do quadro.' }),
+      this.mkScat({ id: 'int-scatter', span: 6, h: 226, title: 'Custo de pessoal × retorno por área', sub: 'Eixo X = custo anual por FTE (R$ mil) · eixo Y = receita atribuída por FTE (R$ mil)', tag: 'por área', xLabel: 'Custo por FTE (R$ mil/ano)', fmtY: v => this.n(v, 0), pts: D.areas.map(a => ({ x: Math.round(a.folha * 1000 / a.hc), y: Math.round(a.rec * 1000 / a.hc), r: 4 + a.hc / 70, label: a.n.slice(0, 4), color: (a.rec / a.folha) > 8 ? C.green : (a.rec / a.folha) > 3 ? C.b3 : C.red })), note: 'Comercial entrega R$ 11,6 de receita por real de folha; Tecnologia, R$ 2,6 — o que é esperado para uma área de suporte, mas precisa ser lido junto do resultado, não isolado.' }),
+      this.mkLine({ id: 'int-pct', span: 6, h: 226, title: 'Despesa de pessoal sobre a receita', sub: '% da receita líquida consumida pela folha', tag: '%', cats, series: [{ name: 'Folha ÷ receita', vals: cats.map((c, i) => Math.round(D.folha[F.i + i] * F.money / (D.receita[F.i + i] * F.rev) * 1000) / 10), color: C.amber, fill: 'rgba(184,133,58,.09)' }], refs: [{ v: Math.round(this.sum(S(D.folha, F.money)) / this.sum(S(D.receita, F.rev)) * 1000) / 10, label: 'média', color: C.blue }], fmtY: v => this.n(v, 1) + '%', note: 'Sobe de ' + this.pc(D.folha[F.i] * F.money / (D.receita[F.i] * F.rev) * 100) + ' no início do período para ' + this.pc(D.folha[L] * F.money / (D.receita[L] * F.rev) * 100) + ' em dezembro — reflexo do 13º e do quadro maior contra uma receita que desacelera no 4º trimestre.' })
+    ];
+  }
+
+  /* ---------- chat ---------- */
+  get KB() {
+    const C = this.C, D = this.D;
+    return [
+      { k: ['crescimento', 'cresceu', 'yoy', 'ano contra ano'], tab: 'fin', sub: 'fat', panel: 'fat-evolucao', filters: { periodo: '12 meses', ano: '2026' },
+        text: 'A empresa cresceu 12,4% este ano: R$ 1.200 mi de receita líquida contra R$ 1.068 mi no ano anterior — R$ 132 mi a mais.\n\nO crescimento é consistente: todos os 12 meses ficaram acima do mês equivalente do ano passado. Junho é o pico (R$ 112 mi, +13,1%) e o 4º trimestre desacelera para cerca de +11,5%.',
+        kpis: [{ l: 'Crescimento YoY', v: '+12,4%', c: C.green }, { l: 'Receita 2026', v: 'R$ 1.200 mi', c: C.ink }, { l: 'Receita 2025', v: 'R$ 1.068 mi', c: C.ink }, { l: 'Delta absoluto', v: '+R$ 132 mi', c: C.green }],
+        formula: 'crescimento = 1.200 ÷ 1.068 − 1 = 12,36%',
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Receita mensal — 2026 vs. 2025', sub: '', cats: D.M, bars: [{ name: 'a', vals: D.receita, color: C.b2 }], lines: [{ name: 'b', vals: D.receitaLY, color: C.g2, w: 1.4, dash: '4 3' }] }),
+        sug: ['Qual o ticket médio e quanto ele cresceu?', 'Qual segmento puxou o crescimento?'] },
+
+      { k: ['turnover', 'rotatividade', 'saída', 'saidas'], tab: 'rh', sub: 'turnover', panel: 'tov-area', filters: { periodo: '12 meses' },
+        text: 'O turnover consolidado é 18,4% em 12 meses — 4,4 p.p. acima da meta de 14%, e piorando todos os meses (era 15,2% em janeiro).\n\nComercial (24,1%) e Operações (22,4%) são as piores áreas; juntas concentram 56% do quadro, então puxam o indicador consolidado. 62% das saídas são voluntárias, o que aponta retenção e não gestão de performance.',
+        kpis: [{ l: 'Turnover 12m', v: '18,4%', c: C.red }, { l: 'Meta', v: '14,0%', c: C.ink }, { l: 'Pior área', v: 'Comercial 24,1%', c: C.red }, { l: 'Custo anual', v: 'R$ 12,4 mi', c: C.red }],
+        formula: 'turnover = desligamentos 12m ÷ headcount médio 12m',
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Turnover por área (%)', sub: '', cats: D.areas.map(a => a.n.slice(0, 4)), bars: [{ name: 'a', vals: D.areas.map(a => a.tov), color: C.b3, colors: D.areas.map(a => a.tov > 14 ? C.red : C.green) }] }),
+        sug: ['Quanto custa o turnover em reais?', 'Qual faixa etária sai mais?'] },
+
+      { k: ['ebitda', 'margem'], tab: 'fin', sub: 'visao', panel: 'fin-margens', filters: { periodo: '12 meses' },
+        text: 'O EBITDA do ano é R$ 200 mi, margem de 16,7% — estável mês a mês (15,9% a 17,5%).\n\nO problema não está na operação: a margem bruta se mantém em 40% e a EBITDA em 16,7%, mas a margem líquida cai de +1,2% em janeiro para −3,1% em dezembro. O EBIT de R$ 140 mi empata exatamente com a despesa financeira de R$ 140 mi — cobertura de juros de 1,0x.',
+        kpis: [{ l: 'EBITDA', v: 'R$ 200 mi', c: C.ink }, { l: 'Margem EBITDA', v: '16,7%', c: C.ink }, { l: 'Margem líquida', v: '−0,7%', c: C.red }, { l: 'Cobertura de juros', v: '1,0x', c: C.red }],
+        formula: 'margem EBITDA = 200 ÷ 1.200 · cobertura = EBIT 140 ÷ juros 140',
+        chart: () => this.mkLine({ w: 316, h: 128, pl: 30, id: 'm', title: 'Margens (%)', sub: '', cats: D.M, series: [{ name: 'a', vals: D.mBruta, color: C.b1, dots: false }, { name: 'b', vals: D.mEbitda, color: C.b3, dots: false }, { name: 'c', vals: D.mLiq, color: C.red, dots: false }], fmtY: v => this.n(v, 0) }),
+        sug: ['Por que a margem líquida é negativa?', 'Quanto o caixa gerou no ano?'] },
+
+      { k: ['caixa', 'fluxo de caixa', 'fco', 'conversão', 'liquidez'], tab: 'fin', sub: 'caixa', panel: 'cx-ponte', filters: { periodo: '12 meses' },
+        text: 'O caixa fechou o ano em R$ 100 mi, R$ 35 mi abaixo do saldo inicial de R$ 135 mi.\n\nA geração operacional foi de R$ 185 mi (92,5% do EBITDA), mas não cobre CAPEX de R$ 140 mi mais o serviço da dívida. O caixa só não piorou mais porque entraram R$ 210 mi de dívida nova. A conversão despenca no último quadrimestre: 88%, 81%, 76% e 62,5% em dezembro — abaixo do gatilho de tesouraria de 80%.',
+        kpis: [{ l: 'Saldo final', v: 'R$ 100 mi', c: C.red }, { l: 'FCO', v: 'R$ 185 mi', c: C.ink }, { l: 'Conversão anual', v: '92,5%', c: C.ink }, { l: 'Conversão Dez', v: '62,5%', c: C.red }],
+        formula: 'saldo final = 135 + 185 − 140 − 80 = 100',
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'EBITDA vs. FCO mensal', sub: '', cats: D.M, bars: [{ name: 'a', vals: D.ebitda, color: C.b5 }], lines: [{ name: 'b', vals: D.fco, color: C.b1, w: 1.6 }] }),
+        sug: ['Qual o ciclo de conversão de caixa?', 'Quais são as maiores saídas de caixa?'] },
+
+      { k: ['orçamento', 'orcamento', 'orçado', 'estourando', 'desvio', 'centro de custo'], tab: 'fin', sub: 'orc', panel: 'orc-desvio', filters: { periodo: '12 meses' },
+        text: 'O realizado ficou R$ 56 mi acima do orçado no ano: R$ 1.196 mi contra R$ 1.140 mi — desvio de +4,9%.\n\nO estouro está concentrado em Operações (+R$ 26 mi) e Comercial (+R$ 14 mi), que respondem por 71% do total. Tecnologia (+11) e Corporativo (+10) completam. Financeiro, Marketing e RH ficaram abaixo do orçado e devolveram R$ 11 mi. O realizado cruza o orçado em março e nunca mais volta.',
+        kpis: [{ l: 'Desvio total', v: '+R$ 56 mi', c: C.red }, { l: 'Desvio %', v: '+4,9%', c: C.red }, { l: 'Maior estouro', v: 'Operações +26', c: C.red }, { l: 'Economia', v: 'R$ 11 mi', c: C.green }],
+        formula: 'desvio = realizado 1.196 − orçado 1.140',
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Desvio por centro de custo (R$ mi)', sub: '', cats: D.cc.map(c => c.n.slice(0, 4)), bars: [{ name: 'a', vals: D.cc.map(c => c.real - c.orc), color: C.red, colors: D.cc.map(c => c.real > c.orc ? C.red : C.green) }] }),
+        sug: ['Quanto gastou cada centro de custo?', 'A despesa acompanha o crescimento da receita?'] },
+
+      { k: ['headcount', 'quadro', 'colaboradores', 'quantas pessoas', 'fte'], tab: 'rh', sub: 'visao', panel: 'rh-headcount', filters: { periodo: '12 meses' },
+        text: 'O quadro fechou dezembro com 1.240 FTE, alta de 7,8% sobre os 1.150 de janeiro — saldo líquido de +90 pessoas (241 admissões contra 145 desligamentos).\n\nOperações concentra 39,2% do quadro (486 FTE), seguida de Comercial (17,3%) e Tecnologia (13,5%). 51,3% do quadro trabalha em modelo flexível (híbrido ou remoto).',
+        kpis: [{ l: 'Headcount Dez', v: '1.240 FTE', c: C.ink }, { l: 'Variação', v: '+7,8%', c: C.green }, { l: 'Admissões', v: '241', c: C.green }, { l: 'Desligamentos', v: '145', c: C.red }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 38, id: 'm', title: 'Headcount (FTE)', sub: '', cats: D.M, bars: [{ name: 'a', vals: D.hc, color: C.b4 }] }),
+        sug: ['Como está distribuído por estado?', 'Qual o custo por colaborador?'] },
+
+      { k: ['receita por colaborador', 'produtividade', 'per capita', 'headcount versus', 'headcount versus a despesa', 'headcount versus despesa', 'headcount x', 'despesa de pessoal', 'cruzamento'], tab: 'int', sub: 'cruz', panel: 'int-hc-desp', filters: { periodo: '12 meses' },
+        text: 'Cada colaborador gera R$ 968 mil de receita e R$ 161 mil de EBITDA por ano.\n\nO cruzamento importante: o headcount cresceu 7,8%, a folha 11,5% e a receita 12,4%. A receita cresce mais que a folha, então a despesa de pessoal fica estável em 15,5% da receita — mas o custo por cabeça subiu acima do crescimento do quadro, o que vale acompanhar. A produtividade por FTE evoluiu de R$ 918 mil para R$ 997 mil no ano.',
+        kpis: [{ l: 'Receita por FTE', v: 'R$ 968 mil', c: C.ink }, { l: 'EBITDA per capita', v: 'R$ 161 mil', c: C.ink }, { l: 'Folha ÷ receita', v: '15,5%', c: C.amber }, { l: 'Headcount', v: '1.240 FTE', c: C.ink }],
+        formula: 'receita por colaborador = 1.200 ÷ 1.240 = R$ 968 mil',
+        chart: () => this.mkLine({ w: 316, h: 128, pl: 38, id: 'm', title: 'Receita por FTE (R$ mil/ano)', sub: '', cats: D.M, series: [{ name: 'a', vals: D.M.map((m, i) => Math.round(D.receita[i] * 12 / D.hc[i] * 1000)), color: C.b2, dots: false }], fmtY: v => this.n(v, 0) }),
+        sug: ['Qual área dá mais retorno por real de folha?', 'A folha está crescendo mais que a receita?'] },
+
+      { k: ['inadimplência', 'inadimplencia', 'receber', 'aging', 'vencido', 'recebíveis'], tab: 'fin', sub: 'contas', panel: 'cr-aging', filters: { periodo: '12 meses' },
+        text: 'A carteira a receber é de R$ 171 mi, dos quais R$ 53 mi já estão vencidos e R$ 7 mi (4,1%) há mais de 90 dias — a faixa que normalmente entra em provisão.\n\nA concentração é alta: os 3 maiores devedores respondem por 66% do saldo vencido (R$ 9,7 mi de R$ 14,7 mi). Cobrança dirigida a esses nomes resolve mais que revisão de política geral.',
+        kpis: [{ l: 'Carteira', v: 'R$ 171 mi', c: C.ink }, { l: 'Vencido > 90d', v: 'R$ 7 mi', c: C.red }, { l: 'Inadimplência', v: '4,1%', c: C.red }, { l: 'PMR', v: '52 dias', c: C.amber }],
+        formula: 'PMR = contas a receber ÷ receita × 365',
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Aging a receber (R$ mi)', sub: '', labels: true, cats: D.agingRec.map(a => a.n), bars: [{ name: 'a', vals: D.agingRec.map(a => a.v), color: C.b3, colors: [C.b5, C.b4, C.b3, C.amber, C.red] }] }),
+        sug: ['Qual o ciclo de conversão de caixa?', 'Quem são os maiores inadimplentes?'] },
+
+      { k: ['ciclo', 'ciclo de conversão', 'ciclo de conversão de caixa', 'conversão de caixa', 'ciclo de caixa', 'ciclo financeiro', 'ciclo operacional', 'capital de giro', 'pmr', 'pme', 'pmp'], tab: 'fin', sub: 'contas', panel: 'ct-ciclo', filters: { periodo: '12 meses' },
+        text: 'O ciclo financeiro é de 76 dias: PMR de 52 + PME de 75 − PMP de 51.\n\nNa prática: a empresa compra e estoca no dia 0, paga o fornecedor no dia 51, fatura no dia 75 e só recebe no dia 127. São 76 dias bancados por dívida de curto prazo. Cada 10 dias de ciclo equivalem a cerca de R$ 31 mi de necessidade de capital de giro — cortar 24 dias zeraria o saldo de tesouraria negativo.',
+        kpis: [{ l: 'Ciclo financeiro', v: '76 dias', c: C.red }, { l: 'Ciclo operacional', v: '127 dias', c: C.amber }, { l: 'PMR · PME · PMP', v: '52 · 75 · 51', c: C.ink }, { l: 'Cada 10 dias', v: 'R$ 31 mi', c: C.ink }],
+        formula: 'ciclo financeiro = PMR + PME − PMP',
+        sug: ['Quanto está vencido na carteira?', 'Como está o saldo de caixa?'] },
+
+      { k: ['treinamento', 'capacitação', 'horas de treinamento', 'desenvolvimento'], tab: 'rh', sub: 'trein', panel: 'tre-conclusao', filters: { periodo: '12 meses' },
+        text: 'Foram 21.400 horas de treinamento no ano (17,3 h por FTE), com R$ 4,2 mi investidos — 2,3% da folha.\n\nA participação é boa (78% do quadro), mas a conclusão média é de apenas 64%. O gargalo é o formato online: concentra 55% das horas e converte só 58% de conclusão, contra 86% no presencial.',
+        kpis: [{ l: 'Horas', v: '21.400', c: C.ink }, { l: 'Investimento', v: 'R$ 4,2 mi', c: C.ink }, { l: 'Participação', v: '78,0%', c: C.green }, { l: 'Conclusão online', v: '58,0%', c: C.red }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Conclusão por modalidade (%)', sub: '', labels: true, max: 100, cats: D.modalTrein.map(m => m.n), bars: [{ name: 'a', vals: D.modalTrein.map(m => m.c), color: C.b3, colors: [C.red, C.green, C.amber] }] }),
+        sug: ['Quais áreas treinam mais?', 'Quanto custa o turnover comparado a isso?'] },
+
+      { k: ['folha', 'custo de pessoal', 'salario', 'salário', 'salarios', 'custo por colaborador', 'encargos', 'benefício', 'remuneração'], tab: 'rh', sub: 'sal', panel: 'sal-comp', filters: { periodo: '12 meses' },
+        text: 'A folha total é de R$ 186 mi no ano — 15,5% da receita líquida, ou R$ 150 mil por FTE.\n\nComposição: R$ 112 mi de salários (60,2%), R$ 42 mi de encargos (22,6%, ou 37,5% sobre salários), R$ 21 mi de benefícios (11,3%) e R$ 11 mi de variável (5,9%). Saúde consome 47% do pacote de benefícios.',
+        kpis: [{ l: 'Folha anual', v: 'R$ 186 mi', c: C.ink }, { l: 'Custo por FTE', v: 'R$ 150 mil', c: C.ink }, { l: 'Folha ÷ receita', v: '15,5%', c: C.amber }, { l: 'Encargos', v: '37,5%', c: C.ink }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Folha mensal (R$ mi)', sub: '', cats: D.M, bars: [{ name: 'a', vals: D.folha, color: C.b3 }] }),
+        sug: ['A folha cresce mais que a receita?', 'Como está distribuída por faixa salarial?'] },
+
+      { k: ['recrutamento', 'vaga', 'contratação', 'pipeline', 'fechamento'], tab: 'rh', sub: 'recrut', panel: 'rec-tempo', filters: { periodo: '12 meses' },
+        text: 'São 48 vagas abertas, 23 em pipeline ativo e 96 fechadas nos últimos 12 meses. O tempo médio de fechamento é de 42 dias, 2 dias acima da meta.\n\nO desvio está concentrado em Tecnologia: 61 dias, 53% acima da meta de 40. Logística (26) e Operações (29) fecham rápido. A conversão de ponta a ponta do funil é de 2,0%, com a maior perda na triagem (75,5% descartados).',
+        kpis: [{ l: 'Vagas abertas', v: '48', c: C.ink }, { l: 'Tempo médio', v: '42 dias', c: C.amber }, { l: 'Pior área', v: 'Tec. 61 dias', c: C.red }, { l: 'Custo por contratação', v: 'R$ 8,6 mil', c: C.green }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Dias para fechar por área', sub: '', cats: D.areas.map(a => a.n.slice(0, 4)), bars: [{ name: 'a', vals: D.areas.map(a => a.dias), color: C.b3, colors: D.areas.map(a => a.dias > 40 ? C.red : C.green) }] }),
+        sug: ['De onde vêm os melhores candidatos?', 'Qual o turnover das áreas que mais contratam?'] },
+
+      { k: ['absenteísmo', 'absenteismo', 'falta'], tab: 'rh', sub: 'engaj', panel: 'eng-abs', filters: { periodo: '12 meses' },
+        text: 'O absenteísmo fechou dezembro em 2,7%, contra 2,2% em janeiro — alta de 0,5 p.p. no ano, com pico de 3,0% em setembro.\n\nO padrão acompanha o turnover: os mesmos meses de piora na rotatividade concentram mais faltas, o que costuma indicar sobrecarga das equipes que absorvem o trabalho de quem saiu.',
+        kpis: [{ l: 'Absenteísmo Dez', v: '2,7%', c: C.amber }, { l: 'Variação', v: '+0,5 p.p.', c: C.red }, { l: 'Pico', v: '3,0% (Set)', c: C.red }, { l: 'Turnover', v: '18,4%', c: C.red }],
+        sug: ['Qual área tem o pior turnover?', 'Como está o engajamento?'] },
+
+      { k: ['enps', 'engajamento', 'clima', 'satisfação', 'promotores', 'detratores'], tab: 'rh', sub: 'engaj', panel: 'eng-enps', filters: { periodo: '12 meses' },
+        text: 'O eNPS está em +32, alta de 11 pontos no ano, e o engajamento em 74% (+6 p.p.).\n\nO contraste é o ponto de atenção: clima e engajamento melhoram enquanto o turnover piora. A leitura mais provável é que quem fica está mais satisfeito, e a saída se concentra nos primeiros meses de casa — 22% do quadro tem menos de 1 ano e a faixa 18–24 tem turnover de 31,4%.',
+        kpis: [{ l: 'eNPS', v: '+32', c: C.green }, { l: 'Engajamento', v: '74%', c: C.green }, { l: 'Turnover', v: '18,4%', c: C.red }, { l: '< 1 ano de casa', v: '21,6%', c: C.amber }],
+        chart: () => this.mkLine({ w: 316, h: 128, pl: 30, id: 'm', title: 'eNPS (12 meses)', sub: '', cats: D.M, series: [{ name: 'a', vals: D.enps, color: C.green, fill: 'rgba(77,122,82,.08)' }], fmtY: v => this.n(v, 0) }),
+        sug: ['Por que o turnover sobe mesmo com eNPS melhor?', 'Qual o custo do turnover?'] },
+
+      { k: ['retenção', 'retencao', 'reter', 'quem fica'], tab: 'rh', sub: 'visao', panel: 'rh-retencao', filters: { periodo: '12 meses' },
+        text: 'A retenção 12m está em 81,6% — o espelho do turnover de 18,4% — e caiu 3,2 p.p. no período.\n\nO detalhe importante está no saldo mensal: em 11 dos 12 meses as admissões superaram os desligamentos, então o quadro cresce mesmo com a retenção piorando. A empresa está compensando a saída com contratação, não corrigindo a causa. RH (91,1%) e Financeiro (90,6%) são as áreas que mais retêm.',
+        kpis: [{ l: 'Retenção 12m', v: '81,6%', c: C.amber }, { l: 'Meta', v: '86,0%', c: C.ink }, { l: 'Melhor área', v: 'RH 91,1%', c: C.green }, { l: 'Saldo do período', v: '+90 FTE', c: C.green }],
+        formula: 'retenção = 100% − turnover 12m',
+        chart: () => this.mkLine({ w: 316, h: 128, pl: 34, id: 'm', title: 'Retenção 12m (%)', sub: '', cats: D.M, series: [{ name: 'a', vals: D.tov.map(v => Math.round((100 - v) * 10) / 10), color: C.green, fill: 'rgba(77,122,82,.08)' }], fmtY: v => this.n(v, 0) }),
+        sug: ['Qual área tem o pior turnover?', 'Quanto custa o turnover em reais?'] },
+
+      { k: ['vaga', 'vagas', 'status das vagas', 'cancelada', 'em andamento'], tab: 'rh', sub: 'recrut', panel: 'rec-status', filters: { periodo: '12 meses' },
+        text: 'Foram 179 vagas movimentadas no ano: 96 fechadas (53,6%), 48 ainda abertas, 23 em andamento e 12 canceladas.\n\nAs canceladas (6,7%) costumam ser remanejamento interno — não entram no custo de recrutamento, mas consomem tempo de triagem. O tempo médio de fechamento melhorou de 46 para 42 dias ao longo do ano, ainda acima da meta de 40.',
+        kpis: [{ l: 'Vagas no ano', v: '179', c: C.ink }, { l: 'Fechadas', v: '96 · 53,6%', c: C.green }, { l: 'Canceladas', v: '12 · 6,7%', c: C.red }, { l: 'Tempo médio', v: '42 dias', c: C.amber }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Dias para fechar por mês', sub: '', cats: D.M, bars: [{ name: 'a', vals: D.diasMes, color: C.b3, colors: D.diasMes.map(v => v > 40 ? C.amber : C.green) }] }),
+        sug: ['De onde vêm os melhores candidatos?', 'Qual área demora mais para contratar?'] },
+
+      { k: ['salário médio', 'salario medio', 'quanto paga', 'salário por área', 'faixa salarial', 'amplitude'], tab: 'rh', sub: 'sal', panel: 'sal-medio', filters: { periodo: '12 meses' },
+        text: 'O salário médio da empresa é de R$ 7,5 mil por mês, base sem encargos, com mediana de R$ 6.240.\n\nA dispersão entre áreas é grande: Tecnologia (R$ 12,2 mil) paga cerca de 2,3× a média de RH, a área com o menor patamar. A amplitude total é de 13,5× entre o menor e o maior salário base, o que é alto e sugere revisar as faixas antes do próximo ciclo de mérito.',
+        kpis: [{ l: 'Salário médio', v: 'R$ 7,5 mil', c: C.ink }, { l: 'Maior base', v: 'R$ 28,4 mil', c: C.ink }, { l: 'Menor base', v: 'R$ 2,1 mil', c: C.ink }, { l: 'Amplitude', v: '13,5×', c: C.amber }],
+        chart: () => this.mkHB({ w: 316, id: 'm', title: 'Salário médio por área (R$ mil)', sub: '', lw: 64, vw: 42, rows: D.areas.map(a => ({ n: a.n, v: a.folha * 1e6 * 0.602 / a.hc / 12, t: this.n(a.folha * 1e6 * 0.602 / a.hc / 12 / 1000, 1), c: C.b3 })) }),
+        sug: ['Como está distribuída a folha por área?', 'Qual o custo por colaborador?'] },
+
+      { k: ['engajamento por área', 'qual área mais engajada', 'pior clima', 'area mais engajada'], tab: 'rh', sub: 'engaj', panel: 'eng-area', filters: { periodo: '12 meses' },
+        text: 'O engajamento consolidado é 74%. RH (82%) e Tecnologia (80%) lideram; Logística (70%) e Operações (72%) ficam abaixo do consolidado.\n\nAs duas áreas mais baixas são também as de maior peso operacional e menor autonomia — e Operações concentra 39% do quadro, então qualquer ganho ali move o indicador consolidado mais que em qualquer outra área.',
+        kpis: [{ l: 'Consolidado', v: '74%', c: C.green }, { l: 'Melhor área', v: 'RH 82%', c: C.green }, { l: 'Pior área', v: 'Logística 70%', c: C.red }, { l: 'Neutros no eNPS', v: '50%', c: C.amber }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 30, id: 'm', title: 'Engajamento por área (%)', sub: '', cats: D.areas.map(a => a.n.slice(0, 4)), bars: [{ name: 'a', vals: D.areas.map(a => a.eng), color: C.b3, colors: D.areas.map(a => a.eng >= 74 ? C.green : C.red) }] }),
+        sug: ['Como está o absenteísmo?', 'Qual área tem o pior turnover?'] },
+
+      { k: ['perfil', 'gênero', 'genero', 'modalidade', 'híbrido', 'remoto', 'diversidade'], tab: 'rh', sub: 'colab', panel: 'col-perfil', filters: { periodo: '12 meses' },
+        text: 'O quadro é 56,9% masculino e 41,3% feminino, com 1,8% em outro/não informado. Em modalidade, 48,7% é presencial, 38,1% híbrido e 13,2% remoto — 51,3% em algum modelo flexível.\n\nO corte por modalidade é relevante para retenção: as áreas com maior parcela presencial são justamente as de turnover mais alto.',
+        kpis: [{ l: 'Masculino', v: '56,9%', c: C.ink }, { l: 'Feminino', v: '41,3%', c: C.ink }, { l: 'Flexível', v: '51,3%', c: C.green }, { l: 'Remoto', v: '13,2%', c: C.ink }],
+        sug: ['Como o quadro se distribui por faixa etária?', 'Qual o tempo médio de casa?'] },
+
+      { k: ['idade', 'faixa etária', 'faixa etaria', 'tempo de casa', 'tempo de empresa', 'escolaridade'], tab: 'rh', sub: 'colab', panel: 'col-idade', filters: { periodo: '12 meses' },
+        text: 'A faixa 25–34 concentra 39,2% do quadro e a 35–44 mais 30%. A idade média é de 34,2 anos.\n\nEm tempo de casa, 21,6% tem menos de 1 ano — reflexo direto do turnover — e apenas 5,7% passa de 10 anos. Em escolaridade, 36,5% tem superior completo e 12,4% pós-graduação.',
+        kpis: [{ l: 'Idade média', v: '34,2 anos', c: C.ink }, { l: 'Faixa 25–34', v: '39,2%', c: C.ink }, { l: '< 1 ano de casa', v: '21,6%', c: C.amber }, { l: 'Superior+', v: '48,9%', c: C.ink }],
+        chart: () => this.mkBars({ w: 316, h: 128, pl: 34, id: 'm', title: 'Headcount por faixa etária', sub: '', cats: D.idade.map(g => g.n), bars: [{ name: 'a', vals: D.idade.map(g => g.v), color: C.b3 }] }),
+        sug: ['Qual faixa etária sai mais?', 'Como está distribuído por estado?'] },
+
+      { k: ['estado', 'geográfic', 'mapa', 'região', 'uf'], tab: 'rh', sub: 'colab', panel: 'col-mapa', filters: { periodo: '12 meses' },
+        text: 'O quadro está em 12 estados. São Paulo concentra 37,7% (468 FTE), seguido de Minas Gerais (152), Paraná (124) e Rio de Janeiro (112).\n\nOs 4 maiores estados somam 68,5% do headcount — concentração alta, que amplifica exposição a dissídio regional e a mercado local de talentos.',
+        kpis: [{ l: 'Estados', v: '12', c: C.ink }, { l: 'São Paulo', v: '468 FTE', c: C.ink }, { l: 'Top 4', v: '68,5%', c: C.amber }, { l: 'Headcount', v: '1.240 FTE', c: C.ink }],
+        sug: ['Como o quadro se divide por modalidade?', 'Qual o custo por colaborador?'] }
+    ];
+  }
+
+  guide(tab, sub) {
+    const G = {
+      'rh/visao': ['Qual a retenção e o saldo de pessoas?', 'Quantas pessoas temos hoje?', 'Qual o custo por colaborador?'],
+      'rh/colab': ['Como é o perfil do quadro?', 'Qual a faixa etária predominante?', 'Como está distribuído por estado?'],
+      'rh/turnover': ['Qual área tem o pior turnover?', 'Quanto custa o turnover em reais?', 'Qual faixa etária sai mais?'],
+      'rh/recrut': ['Qual o status das vagas?', 'De onde vêm os melhores candidatos?', 'Qual área demora mais para contratar?'],
+      'rh/trein': ['Quantas horas de treinamento tivemos?', 'Quais áreas treinam mais?', 'Qual a taxa de conclusão?'],
+      'rh/engaj': ['Qual área está mais engajada?', 'Como está o absenteísmo?', 'Por que o turnover sobe com eNPS melhor?'],
+      'rh/sal': ['Quanto pagamos por área?', 'Qual a composição da folha?', 'Qual o custo por colaborador?'],
+      'fin/visao': ['Qual a taxa de crescimento este ano?', 'Como estão as margens?', 'Por que a margem líquida é negativa?'],
+      'fin/caixa': ['Quanto o caixa gerou no ano?', 'Qual o ciclo de conversão de caixa?', 'Quais são as maiores saídas de caixa?'],
+      'fin/orc': ['Onde o orçamento está estourando?', 'Quanto gastou cada centro de custo?', 'A despesa acompanha a receita?'],
+      'fin/contas': ['Quanto está vencido na carteira?', 'Quem são os maiores inadimplentes?', 'Qual o PMR atual?'],
+      'fin/fat': ['Qual a taxa de crescimento este ano?', 'Qual segmento puxou o crescimento?', 'Qual o ticket médio?'],
+      'int/cruz': ['Qual a receita por colaborador?', 'A folha cresce mais que a receita?', 'Qual área dá mais retorno por real de folha?']
+    };
+    return G[tab + '/' + sub] || G['rh/visao'];
+  }
+  goto(tab, sub, panel) {
+    this.setState({ tab, sub, hi: panel || null });
+    setTimeout(() => {
+      if (!panel) return;
+      if (this.state.hi !== panel) this.setState({ hi: panel });
+      const el = this.region(); if (!el) return;
+      const t = el.querySelector('[data-panel="' + panel + '"]');
+      if (!t) return;
+      const top = t.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - 14;
+      const goal = Math.max(0, Math.min(top, el.scrollHeight - el.clientHeight));
+      el.scrollTop = goal;
+      try { el.scrollTo({ top: goal, behavior: 'smooth' }); } catch (e) { }
+    }, 180);
+  }
+
+  ask(q) {
+    const nz = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const s = nz(q);
+    if (!s) return;
+    let hit = null, bestLen = 0;
+    this.KB.forEach(k => k.k.forEach(w => { const n = nz(w); if (n && s.indexOf(n) >= 0 && n.length > bestLen) { bestLen = n.length; hit = k; } }));
+    const msgs = this.state.msgs.concat([{ role: 'user', text: q }]);
+    if (!hit) {
+      msgs.push({ role: 'ai', text: 'Ainda não tenho essa leitura pronta neste dataset. Posso responder sobre crescimento e faturamento, margens e EBITDA, fluxo de caixa, orçamento e desvios, contas a receber e ciclo de caixa, headcount, turnover, recrutamento, treinamento, folha, engajamento e o cruzamento RH × Financeiro.', sug: ['Qual a taxa de crescimento da empresa este ano?', 'Onde estou estourando o orçamento?', 'Qual área tem o pior turnover?'] });
+      this.setState({ msgs, input: '' });
+      this.scrollChat();
+      return;
+    }
+    const prev = Object.assign({}, this.state.filters);
+    const nf = Object.assign({}, this.state.filters, hit.filters || {});
+    const chips = [];
+    Object.keys(hit.filters || {}).forEach(k => chips.push(({ periodo: 'Período', ano: 'Ano', area: 'Área', modalidade: 'Modalidade', entidade: 'Entidade' })[k] + ': ' + hit.filters[k]));
+    chips.push('Painel: ' + ({ rh: 'Recursos Humanos', fin: 'Financeiro', int: 'Integração' })[hit.tab]);
+    msgs.push({ role: 'ai', text: hit.text, kpis: hit.kpis || [], chart: hit.chart ? hit.chart() : null, formula: hit.formula || '', chips, goto: hit, prev, sug: hit.sug || [] });
+    this.setState({ msgs, input: '', filters: nf, prev });
+    this.goto(hit.tab, hit.sub, hit.panel);
+    this.scrollChat();
+  }
+  scrollChat() {
+    setTimeout(() => {
+      const a = document.querySelector('aside'); if (!a) return;
+      const el = Array.prototype.slice.call(a.querySelectorAll('div')).find(d => getComputedStyle(d).overflowY === 'auto');
+      if (!el) return;
+      el.scrollTop = el.scrollHeight;
+      try { el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); } catch (e) { }
+    }, 220);
+  }
+
+  /* ---------- render ---------- */
+  renderVals() {
+    const C = this.C, D = this.D, st = this.state, F = this.fctx();
+    const NAV = [
+      { id: 'rh', kicker: '1 · Recursos Humanos', name: 'Recursos Humanos', desc: 'Quadro, retenção, seleção e folha', subs: [['visao', 'Visão geral'], ['colab', 'Colaboradores'], ['turnover', 'Turnover'], ['recrut', 'Recrutamento'], ['trein', 'Treinamento'], ['engaj', 'Engajamento'], ['sal', 'Salários']] },
+      { id: 'fin', kicker: '2 · Financeiro e controladoria', name: 'Financeiro', desc: 'Resultado, caixa, orçamento e contas', subs: [['visao', 'Visão financeira'], ['caixa', 'Fluxo de caixa'], ['orc', 'Orçamentário'], ['contas', 'Contas a pagar/receber'], ['fat', 'Faturamento']] },
+      { id: 'int', kicker: '3 · Integração', name: 'Integração', desc: 'Cruzamento RH × Financeiro', subs: [['cruz', 'RH × Financeiro']] }
+    ];
+    const nav = NAV.map((g, i) => {
+      const on = st.tab === g.id;
+      return {
+        num: '0' + (i + 1), name: g.name, desc: g.desc,
+        bg: on ? '#332a1f' : 'transparent', fg: on ? '#f7f2e8' : '#a2937d',
+        font: (on ? '600' : '500') + ' 12px/1.3 "IBM Plex Sans",sans-serif',
+        numC: on ? C.a : '#5c4c3a', descC: on ? '#a4917a' : '#6d5f4e',
+        bar: on ? 'inset 0 0 0 1px rgba(244,237,226,.10)' : '0 0 0 0 transparent',
+        go: () => this.goto(g.id, g.subs[0][0], null)
+      };
+    });
+    const cur = NAV.find(g => g.id === st.tab), curSub = cur.subs.find(s => s[0] === st.sub) || cur.subs[0];
+    const subTabs = cur.subs.map(s => {
+      const on = st.sub === s[0];
+      return { label: s[1], bar: on ? '#fff' : 'transparent', sh: on ? '0 1px 3px rgba(28,23,18,.16)' : '0 0 0 0 transparent', fg: on ? C.ink : '#8a7f74', font: (on ? '600' : '500') + ' 11.5px/1.2 "IBM Plex Sans",sans-serif', go: () => this.goto(st.tab, s[0], null) };
+    });
+    const FD = [
+      ['periodo', 'Período', ['12 meses', '6 meses', '4º trimestre', 'Dezembro']],
+      ['ano', 'Ano', ['2026', '2025']],
+      ['entidade', 'Entidade', ['Consolidado', 'Unidade SP', 'Demais unidades']],
+      ['area', 'Área', ['Todas'].concat(D.areas.map(a => a.n))],
+      ['modalidade', 'Modalidade', ['Todas'].concat(D.modal.map(m => m.n))]
+    ];
+    const filterDefs = FD.map(f => {
+      const active = st.filters[f[0]] !== f[2][0];
+      return { label: f[1], value: st.filters[f[0]], options: f[2], bg: active ? '#f4eee4' : '#fffdfa', bc: active ? '#c9b394' : '#ddd3c5', fg: active ? C.b2 : C.ink, onChange: e => this.setState({ filters: Object.assign({}, st.filters, { [f[0]]: e.target.value }) }) };
+    });
+    const bits = [];
+    if (st.filters.periodo !== '12 meses') bits.push(st.filters.periodo);
+    if (st.filters.ano !== '2026') bits.push('ano ' + st.filters.ano);
+    if (st.filters.entidade !== 'Consolidado') bits.push(st.filters.entidade);
+    if (st.filters.area !== 'Todas') bits.push('área ' + st.filters.area);
+    if (st.filters.modalidade !== 'Todas') bits.push(st.filters.modalidade);
+
+    const panels = this.panelsFor(st.tab, st.sub, F).map(p => {
+      const on = st.hi === p.id;
+      return Object.assign(p, {
+        isHi: on, hiFlag: on ? '1' : '0',
+        bc: on ? C.a : '#efe8dd',
+        ring: on ? '2px solid ' + C.a : '0 solid transparent',
+        shadow: on ? '0 18px 40px -16px rgba(61,43,29,.42)' : '0 1px 2px rgba(28,23,18,.04),0 18px 36px -30px rgba(28,23,18,.7)'
+      });
+    });
+
+    const msgs = st.msgs.map((m, i) => {
+      const user = m.role === 'user';
+      return {
+        text: m.text, align: user ? 'flex-end' : 'stretch', maxw: user ? '86%' : '100%',
+        bg: user ? '#1a1510' : '#fff', bc: user ? '#1a1510' : '#ece5da', fg: user ? '#f4ede2' : C.ink2,
+        radius: user ? '16px 16px 5px 16px' : '5px 16px 16px 16px',
+        hasKpis: !!(m.kpis && m.kpis.length), kpis: m.kpis || [],
+        hasChart: !!m.chart, chart: m.chart || { vb: '0 0 10 10', title: '', grid: [], rects: [], paths: [], texts: [] },
+        hasFormula: !!m.formula, formula: m.formula || '',
+        hasAction: !!m.goto, chips: m.chips || [],
+        goTo: m.goto ? () => this.goto(m.goto.tab, m.goto.sub, m.goto.panel) : null,
+        undo: m.prev ? () => this.setState({ filters: m.prev }) : null,
+        hasSug: !!(m.sug && m.sug.length), sug: (m.sug || []).map(q => ({ q, go: () => this.ask(q) }))
+      };
+    });
+
+    return {
+      nav, subTabs, filterDefs,
+      crumb: cur.kicker.replace(/^\d+ · /, '') + ' · ' + st.filters.ano,
+      viewTitle: curSub[1],
+      hasBanner: F.on, bannerText: bits.join(' · '),
+      resetFilters: () => this.setState({ filters: { periodo: '12 meses', ano: '2026', entidade: 'Consolidado', area: 'Todas', modalidade: 'Todas' } }),
+      kpis: this.kpisFor(st.tab, st.sub, F),
+      panels,
+      chatOpen: st.chatOpen, chatClosed: !st.chatOpen, chatIcon: st.chatOpen ? 'IA' : 'IA',
+      toggleChat: () => this.setState({ chatOpen: !st.chatOpen }),
+      msgs, input: st.input,
+      ctxSug: this.guide(st.tab, st.sub).map(q => ({ q, go: () => this.ask(q) })),
+      regionMain: 'main', regionChat: 'log',
+      onInput: e => this.setState({ input: e.target.value }),
+      onKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.ask(this.state.input); } },
+      send: () => this.ask(this.state.input)
+    };
+  }
+}
+</script>
+</body>
+</html>
