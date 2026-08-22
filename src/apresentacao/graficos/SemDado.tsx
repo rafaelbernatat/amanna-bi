@@ -1,4 +1,5 @@
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type { MotivoDeVazio } from "@/semantica/vazio";
 
 /**
  * O estado "sem dado neste recorte" (T-130, princípio PR-4).
@@ -11,12 +12,9 @@ import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
  * Server Component: nada disto precisa do cliente.
  */
 
-/** Os quatro motivos de vazio do contrato de dados (PRD seção 9.2 regra 3). */
-export type MotivoDeVazio =
-  | "sem_dado_no_recorte"
-  | "grupo_pequeno"
-  | "fora_do_perfil"
-  | "fonte_indisponivel";
+// O enum vive no contrato de dados (T-105), nao aqui: uma segunda copia na
+// apresentacao sairia de sincronia no dia em que um motivo novo entrasse.
+export type { MotivoDeVazio } from "@/semantica/vazio";
 
 const TEXTO: Readonly<
   Record<MotivoDeVazio, { titulo: string; porque: string }>
