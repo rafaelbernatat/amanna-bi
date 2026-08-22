@@ -10,8 +10,10 @@
     "dev": "next dev",
     "schema": "node ferramentas/schema/gerar.mjs",
     "schema:check": "node ferramentas/schema/gerar.mjs --check",
+    "autorizacao": "node ferramentas/schema/autorizacao.mjs",
+    "autorizacao:check": "node ferramentas/schema/autorizacao.mjs --check",
     "catalogo:check": "tsx ferramentas/catalogo/conferir.mts",
-    "build": "npm run schema:check && npm run catalogo:check && next build",
+    "build": "npm run schema:check && npm run autorizacao:check && next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint .",
@@ -41,6 +43,7 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.6",
     "husky": "9.1.7",
+    "jiti": "2.7.0",
     "lint-staged": "17.3.0",
     "prettier": "3.9.6",
     "ts-json-schema-generator": "2.9.0",
@@ -62,6 +65,9 @@
     ],
     "catalogo/*.yaml": [
       "tsx ferramentas/catalogo/conferir.mts"
+    ],
+    "src/seguranca/autorizacao.ts": [
+      "node ferramentas/schema/autorizacao.mjs --check"
     ]
   }
 }
