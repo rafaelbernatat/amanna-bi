@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 221 pendentes e 10 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 220 pendentes e 11 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 3 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 2 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 3 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **10 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **11 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -220,7 +220,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-125** `P0` `M` `plataforma` Criar o módulo único de formatação pt-BR e fixar locale e fuso
   · **Aceite:** Um único módulo formata BRL_mi, pct, pp, dias e FTE com vírgula decimal, ponto de milhar, R$ em milhões com uma casa e data em mês/ano abreviado, validado por tabela de 30 casos com negativos, zero e valores grandes; teste de arquitetura falha se Intl, toLocaleString ou toFixed forem usados fora dele, e a suíte produz saída idêntica com TZ e LANG diferentes.
   · **PRD:** seção 13, seção 9.2 regra 2 · **Depende de:** T-001
-- [~] **T-126** `P0` `M` `paineis` Construir o shell de aplicação e as rotas das 13 telas  ⏳ 2026-08-22 00:13 · sessao-68c8
+- [X] **T-126** `P0` `M` `paineis` Construir o shell de aplicação e as rotas das 13 telas
   · **Aceite:** Em 1440x900 e 1280x720 a barra lateral fixa lista os três módulos, o conteúdo rola independente do cabeçalho e o body nunca rola horizontalmente; as 13 URLs de rh/visao a int/cruz resolvem no servidor, clicar num módulo abre a primeira tela dele, título e breadcrumb refletem a rota e slug inválido devolve 404.
   · **PRD:** seção 6.1, seção 5, Anexo A.2, Anexo A.3, Anexo A.4 · **Depende de:** T-124
 - [ ] **T-127** `P0` `M` `paineis` Modelar a Query na URL do servidor e tornar o recorte compartilhável

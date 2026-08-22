@@ -22,7 +22,25 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // Os dois tamanhos nomeados no criterio de aceite de T-126. Todo caso de e2e
+  // roda nos dois: e o unico jeito de a regra "o body nunca rola na horizontal"
+  // significar alguma coisa.
+  projects: [
+    {
+      name: "1440x900",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: "1280x720",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+  ],
   webServer: {
     command: `npm run build && npx next start --port ${PORTA}`,
     url: BASE_URL,
