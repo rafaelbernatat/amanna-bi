@@ -53,8 +53,8 @@ void qualquerTexto;
 const sessaoValida: Session = {
   sujeito: "u-1",
   perfil: "controller",
-  entidades: ["Consolidado", "Unidade SP"],
-  areas: ["Financeiro"],
+  entidades: ["consolidado", "unidade-sp"],
+  areas: ["financeiro"],
 };
 
 const entidadeInvalida: Session = {
@@ -62,14 +62,14 @@ const entidadeInvalida: Session = {
   perfil: "diretoria",
   // @ts-expect-error 'Matriz' não é uma das três entidades da seção 6.2
   entidades: ["Matriz"],
-  areas: ["Financeiro"],
+  areas: ["financeiro"],
 };
 void entidadeInvalida;
 
 const areaInvalida: Session = {
   sujeito: "u-3",
   perfil: "rh",
-  entidades: ["Consolidado"],
+  entidades: ["consolidado"],
   // @ts-expect-error 'Juridico' não é uma das oito áreas da seção 6.2
   areas: ["Juridico"],
 };
@@ -78,8 +78,8 @@ void areaInvalida;
 // @ts-expect-error sessão sem perfil não é sessão
 const semPerfil: Session = {
   sujeito: "u-4",
-  entidades: ["Consolidado"],
-  areas: ["RH"],
+  entidades: ["consolidado"],
+  areas: ["rh"],
 };
 void semPerfil;
 
@@ -88,11 +88,11 @@ void semPerfil;
  * ------------------------------------------------------------------ */
 
 const consulta: Query = {
-  periodo: "12 meses",
+  periodo: "12-meses",
   ano: "2026",
-  entidade: "Consolidado",
-  area: "Financeiro",
-  modalidade: "Todas",
+  entidade: "consolidado",
+  area: "financeiro",
+  modalidade: "todas",
 };
 
 const escopo: AccessScope = escopoDaSessao(sessaoValida);

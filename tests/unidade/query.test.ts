@@ -121,18 +121,18 @@ describe("Query fora do vocabulário é recusada antes do adaptador", () => {
 describe("queryKey é determinística", () => {
   it("a ordem das chaves do objeto não muda a chave gerada", () => {
     const emUmaOrdem: Query = {
-      periodo: "6 meses",
+      periodo: "6-meses",
       ano: "2025",
-      entidade: "Unidade SP",
-      area: "RH",
-      modalidade: "Remoto",
+      entidade: "unidade-sp",
+      area: "rh",
+      modalidade: "remoto",
     };
     const naOrdemInversa = {
-      modalidade: "Remoto",
-      area: "RH",
-      entidade: "Unidade SP",
+      modalidade: "remoto",
+      area: "rh",
+      entidade: "unidade-sp",
       ano: "2025",
-      periodo: "6 meses",
+      periodo: "6-meses",
     } as Query;
 
     expect(queryKey(naOrdemInversa)).toBe(queryKey(emUmaOrdem));

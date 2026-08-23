@@ -89,8 +89,8 @@ describe("o modo fixtures", () => {
 
   it("o perfil `area` vem restrito, senão não exercita a restrição", () => {
     const s = sessaoDeFixtures({ AUTH_PROFILE: "area" });
-    expect(s.areas).toEqual(["Tecnologia"]);
-    expect(s.entidades).toEqual(["Consolidado"]);
+    expect(s.areas).toEqual(["tecnologia"]);
+    expect(s.entidades).toEqual(["consolidado"]);
   });
 
   it("perfil mal digitado cai no padrão, sem derrubar o processo", () => {
@@ -123,8 +123,8 @@ describe("getSession", () => {
     registrarProvedor("oidc", async () => ({
       sujeito: "oidc:u-9",
       perfil: "controller",
-      entidades: ["Consolidado"],
-      areas: ["Financeiro"],
+      entidades: ["consolidado"],
+      areas: ["financeiro"],
     }));
     try {
       const s = await getSession({ AUTH_PROVIDER: "oidc" });
@@ -142,11 +142,11 @@ describe("getSession", () => {
  * ------------------------------------------------------------------ */
 
 const CONSULTA: Query = {
-  periodo: "12 meses",
+  periodo: "12-meses",
   ano: "2026",
-  entidade: "Consolidado",
-  area: "Financeiro",
-  modalidade: "Todas",
+  entidade: "consolidado",
+  area: "financeiro",
+  modalidade: "todas",
 };
 
 const DIMENSOES = {
@@ -190,8 +190,8 @@ const DIRETORIA: Session = {
 const CONTROLLER_SP: Session = {
   sujeito: "u-2",
   perfil: "controller",
-  entidades: ["Unidade SP"],
-  areas: ["Financeiro"],
+  entidades: ["unidade-sp"],
+  areas: ["financeiro"],
 };
 
 describe("applyScope devolve a recusa como valor", () => {
@@ -214,7 +214,7 @@ describe("applyScope devolve a recusa como valor", () => {
     expect(r.permitido).toBe(false);
     if (!r.permitido) {
       expect(r.motivo).toBe("entidade_fora_do_perfil");
-      expect(r.detalhe).toContain("Consolidado");
+      expect(r.detalhe).toContain("consolidado");
     }
   });
 
@@ -264,8 +264,8 @@ describe("getMeta também passa pelo escopo", () => {
 
   it("o controller de SP só vê a dele", async () => {
     const meta = await fronteiraDe(CONTROLLER_SP).lerMeta();
-    expect(meta.dimensoes.entidade).toEqual(["Unidade SP"]);
-    expect(meta.dimensoes.entidade).not.toContain("Consolidado");
+    expect(meta.dimensoes.entidade).toEqual(["unidade-sp"]);
+    expect(meta.dimensoes.entidade).not.toContain("consolidado");
   });
 
   it("as áreas também são filtradas, menos 'Todas'", () => {
@@ -275,7 +275,7 @@ describe("getMeta também passa pelo escopo", () => {
     return fronteiraDe(CONTROLLER_SP)
       .lerMeta()
       .then((meta) => {
-        expect(meta.dimensoes.area).toEqual(["Todas", "Financeiro"]);
+        expect(meta.dimensoes.area).toEqual(["todas", "financeiro"]);
       });
   });
 

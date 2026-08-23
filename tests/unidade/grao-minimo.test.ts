@@ -83,18 +83,18 @@ function fonteQueConta() {
 }
 
 const CONSULTA: Query = {
-  periodo: "12 meses",
+  periodo: "12-meses",
   ano: "2026",
-  entidade: "Consolidado",
-  area: "Financeiro",
-  modalidade: "Todas",
+  entidade: "consolidado",
+  area: "financeiro",
+  modalidade: "todas",
 };
 
 const SESSAO: Session = {
   sujeito: "u-1",
   perfil: "diretoria",
-  entidades: ["Consolidado", "Unidade SP", "Demais unidades"],
-  areas: ["Financeiro", "RH", "Operacoes"],
+  entidades: ["consolidado", "unidade-sp", "demais-unidades"],
+  areas: ["financeiro", "rh", "operacoes"],
 };
 
 const ESCOPO = escopoDaSessao(SESSAO);
@@ -284,7 +284,7 @@ describe("escopo e grão são verificados antes do adaptador", () => {
   it("entidade fora do perfil não toca o adaptador", async () => {
     const escopoEstreito = escopoDaSessao({
       ...SESSAO,
-      entidades: ["Unidade SP"],
+      entidades: ["unidade-sp"],
     });
     const fronteira = fronteiraCom(fonteQueNaoPodeSerTocada(), escopoEstreito);
 

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 197 pendentes e 34 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 196 pendentes e 35 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 23 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 24 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **34 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **35 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -400,7 +400,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-185** `P1` `M` `auditoria` Definir a série de comparação no primeiro ano carregado
   · **Aceite:** ou 36 meses são carregados (2024 apenas como base de comparação), ou a série LY e os KPIs derivados dela devolvem null com motivo sem_dado_no_recorte; com ano=2025, fin-receita, o KPI de crescimento e a intenção 1 do chat mostram o estado vazio com motivo (nunca zero nem a série de 2026); a lista de invariantes de T-129 vira arquivo versionado com justificativa por item.
   · **PRD:** Anexo D achado 6 / RF-05 e Anexo B intenção 1 (crescimento_yoy) sob ano = 2025
-- [~] **T-186** `P1` `M` `auditoria` Fixar código canônico e rótulo de exibição por valor de dimensão num único arquivo   ⏳ 2026-08-22 19:30 · sessao-68c8
+- [X] **T-186** `P1` `M` `auditoria` Fixar código canônico e rótulo de exibição por valor de dimensão num único arquivo
   · **Aceite:** URL, chave de cache, catálogo, matriz de autorização e CSV usam só o código; barra de filtros e notas usam só o rótulo; um teste falha se rótulo acentuado aparecer em chave, URL ou nome de arquivo, e se algum valor da 6.2 não tiver código correspondente.
   · **PRD:** Anexo D achados 1 e 2 (Resolvidos) - valores de 6.2 versus os literais da seção 9.1
 - [ ] **T-187** `P1` `M` `auditoria` Estender o escopo de narrativa aos KPIs

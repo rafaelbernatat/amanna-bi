@@ -48,10 +48,10 @@ describe("Query aceita exatamente o vocabulário da seção 6.2", () => {
   });
 
   it("o recorte padrão é o consolidado da tabela 6.2", () => {
-    expect(QUERY_PADRAO.periodo).toBe("12 meses");
-    expect(QUERY_PADRAO.entidade).toBe("Consolidado");
-    expect(QUERY_PADRAO.area).toBe("Todas");
-    expect(QUERY_PADRAO.modalidade).toBe("Todas");
+    expect(QUERY_PADRAO.periodo).toBe("12-meses");
+    expect(QUERY_PADRAO.entidade).toBe("consolidado");
+    expect(QUERY_PADRAO.area).toBe("todas");
+    expect(QUERY_PADRAO.modalidade).toBe("todas");
   });
 
   it("todo valor de cada domínio é aceito pelo tipo", () => {

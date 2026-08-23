@@ -26,11 +26,11 @@ import {
 } from "@/seguranca/identidade";
 
 const CONSULTA: Query = {
-  periodo: "12 meses",
+  periodo: "12-meses",
   ano: "2026",
-  entidade: "Consolidado",
-  area: "Financeiro",
-  modalidade: "Todas",
+  entidade: "consolidado",
+  area: "financeiro",
+  modalidade: "todas",
 };
 
 function sessao(p: Partial<Session> = {}): Session {
@@ -38,7 +38,7 @@ function sessao(p: Partial<Session> = {}): Session {
     sujeito: "u-1",
     perfil: "diretoria",
     entidades: [...ENTIDADES],
-    areas: ["Financeiro", "RH"],
+    areas: ["financeiro", "rh"],
     ...p,
   };
 }
@@ -83,7 +83,7 @@ describe("restringir recusa, não substitui", () => {
   });
 
   it("recusa entidade fora do perfil", () => {
-    const escopo = escopoDaSessao(sessao({ entidades: ["Unidade SP"] }));
+    const escopo = escopoDaSessao(sessao({ entidades: ["unidade-sp"] }));
     expect(() => restringir(CONSULTA, escopo)).toThrowError(ForaDoEscopo);
     try {
       restringir(CONSULTA, escopo);
@@ -91,13 +91,13 @@ describe("restringir recusa, não substitui", () => {
       expect((e as ForaDoEscopo).motivo).toBe("entidade_fora_do_perfil");
       // A mensagem nomeia o pedido e o concedido: sem isso, quem depura fica
       // sabendo que houve recusa e não por quê.
-      expect((e as ForaDoEscopo).message).toContain("Consolidado");
-      expect((e as ForaDoEscopo).message).toContain("Unidade SP");
+      expect((e as ForaDoEscopo).message).toContain("consolidado");
+      expect((e as ForaDoEscopo).message).toContain("unidade-sp");
     }
   });
 
   it("recusa área fora do perfil", () => {
-    const escopo = escopoDaSessao(sessao({ areas: ["RH"] }));
+    const escopo = escopoDaSessao(sessao({ areas: ["rh"] }));
     expect(() => restringir(CONSULTA, escopo)).toThrowError(/area_fora/);
   });
 
@@ -109,11 +109,11 @@ describe("restringir recusa, não substitui", () => {
   });
 
   it("aceita 'Todas' em área — é pedido de amplitude, não de área concreta", () => {
-    const escopo = escopoDaSessao(sessao({ areas: ["Financeiro"] }));
-    const r = restringir({ ...CONSULTA, area: "Todas" }, escopo);
-    expect(r.area).toBe("Todas");
+    const escopo = escopoDaSessao(sessao({ areas: ["financeiro"] }));
+    const r = restringir({ ...CONSULTA, area: "todas" }, escopo);
+    expect(r.area).toBe("todas");
     // E o adaptador ainda sabe quais são de fato: o escopo carrega a lista.
-    expect(escopo.areas).toEqual(["Financeiro"]);
+    expect(escopo.areas).toEqual(["financeiro"]);
   });
 
   /**
@@ -123,7 +123,7 @@ describe("restringir recusa, não substitui", () => {
    * tela carrega, o número aparece, e é o número errado com o rótulo certo.
    */
   it("nunca devolve entidade diferente da pedida", () => {
-    const escopo = escopoDaSessao(sessao({ entidades: ["Unidade SP"] }));
+    const escopo = escopoDaSessao(sessao({ entidades: ["unidade-sp"] }));
     let devolvido: unknown = null;
     try {
       devolvido = restringir(CONSULTA, escopo);

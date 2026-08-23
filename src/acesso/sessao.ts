@@ -96,7 +96,7 @@ const CONCESSOES: Readonly<
   // O perfil `area` tem recorte fixo à sua área (seção 11). Aqui isso é
   // demonstrado com uma área concreta: um `area` que enxerga todas não
   // exercita a restrição, e é justamente ela que se quer ver funcionando.
-  area: { entidades: ["Consolidado"], areas: ["Tecnologia"] },
+  area: { entidades: ["consolidado"], areas: ["tecnologia"] },
 };
 
 export function sessaoDeFixtures(
