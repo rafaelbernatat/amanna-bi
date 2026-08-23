@@ -79,8 +79,26 @@ for (const linha of linhas) {
 
   const des = /^\| \*\*Destrava\*\* \| (.+?) \|$/.exec(linha);
   if (des !== null && item.destrava.length === 0) {
-    item.destrava = [...des[1].matchAll(/T-\d+(?:\.\d+)?/g)].map((m) => m[0]);
+    item.destrava = tarefasDestravadas(des[1]);
   }
+}
+
+/**
+ * As tarefas que uma celula "Destrava" nomeia.
+ *
+ * Uma celula que comeca com "nada" destrava zero tarefas -- mesmo quando a
+ * frase seguinte cita um T-xxx para explicar por que. H-47 escreve
+ * "nada -- T-109 esta concluida nas tres camadas do produto", e a varredura
+ * ingenua contava T-109 como destravada por ele: o total do cabecalho dizia
+ * 127 quando eram 126.
+ *
+ * E o mesmo tipo de erro que este arquivo existe para impedir, so que dentro
+ * dele. O somador conta o que a celula **promete**, nao todo T-xxx que aparece
+ * na linha.
+ */
+function tarefasDestravadas(celula) {
+  if (/^nada\b/i.test(celula.trim())) return [];
+  return [...celula.matchAll(/T-\d+(?:\.\d+)?/g)].map((m) => m[0]);
 }
 
 if (itens.length === 0) {

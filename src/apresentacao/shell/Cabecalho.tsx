@@ -1,22 +1,42 @@
 import Link from "next/link";
 
+import { BarraDeFiltros } from "@/apresentacao/filtros/BarraDeFiltros";
 import type { Modulo, Tela } from "@/apresentacao/navegacao/telas";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type { Query } from "@/semantica/contrato";
+import type { Dimensoes } from "@/semantica/recortes";
+import { rotaCom } from "@/semantica/url";
 
 /**
- * Cabecalho da tela: breadcrumb, titulo e a tira de abas (T-126).
+ * Cabecalho da tela: breadcrumb, titulo e a tira de abas (T-126, T-127).
  *
- * O breadcrumb e "modulo · ano do recorte" (PRD secao 6.1). O ano ainda e o
- * padrao da secao 6.2; ele passa a vir da Query na URL com T-127.
+ * O breadcrumb e "modulo · ano do recorte" (PRD secao 6.1), e o ano vem da
+ * Query lida da URL.
+ *
+ * ## Por que a aba recebe a Query inteira, e nao so o ano
+ *
+ * A secao 6.2 diz que os cinco filtros "persistem ao trocar de tela", e nao ha
+ * onde guarda-los: o recorte vive na URL e e resolvido no servidor. Entao quem
+ * carrega o recorte de uma tela para a outra e o **proprio link** — se o href
+ * sai sem a busca, clicar numa aba devolve a pessoa ao consolidado sem avisar.
+ *
+ * O painel destacado nao viaja junto, e isso e decisao: `painel=orc-desvio`
+ * nomeia um painel de `fin/orc`, e pedir a `rh/visao` que destaque um painel
+ * que ela nao tem seria um destaque que nunca acontece. O prototipo faz o
+ * mesmo — `goto(tab, sub, null)` zera o destaque ao trocar de tela a mao.
  */
 export function Cabecalho({
   modulo,
   tela,
-  ano,
+  query,
+  dimensoes,
+  painelDestacado,
 }: {
   readonly modulo: Modulo;
   readonly tela: Tela;
-  readonly ano: string;
+  readonly query: Query;
+  readonly dimensoes: Dimensoes;
+  readonly painelDestacado: string | null;
 }) {
   return (
     <header
@@ -36,7 +56,7 @@ export function Cabecalho({
           letterSpacing: ".13em",
         }}
       >
-        {modulo.nomeCompleto} · {ano}
+        {modulo.nomeCompleto} · {query.ano}
       </div>
 
       <h1
@@ -49,6 +69,18 @@ export function Cabecalho({
       >
         {tela.titulo}
       </h1>
+
+      {/*
+        A barra de filtros fica **dentro** do cabecalho, como no prototipo: o
+        cabecalho nao rola, e um filtro que some da tela ao rolar deixa de
+        responder "sob que recorte estou lendo isto".
+      */}
+      <BarraDeFiltros
+        rota={`/${modulo.id}/${tela.slug}`}
+        query={query}
+        dimensoes={dimensoes}
+        painelDestacado={painelDestacado}
+      />
 
       <div
         aria-label={`Telas de ${modulo.nomeCompleto}`}
@@ -70,7 +102,7 @@ export function Cabecalho({
           return (
             <Link
               key={t.slug}
-              href={`/${modulo.id}/${t.slug}`}
+              href={rotaCom(`/${modulo.id}/${t.slug}`, query)}
               aria-current={ligada ? "page" : undefined}
               style={{
                 whiteSpace: "nowrap",

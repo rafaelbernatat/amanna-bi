@@ -1,11 +1,13 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
+import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
+import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
 import { BarraLateral } from "@/apresentacao/shell/BarraLateral";
 import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
-import { buscaParaQuery } from "@/semantica/url";
+import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
 
 /**
  * Uma rota por tela: de `/rh/visao` a `/int/cruz` (T-126).
@@ -40,6 +42,52 @@ function comoBusca(busca: Busca): URLSearchParams {
     p.set(chave, Array.isArray(valor) ? (valor.at(-1) ?? "") : valor);
   }
   return p;
+}
+
+/**
+ * As chaves que esta rota conhece: os cinco filtros mais o painel destacado.
+ *
+ * Serve so a canonizacao abaixo — uma busca com chave desconhecida e deixada
+ * como esta, porque reescreve-la apagaria um parametro que alguem pode estar
+ * usando para outra coisa.
+ */
+const CHAVES_CONHECIDAS: ReadonlySet<string> = new Set([
+  ...PARAMETROS,
+  "painel",
+]);
+
+/**
+ * A URL canonica de um recorte, quando ela difere da que chegou.
+ *
+ * Existe por causa do formulario da barra de filtros (T-128): um `<form
+ * method="get">` envia **todos** os campos, inclusive os que estao no padrao.
+ * Sem isto, trocar um filtro e voltar ao consolidado deixaria
+ * `?periodo=12-meses&ano=2026&entidade=consolidado&area=todas&modalidade=todas`
+ * grudado na barra de enderecos — o oposto da URL legivel que a secao 6.6
+ * promete.
+ *
+ * Devolve `null` quando nao ha o que canonizar. Dois casos ficam de fora de
+ * proposito:
+ *
+ * - **houve aviso.** Redirecionar apagaria o parametro invalido junto com a
+ *   explicacao, e a pessoa leria "12 meses" achando que o link dela funcionou.
+ * - **ha chave desconhecida.** Ver `CHAVES_CONHECIDAS`.
+ */
+function canonizar(
+  rota: string,
+  busca: URLSearchParams,
+  query: Parameters<typeof rotaCom>[1],
+  painelDestacado: string | null,
+  houveAviso: boolean,
+): string | null {
+  if (houveAviso) return null;
+  for (const chave of busca.keys()) {
+    if (!CHAVES_CONHECIDAS.has(chave)) return null;
+  }
+  const sufixo = busca.toString();
+  const atual = sufixo === "" ? rota : `${rota}?${sufixo}`;
+  const canonica = rotaCom(rota, query, painelDestacado ?? undefined);
+  return canonica === atual ? null : canonica;
 }
 
 export const dynamicParams = true;
@@ -79,9 +127,27 @@ export default async function Pagina({
    * o ano da URL e aceito como veio, que e o comportamento de D-P8 quando
    * ninguem ainda declarou quais anos foram carregados.
    */
+  /*
+   * As dimensoes disponiveis. Hoje vem da ponte de `dimensoes-provisorias`;
+   * com T-149 passam a vir de `getMeta`, ja recortadas pelo perfil (secao 11).
+   * A lista de anos e o que faz `?ano=2024` virar aviso em vez de tela vazia.
+   */
+  const dimensoes = dimensoesProvisorias();
+  const busca = comoBusca(await searchParams);
   const { query, avisos, painelDestacado } = buscaParaQuery(
-    comoBusca(await searchParams),
+    busca,
+    dimensoes.ano,
   );
+
+  const rota = `/${achado.modulo.id}/${achado.tela.slug}`;
+  const canonica = canonizar(
+    rota,
+    busca,
+    query,
+    painelDestacado,
+    avisos.length > 0,
+  );
+  if (canonica !== null) redirect(canonica);
 
   return (
     <div
@@ -93,7 +159,7 @@ export default async function Pagina({
         background: PALETA.fundo,
       }}
     >
-      <BarraLateral ativo={achado.modulo.id} />
+      <BarraLateral ativo={achado.modulo.id} query={query} />
 
       <div
         style={{
@@ -103,7 +169,13 @@ export default async function Pagina({
           overflow: "hidden",
         }}
       >
-        <Cabecalho modulo={achado.modulo} tela={achado.tela} ano={query.ano} />
+        <Cabecalho
+          modulo={achado.modulo}
+          tela={achado.tela}
+          query={query}
+          dimensoes={dimensoes}
+          painelDestacado={painelDestacado}
+        />
 
         <main
           data-teste="conteudo"
@@ -131,6 +203,12 @@ export default async function Pagina({
             data-painel={painelDestacado ?? ""}
             data-avisos={String(avisos.length)}
             style={{ display: "none" }}
+          />
+
+          <BannerDeRecorte
+            rota={rota}
+            query={query}
+            painelDestacado={painelDestacado}
           />
 
           {avisos.length > 0 ? (
@@ -166,9 +244,9 @@ export default async function Pagina({
               maxWidth: "68ch",
             }}
           >
-            Os filtros globais entram com T-128 e os painéis desta tela com
-            T-117 a T-119. O shell, as 13 rotas e o recorte na URL são o
-            contrato que eles vão preencher.
+            Os painéis desta tela entram com T-117 a T-119. O shell, as 13
+            rotas, o recorte na URL e os cinco filtros são o contrato que eles
+            vão preencher.
           </p>
         </main>
       </div>

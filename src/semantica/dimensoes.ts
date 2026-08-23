@@ -95,6 +95,43 @@ export const DIMENSOES = {
 export type NomeDeDimensao = keyof typeof DIMENSOES;
 
 /* ------------------------------------------------------------------ *
+ * Os cinco filtros da tabela 6.2
+ * ------------------------------------------------------------------ */
+
+/**
+ * Os cinco filtros globais, na ordem em que a tabela 6.2 os lista.
+ *
+ * São quatro dimensões fechadas mais o ano, que é aberto (D-P8) e por isso não
+ * aparece em `DIMENSOES`. A ordem é a da tabela, e é a mesma de `PARAMETROS`
+ * em `url.ts`: a barra de filtros, a URL e o banner listam os cinco na mesma
+ * sequência, e quem lê os três vê a mesma coisa em três lugares.
+ */
+export const FILTROS = [
+  "periodo",
+  "ano",
+  "entidade",
+  "area",
+  "modalidade",
+] as const;
+
+export type NomeDeFiltro = (typeof FILTROS)[number];
+
+/**
+ * O rótulo de cada filtro, como a coluna "Filtro" da tabela 6.2 escreve.
+ *
+ * Acentuado, porque é texto de tela — o código do filtro é a chave. Um teste
+ * lê a tabela do PRD e confere os cinco: se Produto renomear "Área" para
+ * "Área de negócio", a suíte avisa em vez de a barra ficar desatualizada.
+ */
+export const ROTULO_DO_FILTRO: Readonly<Record<NomeDeFiltro, string>> = {
+  periodo: "Período",
+  ano: "Ano",
+  entidade: "Entidade",
+  area: "Área",
+  modalidade: "Modalidade",
+};
+
+/* ------------------------------------------------------------------ *
  * Buscar
  * ------------------------------------------------------------------ */
 
