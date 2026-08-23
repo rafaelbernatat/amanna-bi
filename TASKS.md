@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 196 pendentes e 35 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 195 pendentes e 36 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 24 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 25 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **35 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **36 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -385,7 +385,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-180** `P1` `M` `auditoria` Classificar os 71 painéis como derivado ou medida direta no registro, cada não-derivado com justificativa
   · **Aceite:** escrita de uma linha, e ligar o teste de T-109 a essa classificação. painel novo entra sem classificação reprova o CI; mudar um painel de derivado para direto exige a justificativa no mesmo commit; e o teste de T-109 falha ao ser rodado contra uma cópia do registro em que um painel derivado teve a fórmula esvaziada.
   · **PRD:** RF-04
-- [ ] **T-181** `P1` `M` `auditoria` Endurecer a regra de AST para proibir qualquer literal numérico (cru ou formatado) nos módulos de KPI e
+- [X] **T-181** `P1` `M` `auditoria` Endurecer a regra de AST para proibir qualquer literal numérico (cru ou formatado) nos módulos de KPI e
   · **Aceite:** painel, com lista branca explícita e comentada de constantes estruturais (índices, spans de grade, limiares de layout). um arquivo de exemplo com 'const x = 34.2' seguido de chamada ao formatador reprova o lint, e a lista branca é revisada no CI quando cresce.
   · **PRD:** RF-07
 - [~] **T-182** `P1` `M` `auditoria` Acrescentar o motivo denominador_zero ao enum fechado da camada de dados e definir seu estado de tela   ⏸ aguardando H-42
