@@ -226,7 +226,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-127** `P0` `M` `paineis` Modelar a Query na URL do servidor e tornar o recorte compartilhável
   · **Aceite:** O round-trip Query->URL->Query é idêntico para os 768 combos válidos, valor fora do enum cai no padrão com aviso registrado, trocar de tela preserva os cinco filtros, e colar a URL em sessão limpa reproduz filtros, tela e painel destacado com os mesmos valores exibidos para o mesmo perfil.
   · **PRD:** seção 6.2, seção 6.6, RF-01, RF-08 · **Depende de:** T-103, T-126
-- [ ] **T-128** `P0` `M` `paineis` Construir a barra de filtros com os cinco controles e o banner de recorte ativo
+- [~] **T-128** `P0` `M` `paineis` Construir a barra de filtros com os cinco controles e o banner de recorte ativo  ⏳ 2026-08-23 06:26 · sessao-68c8
   · **Aceite:** Cada controle expõe exatamente os valores da tabela 6.2 com o padrão selecionado e é percorrível por Tab, setas e Enter sem mouse; o banner aparece se e somente se ao menos um filtro difere do padrão, lista os que diferem, e um clique em 'Voltar ao consolidado' restaura os cinco, coberto em 5 casos isolados mais um combinado.
   · **PRD:** seção 6.2, RF-02, Anexo D achado 1, Anexo D achado 2 · **Depende de:** T-127
 - [X] **T-129** `P0` `L` `paineis` Construir o núcleo de gráficos sobre recharts, com caixa reservada
