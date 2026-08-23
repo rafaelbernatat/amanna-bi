@@ -400,7 +400,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-185** `P1` `M` `auditoria` Definir a série de comparação no primeiro ano carregado
   · **Aceite:** ou 36 meses são carregados (2024 apenas como base de comparação), ou a série LY e os KPIs derivados dela devolvem null com motivo sem_dado_no_recorte; com ano=2025, fin-receita, o KPI de crescimento e a intenção 1 do chat mostram o estado vazio com motivo (nunca zero nem a série de 2026); a lista de invariantes de T-129 vira arquivo versionado com justificativa por item.
   · **PRD:** Anexo D achado 6 / RF-05 e Anexo B intenção 1 (crescimento_yoy) sob ano = 2025
-- [ ] **T-186** `P1` `M` `auditoria` Fixar código canônico e rótulo de exibição por valor de dimensão num único arquivo
+- [~] **T-186** `P1` `M` `auditoria` Fixar código canônico e rótulo de exibição por valor de dimensão num único arquivo   ⏳ 2026-08-22 19:30 · sessao-68c8
   · **Aceite:** URL, chave de cache, catálogo, matriz de autorização e CSV usam só o código; barra de filtros e notas usam só o rótulo; um teste falha se rótulo acentuado aparecer em chave, URL ou nome de arquivo, e se algum valor da 6.2 não tiver código correspondente.
   · **PRD:** Anexo D achados 1 e 2 (Resolvidos) - valores de 6.2 versus os literais da seção 9.1
 - [ ] **T-187** `P1` `M` `auditoria` Estender o escopo de narrativa aos KPIs
