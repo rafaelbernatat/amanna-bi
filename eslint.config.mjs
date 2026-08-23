@@ -3,7 +3,23 @@ import tseslint from "typescript-eslint";
 import next from "eslint-config-next";
 import prettierRecomendado from "eslint-plugin-prettier/recommended";
 
-import painel from "./ferramentas/eslint/sem-literal-numerico.mjs";
+import pluginLiteral from "./ferramentas/eslint/sem-literal-numerico.mjs";
+import regraNumeroMagico from "./ferramentas/eslint/sem-numero-magico.mjs";
+
+/**
+ * O plugin local, com as duas regras de RF-07.
+ *
+ * `sem-literal-numerico` (T-141) vale em todo `src/`: pega numero indo direto
+ * para o formatador ou para campo de KPI. `sem-numero-magico` (T-181) vale so
+ * nos modulos de KPI e painel, e la inverte o padrao -- todo numero e erro,
+ * menos o que a lista branca nomeia.
+ */
+const painel = {
+  rules: {
+    ...pluginLiteral.rules,
+    "sem-numero-magico": regraNumeroMagico,
+  },
+};
 
 /**
  * Configuracao de lint do painel (T-005).
@@ -53,6 +69,35 @@ export default tseslint.config(
           allowlist: ["META_DE_TURNOVER", "meta"],
         },
       ],
+    },
+  },
+
+  // T-181 — nos modulos de KPI e painel, TODO numero solto e erro.
+  //
+  // T-141 pega `formatarValor(34.2)`. Nao pega o caminho de duas etapas:
+  // `const idade = 34.2` numa linha e `formatarValor(idade)` na outra. Aqui o
+  // padrao se inverte -- proibido por omissao, liberado por nome.
+  //
+  // A lista branca e de NOMES, nao de valores: `span: 4` e grade e `valor: 4` e
+  // dado, e o que distingue nao e o numero, e onde ele esta.
+  {
+    files: [
+      "src/semantica/kpis.ts",
+      "src/semantica/paineis.ts",
+      "src/semantica/painel.ts",
+      "src/apresentacao/graficos/**/*.tsx",
+    ],
+    // `nucleo.ts` fica de fora, e a razao importa: ele e o motor de geometria
+    // -- calcula cortes de eixo, passo de rotulo e largura de span a partir de
+    // um dominio que recebe. Os 31 numeros dele sao guarda (`span < 1`), limite
+    // de laco (`i <= divisoes`) e arredondamento (`* 100 / 100`); nenhum pode
+    // virar valor exibido. Uma lista branca de 31 entradas sem sentido e como
+    // uma regra vira ruido e acaba desligada. T-141 continua valendo la, e pega
+    // numero indo para formatador.
+    ignores: ["src/apresentacao/graficos/nucleo.ts"],
+    plugins: { painel },
+    rules: {
+      "painel/sem-numero-magico": ["error", {}],
     },
   },
 

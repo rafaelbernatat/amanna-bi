@@ -41,7 +41,9 @@ export function GraficoDeBarrasEmpilhadas({
   const dados = categorias.map((categoria, i) => {
     const linha: Record<string, number | string> = { categoria };
     for (const faixa of faixas) {
-      linha[faixa.nome] = faixa.valores[i] ?? 0;
+      // Ausente fica ausente (PR-4) — ver a mesma nota em GraficoDeBarras.
+      const v = faixa.valores[i];
+      if (v !== undefined && v !== null) linha[faixa.nome] = v;
     }
     return linha;
   });

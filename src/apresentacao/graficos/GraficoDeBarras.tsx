@@ -30,13 +30,15 @@ export type SerieDeBarras = {
   readonly nome: string;
   readonly cor: string;
   /** Uma entrada por categoria, na mesma ordem de `categorias`. */
-  readonly valores: readonly number[];
+  /** `null` e "sem dado nesta categoria", e nao zero (PR-4). */
+  readonly valores: readonly (number | null)[];
 };
 
 export type SerieDeLinha = {
   readonly nome: string;
   readonly cor: string;
-  readonly valores: readonly number[];
+  /** `null` e "sem dado nesta categoria", e nao zero (PR-4). */
+  readonly valores: readonly (number | null)[];
 };
 
 const EIXO = {
@@ -63,11 +65,17 @@ export function GraficoDeBarras({
 }) {
   const dados = categorias.map((categoria, i) => {
     const linha: Record<string, number | string> = { categoria };
+    // Ausente fica ausente: recharts desenha lacuna, e lacuna e o que PR-4
+    // pede. `?? 0` transformava descompasso de tamanho entre `categorias` e
+    // `valores` numa barra zero silenciosa -- e viraria "sem dado = zero" no
+    // dia em que a serie do envelope, que aceita null, chegasse aqui.
     for (const serie of barras) {
-      linha[serie.nome] = serie.valores[i] ?? 0;
+      const v = serie.valores[i];
+      if (v !== undefined && v !== null) linha[serie.nome] = v;
     }
     if (linhaSecundaria !== undefined) {
-      linha[linhaSecundaria.nome] = linhaSecundaria.valores[i] ?? 0;
+      const v = linhaSecundaria.valores[i];
+      if (v !== undefined && v !== null) linha[linhaSecundaria.nome] = v;
     }
     return linha;
   });
