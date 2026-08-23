@@ -183,8 +183,8 @@ export function restringir(
     );
   }
 
-  // 'Todas' não é uma área concedível: é o pedido de "todas as que eu puder".
-  if (consulta.area !== "Todas" && !escopo.areas.includes(consulta.area)) {
+  // 'todas' não é uma área concedível: é o pedido de "todas as que eu puder".
+  if (consulta.area !== "todas" && !escopo.areas.includes(consulta.area)) {
     return recusar(
       "area_fora_do_perfil",
       `pediu '${consulta.area}', concedidas: ${escopo.areas.join(", ")}`,

@@ -41,11 +41,11 @@ test.describe("colar a URL numa sessão limpa", () => {
     await page.goto(`/rh/turnover?${BUSCA}`);
 
     const r = await lerRecorte(page);
-    expect(r.periodo).toBe("4º trimestre");
+    expect(r.periodo).toBe("4-trimestre");
     expect(r.ano).toBe("2025");
-    expect(r.entidade).toBe("Unidade SP");
-    expect(r.area).toBe("Tecnologia");
-    expect(r.modalidade).toBe("Hibrido");
+    expect(r.entidade).toBe("unidade-sp");
+    expect(r.area).toBe("tecnologia");
+    expect(r.modalidade).toBe("hibrido");
     expect(r.avisos).toBe("0");
   });
 
@@ -66,8 +66,8 @@ test.describe("colar a URL numa sessão limpa", () => {
   test("URL sem filtro nenhum abre no recorte padrão", async ({ page }) => {
     await page.goto("/rh/visao");
     const r = await lerRecorte(page);
-    expect(r.periodo).toBe("12 meses");
-    expect(r.entidade).toBe("Consolidado");
+    expect(r.periodo).toBe("12-meses");
+    expect(r.entidade).toBe("consolidado");
     expect(r.avisos).toBe("0");
   });
 });
@@ -95,8 +95,8 @@ test.describe("filtro inexistente no link", () => {
     await page.goto("/rh/visao?periodo=decada&area=juridico");
 
     const r = await lerRecorte(page);
-    expect(r.periodo).toBe("12 meses");
-    expect(r.area).toBe("Todas");
+    expect(r.periodo).toBe("12-meses");
+    expect(r.area).toBe("todas");
     expect(r.avisos).toBe("2");
 
     const aviso = page.locator('[data-teste="aviso-de-recorte"]');

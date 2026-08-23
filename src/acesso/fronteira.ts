@@ -162,7 +162,7 @@ export function criarFronteira(
           ),
           area: meta.dimensoes.area.filter(
             (a) =>
-              a === "Todas" || (escopo.areas as readonly string[]).includes(a),
+              a === "todas" || (escopo.areas as readonly string[]).includes(a),
           ),
         },
       };

@@ -16,6 +16,7 @@
  * ano é aceito porque o dado existe, não porque alguém o digitou num union.
  */
 
+import { codigosDe } from "@/semantica/dimensoes";
 import type { PanelResponse, Serie } from "@/semantica/painel";
 import type { Dimensoes } from "@/semantica/recortes";
 
@@ -26,36 +27,47 @@ import type { Dimensoes } from "@/semantica/recortes";
  * vezes: a contagem que o teste confere é a do mesmo vetor que a interface usa.
  * ------------------------------------------------------------------ */
 
-export const PERIODOS = [
-  "12 meses",
-  "6 meses",
-  "4º trimestre",
-  "Dezembro",
-] as const;
+/**
+ * Os quatro períodos, seis entidades... — os **códigos** (T-186).
+ *
+ * O valor de domínio é o código canônico: ASCII, minúsculo, com hífen. O rótulo
+ * acentuado que a tela mostra ("4º trimestre", "Híbrido") vive em
+ * `dimensoes.ts`, e é buscado por `rotuloDe`.
+ *
+ * Antes de T-186 estes literais eram as duas coisas, e por isso apareciam sem
+ * acento — a barra de filtros mostraria "Operacoes".
+ */
 
-export const ENTIDADES = [
-  "Consolidado",
-  "Unidade SP",
-  "Demais unidades",
-] as const;
+export const PERIODOS = codigosDe("periodo") as readonly [
+  "12-meses",
+  "6-meses",
+  "4-trimestre",
+  "dezembro",
+];
 
-export const AREAS = [
-  "Todas",
-  "Operacoes",
-  "Comercial",
-  "Tecnologia",
-  "Logistica",
-  "Financeiro",
-  "Marketing",
-  "RH",
-] as const;
+export const ENTIDADES = codigosDe("entidade") as readonly [
+  "consolidado",
+  "unidade-sp",
+  "demais-unidades",
+];
 
-export const MODALIDADES = [
-  "Todas",
-  "Presencial",
-  "Hibrido",
-  "Remoto",
-] as const;
+export const AREAS = codigosDe("area") as readonly [
+  "todas",
+  "operacoes",
+  "comercial",
+  "tecnologia",
+  "logistica",
+  "financeiro",
+  "marketing",
+  "rh",
+];
+
+export const MODALIDADES = codigosDe("modalidade") as readonly [
+  "todas",
+  "presencial",
+  "hibrido",
+  "remoto",
+];
 
 export type Periodo = (typeof PERIODOS)[number];
 export type Entidade = (typeof ENTIDADES)[number];
@@ -83,11 +95,11 @@ export type Query = {
 
 /** Os padrões da tabela 6.2 — o recorte consolidado. */
 export const QUERY_PADRAO: Query = {
-  periodo: "12 meses",
+  periodo: "12-meses",
   ano: "2026",
-  entidade: "Consolidado",
-  area: "Todas",
-  modalidade: "Todas",
+  entidade: "consolidado",
+  area: "todas",
+  modalidade: "todas",
 };
 
 /* ------------------------------------------------------------------ *

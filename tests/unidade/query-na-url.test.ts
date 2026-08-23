@@ -86,11 +86,11 @@ describe("o round-trip Query → URL → Query", () => {
 
   it("a ordem dos parâmetros é canônica, não a de digitação", () => {
     const q: Query = {
-      periodo: "6 meses",
+      periodo: "6-meses",
       ano: "2025",
-      entidade: "Unidade SP",
-      area: "RH",
-      modalidade: "Remoto",
+      entidade: "unidade-sp",
+      area: "rh",
+      modalidade: "remoto",
     };
     const chaves = [...queryParaBusca(q).keys()];
     expect(chaves).toEqual([...PARAMETROS]);
@@ -106,7 +106,7 @@ describe("a URL fica legível", () => {
   it("'4º trimestre' vira '4-trimestre', e não '4%C2%BA+trimestre'", () => {
     const url = rotaCom("fin/visao", {
       ...QUERY_PADRAO,
-      periodo: "4º trimestre",
+      periodo: "4-trimestre",
     });
     expect(url).toBe("/fin/visao?periodo=4-trimestre");
     expect(url).not.toContain("%");
@@ -215,11 +215,11 @@ describe("o ano, que não tem vocabulário fechado (D-P8)", () => {
 
 describe("trocar de tela preserva os cinco filtros", () => {
   const RECORTE: Query = {
-    periodo: "4º trimestre",
+    periodo: "4-trimestre",
     ano: "2025",
-    entidade: "Unidade SP",
-    area: "Tecnologia",
-    modalidade: "Hibrido",
+    entidade: "unidade-sp",
+    area: "tecnologia",
+    modalidade: "hibrido",
   };
 
   it("os cinco sobrevivem à troca de tela", () => {
@@ -269,7 +269,7 @@ describe("o painel destacado (seção 6.6)", () => {
   });
 
   it("convive com os filtros sem atrapalhar o round-trip", () => {
-    const q: Query = { ...QUERY_PADRAO, area: "Comercial" };
+    const q: Query = { ...QUERY_PADRAO, area: "comercial" };
     const url = rotaCom("fin/orc", q, "orc-desvio");
     const busca = url.split("?")[1] ?? "";
     const r = buscaParaQuery(busca, ANOS);
