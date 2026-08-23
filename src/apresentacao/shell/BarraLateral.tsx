@@ -6,14 +6,26 @@ import {
   type IdDeModulo,
 } from "@/apresentacao/navegacao/telas";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type { Query } from "@/semantica/contrato";
+import { rotaCom } from "@/semantica/url";
 
 /**
- * Barra lateral fixa com os tres modulos (T-126, PRD secao 6.1).
+ * Barra lateral fixa com os tres modulos (T-126, T-127, PRD secao 6.1).
  *
- * Clicar num modulo leva a primeira tela dele. E Server Component: nao ha
- * estado nem efeito aqui, so a rota ativa recebida por propriedade.
+ * Clicar num modulo leva a primeira tela dele, **no mesmo recorte**: a secao
+ * 6.2 diz que os cinco filtros persistem ao trocar de tela, e o recorte so vive
+ * na URL, entao e o href que precisa carrega-lo. Ver a nota em `Cabecalho`.
+ *
+ * E Server Component: nao ha estado nem efeito aqui, so a rota ativa e o
+ * recorte recebidos por propriedade.
  */
-export function BarraLateral({ ativo }: { readonly ativo: IdDeModulo }) {
+export function BarraLateral({
+  ativo,
+  query,
+}: {
+  readonly ativo: IdDeModulo;
+  readonly query: Query;
+}) {
   return (
     <nav
       aria-label="Módulos"
@@ -76,7 +88,7 @@ export function BarraLateral({ ativo }: { readonly ativo: IdDeModulo }) {
           return (
             <li key={modulo.id}>
               <Link
-                href={primeiraTelaDe(modulo)}
+                href={rotaCom(primeiraTelaDe(modulo), query)}
                 aria-current={ligado ? "page" : undefined}
                 style={{
                   display: "block",

@@ -93,7 +93,7 @@ export default async function Pagina({
         background: PALETA.fundo,
       }}
     >
-      <BarraLateral ativo={achado.modulo.id} />
+      <BarraLateral ativo={achado.modulo.id} query={query} />
 
       <div
         style={{
@@ -103,7 +103,7 @@ export default async function Pagina({
           overflow: "hidden",
         }}
       >
-        <Cabecalho modulo={achado.modulo} tela={achado.tela} ano={query.ano} />
+        <Cabecalho modulo={achado.modulo} tela={achado.tela} query={query} />
 
         <main
           data-teste="conteudo"

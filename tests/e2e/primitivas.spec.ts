@@ -50,22 +50,38 @@ test.describe("rh-headcount: barras com eixo secundario", () => {
     await page.goto(GALERIA);
     // No recharts 3 o valor do tick nao mora dentro de `.recharts-yAxis`:
     // fica em `.recharts-cartesian-axis-tick-value`, num outro ramo.
-    const valores = await page
-      .locator('[data-caso="rh-headcount"] .recharts-cartesian-axis-tick-value')
-      .evaluateAll((ns) => ns.map((n) => n.textContent ?? ""));
+    const ticks = page.locator(
+      '[data-caso="rh-headcount"] .recharts-cartesian-axis-tick-value',
+    );
+
+    /*
+     * Lido por `expect.poll`, e nao por `evaluateAll` direto.
+     *
+     * `evaluateAll` e o unico metodo de locator que **nao** espera por nada:
+     * devolve o que existir no instante da chamada. Com os oito trabalhadores
+     * do Playwright disputando CPU, o recharts as vezes ainda nao montou, a
+     * lista sai vazia, e o caso reprova sem haver defeito. Foi o que aconteceu
+     * uma vez em 1280x720 numa execucao completa, e passou sozinho ao rodar o
+     * arquivo isolado -- a assinatura exata de teste intermitente.
+     *
+     * Vermelho sem defeito e pior que verde sem cobertura: ensina a ignorar
+     * vermelho.
+     */
+    const ler = () =>
+      ticks.evaluateAll((ns) => ns.map((n) => n.textContent ?? ""));
 
     // Eixo esquerdo: admissoes e desligamentos, ancorado no zero.
-    expect(valores, "o eixo esquerdo nao recebeu os cortes").toEqual(
-      expect.arrayContaining(["0", "25"]),
-    );
+    await expect
+      .poll(ler, { message: "o eixo esquerdo nao recebeu os cortes" })
+      .toEqual(expect.arrayContaining(["0", "25"]));
     // Eixo direito: headcount FTE, numa escala completamente outra.
-    expect(valores, "o eixo secundario nao recebeu os cortes").toEqual(
-      expect.arrayContaining(["1150", "1240"]),
-    );
+    await expect
+      .poll(ler, { message: "o eixo secundario nao recebeu os cortes" })
+      .toEqual(expect.arrayContaining(["1150", "1240"]));
     // E os meses no eixo de categoria.
-    expect(valores, "o eixo de categoria nao recebeu os meses").toEqual(
-      expect.arrayContaining(["jan", "dez"]),
-    );
+    await expect
+      .poll(ler, { message: "o eixo de categoria nao recebeu os meses" })
+      .toEqual(expect.arrayContaining(["jan", "dez"]));
   });
 });
 
