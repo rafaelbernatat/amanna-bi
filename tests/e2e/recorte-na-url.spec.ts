@@ -59,8 +59,33 @@ test.describe("colar a URL numa sessão limpa", () => {
   }) => {
     // A prova de que o recorte atravessou até a interface. Antes de T-127 o
     // cabeçalho trazia "2026" escrito no código.
+    await page.goto("/rh/visao?ano=2025");
+    await expect(page.locator("header")).toContainText("2025");
+  });
+
+  test("ano que não foi carregado cai no mais recente, avisando", async ({
+    page,
+  }) => {
+    /*
+     * Este caso pedia `?ano=2024` e esperava "2024" no cabeçalho — e passava
+     * porque **ninguém ainda declarava quais anos existem**: `buscaParaQuery`
+     * aceitava qualquer ano quando chamada sem a lista, que é o comportamento
+     * escrito em D-P8 para quem ainda não sabe.
+     *
+     * Com T-128 a tela passou a oferecer os anos disponíveis, então agora sabe.
+     * Um ano fora da lista deixa de ser aceito em silêncio: cai no mais recente
+     * e diz que caiu. Sem isto, a barra abriria com "2026" selecionado enquanto
+     * o cabeçalho anunciava 2024 — duas versões do mesmo recorte na mesma tela.
+     */
     await page.goto("/rh/visao?ano=2024");
-    await expect(page.locator("header")).toContainText("2024");
+
+    const r = await lerRecorte(page);
+    expect(r.ano).toBe("2026");
+    expect(r.avisos).toBe("1");
+
+    const aviso = page.locator('[data-teste="aviso-de-recorte"]');
+    await expect(aviso).toBeVisible();
+    await expect(aviso).toContainText("2024");
   });
 
   test("URL sem filtro nenhum abre no recorte padrão", async ({ page }) => {

@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { BarraDeFiltros } from "@/apresentacao/filtros/BarraDeFiltros";
 import type { Modulo, Tela } from "@/apresentacao/navegacao/telas";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
+import type { Dimensoes } from "@/semantica/recortes";
 import { rotaCom } from "@/semantica/url";
 
 /**
@@ -27,10 +29,14 @@ export function Cabecalho({
   modulo,
   tela,
   query,
+  dimensoes,
+  painelDestacado,
 }: {
   readonly modulo: Modulo;
   readonly tela: Tela;
   readonly query: Query;
+  readonly dimensoes: Dimensoes;
+  readonly painelDestacado: string | null;
 }) {
   return (
     <header
@@ -63,6 +69,18 @@ export function Cabecalho({
       >
         {tela.titulo}
       </h1>
+
+      {/*
+        A barra de filtros fica **dentro** do cabecalho, como no prototipo: o
+        cabecalho nao rola, e um filtro que some da tela ao rolar deixa de
+        responder "sob que recorte estou lendo isto".
+      */}
+      <BarraDeFiltros
+        rota={`/${modulo.id}/${tela.slug}`}
+        query={query}
+        dimensoes={dimensoes}
+        painelDestacado={painelDestacado}
+      />
 
       <div
         aria-label={`Telas de ${modulo.nomeCompleto}`}

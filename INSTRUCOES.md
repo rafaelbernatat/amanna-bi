@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 48 itens (3 resolvidos), destravando 127 tarefas do backlog |
+| **Total** | 49 itens (3 resolvidos), destravando 126 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,18 +39,18 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 12 (3 resolvidos) | 6 | 40 |
+| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 39 |
 | Fase 2 · Dado real | 22 | 18 | 57 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **48** | **29** | **127** |
+| **Total** | **49** | **29** | **126** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
 | TI do cliente | 13 |
-| Produto | 11 |
+| Produto | 12 |
 | Controladoria | 10 |
 | Engenharia | 6 |
 | Comercial | 4 |
@@ -75,7 +75,36 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*12 itens · 3 P0 abertos · 5 P1 abertos · 1 P2 aberto · 3 resolvidos*
+*13 itens · 3 P0 abertos · 5 P1 abertos · 2 P2 abertos · 3 resolvidos*
+
+### [ ] H-49 · Confirmar que o filtro é aplicado por botão, e não a cada troca
+
+`P2` · **Responsável:** Produto
+
+**O que fazer**
+
+O protótipo navega no `onChange` do `<select>`: escolher uma área recalcula a tela na hora. T-128 construiu a barra de filtros com um botão **Aplicar**, e essa é uma divergência de comportamento de tela em relação ao protótipo — que o EXECUTE trata como fonte da verdade. Não é decisão de engenharia sozinha, então fica registrada.
+
+**Por que a barra ficou com botão.** Três razões, as duas primeiras medidas:
+
+1. **Com teclado, `onChange` dispara a cada seta.** Um `<select>` fechado e em foco muda de valor a cada tecla de seta, e cada mudança seria uma navegação. Ir de "12 meses" a "Dezembro" seriam três recargas, com o foco perdido em cada uma. A seção 13 do PRD pede "navegação por teclado completa nos filtros".
+2. **No protótipo o recálculo é local; aqui é ida ao servidor.** O protótipo guarda os filtros em estado de cliente e redesenha na memória. Neste produto o recorte vive na URL e é resolvido no servidor (T-127, seção 6.6), e a partir da Fase 2 cada recorte é consulta ao warehouse. Copiar o gesto sem copiar o custo é o que muda de significado.
+3. Aplicar na entrada é mudança de contexto durante a digitação, que as diretrizes de acessibilidade tratam como a coisa a evitar.
+
+**O que continua igual ao protótipo:** os cinco controles, os valores, o padrão, o banner de recorte ativo e o botão "Voltar ao consolidado" que restaura os cinco de uma vez.
+
+Escolha uma:
+
+- **(a) Manter o botão.** O comportamento fica registrado como divergência consciente do protótipo, e o Anexo D ganha — ou não — uma linha dizendo isso.
+- **(b) Aplicar na troca.** Volta ao gesto do protótipo, e exige resolver o caso do teclado de outra forma (por exemplo, aplicar só quando o controle perde o foco), com tarefa própria.
+
+**Por que não decidi:** as duas são defensáveis, e a escolha é sobre como a ferramenta se sente ao usar — não sobre o que é tecnicamente possível.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador: manter o botão, ou abrir a tarefa de aplicar na troca |
+| **Onde o resultado vai** | docs/decisoes/, e `src/apresentacao/filtros/BarraDeFiltros.tsx` |
+| **Destrava** | nada — T-128 está entregue e verificada nos dois caminhos de teclado e de mouse |
 
 ### [ ] H-48 · Corrigir o Anexo D achado 5 e o título de `cx-diario` no PRD
 
@@ -904,7 +933,6 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-013 | H-42 |
 | T-101 | H-01 |
 | T-103 | H-01 |
-| T-109 | H-47 |
 | T-110 | H-03 |
 | T-111 | H-03 |
 | T-113 | H-06, H-07, H-08 |
