@@ -193,7 +193,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-116** `P0` `M` `dados` Implementar getKpis para as 5 telas de Financeiro e para a de Integração
   · **Aceite:** As 6 telas devolvem até 6 KPIs cada, todos originados do catálogo, e o teste falha se algum KPI ficar idêntico entre recortes distintos sem constar da lista de invariantes.
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.3, Anexo A.4 · **Depende de:** T-113, T-114
-- [ ] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
+- [~] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal  ⏳ 2026-08-24 16:30 · sessao-68c8
   · **Aceite:** Todo painel do registro cuja forma é barras, linha ou barras empilhadas responde com envelope válido no JSON Schema, muda de valor ao trocar entidade e área, e tem as categorias respeitando o recorte de período (12, 6, 3 e 1 mês).
   · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-110, T-111, T-114, T-143
 - [ ] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
