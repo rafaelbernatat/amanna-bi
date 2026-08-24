@@ -71,7 +71,10 @@ export type EixoDePainel =
   | "segmento"
   | "status-de-vaga"
   | "tipo-de-saida"
-  | "uf";
+  | "uf"
+  | "degrau-da-ponte"
+  | "marco-do-ciclo"
+  | "ponto";
 
 /** Os eixos cujas categorias são a janela de tempo do recorte. */
 export const EIXOS_TEMPORAIS: readonly EixoDePainel[] = ["mes", "dia-util"];
@@ -1095,6 +1098,81 @@ export const ORIGEM_DOS_PAINEIS: readonly OrigemDePainel[] = [
     ),
     series: [valor("Participação", "pct")],
   },
+
+  /* ================================================================ *
+   * T-119 — as formas compostas
+   * ================================================================ */
+
+  {
+    painel: "col-mapa",
+    views: ["vw_fato_rh_perfil"],
+    cruzamento: null,
+    eixo: "uf",
+    formula: formula(
+      "headcount FTE por UF, no último mês do recorte",
+      "col-mapa",
+    ),
+    series: [valor("FTE", "FTE")],
+  },
+  {
+    painel: "fin-dre",
+    views: ["vw_fato_fin_mes"],
+    cruzamento: null,
+    eixo: "degrau-da-ponte",
+    formula: formula(
+      "receita líquida − CMV − despesas = EBITDA; − D&A − financeiro − não operacional = lucro líquido",
+      "fin-dre",
+    ),
+    series: [valor("Degrau", "BRL_mi")],
+  },
+  {
+    painel: "cx-ponte",
+    views: ["vw_fato_fin_mes"],
+    cruzamento: null,
+    eixo: "degrau-da-ponte",
+    formula: formula(
+      "saldo inicial + FCO − investimento − financiamento = saldo final",
+      "cx-ponte",
+    ),
+    series: [valor("Degrau", "BRL_mi")],
+  },
+  {
+    painel: "ct-ciclo",
+    views: ["vw_fato_contas", "vw_fato_fin_mes"],
+    cruzamento:
+      "PMR e PMP saem dos saldos de contas; PME precisa do estoque e do CMV, " +
+      "que só o fato financeiro tem — o ciclo é a diferença entre os três",
+    eixo: "marco-do-ciclo",
+    formula: formula("ciclo financeiro = PMR + PME − PMP, em dias", "ct-ciclo"),
+    series: [valor("Dias", "dias")],
+  },
+  {
+    painel: "fat-margem",
+    views: ["vw_fato_faturamento_cliente"],
+    cruzamento: null,
+    eixo: "ponto",
+    formula: formula(
+      "um ponto por cliente: receita no eixo X, margem de contribuição no eixo Y",
+      "fat-margem",
+    ),
+    series: [valor("Receita", "BRL_mi"), valor("Margem", "pct")],
+  },
+  {
+    painel: "int-scatter",
+    views: ["vw_fato_rh_mes", "vw_fato_fin_mes"],
+    cruzamento:
+      "um eixo é custo de pessoal e o outro é receita atribuída, ambos por " +
+      "FTE — a leitura do painel é justamente a razão entre os dois",
+    eixo: "ponto",
+    formula: formula(
+      "um ponto por área: custo anual por FTE no eixo X, receita por FTE no eixo Y",
+      "int-scatter",
+    ),
+    series: [
+      valor("Custo por FTE", "BRL_mi"),
+      valor("Receita por FTE", "BRL_mi"),
+    ],
+  },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -1230,8 +1308,23 @@ export const FORMAS_CATEGORICAS = [
   "estatisticas",
 ] as const;
 
-/** As formas que já têm origem declarada: as de T-117 mais as de T-118. */
+/** As quatro formas cobertas por T-119 — as últimas. */
+export const FORMAS_COMPOSTAS = [
+  "cascata",
+  "dispersao",
+  "regua-de-ciclo",
+  "mosaico-geografico",
+] as const;
+
+/**
+ * As formas com origem declarada.
+ *
+ * Com T-119 são as doze, e o teste de cobertura passa a percorrer os 71 —
+ * momento em que "existe painel que ninguém sabe alimentar?" deixa de ser uma
+ * pergunta sobre parte do produto e passa a ser sobre o produto inteiro.
+ */
 export const FORMAS_COM_ORIGEM: readonly string[] = [
   ...FORMAS_DE_SERIE_TEMPORAL,
   ...FORMAS_CATEGORICAS,
+  ...FORMAS_COMPOSTAS,
 ];

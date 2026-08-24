@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 41 de 97 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 42 de 97 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **234** | **119** | **92** | **18** | **52 de 234** |
+| **Total** | **234** | **119** | **92** | **18** | **53 de 234** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -208,7 +208,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
   · **Aceite:** Todo painel com forma barras horizontais, rosca, funil, divisão ou estatísticas responde com envelope válido; sob recorte de uma única área o painel quebrado por área devolve exatamente uma categoria e as fatias da rosca somam o total declarado.
   · **PRD:** seção 9.3, Anexo A.1, seção 9.2 regra 1, RF-01 · **Depende de:** T-107, T-114
-- [~] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas  ⏳ 2026-08-24 21:40 · sessao-68c8
+- [X] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas
   · **Aceite:** Todo painel com forma cascata, dispersão, régua de ciclo ou mosaico geográfico responde com envelope válido; a cascata da ponte da DRE fecha da receita líquida ao lucro líquido sem resíduo, a régua devolve PMR, PME, PMP e o ciclo, e os três lotes de getPanel cobrem exatamente os 71 painéis.
   · **PRD:** seção 9.3, Anexo A.1, Anexo C, RF-01 · **Depende de:** T-107, T-114
 - [ ] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B

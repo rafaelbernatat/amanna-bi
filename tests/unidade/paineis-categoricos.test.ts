@@ -22,7 +22,7 @@ import { describe, expect, it } from "vitest";
 import {
   calcularPainel,
   paineisComDesenho,
-  PainelSemDesenho,
+  PainelDesconhecido,
 } from "@/acesso/fixtures/paineis";
 import type { Query } from "@/semantica/contrato";
 import {
@@ -67,23 +67,27 @@ describe("as cinco formas respondem com envelope válido", () => {
     expect(ok, JSON.stringify(validar.errors?.slice(0, 3))).toBe(true);
   });
 
-  it("os 65 painéis de T-117 e T-118 sabem se desenhar", () => {
+  it("os 34 desta tarefa sabem se desenhar", () => {
+    /*
+     * Era "os 65 de T-117 e T-118" até T-119 fechar a conta em 71. A afirmação
+     * que continua sendo **desta** tarefa é sobre os 34 dela; a cobertura
+     * total virou assunto do arquivo de T-119, onde ela é o tema.
+     */
     const sabem = new Set(paineisComDesenho());
-    const registrados = REGISTRO_DE_PAINEIS.filter(
-      (p) => origemDoPainel(p.id) !== undefined,
-    );
-    expect(registrados).toHaveLength(65);
-    const sem = registrados.filter((p) => !sabem.has(p.id)).map((p) => p.id);
+    const sem = IDS.filter((id) => !sabem.has(id));
     expect(sem).toEqual([]);
+    expect(IDS).toHaveLength(34);
   });
 
-  it("as quatro formas de T-119 continuam recusando, e dizem a tarefa", () => {
-    const deT119 = REGISTRO_DE_PAINEIS.find(
-      (p) => origemDoPainel(p.id) === undefined,
-    );
-    expect(deT119).toBeDefined();
-    expect(() => calcularPainel(deT119?.id ?? "", BASE)).toThrowError(
-      PainelSemDesenho,
+  it("painel que não existe no registro recusa, nomeando o problema", () => {
+    /*
+     * Era "as quatro formas de T-119 continuam recusando" — e elas pararam de
+     * recusar, porque T-119 as implementou. O que continua tendo de recusar é
+     * um id que não existe: devolver envelope vazio ali faria um erro de
+     * digitação parecer um recorte sem dado.
+     */
+    expect(() => calcularPainel("forma-que-nao-existe", BASE)).toThrowError(
+      PainelDesconhecido,
     );
   });
 
