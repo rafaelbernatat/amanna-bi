@@ -1,0 +1,603 @@
+/**
+ * As três views de fato de RH, no grão da seção 10.1 (T-110).
+ *
+ * | View | Grão | Medidas |
+ * |---|---|---|
+ * | `vw_fato_rh_mes` | mês × entidade × área × modalidade | headcount, admissões, desligamentos, folha, absenteísmo, eNPS, engajamento |
+ * | `vw_fato_vagas` | mês × área | abertas, em andamento, fechadas, canceladas, dias para fechar, etapas do funil |
+ * | `vw_fato_treinamento` | mês × área × trilha × modalidade de trilha | horas, investimento, participação, conclusão |
+ *
+ * ## Taxa nenhuma é armazenada
+ *
+ * Absenteísmo, eNPS e engajamento **não** existem como coluna. O que existe é o
+ * numerador e o denominador de cada um — horas ausentes e horas previstas,
+ * promotores e detratores e respondentes, pontos somados e respondentes.
+ *
+ * É a regra 4 do contrato levada a sério: *"o catálogo marca cada métrica como
+ * `sum | last | ratio`, para que um recorte de 3 meses nunca some percentuais"*.
+ * Uma taxa guardada pronta não tem como ser recalculada sob recorte — some com
+ * a média, ou pior, aparece somada. Guardando os componentes, o recorte de
+ * Tecnologia em julho recalcula a taxa daquele recorte, que é o que RF-01 pede.
+ *
+ * ## O headcount é fluxo acumulado, não série independente
+ *
+ * `headcountFte` de cada célula é o saldo de abertura mais o acumulado de
+ * admissões menos desligamentos daquela célula. A identidade contábil vale em
+ * **todo** grão, não só no total — e por isso o painel de saldo líquido fecha
+ * com o de quadro em qualquer recorte.
+ *
+ * O saldo de abertura é derivado ao contrário: parte-se do quadro de dezembro
+ * por área e modalidade, que é o que o protótipo aprovou, e subtrai-se o
+ * acumulado do ano. Assim dezembro reproduz a foto aprovada **e** a identidade
+ * fecha nos doze meses.
+ */
+
+import {
+  AREAS_ARMAZENADAS,
+  celulas,
+  ENTIDADES_ARMAZENADAS,
+  MODALIDADES_ARMAZENADAS,
+  mesesDe,
+  type Celula,
+} from "@/acesso/fixtures/eixos";
+import {
+  ABSENTEISMO_MENSAL,
+  ADMISSOES_MENSAL,
+  COBERTURA_DA_PESQUISA,
+  DESLIGAMENTOS_MENSAL,
+  DETRATORES_PCT_MENSAL,
+  DIAS_PARA_FECHAR_MENSAL,
+  ENGAJAMENTO_MENSAL,
+  ENPS_MENSAL,
+  FATIA_DA_UNIDADE_SP,
+  FOLHA_MENSAL_REAIS,
+  FONTES_DE_CANDIDATO,
+  FUNIL_ANUAL,
+  HEADCOUNT_MENSAL,
+  HEADCOUNT_POR_MODALIDADE,
+  HORAS_PREVISTAS_POR_FTE,
+  HORAS_TREINAMENTO_MENSAL,
+  MODALIDADES_DE_TREINAMENTO,
+  PARTICIPACAO_TREINAMENTO_MENSAL,
+  PERFIL_POR_AREA,
+  TRILHAS,
+  VAGAS_CANCELADAS,
+} from "@/acesso/fixtures/referencia-rh";
+import {
+  ajustarMargemDeColuna,
+  repartir,
+  repartirMatriz,
+} from "@/acesso/fixtures/reparticao";
+
+/** O ano que esta fixture carrega. 2025 entra com T-152. */
+export const ANO_DA_FIXTURE = "2026";
+
+const MESES = mesesDe(ANO_DA_FIXTURE);
+const CELULAS = celulas();
+const CEM_PORCENTO = 100;
+
+/* ------------------------------------------------------------------ *
+ * Auxiliares de peso
+ * ------------------------------------------------------------------ */
+
+/** A fatia de uma entidade numa medida. `demais-unidades` leva o complemento. */
+function fatiaDaEntidade(entidade: string, medida: string): number {
+  const sp = FATIA_DA_UNIDADE_SP[medida] ?? 0.5;
+  return entidade === ENTIDADES_ARMAZENADAS[0] ? sp : 1 - sp;
+}
+
+function perfilDe(area: string) {
+  const achado = PERFIL_POR_AREA.find((p) => p.codigo === area);
+  if (achado === undefined) {
+    throw new Error(`Área '${area}' não tem perfil em referencia-rh.ts.`);
+  }
+  return achado;
+}
+
+function indiceDaCelula(c: Celula): number {
+  return CELULAS.findIndex(
+    (x) =>
+      x.entidade === c.entidade &&
+      x.area === c.area &&
+      x.modalidade === c.modalidade,
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * O quadro de dezembro, com as duas margens exatas
+ * ------------------------------------------------------------------ */
+
+/**
+ * Headcount de dezembro por área × modalidade.
+ *
+ * As duas margens fecham ao mesmo tempo — a soma por área reproduz o perfil do
+ * protótipo e a soma por modalidade reproduz 604/472/164. Repartir por área e
+ * depois por modalidade dentro de cada área acertaria a primeira e erraria a
+ * segunda, e aí o painel de modalidade discordaria do painel de área sobre o
+ * tamanho da mesma empresa.
+ */
+const QUADRO_DEZEMBRO_AREA_MODALIDADE = repartirMatriz(
+  PERFIL_POR_AREA.map((p) => p.headcount),
+  MODALIDADES_ARMAZENADAS.map(
+    (m) => HEADCOUNT_POR_MODALIDADE.find((x) => x.codigo === m)?.headcount ?? 0,
+  ),
+);
+
+/** Headcount de dezembro por célula, dividindo cada par pela fatia da entidade. */
+const QUADRO_DEZEMBRO: readonly number[] = (() => {
+  const saida = CELULAS.map(() => 0);
+  AREAS_ARMAZENADAS.forEach((area, i) => {
+    MODALIDADES_ARMAZENADAS.forEach((modalidade, j) => {
+      const total = QUADRO_DEZEMBRO_AREA_MODALIDADE[i]?.[j] ?? 0;
+      const primeira = ENTIDADES_ARMAZENADAS[0] ?? "";
+      const naPrimeira = Math.round(
+        total * fatiaDaEntidade(primeira, "headcount"),
+      );
+      for (const entidade of ENTIDADES_ARMAZENADAS) {
+        const k = indiceDaCelula({ entidade, area, modalidade });
+        // Dividir em duas e dar o resto à segunda mantém a soma do par exata,
+        // e com ela as duas margens acima.
+        saida[k] = entidade === primeira ? naPrimeira : total - naPrimeira;
+      }
+    });
+  });
+  return saida;
+})();
+
+/* ------------------------------------------------------------------ *
+ * O fluxo: admissões e desligamentos por célula e por mês
+ * ------------------------------------------------------------------ */
+
+/**
+ * O quadro de um par área × modalidade, **sem** entidade.
+ *
+ * É a base de todo peso, e é o detalhe que um teste pegou. Partir de
+ * `QUADRO_DEZEMBRO`, que já traz a divisão 62/38 do quadro embutida, e depois
+ * multiplicar pela fatia da medida aplica **duas** inclinações de entidade em
+ * cima da outra: a folha saía com 78% em SP em vez dos 68% declarados, e a
+ * admissão com 75% em vez de 58%. Errado de um jeito difícil de ver, porque as
+ * somas continuavam fechando — só a repartição interna estava torta.
+ */
+function quadroDoPar(area: string, modalidade: string): number {
+  const i = AREAS_ARMAZENADAS.indexOf(area);
+  const j = MODALIDADES_ARMAZENADAS.indexOf(modalidade);
+  return QUADRO_DEZEMBRO_AREA_MODALIDADE[i]?.[j] ?? 0;
+}
+
+/** Pesos de admissão: o quadro do par, inclinado pela fatia de entidade. */
+const PESO_DE_ADMISSAO = CELULAS.map(
+  (c) =>
+    quadroDoPar(c.area, c.modalidade) *
+    fatiaDaEntidade(c.entidade, "admissoes"),
+);
+
+/**
+ * Pesos de desligamento.
+ *
+ * O `tov` por área do protótipo entra **como peso**, não como taxa. Ver o
+ * cabeçalho de `referencia-rh.ts`: os 18,4% do Anexo C não são deriváveis dos
+ * 145 desligamentos, então o nível vem do fluxo e a **forma** vem daqui. O
+ * ranking entre áreas no painel `tov-area` continua o do protótipo.
+ */
+const PESO_DE_DESLIGAMENTO = CELULAS.map(
+  (c) =>
+    quadroDoPar(c.area, c.modalidade) *
+    perfilDe(c.area).pesoDeDesligamento *
+    fatiaDaEntidade(c.entidade, "desligamentos"),
+);
+
+/**
+ * Reparte um total anual por mês **e** por célula, com as duas margens exatas.
+ *
+ * Repartir mês a mês, cada um por conta própria, parecia equivalente e não é.
+ * São 241 admissões espalhadas por 42 células em 12 meses: quase toda célula
+ * recebe zero, e a sobra de cada mês vai, pelo desempate de índice, sempre para
+ * as primeiras da lista — que são as de uma entidade só. O efeito medido foi a
+ * Unidade SP ficar com 60,2% das admissões onde a fatia declarada é 58%, e com
+ * 72,4% dos desligamentos onde é 66%.
+ *
+ * Um viés que vem da **ordem do vetor** é o pior tipo, porque não aparece em
+ * nenhuma soma: os totais fecham, e só a repartição interna está torta. Com as
+ * duas margens fixas o mês continua exato e a célula recebe o seu anual.
+ */
+function porMesECelula(
+  totalPorMes: readonly number[],
+  pesoPorCelula: readonly number[],
+): readonly (readonly number[])[] {
+  const total = totalPorMes.reduce((a, b) => a + b, 0);
+  return repartirMatriz(totalPorMes, repartir(total, pesoPorCelula));
+}
+
+const ADMISSOES = porMesECelula(ADMISSOES_MENSAL, PESO_DE_ADMISSAO);
+const DESLIGAMENTOS = porMesECelula(DESLIGAMENTOS_MENSAL, PESO_DE_DESLIGAMENTO);
+
+/**
+ * O saldo de abertura de cada célula, derivado de trás para frente.
+ *
+ * `abertura = quadro de dezembro - (admissões do ano - desligamentos do ano)`.
+ * É o que faz dezembro reproduzir a foto aprovada e a identidade contábil valer
+ * em todos os meses. A soma dá 1.144, que é o número que o Anexo C escreve como
+ * 1.150 — ver a divergência 1 em `referencia-rh.ts`.
+ */
+const SALDO_DE_ABERTURA_POR_CELULA = CELULAS.map((_, k) => {
+  const liquido = MESES.reduce(
+    (acc, _mes, m) =>
+      acc + (ADMISSOES[m]?.[k] ?? 0) - (DESLIGAMENTOS[m]?.[k] ?? 0),
+    0,
+  );
+  return (QUADRO_DEZEMBRO[k] ?? 0) - liquido;
+});
+
+/** Headcount por célula e mês: o saldo de abertura mais o fluxo acumulado. */
+const HEADCOUNT: readonly (readonly number[])[] = (() => {
+  const saida: number[][] = [];
+  const corrente = [...SALDO_DE_ABERTURA_POR_CELULA];
+  for (let m = 0; m < MESES.length; m += 1) {
+    for (let k = 0; k < CELULAS.length; k += 1) {
+      corrente[k] =
+        (corrente[k] ?? 0) +
+        (ADMISSOES[m]?.[k] ?? 0) -
+        (DESLIGAMENTOS[m]?.[k] ?? 0);
+    }
+    saida.push([...corrente]);
+  }
+  return saida;
+})();
+
+/* ------------------------------------------------------------------ *
+ * Folha, clima e absenteísmo
+ * ------------------------------------------------------------------ */
+
+/**
+ * Pesos de folha — deliberadamente diferentes dos de quadro.
+ *
+ * Tecnologia tem 13,5% do quadro e 22% da folha. Um adaptador que multiplique
+ * tudo por um fator só acerta o quadro e erra a folha, que é o controle
+ * negativo que T-140 vai exigir e que o achado 3 do Anexo D descreve.
+ *
+ * A área entra pela folha dela; a modalidade, pela fração do quadro daquela
+ * área; a entidade, pela fatia da folha. Multiplicar pelo quadro **absoluto**
+ * em vez da fração faria a área pesar `folha × quadro`, e aí Operações — grande
+ * e barata — passaria à frente de Tecnologia — pequena e cara. Foi o que o
+ * teste de custo por FTE pegou.
+ */
+const PESO_DE_FOLHA = CELULAS.map(
+  (c) =>
+    perfilDe(c.area).folhaReais *
+    (quadroDoPar(c.area, c.modalidade) / perfilDe(c.area).headcount) *
+    fatiaDaEntidade(c.entidade, "folha"),
+);
+
+const FOLHA = porMesECelula(FOLHA_MENSAL_REAIS, PESO_DE_FOLHA);
+
+/** Respondentes da pesquisa de clima, por célula e mês. */
+const RESPONDENTES = MESES.map((_, m) => {
+  const total = Math.round((HEADCOUNT_MENSAL[m] ?? 0) * COBERTURA_DA_PESQUISA);
+  return repartir(total, HEADCOUNT[m] ?? []);
+});
+
+function totalDoMes(matriz: readonly (readonly number[])[], m: number): number {
+  return (matriz[m] ?? []).reduce((a, b) => a + b, 0);
+}
+
+/** Promotores, neutros e detratores por célula e mês. */
+const CLIMA = MESES.map((_, m) => {
+  const respondentes = totalDoMes(RESPONDENTES, m);
+  const pesos = RESPONDENTES[m] ?? [];
+  const detratoresTotal = Math.round(
+    ((DETRATORES_PCT_MENSAL[m] ?? 0) / CEM_PORCENTO) * respondentes,
+  );
+  const promotoresTotal =
+    detratoresTotal +
+    Math.round(((ENPS_MENSAL[m] ?? 0) / CEM_PORCENTO) * respondentes);
+  const promotores = repartir(promotoresTotal, pesos);
+  const detratores = repartir(detratoresTotal, pesos);
+  const neutros = pesos.map(
+    (r, k) => r - (promotores[k] ?? 0) - (detratores[k] ?? 0),
+  );
+  return { promotores, neutros, detratores };
+});
+
+/**
+ * Pontos de engajamento somados, por célula e mês.
+ *
+ * A média é `pontos / respondentes`. Guardar a soma e não a média é o que
+ * permite recalcular a média de qualquer recorte — de uma área, de um trimestre
+ * ou dos dois juntos — em vez de tirar média de médias, que dá outro número.
+ */
+const ENGAJAMENTO = MESES.map((_, m) => {
+  const respondentes = totalDoMes(RESPONDENTES, m);
+  const pesos = (RESPONDENTES[m] ?? []).map(
+    (r, k) => r * perfilDe(CELULAS[k]?.area ?? "").engajamento,
+  );
+  return repartir((ENGAJAMENTO_MENSAL[m] ?? 0) * respondentes, pesos);
+});
+
+/** Horas previstas e horas ausentes, por célula e mês. */
+const HORAS_PREVISTAS = MESES.map((_, m) =>
+  (HEADCOUNT[m] ?? []).map((hc) => hc * HORAS_PREVISTAS_POR_FTE),
+);
+const HORAS_AUSENTES = MESES.map((_, m) => {
+  const previstas = (HORAS_PREVISTAS[m] ?? []).reduce((a, b) => a + b, 0);
+  const ausentes = Math.round(
+    ((ABSENTEISMO_MENSAL[m] ?? 0) / CEM_PORCENTO) * previstas,
+  );
+  return repartir(ausentes, HORAS_PREVISTAS[m] ?? []);
+});
+
+/* ------------------------------------------------------------------ *
+ * vw_fato_rh_mes
+ * ------------------------------------------------------------------ */
+
+export type LinhaRhMes = {
+  readonly mes: string;
+  readonly entidade: string;
+  readonly area: string;
+  readonly modalidade: string;
+  /** Estoque no fechamento do mês. Agrega por `last` no tempo. */
+  readonly headcountFte: number;
+  readonly admissoes: number;
+  readonly desligamentos: number;
+  /** Em reais. A conversão para `BRL_mi` é da apresentação (regra 2). */
+  readonly folhaReais: number;
+  /** Denominador do absenteísmo. */
+  readonly horasPrevistas: number;
+  /** Numerador do absenteísmo. */
+  readonly horasAusentes: number;
+  /** Denominador do eNPS e do engajamento. */
+  readonly respondentes: number;
+  readonly promotores: number;
+  readonly neutros: number;
+  readonly detratores: number;
+  /** Soma dos pontos. A média é `pontosDeEngajamento / respondentes`. */
+  readonly pontosDeEngajamento: number;
+};
+
+export const VW_FATO_RH_MES: readonly LinhaRhMes[] = MESES.flatMap((mes, m) =>
+  CELULAS.map((c, k) => ({
+    mes,
+    entidade: c.entidade,
+    area: c.area,
+    modalidade: c.modalidade,
+    headcountFte: HEADCOUNT[m]?.[k] ?? 0,
+    admissoes: ADMISSOES[m]?.[k] ?? 0,
+    desligamentos: DESLIGAMENTOS[m]?.[k] ?? 0,
+    folhaReais: FOLHA[m]?.[k] ?? 0,
+    horasPrevistas: HORAS_PREVISTAS[m]?.[k] ?? 0,
+    horasAusentes: HORAS_AUSENTES[m]?.[k] ?? 0,
+    respondentes: RESPONDENTES[m]?.[k] ?? 0,
+    promotores: CLIMA[m]?.promotores[k] ?? 0,
+    neutros: CLIMA[m]?.neutros[k] ?? 0,
+    detratores: CLIMA[m]?.detratores[k] ?? 0,
+    pontosDeEngajamento: ENGAJAMENTO[m]?.[k] ?? 0,
+  })),
+);
+
+/* ------------------------------------------------------------------ *
+ * vw_fato_vagas
+ * ------------------------------------------------------------------ */
+
+/** Reparte um total anual por mês e por área, com as duas margens exatas. */
+function porMesEArea(
+  totalPorMes: readonly number[],
+  pesoPorArea: readonly number[],
+): readonly (readonly number[])[] {
+  const total = totalPorMes.reduce((a, b) => a + b, 0);
+  return repartirMatriz(totalPorMes, repartir(total, pesoPorArea));
+}
+
+const PESO_DE_VAGA = PERFIL_POR_AREA.map((p) => p.vagas[2]);
+const FECHADAS_MENSAL = repartir(
+  PERFIL_POR_AREA.reduce((a, p) => a + p.vagas[2], 0),
+  DIAS_PARA_FECHAR_MENSAL.map(() => 1),
+);
+
+const VAGAS_FECHADAS = porMesEArea(FECHADAS_MENSAL, PESO_DE_VAGA);
+const VAGAS_ABERTAS = porMesEArea(
+  repartir(
+    PERFIL_POR_AREA.reduce((a, p) => a + p.vagas[0], 0),
+    MESES.map(() => 1),
+  ),
+  PERFIL_POR_AREA.map((p) => p.vagas[0]),
+);
+const VAGAS_ANDAMENTO = porMesEArea(
+  repartir(
+    PERFIL_POR_AREA.reduce((a, p) => a + p.vagas[1], 0),
+    MESES.map(() => 1),
+  ),
+  PERFIL_POR_AREA.map((p) => p.vagas[1]),
+);
+const VAGAS_CANCELADAS_MATRIZ = porMesEArea(
+  repartir(
+    VAGAS_CANCELADAS,
+    MESES.map(() => 1),
+  ),
+  PESO_DE_VAGA,
+);
+
+/** As cinco etapas do funil, por mês e área, com o volume de cada uma. */
+const FUNIL = FUNIL_ANUAL.map((etapa) =>
+  porMesEArea(
+    repartir(
+      etapa.total,
+      FECHADAS_MENSAL.map((f) => f),
+    ),
+    PESO_DE_VAGA,
+  ),
+);
+
+export type LinhaVagas = {
+  readonly mes: string;
+  readonly area: string;
+  readonly abertas: number;
+  readonly emAndamento: number;
+  readonly fechadas: number;
+  readonly canceladas: number;
+  /**
+   * Soma dos dias de todas as vagas fechadas no mês.
+   *
+   * O tempo médio é `diasSomados / fechadas`. Guardar a média já pronta faria
+   * o recorte de uma área tirar média de médias — outro número.
+   */
+  readonly diasSomados: number;
+  readonly candidaturas: number;
+  readonly triagem: number;
+  readonly entrevistas: number;
+  readonly propostas: number;
+  readonly contratados: number;
+};
+
+export const VW_FATO_VAGAS: readonly LinhaVagas[] = MESES.flatMap((mes, m) =>
+  AREAS_ARMAZENADAS.map((area, i) => {
+    const fechadas = VAGAS_FECHADAS[m]?.[i] ?? 0;
+    return {
+      mes,
+      area,
+      abertas: VAGAS_ABERTAS[m]?.[i] ?? 0,
+      emAndamento: VAGAS_ANDAMENTO[m]?.[i] ?? 0,
+      fechadas,
+      canceladas: VAGAS_CANCELADAS_MATRIZ[m]?.[i] ?? 0,
+      // O dia médio do mês e o da área se combinam pela média dos dois, o que
+      // preserva as duas leituras: o mês tem o perfil do mês, e Tecnologia
+      // continua demorando mais que Logística em qualquer mês.
+      diasSomados: Math.round(
+        fechadas *
+          (((DIAS_PARA_FECHAR_MENSAL[m] ?? 0) + perfilDe(area).diasParaFechar) /
+            2),
+      ),
+      candidaturas: FUNIL[0]?.[m]?.[i] ?? 0,
+      triagem: FUNIL[1]?.[m]?.[i] ?? 0,
+      entrevistas: FUNIL[2]?.[m]?.[i] ?? 0,
+      propostas: FUNIL[3]?.[m]?.[i] ?? 0,
+      contratados: FUNIL[4]?.[m]?.[i] ?? 0,
+    };
+  }),
+);
+
+/* ------------------------------------------------------------------ *
+ * vw_fato_vagas_fonte
+ * ------------------------------------------------------------------ */
+
+/**
+ * De onde veio quem foi contratado — em tabela própria, e a razão importa.
+ *
+ * A seção 10.1 lista "fonte do candidato" entre as colunas de `vw_fato_vagas`.
+ * Pôr a fonte no mesmo grão obrigaria a escolher entre duas coisas erradas:
+ * repetir a contagem de vagas em cada fonte, ou inventar uma fonte para uma
+ * vaga que ainda está **aberta** e que por definição não tem candidato
+ * contratado. Contagem de vaga e origem de contratação são grãos diferentes.
+ */
+export type LinhaFonteDeCandidato = {
+  readonly mes: string;
+  readonly area: string;
+  readonly fonte: string;
+  readonly contratados: number;
+};
+
+export const VW_FATO_VAGAS_FONTE: readonly LinhaFonteDeCandidato[] = (() => {
+  const contratadosPorMesArea = FUNIL[4] ?? [];
+  return MESES.flatMap((mes, m) =>
+    AREAS_ARMAZENADAS.flatMap((area, i) => {
+      const total = contratadosPorMesArea[m]?.[i] ?? 0;
+      const partes = repartir(
+        total,
+        FONTES_DE_CANDIDATO.map((f) => f.participacao),
+      );
+      return FONTES_DE_CANDIDATO.map((f, j) => ({
+        mes,
+        area,
+        fonte: f.codigo,
+        contratados: partes[j] ?? 0,
+      }));
+    }),
+  );
+})();
+
+/* ------------------------------------------------------------------ *
+ * vw_fato_treinamento
+ * ------------------------------------------------------------------ */
+
+/**
+ * Horas por mês × área, com as duas margens exatas, e depois por modalidade.
+ *
+ * Três margens precisam fechar: o mês (painel `tre-horas`), a área
+ * (`tre-area`) e a modalidade da trilha (`tre-modal`). `repartirMatriz` acerta
+ * duas; `ajustarMargemDeColuna` fecha a terceira movendo horas entre
+ * modalidades dentro do mesmo par mês-área, o que preserva as duas primeiras.
+ */
+const HORAS_MES_AREA = repartirMatriz(
+  HORAS_TREINAMENTO_MENSAL,
+  repartir(
+    HORAS_TREINAMENTO_MENSAL.reduce((a, b) => a + b, 0),
+    PERFIL_POR_AREA.map((p) => p.horasTreinamento),
+  ),
+);
+
+const HORAS_POR_MODALIDADE = ajustarMargemDeColuna(
+  HORAS_MES_AREA.flatMap((linha) =>
+    linha.map((horas) =>
+      repartir(
+        horas,
+        MODALIDADES_DE_TREINAMENTO.map((x) => x.horas),
+      ),
+    ),
+  ),
+  MODALIDADES_DE_TREINAMENTO.map((x) => x.horas),
+);
+
+export type LinhaTreinamento = {
+  readonly mes: string;
+  readonly area: string;
+  readonly trilha: string;
+  /** `online`, `presencial` ou `hibrido` — a modalidade **da trilha**. */
+  readonly modalidadeDeTrilha: string;
+  readonly horas: number;
+  readonly investimentoReais: number;
+  readonly trilhasIniciadas: number;
+  readonly trilhasConcluidas: number;
+  readonly participantes: number;
+};
+
+export const VW_FATO_TREINAMENTO: readonly LinhaTreinamento[] = MESES.flatMap(
+  (mes, m) =>
+    AREAS_ARMAZENADAS.flatMap((area, i) => {
+      const porModalidade =
+        HORAS_POR_MODALIDADE[m * AREAS_ARMAZENADAS.length + i] ?? [];
+      return MODALIDADES_DE_TREINAMENTO.flatMap((modalidade, j) => {
+        const horasDaCelula = porModalidade[j] ?? 0;
+        const porTrilha = repartir(
+          horasDaCelula,
+          TRILHAS.map((t) => t.investimentoReais),
+        );
+        const participacao =
+          (PARTICIPACAO_TREINAMENTO_MENSAL[m] ?? 0) / CEM_PORCENTO;
+        return TRILHAS.map((trilha, t) => {
+          const horas = porTrilha[t] ?? 0;
+          const iniciadas = Math.round(horas * participacao);
+          return {
+            mes,
+            area,
+            trilha: trilha.codigo,
+            modalidadeDeTrilha: modalidade.codigo,
+            horas,
+            // O investimento acompanha as horas dentro da trilha: a verba é
+            // proporcional ao volume, e a trilha é quem tem preço por hora.
+            investimentoReais: Math.round(
+              horas *
+                (trilha.investimentoReais /
+                  Math.max(
+                    1,
+                    TRILHAS.reduce((a, x) => a + x.investimentoReais, 0),
+                  )) *
+                CEM_PORCENTO,
+            ),
+            trilhasIniciadas: iniciadas,
+            trilhasConcluidas: Math.round(
+              (iniciadas * modalidade.conclusao) / CEM_PORCENTO,
+            ),
+            participantes: iniciadas,
+          };
+        });
+      });
+    }),
+);
