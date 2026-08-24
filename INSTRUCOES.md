@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 49 itens (3 resolvidos), destravando 121 tarefas do backlog |
+| **Total** | 49 itens (3 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 35 |
+| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **49** | **29** | **121** |
+| **Total** | **49** | **29** | **122** |
 
 **Por responsável**
 
@@ -233,7 +233,7 @@ Escolha uma das três saídas, e registre a escolha:
 |---|---|
 | **Resultado esperado** | Decisão registrada com data e nome do aprovador, dizendo qual das três saídas e, se for a 2, o significado de cada reinterpretação |
 | **Onde o resultado vai** | docs/decisoes/, PRD seção 9.2 regra 2, `UNIDADES` em `src/semantica/contrato.ts` e a lista fixada no teste de T-107 |
-| **Destrava** | T-164, T-165 *(2 tarefas, parcialmente)* |
+| **Destrava** | T-113, T-164, T-165 *(3 tarefas, as duas últimas parcialmente)* |
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -957,6 +957,7 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-013 | H-42 |
 | T-101 | H-01 |
 | T-103 | H-01 |
+| T-113 | H-45 |
 | T-123 | H-02 |
 | T-129 | H-44 |
 | T-130 | H-44 |
