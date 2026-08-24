@@ -172,7 +172,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-109** `P0` `S` `dados` Tornar a fórmula obrigatória no contrato e remover a chave que a desliga
   · **Aceite:** O tipo exige fórmula não vazia em todo painel de indicador derivado, um teste enumera os 71 painéis e falha se algum derivado vier sem fórmula, e a busca por mostrarMemoria no repositório retorna zero ocorrências.
   · **PRD:** Anexo D achado 10, RF-04, PR-3, seção 9.3 · **Depende de:** T-102, T-107
-- [ ] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade
+- [~] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade  ⏳ 2026-08-24 09:10 · sessao-68c8
   · **Aceite:** vw_fato_rh_mes, vw_fato_vagas e vw_fato_treinamento existem com uma linha por combinação; somar todas as linhas de 2026 reproduz o Anexo C: 1.240 FTE em dezembro, 241 admissões, 145 desligamentos, folha R$ 186 mi e 21.400 horas de treinamento.
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1, seção 9.1 · **Depende de:** T-001
 - [ ] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo
