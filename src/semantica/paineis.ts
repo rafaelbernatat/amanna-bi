@@ -246,7 +246,7 @@ export const REGISTRO_DE_PAINEIS: readonly RegistroDePainel[] = [
     titulo: "Pipeline de recrutamento",
     forma: "funil",
     span: 6,
-    unidade: null,
+    unidade: "contagem",
   },
   {
     id: "rec-fontes",
@@ -270,7 +270,7 @@ export const REGISTRO_DE_PAINEIS: readonly RegistroDePainel[] = [
     titulo: "Vagas por status e área",
     forma: "barras-empilhadas",
     span: 6,
-    unidade: null,
+    unidade: "contagem",
   },
   {
     id: "rec-resumo",
@@ -286,7 +286,7 @@ export const REGISTRO_DE_PAINEIS: readonly RegistroDePainel[] = [
     titulo: "Horas de treinamento e participação",
     forma: "barras",
     span: 8,
-    unidade: null,
+    unidade: "horas",
   },
   {
     id: "tre-conclusao",
@@ -326,7 +326,7 @@ export const REGISTRO_DE_PAINEIS: readonly RegistroDePainel[] = [
     titulo: "Horas por área e investimento por trilha",
     forma: "barras-horizontais",
     span: 12,
-    unidade: null,
+    unidade: "horas",
   },
   {
     id: "eng-area",
@@ -350,7 +350,7 @@ export const REGISTRO_DE_PAINEIS: readonly RegistroDePainel[] = [
     titulo: "eNPS (12 meses)",
     forma: "linha",
     span: 4,
-    unidade: null,
+    unidade: "pontos",
   },
   {
     id: "eng-eng",

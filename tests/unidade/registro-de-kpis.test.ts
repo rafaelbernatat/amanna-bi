@@ -166,10 +166,43 @@ describe("unidade e sentido", () => {
     expect(fora).toEqual([]);
   });
 
-  it("13 KPIs medem o que o enum não nomeia (H-45), e o conjunto é fixo", () => {
-    // Mesmo achado de T-107, agora do lado dos KPIs: horas, eNPS em pontos,
-    // contagens de vaga e de desligamento, idade e tempo de casa em anos.
-    expect(KPIS_SEM_UNIDADE_NO_ENUM.length).toBe(13);
+  it("nenhum KPI ficou sem unidade, depois de H-45", () => {
+    /*
+     * Eram treze: horas de treinamento, eNPS em pontos, contagens de vaga e de
+     * desligamento, idade e tempo de casa em anos. Todos ganharam unidade em
+     * 2026-08-24, quando D-H45 estendeu o enum.
+     *
+     * O conjunto continua fixado para só encolher, e agora está vazio: um KPI
+     * novo sem unidade reprova aqui.
+     */
+    expect(KPIS_SEM_UNIDADE_NO_ENUM).toEqual([]);
+  });
+
+  it("e as quatro unidades novas são as que a decisão nomeia", () => {
+    const esperado: Readonly<Record<string, string>> = {
+      "rh-visao-enps": "pontos",
+      "rh-engaj-enps": "pontos",
+      "rh-colab-idade-media": "anos",
+      "rh-colab-tempo-medio-de-casa": "anos",
+      "rh-turnover-tempo-ate-a-saida": "anos",
+      "rh-colab-estados-atendidos": "contagem",
+      "rh-turnover-desligamentos": "contagem",
+      "rh-recrut-vagas-abertas": "contagem",
+      "rh-recrut-em-andamento": "contagem",
+      "rh-recrut-fechadas-12m": "contagem",
+      "rh-recrut-canceladas": "contagem",
+      "rh-trein-horas-de-treinamento": "horas",
+      "rh-trein-horas-por-fte": "horas",
+    };
+    // Treze, e não os doze que a tabela de H-45 detalhava: o décimo terceiro é
+    // `rh-turnover-tempo-ate-a-saida`, cuja própria justificativa de registro já
+    // dizia "medido em anos".
+    expect(Object.keys(esperado)).toHaveLength(13);
+    for (const [id, unidade] of Object.entries(esperado)) {
+      const kpi = REGISTRO_DE_KPIS.find((k) => k.id === id);
+      expect(kpi, id).toBeDefined();
+      expect(kpi?.unidade, id).toBe(unidade);
+    }
   });
 
   it("o turnover é menor_melhor e a retenção é maior_melhor, nas duas telas", () => {

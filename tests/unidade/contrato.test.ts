@@ -118,8 +118,22 @@ describe("O ano ficou fora do tipo, por D-P8", () => {
 });
 
 describe("Unidade e agregação são enums fechados (seção 9.2)", () => {
-  it("as cinco unidades e as três agregações do PRD", () => {
-    expect([...UNIDADES]).toEqual(["BRL_mi", "pct", "pp", "dias", "FTE"]);
+  it("as nove unidades e as três agregações do PRD", () => {
+    // Eram cinco até 2026-08-24. As quatro últimas entraram por decisão de
+    // Produto (D-H45): cinco painéis e treze KPIs medem horas, contagem,
+    // pontos de eNPS e anos, e nenhuma das cinco originais os nomeia sem
+    // afirmar algo falso sobre o número.
+    expect([...UNIDADES]).toEqual([
+      "BRL_mi",
+      "pct",
+      "pp",
+      "dias",
+      "FTE",
+      "horas",
+      "contagem",
+      "pontos",
+      "anos",
+    ]);
     expect([...AGREGACOES]).toEqual(["sum", "last", "ratio"]);
   });
 });

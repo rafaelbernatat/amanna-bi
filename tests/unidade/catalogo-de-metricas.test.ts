@@ -240,16 +240,34 @@ describe("o catálogo versionado do repositório", () => {
     expect(conferirCatalogo(documento)).toEqual([]);
   });
 
+  it("e traz as 21 do Anexo B (T-113), não mais só uma", () => {
+    // O arquivo esteve incompleto de propósito enquanto H-08 travava tudo. A
+    // decisão de modo mockup destravou a escrita; a aprovação continua em H-08.
+    expect(carregarCatalogo(documento).size).toBe(21);
+  });
+
   it("traz a métrica que a seção 9.4 escreve por extenso", () => {
-    // O arquivo está incompleto de propósito: as outras 35 esperam H-08.
-    // Este teste garante que a única que existe é a que o PRD de fato aprova.
+    /*
+     * As 21 do Anexo B entraram em T-113, sob a decisão de modo mockup.
+     *
+     * Este caso conferia, até então, que a `decisao` de `turnover_12m`
+     * continha "Transferencia interna" — o texto que T-112 transcreveu do
+     * **exemplo** da seção 9.4 do PRD. O exemplo termina em "aprovado por RH e
+     * Controladoria em 2026-08", e essa aprovação **não aconteceu**: a seção 18
+     * do mesmo PRD lista P2 como pendente e H-06 continua aberto.
+     *
+     * Copiar uma ilustração para o arquivo de verdade transforma exemplo em
+     * alegação. O campo foi reescrito para dizer o que é, e o teste passou a
+     * conferir isso.
+     */
     const c = carregarCatalogo(documento);
     const m = c.get("turnover_12m");
     expect(m).toBeDefined();
     expect(m?.unidade).toBe("pct");
     expect(m?.agg).toBe("ratio");
     expect(m?.sentido).toBe("menor_melhor");
-    expect(m?.decisao).toContain("Transferencia interna");
+    expect(m?.decisao).toContain("H-06");
+    expect(m?.decisao).toContain("PROVISORIO");
   });
 
   it("toda métrica com decisão discutida traz a decisão escrita", () => {

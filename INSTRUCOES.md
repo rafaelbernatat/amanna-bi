@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 49 itens (3 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 49 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,7 +39,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 13 (4 resolvidos) | 6 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
@@ -75,7 +75,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*13 itens · 3 P0 abertos · 5 P1 abertos · 2 P2 abertos · 3 resolvidos*
+*13 itens · 2 P0 abertos · 5 P1 abertos · 2 P2 abertos · 4 resolvidos*
 
 ### [ ] H-49 · Confirmar que o filtro é aplicado por botão, e não a cada troca
 
@@ -197,7 +197,7 @@ Escolha uma:
 | **Onde o resultado vai** | docs/decisoes/, `src/seguranca/cabecalhos.ts` e o teste que fixa `style-src` como única diretiva permissiva |
 | **Destrava** | T-139 *(1 tarefa)* |
 
-### [ ] H-45 · Decidir a unidade de horas, candidatos, vagas e pontos de eNPS
+### [X] H-45 · Decidir a unidade de horas, candidatos, vagas e pontos de eNPS
 
 `P0` · **Responsável:** Produto, com Controladoria e RH
 
@@ -234,6 +234,25 @@ Escolha uma das três saídas, e registre a escolha:
 | **Resultado esperado** | Decisão registrada com data e nome do aprovador, dizendo qual das três saídas e, se for a 2, o significado de cada reinterpretação |
 | **Onde o resultado vai** | docs/decisoes/, PRD seção 9.2 regra 2, `UNIDADES` em `src/semantica/contrato.ts` e a lista fixada no teste de T-107 |
 | **Destrava** | T-113, T-164, T-165 *(3 tarefas, as duas últimas parcialmente)* |
+
+> **Resolvido em 2026-08-24.** Produto escolheu a saída 1 — **estender o
+> enum** — com o critério de que é a única que não muda o que nenhum número
+> significa. `horas`, `contagem`, `pontos` e `anos` entraram na regra 2 da
+> seção 9.2 do PRD; `pontos` e `anos` entraram também nos não-somáveis, junto
+> de `pct` e `pp`.
+>
+> Artefato conferido: `docs/decisoes/D-H45-unidades.md`, `UNIDADES` com nove
+> valores em `src/semantica/contrato.ts`, os **5** painéis e os **13** KPIs com
+> unidade declarada, e o schema publicado em `contratos/painel.schema.json`
+> regerado. Sobram sete painéis com `unidade: null`, todos de forma
+> `estatisticas`, onde cada número declara a própria — e esses nunca foram
+> pendência.
+>
+> ⚠️ **Uma correção de contagem no próprio item:** a prosa acima diz "13
+> KPIs" e a tabela detalha 12. O que faltava era
+> `rh-turnover-tempo-ate-a-saida`, em **anos** — a linha de `anos` cita só os
+> dois de `rh/colab`. Os treze estão nomeados em teste.
+
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -355,6 +374,10 @@ No fechamento da Fase 1, antes de declarar o critério de saída cumprido, algu�
 A tarefa T-013 padronizou as referências do backlog e publicou a matriz em `docs/rastreabilidade/matriz-decisoes-principios.md`. Ao fazer isso ela mediu a terceira exigência do próprio critério de aceite — *nenhuma tarefa de F1/F2/F3 referencia decisão pendente sem depender da tarefa F0 correspondente* — e encontrou **13 tarefas que citam uma decisão sem declarar dependência dela**, mais 3 que dependem só por caminho transitivo. A lista completa, com o par tarefa → decisão, está na última tabela da matriz. O risco é concreto: uma tarefa de F2 que aplica D-P6 sem depender de T-011 pode ser escolhida pelo laço antes de a decisão de hospedagem existir, e então congela em código uma escolha que ninguém fez — exatamente o defeito que a auditoria apontou em P8 e que originou T-004. Corrigir exige editar o campo `Depende de:` dessas 13 tarefas, e a seção 11 do EXECUTE.md reserva a reescrita de dependências à T-004, restrita a T-101, T-103, T-131 e T-140; T-013 está autorizada apenas a padronizar os campos `PRD:`. Decida uma entre duas saídas e registre por escrito com data e nome: (a) autorizar a Engenharia a acrescentar as 13 dependências, nomeando-as uma a uma, o que faz o laço parar de oferecer essas tarefas antes da decisão correspondente; ou (b) declarar que a citação da decisão nessas tarefas é informativa e não é dependência real, caso em que o critério de aceite de T-013 precisa ser reescrito para dizer isso, porque hoje ele afirma o contrário. Não escolha (b) sem olhar a tabela linha a linha: as 13 não são um bloco homogêneo.
 
 **Achado novo, mesma causa (2026-08-22, ao executar T-182).** T-182 não declara dependência nenhuma, e por isso o laço a ofereceu. Mas o critério de aceite dela cita dois artefatos que ainda não existem: *"o cartão de KPI exibe texto próprio"* e *"a suíte de contrato falha se alguma expuser Infinity, NaN ou 0"*. O cartão de KPI vem de T-131 e a suíte de contrato de T-109 — nenhuma das duas concluída, e nenhuma citada em `Depende de:`. Duas das quatro exigências foram cumpridas e verificadas (o motivo `denominador_zero` no enum, o estado de tela do painel, e a varredura de todas as métricas `ratio` do catálogo); as outras duas ficaram esperando os artefatos. É o mesmo defeito das 13 acima — dependência real que o campo não declara — e a correção passa pela mesma autorização. **Acrescente T-182 à lista ao decidir**, com `Depende de: T-109, T-131`.
+
+**Terceiro achado, mesma causa (2026-08-24, ao chegar em T-115).** T-115 e T-116 implementam `getKpis` para as 13 telas, e declaram dependência de T-113 e T-114 — as duas concluídas. Mas o aceite delas diz *"todos originados do catálogo"*, e os 70 KPIs do registro precisam de três coisas que ainda não existem: as **13 métricas do achado 5** que são KPI constante no protótipo (T-148), as **dimensões `vw_dim_*`** de idade, tempo de casa, escolaridade e UF (T-147), e as **medidas ausentes** — composição da folha, custo do turnover, benefícios, variável (T-143). Nenhuma das três aparece em `Depende de:`, e as três vem **depois** de T-115 na ordem do backlog. Medido: dos 42 KPIs de RH, **13 são constantes do achado 5** e outros nove precisam de medida que a fixture não tem.
+
+A ordem substantiva é **T-147 -> T-148 -> T-115**, e a seção 10 do EXECUTE autoriza fazer o pré-requisito primeiro. **Acrescente T-115 e T-116 à lista ao decidir**, com `Depende de: T-143, T-147, T-148`.
 
 | | |
 |---|---|

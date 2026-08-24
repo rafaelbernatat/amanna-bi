@@ -112,15 +112,31 @@ describe("T-105 · recorte vazio é estado, nunca zero", () => {
  * ---------------------------------------------------------------- */
 
 describe("T-104 · unidade é enum fechado", () => {
-  it("as cinco do PRD, e nenhuma outra", () => {
-    expect([...UNIDADES]).toEqual(["BRL_mi", "pct", "pp", "dias", "FTE"]);
+  it("as nove do PRD, e nenhuma outra", () => {
+    expect([...UNIDADES]).toEqual([
+      "BRL_mi",
+      "pct",
+      "pp",
+      "dias",
+      "FTE",
+      "horas",
+      "contagem",
+      "pontos",
+      "anos",
+    ]);
   });
 
-  it("percentual e ponto percentual não são somáveis", () => {
-    expect(podeSomar("pct")).toBe(false);
-    expect(podeSomar("pp")).toBe(false);
-    for (const u of ["BRL_mi", "dias", "FTE"] as const) {
-      expect(podeSomar(u)).toBe(true);
+  it("taxa não é somável; contagem e medida são", () => {
+    /*
+     * `pontos` e `anos` entraram como não somáveis em D-H45, e a razão é a
+     * mesma de `pct`: são taxas disfarçadas de contagem. Somar o eNPS de doze
+     * meses dá um número que não existe, e somar idade média também.
+     */
+    for (const u of ["pct", "pp", "pontos", "anos"] as const) {
+      expect(podeSomar(u), u).toBe(false);
+    }
+    for (const u of ["BRL_mi", "dias", "FTE", "horas", "contagem"] as const) {
+      expect(podeSomar(u), u).toBe(true);
     }
   });
 });
