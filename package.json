@@ -15,7 +15,7 @@
     "instrucoes": "node ferramentas/instrucoes/conferir.mjs",
     "instrucoes:check": "node ferramentas/instrucoes/conferir.mjs --check",
     "catalogo:check": "tsx ferramentas/catalogo/conferir.mts",
-    "build": "npm run schema:check && npm run autorizacao:check && next build",
+    "build": "npm run schema:check && npm run autorizacao:check && npm run catalogo:check && next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint .",

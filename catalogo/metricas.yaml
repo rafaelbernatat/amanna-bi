@@ -1,39 +1,67 @@
-# O catálogo de métricas (PRD seção 9.4, T-112)
+# O catálogo de métricas (PRD seção 9.4, T-112 e T-113)
 #
 # "Um arquivo versionado, revisado por Controladoria e RH em conjunto. É aqui
 # que a divergência de definição entre áreas vira uma decisão registrada em vez
 # de um ajuste silencioso."
 #
 # ---------------------------------------------------------------------------
-# ESTE ARQUIVO ESTÁ INCOMPLETO DE PROPÓSITO
+# ESTAS 21 ENTRADAS SÃO PROVISÓRIAS
 # ---------------------------------------------------------------------------
 #
-# Traz **uma** métrica: a que a seção 9.4 do PRD escreve por extenso, campo a
-# campo. As outras 35 — as 21 do Anexo B mais as 15 do achado 5 do Anexo D —
-# esperam a sessão de Controladoria e RH descrita em **H-08**.
+# São as 21 métricas do Anexo B do PRD, escritas pela Engenharia sob a decisão
+# de modo mockup de 2026-08-24 (docs/decisoes/D-H03-modo-mockup.md), que
+# autoriza dado fictício enquanto o objetivo for aprovar gráficos e telas.
 #
-# Não foram preenchidas por conta própria, e a razão é o próprio ponto da seção
-# 9.4: `sentido` diz se o número subindo é bom ou ruim, `meta` é um alvo
-# acordado, e `formula` é a definição que as áreas precisam assinar. Escrever
-# esses campos aqui produziria um catálogo com aparência de aprovado que
-# ninguém aprovou — exatamente o "ajuste silencioso" que o arquivo existe para
-# impedir.
+# O que a decisão **não** autoriza: escrever que uma métrica foi aprovada. O
+# campo `decisao` de cada entrada diz que ela é provisória e nomeia H-08, que é
+# a sessão de Controladoria e RH onde as definições passam a valer.
 #
-# O que T-112 entrega é o esquema e o carregador: quando a sessão acontecer, as
-# 35 entradas entram e o carregador reprova qualquer uma que chegue incompleta.
+# A diferença importa e é o motivo de a seção 9.4 existir: `sentido` diz se o
+# número subindo é bom ou ruim, `meta` é um alvo acordado, e `formula` é a
+# definição que as áreas precisam assinar. Um catálogo com aparência de aprovado
+# que ninguém aprovou é exatamente o "ajuste silencioso" que este arquivo existe
+# para impedir.
 #
-# Ao acrescentar uma métrica:
+# `meta` está ausente em vinte das vinte e uma: meta é alvo acordado, e ausência
+# é "não há meta", nunca "meta zero". A única presente é a de turnover, que o
+# próprio PRD escreve na seção 9.4.
+#
+# ---------------------------------------------------------------------------
+# Ao acrescentar uma métrica
+# ---------------------------------------------------------------------------
 #
 #   rotulo       obrigatório  como aparece na tela
 #   fonte        obrigatório  a view da seção 10.1
 #   formula      obrigatório  como o número é obtido (PR-3)
-#   unidade      obrigatório  BRL_mi | pct | pp | dias | FTE
+#   unidade      obrigatório  BRL_mi | pct | pp | dias | FTE | horas | contagem | pontos | anos
 #   agg          obrigatório  sum | last | ratio
 #   sentido      obrigatório  maior_melhor | menor_melhor | neutro
 #   grao_minimo  obrigatório  nunca mais fino que [area, mes] (seção 11)
 #   sinonimos    obrigatório  como as pessoas chamam; sem isto o chat não acha
 #   meta         opcional     ausente é "não há meta", nunca "meta zero"
 #   decisao      opcional     obrigatória quando a definição foi discutida
+
+# ---------------------------------------------------------------------------
+# 1 · Crescimento
+# ---------------------------------------------------------------------------
+
+crescimento_yoy:
+  rotulo: Crescimento anual
+  fonte: vw_fato_fin_mes
+  formula: receita_liquida(ano) / receita_liquida(ano anterior) - 1
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [crescimento, yoy, ano contra ano, evolucao da receita, cresceu]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Comparacao contra o mesmo periodo do ano
+    anterior, nao contra o periodo imediatamente anterior. Nao aprovado por
+    Controladoria: a sessao e H-08.
+
+# ---------------------------------------------------------------------------
+# 2 · Turnover e retenção
+# ---------------------------------------------------------------------------
 
 turnover_12m:
   rotulo: Turnover 12 meses
@@ -46,5 +74,334 @@ turnover_12m:
   grao_minimo: [area, mes]
   sinonimos: [turnover, rotatividade, saidas, atrito, quem sai]
   decisao: >-
-    Transferencia interna NAO conta como desligamento.
-    Aprovado por RH e Controladoria em 2026-08.
+    PROVISORIO (D-H03, 2026-08-24). A secao 9.4 do PRD traz, como EXEMPLO de
+    preenchimento, a frase "transferencia interna nao conta como desligamento,
+    aprovado por RH e Controladoria em 2026-08". Essa aprovacao nao aconteceu:
+    a secao 18 do mesmo PRD lista P2 como decisao PENDENTE, e o item H-06 ainda
+    esta aberto. O exemplo foi transcrito para ca em T-112 e vira afirmacao
+    quando sai da ilustracao. Ate H-06 fechar, a regra de transferencia interna
+    esta indefinida e o numero e mockup.
+
+retencao_12m:
+  rotulo: Retenção 12 meses
+  fonte: vw_fato_rh_mes
+  formula: 1 - turnover_12m
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [area, mes]
+  sinonimos: [retencao, permanencia, quem fica, quem permanece]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). E o complemento exato do turnover, entao
+    herda a indefinicao de P2 (H-06). Se transferencia interna passar a contar
+    como desligamento, os dois numeros mudam juntos.
+
+# ---------------------------------------------------------------------------
+# 3 · Resultado
+# ---------------------------------------------------------------------------
+
+margem_ebitda:
+  rotulo: Margem EBITDA
+  fonte: vw_fato_fin_mes
+  formula: (receita_liquida - cmv - despesas_operacionais) / receita_liquida
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [ebitda, margem, margem ebitda, resultado operacional, lucro operacional]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). EBITDA obtido por diferenca, e nao por soma
+    de contas de resultado. Nao aprovado por Controladoria: a sessao e H-08.
+
+# ---------------------------------------------------------------------------
+# 4 · Caixa
+# ---------------------------------------------------------------------------
+
+saldo_caixa:
+  rotulo: Saldo de caixa
+  fonte: vw_fato_fin_mes
+  formula: saldo_inicial + soma(entradas_de_caixa - saidas_de_caixa, ate o mes)
+  unidade: BRL_mi
+  agg: last
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [caixa, saldo, liquidez, disponibilidade, quanto tem em caixa]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Estoque: agrega por `last`, nunca por soma
+    ao longo do periodo. Somar saldos de doze meses da um numero que nao existe.
+
+# ---------------------------------------------------------------------------
+# 5 · Orçamento
+# ---------------------------------------------------------------------------
+
+desvio_orcamentario:
+  rotulo: Desvio orçamentário
+  fonte: vw_fato_orcamento
+  formula: soma(realizado) - soma(orcado)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [centro_custo, mes]
+  sinonimos: [desvio, orcamento, orcado, realizado, estouro, centro de custo]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Positivo e estouro. O sentido
+    `menor_melhor` trata gastar menos que o orcado como melhor, o que nem
+    sempre e verdade -- economia por projeto nao executado tambem aparece assim.
+    E uma das definicoes que precisam de Controladoria em H-08.
+
+# ---------------------------------------------------------------------------
+# 6 · Quadro
+# ---------------------------------------------------------------------------
+
+headcount_fte:
+  rotulo: Headcount FTE
+  fonte: vw_fato_rh_mes
+  formula: saldo_de_abertura + soma(admissoes - desligamentos, ate o mes)
+  unidade: FTE
+  agg: last
+  sentido: neutro
+  grao_minimo: [area, mes]
+  sinonimos: [headcount, quadro, fte, pessoas, colaboradores, tamanho do time]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Estoque, nao fluxo: o quadro de marco e a
+    soma das areas em marco, nunca a soma de janeiro a marco. Sentido neutro
+    porque crescer nao e bom nem ruim sozinho -- depende da receita.
+
+perfil_quadro:
+  rotulo: Perfil do quadro
+  fonte: vw_fato_rh_mes
+  formula: headcount_fte quebrado por modalidade de trabalho
+  unidade: FTE
+  agg: last
+  sentido: neutro
+  grao_minimo: [modalidade, mes]
+  sinonimos:
+    [perfil, genero, modalidade, presencial, hibrido, remoto, composicao]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Hoje quebra so por modalidade de trabalho.
+    Genero depende das dimensoes vw_dim_* de T-147.
+
+distribuicao_etaria:
+  rotulo: Distribuição por faixa etária
+  fonte: vw_dim_faixa_etaria
+  formula: headcount_fte quebrado por faixa etaria
+  unidade: FTE
+  agg: last
+  sentido: neutro
+  grao_minimo: [faixa, mes]
+  sinonimos: [idade, faixa etaria, tempo de casa, escolaridade, senioridade]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). A view de dimensao ainda nao existe --
+    e T-147. A secao 11 exige que faixa com menos de 5 pessoas nao seja
+    exibida, e quem aplica isso e T-151.
+
+distribuicao_uf:
+  rotulo: Distribuição por estado
+  fonte: vw_dim_uf
+  formula: headcount_fte quebrado por unidade federativa
+  unidade: FTE
+  agg: last
+  sentido: neutro
+  grao_minimo: [uf, mes]
+  sinonimos: [estado, uf, geografia, mapa, onde estao, distribuicao geografica]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). A view de dimensao ainda nao existe --
+    e T-147.
+
+# ---------------------------------------------------------------------------
+# 7 · Integração RH × Financeiro
+# ---------------------------------------------------------------------------
+
+receita_por_fte:
+  rotulo: Receita por colaborador
+  fonte: vw_fato_fin_mes, vw_fato_rh_mes
+  formula: soma(receita_liquida) / headcount_fte(ultimo mes do recorte)
+  unidade: BRL_mi
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [receita por colaborador, produtividade, receita por fte, rpc]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Unica metrica que cruza duas views, e o
+    grao dela e o da mais grossa: receita nao tem area (secao 10.1), entao a
+    razao tambem nao tem. Quebrar por area exigiria ratear receita por quadro,
+    que e arbitragem e nao recorte -- ver H-04 e T-144.
+
+# ---------------------------------------------------------------------------
+# 8 · Contas e ciclo
+# ---------------------------------------------------------------------------
+
+inadimplencia:
+  rotulo: Inadimplência
+  fonte: vw_fato_contas
+  formula: soma(a_receber nas faixas vencidas) / soma(a_receber)
+  unidade: pct
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [faixa, mes]
+  sinonimos: [inadimplencia, aging, recebiveis, atraso, vencido, calote]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Conta como vencido tudo que nao esta na
+    faixa "a vencer" -- inclusive 1 a 30 dias. Muitas empresas so consideram
+    inadimplencia acima de 90 dias, e a escolha muda o numero por um fator de
+    tres. E uma das definicoes que precisam de Controladoria em H-08.
+
+ciclo_financeiro:
+  rotulo: Ciclo de conversão de caixa
+  fonte: vw_fato_contas
+  formula: >-
+    pmr + pme - pmp, com pmr = a_receber / receita_liquida * 365,
+    pme = estoque / cmv * 365 e pmp = a_pagar / cmv * 365
+  unidade: dias
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      ciclo,
+      ciclo financeiro,
+      pmr,
+      pme,
+      pmp,
+      capital de giro,
+      conversao de caixa,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Usa 365 dias e o CMV como denominador de
+    PME e PMP. Compras do periodo seria o denominador mais correto para o PMP,
+    e a fixture nao tem essa medida. Precisa de Controladoria em H-08.
+
+# ---------------------------------------------------------------------------
+# 9 · Recrutamento
+# ---------------------------------------------------------------------------
+
+tempo_fechamento:
+  rotulo: Tempo médio de fechamento
+  fonte: vw_fato_vagas
+  formula: soma(dias_somados) / soma(fechadas)
+  unidade: dias
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [area, mes]
+  sinonimos:
+    [tempo de fechamento, dias para fechar, time to fill, demora da vaga]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Conta so vagas FECHADAS, entao vaga aberta
+    ha muito tempo nao entra na media -- e o vies classico dessa metrica, que
+    melhora quando as vagas dificeis simplesmente nao fecham.
+
+vagas_status:
+  rotulo: Vagas por status
+  fonte: vw_fato_vagas
+  formula: soma(abertas + em_andamento + fechadas + canceladas)
+  unidade: contagem
+  agg: sum
+  sentido: neutro
+  grao_minimo: [area, mes]
+  sinonimos: [vagas, status das vagas, abertas, fechadas, canceladas, posicoes]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Unidade `contagem`, que entrou no enum em
+    2026-08-24 (D-H45): vaga nao e pessoa, entao `FTE` afirmaria algo falso.
+
+# ---------------------------------------------------------------------------
+# 10 · Treinamento
+# ---------------------------------------------------------------------------
+
+horas_treinamento:
+  rotulo: Horas de treinamento
+  fonte: vw_fato_treinamento
+  formula: soma(horas)
+  unidade: horas
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [area, mes]
+  sinonimos:
+    [treinamento, horas de treinamento, capacitacao, desenvolvimento, trilhas]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Unidade `horas`, que entrou no enum em
+    2026-08-24 (D-H45). Sentido `maior_melhor` trata mais horas como melhor, o
+    que ignora a conclusao -- o proprio dataset mostra 21.400 horas com 64% de
+    conclusao. Precisa de RH em H-08.
+
+# ---------------------------------------------------------------------------
+# 11 · Folha e salários
+# ---------------------------------------------------------------------------
+
+folha_total:
+  rotulo: Folha total
+  fonte: vw_fato_rh_mes
+  formula: soma(folha)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [area, mes]
+  sinonimos:
+    [folha, custo de pessoal, encargos, salarios, quanto custa a equipe]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). A base de competencia da rescisao esta
+    indefinida -- e a decisao P3, item H-07. A escolha muda a folha de todo mes
+    com desligamento, e com ela folha sobre receita e custo por colaborador.
+
+salario_medio:
+  rotulo: Salário médio
+  fonte: vw_fato_rh_mes
+  formula: soma(folha, no recorte) / (media(headcount_fte, no recorte) * meses)
+  unidade: BRL_mi
+  agg: ratio
+  sentido: neutro
+  grao_minimo: [area, mes]
+  sinonimos: [salario, salario medio, remuneracao, faixa salarial, quanto paga]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Sai da folha inteira dividida pelo quadro,
+    entao inclui encargos, beneficios e variavel -- nao e salario contratual. A
+    unidade e `BRL_mi` porque e a unica monetaria do enum; a escala de exibicao
+    e da apresentacao (regra 2). Precisa de RH em H-08.
+
+# ---------------------------------------------------------------------------
+# 12 · Clima e engajamento
+# ---------------------------------------------------------------------------
+
+absenteismo:
+  rotulo: Absenteísmo
+  fonte: vw_fato_rh_mes
+  formula: soma(horas_ausentes) / soma(horas_previstas)
+  unidade: pct
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [area, mes]
+  sinonimos: [absenteismo, faltas, ausencia, afastamento, atestado]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). O que entra em "horas ausentes" -- ferias,
+    licenca medica, falta injustificada -- muda o numero e nao esta definido.
+    Precisa de RH em H-08.
+
+enps:
+  rotulo: eNPS
+  fonte: vw_fato_rh_mes
+  formula: (soma(promotores) - soma(detratores)) / soma(respondentes) * 100
+  unidade: pontos
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [area, mes]
+  sinonimos: [enps, nps interno, promotores, detratores, recomendaria a empresa]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Unidade `pontos`, que entrou no enum em
+    2026-08-24 (D-H45): o eNPS vai de -100 a +100 e e a diferenca entre duas
+    proporcoes, entao `pct` afirmaria que ele e uma proporcao. Nao se soma ao
+    longo do periodo.
+
+engajamento_area:
+  rotulo: Engajamento por área
+  fonte: vw_fato_rh_mes
+  formula: soma(pontos_de_engajamento) / soma(respondentes)
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [area, mes]
+  sinonimos: [engajamento, clima, satisfacao, pesquisa de clima, moral]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Media ponderada por respondente, e nao
+    media das medias por area -- as duas dao numeros diferentes quando as areas
+    tem tamanhos diferentes. A cobertura da pesquisa e de 74% do quadro, e o
+    numero fala pelos que responderam.

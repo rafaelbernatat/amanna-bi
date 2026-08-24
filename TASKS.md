@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 191 pendentes e 40 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 190 pendentes e 41 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 29 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 30 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **40 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **41 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -181,7 +181,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-112** `P0` `M` `dados` Definir o esquema do catálogo de métricas em YAML e o carregador validado
   · **Aceite:** O carregador rejeita entrada sem rótulo, fonte, fórmula, unidade, agg, sentido, grao_minimo ou sinônimos; agg fora de {sum,last,ratio} e grao_minimo abaixo de [area, mes] reprovam no CI, e catálogo inválido quebra o build, não o runtime.
   · **PRD:** seção 9.4, seção 8.1, seção 8.2 · **Depende de:** T-001, T-104
-- [~] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo  ⏳ 2026-08-24 11:20 · sessao-68c8
+- [X] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo
   · **Aceite:** As 21 entradas trazem os nove campos preenchidos, com decisão presente nas métricas discutidas; um teste cruza catálogo x Anexo B e falha se faltar métrica, se o destino não for uma das 13 telas ou se o painel destacado não constar do registro dos 71 painéis.
   · **PRD:** Anexo B, seção 9.4, seção 7.5, D-P2, D-P3 · **Depende de:** T-107, T-112
 - [X] **T-114** `P0` `L` `dados` Implementar o adaptador de fixtures com filtro dimensional real
