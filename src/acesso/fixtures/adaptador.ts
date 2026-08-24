@@ -29,6 +29,7 @@ import type {
   PanelResponse,
   Query,
 } from "@/semantica/contrato";
+import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FATURAMENTO_CLIENTE,
@@ -53,6 +54,7 @@ export const VIEWS = {
   vw_fato_vagas_fonte: VW_FATO_VAGAS_FONTE,
   vw_fato_treinamento: VW_FATO_TREINAMENTO,
   vw_fato_fin_mes: VW_FATO_FIN_MES,
+  vw_fato_caixa_diario: VW_FATO_CAIXA_DIARIO,
   vw_fato_orcamento: VW_FATO_ORCAMENTO,
   vw_fato_contas: VW_FATO_CONTAS,
   vw_fato_faturamento_cliente: VW_FATO_FATURAMENTO_CLIENTE,
