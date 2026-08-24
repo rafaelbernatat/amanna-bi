@@ -388,10 +388,32 @@ function fatorDaArea(area: string, sensibilidade: number): number {
   );
 }
 
+/**
+ * E a mesma inclinação por entidade.
+ *
+ * A Unidade SP é a operação mais nova: contrata mais rápido, e por isso tem
+ * quadro um pouco mais jovem e com menos tempo de casa. Sem esta segunda
+ * inclinação, "Idade média" dava o mesmo número em SP e nas demais — e um KPI
+ * que ignora uma das cinco dimensões do recorte é o achado 5 pela metade.
+ *
+ * Foi um teste de invariantes que apontou, e não a leitura do código.
+ */
+const DIFERENCA_ENTRE_ENTIDADES = 0.04;
+
+function fatorDaEntidade(entidade: string, sensibilidade: number): number {
+  const maisNova = entidade === ENTIDADES_ARMAZENADAS[0];
+  const efeito =
+    (DIFERENCA_ENTRE_ENTIDADES * SENSIBILIDADE_DO_TEMPO) / sensibilidade;
+  return maisNova ? 1 - efeito : 1 + efeito;
+}
+
 /** Reparte um total mensal pelas células, pesando por quadro e por área. */
 function somaDeAtributo(media: number, sensibilidade: number) {
   const pesos = CELULAS.map(
-    (c, k) => (QUADRO_DEZEMBRO[k] ?? 0) * fatorDaArea(c.area, sensibilidade),
+    (c, k) =>
+      (QUADRO_DEZEMBRO[k] ?? 0) *
+      fatorDaArea(c.area, sensibilidade) *
+      fatorDaEntidade(c.entidade, sensibilidade),
   );
   return MESES.map((_mes, m) => {
     const quadro = (HEADCOUNT[m] ?? []).reduce((a, b) => a + b, 0);
@@ -455,6 +477,18 @@ function custoDeSaida(ehReposicao: boolean) {
   );
 }
 
+/**
+ * Participantes de treinamento por célula e mês.
+ *
+ * Fração do quadro daquele mês, pela série de participação do protótipo. Sai do
+ * quadro e não das horas: uma trilha longa não faz mais gente participar.
+ */
+const PARTICIPANTES = MESES.map((_mes, m) =>
+  (HEADCOUNT[m] ?? []).map((quadro) =>
+    Math.round((quadro * (PARTICIPACAO_TREINAMENTO_MENSAL[m] ?? 0)) / 100),
+  ),
+);
+
 const CUSTO_DE_REPOSICAO = custoDeSaida(true);
 const CUSTO_DE_DESLIGAMENTO = custoDeSaida(false);
 
@@ -492,6 +526,18 @@ export type LinhaRhMes = {
   readonly somaDeTempoDeCasa: number;
   /** Soma do tempo de casa **de quem saiu**. Denominador: `desligamentos`. */
   readonly somaDeTempoAteASaida: number;
+  /**
+   * Quantas pessoas do quadro iniciaram ao menos uma trilha no mês.
+   *
+   * Mora aqui, e não em `vw_fato_treinamento`, porque é atributo do **quadro**.
+   * Na view de treinamento a mesma pessoa apareceria uma vez por trilha e uma
+   * vez por modalidade, e somar daria mais gente treinando do que gente — a
+   * participação passava de 100%, medida em 108,9%.
+   *
+   * Continua sendo estoque no tempo: quem treinou em janeiro e em março é uma
+   * pessoa, não duas. Por isso a participação se lê no último mês da janela.
+   */
+  readonly participantesDeTreinamento: number;
   /** Ramp-up e produtividade perdida, em reais. */
   readonly custoDeReposicao: number;
   /** Rescisão e recrutamento de reposição, em reais. */
@@ -527,6 +573,7 @@ export const VW_FATO_RH_MES: readonly LinhaRhMes[] = MESES.flatMap((mes, m) =>
     somaDeIdade: SOMA_DE_IDADE[m]?.[k] ?? 0,
     somaDeTempoDeCasa: SOMA_DE_TEMPO_DE_CASA[m]?.[k] ?? 0,
     somaDeTempoAteASaida: SOMA_DE_TEMPO_ATE_A_SAIDA[m]?.[k] ?? 0,
+    participantesDeTreinamento: PARTICIPANTES[m]?.[k] ?? 0,
     custoDeReposicao: CUSTO_DE_REPOSICAO[m]?.[k] ?? 0,
     custoDeDesligamento: CUSTO_DE_DESLIGAMENTO[m]?.[k] ?? 0,
     horasPrevistas: HORAS_PREVISTAS[m]?.[k] ?? 0,

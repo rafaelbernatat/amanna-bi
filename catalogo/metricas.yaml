@@ -515,8 +515,8 @@ custo_por_contratacao:
 
 participacao_treinamento:
   rotulo: Participação em treinamento
-  fonte: vw_fato_treinamento
-  formula: soma(participantes) / soma(vw_fato_rh_mes.elegiveis)
+  fonte: vw_fato_rh_mes
+  formula: participantes_de_treinamento(ultimo mes) / elegiveis(ultimo mes)
   unidade: pct
   agg: ratio
   sentido: maior_melhor
@@ -525,7 +525,9 @@ participacao_treinamento:
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Denominador e o quadro ELEGIVEL, nao o
     quadro inteiro. Na fixture os dois coincidem; a formula nomeia o certo para
-    que nada mude quando o dado real distinguir.
+    que nada mude quando o dado real distinguir. Lida no ULTIMO MES da janela,
+    e nao somada nela: pessoa nao soma ao longo do tempo, e somar dava 108,9%
+    de participacao -- mais gente treinando do que gente.
 
 conclusao_treinamento:
   rotulo: Conclusão média

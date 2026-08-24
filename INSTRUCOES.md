@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 49 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 50 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,18 +39,18 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 13 (4 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 14 (4 resolvidos) | 6 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **49** | **29** | **122** |
+| **Total** | **50** | **29** | **122** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
+| Produto | 13 |
 | TI do cliente | 13 |
-| Produto | 12 |
 | Controladoria | 10 |
 | Engenharia | 6 |
 | Comercial | 4 |
@@ -75,7 +75,40 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*13 itens · 2 P0 abertos · 5 P1 abertos · 2 P2 abertos · 4 resolvidos*
+*14 itens · 2 P0 abertos · 6 P1 abertos · 2 P2 abertos · 4 resolvidos*
+
+### [ ] H-50 · Decidir como o produto mostra dinheiro em três escalas
+
+`P1` · **Responsável:** Produto
+
+**O que fazer**
+
+O enum de unidades tem **uma** unidade monetária, `BRL_mi`, e a regra da seção 13 do PRD manda formatá-la como "R$ em milhões com uma casa". Mas o produto mostra dinheiro em três escalas muito diferentes, e quatro cartões ficam ilegíveis:
+
+| Cartão | Valor real | Como sai hoje | Como o protótipo mostra |
+|---|---:|---|---|
+| Custo por contratação | R$ 8.600 | `R$ 0,0 mi` | R$ 8,6 mil |
+| Salário médio | ~R$ 8.500 | `R$ 0,0 mi` | R$ 6.240 |
+| Custo por hora de treinamento | R$ 196 | `R$ 0,0 mi` | R$ 196 |
+| Custo por FTE | R$ 150.000 | `R$ 0,1 mi` | R$ 150 mil |
+
+O valor calculado está **certo** nos quatro: `0,0086` é oito mil e seiscentos reais expressos em milhões. O que não funciona é a exibição.
+
+Escolha uma das três saídas, e registre por escrito:
+
+1. **Estender o enum** com `BRL_mil` e `BRL`, como se fez com `horas` e `pontos` em D-H45. Cada métrica declara a escala em que se lê, e o formatador ganha dois casos. Custa reabrir a regra 2 da seção 9.2 outra vez.
+2. **O formatador escolhe a escala pela magnitude** — abaixo de R$ 1 mi mostra "R$ 8,6 mil", abaixo de mil mostra "R$ 196". É o que uma pessoa faria ao ler em voz alta. Custa reabrir o critério de aceite de T-125, que hoje diz "R$ em milhões com uma casa" e está fixado em 30 casos de teste.
+3. **Aceitar `R$ 0,0 mi`** e mudar os rótulos para dizer a escala — "Custo por contratação (mi)". Barato e ruim de ler.
+
+**Por que não decidi:** a saída 2 é a que produz a melhor tela e é a única que muda um critério de aceite já verificado. Alterar aceite verificado por conta própria é exatamente o que a seção 13 do EXECUTE proíbe — "enfraquecer o aceite pela via técnica" — mesmo quando a mudança melhora o produto. A saída 1 é reversível e não mexe em T-125, mas põe três unidades monetárias num enum que existe para ser pequeno.
+
+**Enquanto não for decidido:** os quatro cartões mostram `R$ 0,0 mi` e `R$ 0,1 mi`. O número por trás está correto e um teste o fixa; o que está errado é só o que se lê.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador, escolhendo entre estender o enum, mudar a regra de formatação (com T-125 reaberta) ou ajustar os rótulos |
+| **Onde o resultado vai** | docs/decisoes/, e conforme a saída: `UNIDADES` em `src/semantica/contrato.ts`, `formatarValor` em `src/apresentacao/formato/formato.ts`, ou os rótulos em `src/semantica/kpis.ts` |
+| **Destrava** | nada — os quatro cartões calculam certo e mostram mal |
 
 ### [ ] H-49 · Confirmar que o filtro é aplicado por botão, e não a cada troca
 
@@ -141,6 +174,10 @@ A linha 14 do PRD diz que, onde os dois divergem, **o protótipo vence**, e que 
 O outro número do mesmo cartão fecha: *"12,4% com pós"* é `154 / 1.240` exatamente, e ali a exclusão do mestrado **está certa**, porque pós-graduação é um nível e não um piso. A mesma exclusão foi aplicada nos dois lugares e só valia num.
 
 É defeito do **protótipo**, não do PRD — mas cai neste item porque o KPI está no achado 5 e a correção entra na mesma revisão. A fixture já produz 51,6%, e um teste fixa as duas contas lado a lado para que a diferença não vire discussão.
+
+**Quarto achado, medido em 2026-08-24 ao executar T-115.** O KPI *"Conclusão média"* de `rh/trein` mostra **64%**. A média das taxas de conclusão por modalidade do próprio protótipo, ponderada pelas horas de cada uma — `(11.800 × 58% + 6.200 × 86% + 3.400 × 71%) / 21.400` — dá **68,2%**. Os 64% não saem dessa conta nem de nenhuma outra combinação dos números do protótipo.
+
+A fixture produz **68,5%**, que é a mesma conta feita sobre as trilhas iniciadas e concluídas linha a linha. É a terceira vez que um número de resumo do protótipo não fecha com as partes que ele mesmo mostra — as outras duas são o turnover de 18,4% e o "Superior ou mais" de 48,9%.
 
 | **Destrava** | T-190, T-251 *(2 tarefas)* |
 
