@@ -27,6 +27,8 @@
  */
 
 /** De onde sai um número: a view, o que soma em cima, o que soma embaixo. */
+import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
+
 export type OrigemDeKpi = {
   readonly kpi: string;
   /**
@@ -54,11 +56,16 @@ export type OrigemDeKpi = {
 };
 
 /**
- * Os 23 KPIs do achado 5, com origem declarada.
+ * A origem de cada KPI, na ordem do registro — que é a ordem das telas.
  *
- * Na ordem do registro de KPIs, que é a ordem das telas do Anexo A.
+ * Começou com os 23 do achado 5 (T-143) e cresceu com as 7 telas de RH
+ * (T-115). As telas de Financeiro e Integração entram com T-116.
+ *
+ * Um KPI pode repetir métrica: "Turnover 12m" aparece em `rh/visao` e em
+ * `rh/turnover`, e é o mesmo número lido em duas telas. O que não pode é a
+ * mesma métrica ter duas definições.
  */
-export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
+export const ORIGEM_DOS_KPIS: readonly OrigemDeKpi[] = [
   {
     kpi: "rh-colab-idade-media",
     metrica: "idade_media",
@@ -121,10 +128,11 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   {
     kpi: "rh-trein-participacao",
     metrica: "participacao_treinamento",
-    view: "vw_fato_treinamento",
-    medida: "participantes",
-    denominador: "vw_fato_rh_mes.elegiveis",
-    leitura: "fração do quadro elegível que iniciou ao menos uma trilha",
+    view: "vw_fato_rh_mes",
+    medida: "participantesDeTreinamento do último mês",
+    denominador: "elegiveis do último mês",
+    leitura:
+      "fração do quadro elegível que iniciou ao menos uma trilha; lida no fim da janela porque pessoa não soma ao longo do tempo",
   },
   {
     kpi: "rh-trein-conclusao-media",
@@ -248,9 +256,267 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
     denominador: "vw_fato_fin_mes.receitaLiquida",
     leitura: "quanto da receita vem dos dez maiores clientes",
   },
+
+  /* ---------------- rh/visao ---------------- */
+  {
+    kpi: "rh-visao-headcount",
+    metrica: "headcount_fte",
+    view: "vw_fato_rh_mes",
+    medida: "headcountFte do último mês do recorte",
+    denominador: null,
+    leitura: "o quadro no fechamento do recorte",
+  },
+  {
+    kpi: "rh-visao-turnover-12m",
+    metrica: "turnover_12m",
+    view: "vw_fato_rh_mes",
+    medida: "desligamentos",
+    denominador: "média mensal de headcountFte",
+    leitura: "saídas sobre o quadro médio do período",
+  },
+  {
+    kpi: "rh-visao-retencao-12m",
+    metrica: "retencao_12m",
+    view: "vw_fato_rh_mes",
+    medida: "desligamentos",
+    denominador: "média mensal de headcountFte",
+    leitura: "o complemento do turnover: 100% menos ele",
+  },
+  {
+    kpi: "rh-visao-enps",
+    metrica: "enps",
+    view: "vw_fato_rh_mes",
+    medida: "promotores menos detratores",
+    denominador: "respondentes",
+    leitura: "promotores menos detratores, sobre quem respondeu",
+  },
+  {
+    kpi: "rh-visao-custo-por-fte",
+    metrica: "custo_por_fte",
+    view: "vw_fato_rh_mes",
+    medida: "folhaReais",
+    denominador: "headcountFte do último mês",
+    leitura: "quanto custa cada pessoa no período",
+  },
+  {
+    kpi: "rh-visao-folha-total",
+    metrica: "folha_total",
+    view: "vw_fato_rh_mes",
+    medida: "folhaReais",
+    denominador: null,
+    leitura: "a folha somada no recorte",
+  },
+
+  /* ---------------- rh/colab ---------------- */
+  {
+    kpi: "rh-colab-colaboradores",
+    metrica: "headcount_fte",
+    view: "vw_fato_rh_mes",
+    medida: "headcountFte do último mês do recorte",
+    denominador: null,
+    leitura: "o mesmo quadro de rh/visao, lido na tela de colaboradores",
+  },
+  {
+    kpi: "rh-colab-trabalho-flexivel",
+    metrica: "trabalho_flexivel",
+    view: "vw_fato_rh_mes",
+    medida: "headcountFte em hibrido e remoto",
+    denominador: "headcountFte em todas as modalidades",
+    leitura: "fração do quadro fora do presencial integral",
+  },
+
+  /* ---------------- rh/turnover ---------------- */
+  {
+    kpi: "rh-turnover-turnover-12m",
+    metrica: "turnover_12m",
+    view: "vw_fato_rh_mes",
+    medida: "desligamentos",
+    denominador: "média mensal de headcountFte",
+    leitura: "o mesmo turnover de rh/visao",
+  },
+  {
+    kpi: "rh-turnover-retencao-12m",
+    metrica: "retencao_12m",
+    view: "vw_fato_rh_mes",
+    medida: "desligamentos",
+    denominador: "média mensal de headcountFte",
+    leitura: "o mesmo complemento, na tela de turnover",
+  },
+  {
+    kpi: "rh-turnover-desligamentos",
+    metrica: "desligamentos",
+    view: "vw_fato_rh_mes",
+    medida: "desligamentos",
+    denominador: null,
+    leitura: "quantas pessoas saíram no recorte",
+  },
+  {
+    kpi: "rh-turnover-custo-do-turnover",
+    metrica: "custo_do_turnover",
+    view: "vw_fato_rh_mes",
+    medida: "custoDeReposicao mais custoDeDesligamento",
+    denominador: null,
+    leitura: "rescindir, recrutar de novo e esperar a curva de aprendizado",
+  },
+  {
+    kpi: "rh-turnover-custo-de-reposicao",
+    metrica: "custo_de_reposicao",
+    view: "vw_fato_rh_mes",
+    medida: "custoDeReposicao",
+    denominador: null,
+    leitura: "a parcela que não aparece em nota fiscal nenhuma",
+  },
+
+  /* ---------------- rh/recrut ---------------- */
+  {
+    kpi: "rh-recrut-vagas-abertas",
+    metrica: "vagas_abertas",
+    view: "vw_fato_vagas",
+    medida: "abertas",
+    denominador: null,
+    leitura: "vagas abertas no período",
+  },
+  {
+    kpi: "rh-recrut-em-andamento",
+    metrica: "vagas_em_andamento",
+    view: "vw_fato_vagas",
+    medida: "emAndamento",
+    denominador: null,
+    leitura: "da triagem à proposta",
+  },
+  {
+    kpi: "rh-recrut-fechadas-12m",
+    metrica: "vagas_fechadas",
+    view: "vw_fato_vagas",
+    medida: "fechadas",
+    denominador: null,
+    leitura: "contratações efetivadas",
+  },
+  {
+    kpi: "rh-recrut-canceladas",
+    metrica: "vagas_canceladas",
+    view: "vw_fato_vagas",
+    medida: "canceladas",
+    denominador: null,
+    leitura: "saíram do funil sem contratação",
+  },
+
+  /* ---------------- rh/trein ---------------- */
+  {
+    kpi: "rh-trein-horas-de-treinamento",
+    metrica: "horas_treinamento",
+    view: "vw_fato_treinamento",
+    medida: "horas",
+    denominador: null,
+    leitura: "horas realizadas no recorte",
+  },
+  {
+    kpi: "rh-trein-investimento",
+    metrica: "investimento_treinamento",
+    view: "vw_fato_treinamento",
+    medida: "investimentoReais",
+    denominador: null,
+    leitura: "a verba gasta no recorte",
+  },
+  {
+    kpi: "rh-trein-horas-por-fte",
+    metrica: "horas_por_fte",
+    view: "vw_fato_treinamento",
+    medida: "horas",
+    denominador: "vw_fato_rh_mes.headcountFte do último mês",
+    leitura: "alcance do treinamento sobre o quadro inteiro",
+  },
+
+  /* ---------------- rh/engaj ---------------- */
+  {
+    kpi: "rh-engaj-enps",
+    metrica: "enps",
+    view: "vw_fato_rh_mes",
+    medida: "promotores menos detratores",
+    denominador: "respondentes",
+    leitura: "o mesmo eNPS de rh/visao",
+  },
+  {
+    kpi: "rh-engaj-engajamento",
+    metrica: "engajamento_area",
+    view: "vw_fato_rh_mes",
+    medida: "pontosDeEngajamento",
+    denominador: "respondentes",
+    leitura: "média ponderada por respondente, não média das áreas",
+  },
+  {
+    kpi: "rh-engaj-absenteismo",
+    metrica: "absenteismo",
+    view: "vw_fato_rh_mes",
+    medida: "horasAusentes",
+    denominador: "horasPrevistas",
+    leitura: "horas não trabalhadas sobre horas previstas",
+  },
+  {
+    kpi: "rh-engaj-area-mais-critica",
+    metrica: "engajamento_minimo_por_area",
+    view: "vw_fato_rh_mes",
+    medida: "pontosDeEngajamento",
+    denominador: "respondentes",
+    leitura: "o menor engajamento entre as áreas do recorte",
+  },
+
+  /* ---------------- rh/sal ---------------- */
+  {
+    kpi: "rh-sal-folha-total",
+    metrica: "folha_total",
+    view: "vw_fato_rh_mes",
+    medida: "folhaReais",
+    denominador: null,
+    leitura: "a mesma folha de rh/visao",
+  },
+  {
+    kpi: "rh-sal-salario-medio",
+    metrica: "salario_medio",
+    view: "vw_fato_rh_mes",
+    medida: "salarios",
+    denominador: "headcountFte do último mês, vezes os meses do recorte",
+    leitura: "salário mensal médio, sem encargos",
+  },
+  {
+    kpi: "rh-sal-custo-por-colaborador",
+    metrica: "custo_por_fte",
+    view: "vw_fato_rh_mes",
+    medida: "folhaReais",
+    denominador: "headcountFte do último mês",
+    leitura: "o mesmo custo por FTE de rh/visao",
+  },
+  {
+    kpi: "rh-sal-beneficios",
+    metrica: "beneficios",
+    view: "vw_fato_rh_mes",
+    medida: "beneficios",
+    denominador: null,
+    leitura: "a parcela de benefícios da folha",
+  },
+  {
+    kpi: "rh-sal-variavel",
+    metrica: "remuneracao_variavel",
+    view: "vw_fato_rh_mes",
+    medida: "variavel",
+    denominador: null,
+    leitura: "bônus e horas extras",
+  },
 ];
 
-/** A origem de um KPI, ou `undefined` se ele não está no achado 5. */
+/** A origem de um KPI, ou `undefined` se ainda não foi declarada. */
 export function origemDoKpi(kpi: string): OrigemDeKpi | undefined {
-  return ORIGEM_DOS_KPIS_CONSTANTES.find((o) => o.kpi === kpi);
+  return ORIGEM_DOS_KPIS.find((o) => o.kpi === kpi);
 }
+
+/**
+ * Só as origens dos KPIs que o protótipo mostrava cravados (achado 5).
+ *
+ * Derivada, e não uma segunda lista: duas listas com quase o mesmo conteúdo
+ * divergem na primeira edição. Quem decide o que é constante é o registro de
+ * KPIs, no campo `constanteNoPrototipo`.
+ */
+export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] =
+  ORIGEM_DOS_KPIS.filter((o) =>
+    REGISTRO_DE_KPIS.some((k) => k.id === o.kpi && k.constanteNoPrototipo),
+  );

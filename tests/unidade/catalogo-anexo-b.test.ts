@@ -28,7 +28,7 @@ import { describe, expect, it } from "vitest";
 import { MODULOS } from "@/apresentacao/navegacao/telas";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import { carregarCatalogo, type Metrica } from "@/semantica/catalogo";
-import { ORIGEM_DOS_KPIS_CONSTANTES } from "@/semantica/origem-de-kpi";
+import { ORIGEM_DOS_KPIS } from "@/semantica/origem-de-kpi";
 
 const RAIZ = process.cwd();
 
@@ -123,7 +123,15 @@ describe("catálogo × Anexo B", () => {
      * abre nenhum KPI — existe só no arquivo, e ninguém vai encontrá-la.
      */
     const doAnexo = new Set(ANEXO_B.map((i) => i.metrica));
-    const doAchado = new Set(ORIGEM_DOS_KPIS_CONSTANTES.map((o) => o.metrica));
+    /*
+     * `ORIGEM_DOS_KPIS` e não só as do achado 5.
+     *
+     * T-115 acrescentou métricas que existem porque um cartão precisa delas —
+     * custo por FTE, vagas por status, benefícios — e que não estão no Anexo B
+     * nem no achado. Continuam sendo alcançáveis: abrem um KPI de uma tela.
+     * Órfã é a que não abre nada.
+     */
+    const deCartao = new Set(ORIGEM_DOS_KPIS.map((o) => o.metrica));
 
     /*
      * Uma terceira categoria, com um membro só e nomeado.
@@ -137,7 +145,7 @@ describe("catálogo × Anexo B", () => {
     const DE_NOTA = new Set(["mediana_salarial"]);
 
     const orfas = CATALOGO.filter(
-      (m) => !doAnexo.has(m.id) && !doAchado.has(m.id) && !DE_NOTA.has(m.id),
+      (m) => !doAnexo.has(m.id) && !deCartao.has(m.id) && !DE_NOTA.has(m.id),
     ).map((m) => m.id);
     expect(orfas).toEqual([]);
   });

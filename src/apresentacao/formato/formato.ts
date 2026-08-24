@@ -15,8 +15,22 @@
  * Arredondamento acontece nesta camada e em nenhuma outra (PRD secao 13).
  */
 
-/** As cinco unidades do contrato (PRD secao 9.2 regra 2). */
-export type Unidade = "BRL_mi" | "pct" | "pp" | "dias" | "FTE";
+/**
+ * A unidade vem do contrato, e **nao e redeclarada aqui**.
+ *
+ * Este modulo declarava a propria copia com cinco valores. Quando D-H45
+ * estendeu o enum para nove, o contrato mudou e a copia nao -- e `formatarValor`
+ * passou a devolver `undefined` para `horas`, `contagem`, `pontos` e `anos`,
+ * sem erro de compilacao e sem teste vermelho. A tela mostraria a palavra
+ * "undefined" onde deveria haver numero.
+ *
+ * Duas declaracoes quase iguais lado a lado sao onde alguem atualiza uma e
+ * esquece a outra. Agora ha uma so, e um teste percorre `UNIDADES` inteiro para
+ * que a proxima unidade nao possa entrar sem formatacao.
+ */
+export type { Unidade } from "@/semantica/contrato";
+
+import type { Unidade } from "@/semantica/contrato";
 
 const MESES = [
   "jan",
@@ -33,13 +47,23 @@ const MESES = [
   "dez",
 ] as const;
 
-/** Casas decimais por unidade. `dias` e `FTE` sao contagens: inteiras. */
+/**
+ * Casas decimais por unidade.
+ *
+ * `dias`, `FTE`, `contagem` e `pontos` sao contagens: inteiras. `horas` leva uma
+ * casa porque serve a dois usos de escala muito diferente -- 21.400 horas no ano
+ * e 17,3 horas por FTE -- e zerar a casa perderia o segundo.
+ */
 const CASAS: Readonly<Record<Unidade, number>> = {
   BRL_mi: 1,
   pct: 1,
   pp: 1,
   dias: 0,
   FTE: 0,
+  horas: 1,
+  contagem: 0,
+  pontos: 0,
+  anos: 1,
 };
 
 /**
@@ -89,6 +113,21 @@ export function formatarValor(valor: number, unidade: Unidade): string {
       return `${sinal}${corpo} ${Math.abs(valor) === 1 ? "dia" : "dias"}`;
     case "FTE":
       return `${sinal}${corpo} FTE`;
+    case "horas":
+      return `${sinal}${corpo} h`;
+    case "anos":
+      return `${sinal}${corpo} ${Math.abs(valor) === 1 ? "ano" : "anos"}`;
+    /*
+     * `contagem` e `pontos` saem sem sufixo, e saem iguais.
+     *
+     * Nao e descuido: o eNPS se escreve como numero puro por convencao, e
+     * "48 vagas" ja tem a palavra no rotulo do cartao. A diferenca entre as
+     * duas unidades esta na **agregacao** -- contagem soma ao longo do periodo
+     * e pontos nao -- e nao na aparencia.
+     */
+    case "contagem":
+    case "pontos":
+      return `${sinal}${corpo}`;
   }
 }
 
