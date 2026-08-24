@@ -136,6 +136,12 @@ A linha 14 do PRD diz que, onde os dois divergem, **o protótipo vence**, e que 
 |---|---|
 | **Resultado esperado** | Anexo D achado 5 reescrito com os 23 e com o critério de contagem ("a expressão não consulta filtro"), a nota sobre a mediana salarial corrigida, e `PRD.md:607` alinhado ao protótipo — ou o Anexo D registrando a divergência de título como achado próprio |
 | **Onde o resultado vai** | PRD.md (Anexo D achado 5 e a linha do `cx-diario` no Anexo A.3), depois `src/semantica/kpis.ts` e `src/semantica/paineis.ts` na mesma revisão |
+**Terceiro achado, medido em 2026-08-24 ao executar T-143.** O KPI *"Superior ou mais"* de `rh/colab` mostra **48,9%**, e essa conta e `(452 + 154) / 1.240` — Superior mais Pós-graduação, **sem Mestrado+**. Mas mestrado é superior ou mais. A conta correta é `(452 + 154 + 34) / 1.240 = 51,6%`, e é a que a fixture produz.
+
+O outro número do mesmo cartão fecha: *"12,4% com pós"* é `154 / 1.240` exatamente, e ali a exclusão do mestrado **está certa**, porque pós-graduação é um nível e não um piso. A mesma exclusão foi aplicada nos dois lugares e só valia num.
+
+É defeito do **protótipo**, não do PRD — mas cai neste item porque o KPI está no achado 5 e a correção entra na mesma revisão. A fixture já produz 51,6%, e um teste fixa as duas contas lado a lado para que a diferença não vire discussão.
+
 | **Destrava** | T-190, T-251 *(2 tarefas)* |
 
 ### [ ] H-47 · Decidir se o protótipo é editado para remover a chave que desliga a fórmula

@@ -64,6 +64,13 @@ import {
   VAGAS_CANCELADAS,
 } from "@/acesso/fixtures/referencia-rh";
 import {
+  COMPOSICAO_DA_FOLHA,
+  CUSTO_POR_CONTRATACAO,
+  IDADE_MEDIA,
+  TEMPO_MEDIO_ATE_A_SAIDA,
+  TEMPO_MEDIO_DE_CASA,
+} from "@/acesso/fixtures/referencia-perfil";
+import {
   ajustarMargemDeColuna,
   repartir,
   repartirMatriz,
@@ -262,7 +269,42 @@ const PESO_DE_FOLHA = CELULAS.map(
     fatiaDaEntidade(c.entidade, "folha"),
 );
 
-const FOLHA = porMesECelula(FOLHA_MENSAL_REAIS, PESO_DE_FOLHA);
+/**
+ * A folha, repartida nas quatro parcelas que a compoem (T-143).
+ *
+ * Salarios, encargos, beneficios e variavel somam a folha do mes -- e a folha
+ * do mes deixa de ser uma coluna propria para ser a soma das quatro. Sem isso o
+ * KPI "Encargos 37,5%" nao teria numerador nem denominador: ele e
+ * `encargos / salarios`, e nao `encargos / folha`, que daria 22,6%.
+ */
+const UM_MILHAO = 1_000_000;
+
+/**
+ * A repartição mes x parcela, com as duas margens exatas.
+ *
+ * Repartir cada mes por conta propria fecha o mes e deixa o ANO derivar: os
+ * salarios sairam com R$ 111.999.997 contra os R$ 112 mi do prototipo, tres
+ * reais a menos. Some numa tela que arredonda para milhoes, e aparece no dia em
+ * que alguem exportar o CSV.
+ */
+const FOLHA_MES_POR_PARCELA = repartirMatriz(
+  FOLHA_MENSAL_REAIS,
+  COMPOSICAO_DA_FOLHA.map((c) => c.milhoes * UM_MILHAO),
+);
+
+const COMPONENTES_DA_FOLHA = COMPOSICAO_DA_FOLHA.map((_, k) =>
+  porMesECelula(
+    MESES.map((_mes, m) => FOLHA_MES_POR_PARCELA[m]?.[k] ?? 0),
+    PESO_DE_FOLHA,
+  ),
+);
+
+/** A folha de cada celula: a soma das quatro parcelas, nunca uma quinta coluna. */
+const FOLHA = MESES.map((_mes, m) =>
+  CELULAS.map((_c, k) =>
+    COMPONENTES_DA_FOLHA.reduce((t, comp) => t + (comp[m]?.[k] ?? 0), 0),
+  ),
+);
 
 /** Respondentes da pesquisa de clima, por célula e mês. */
 const RESPONDENTES = MESES.map((_, m) => {
@@ -320,6 +362,70 @@ const HORAS_AUSENTES = MESES.map((_, m) => {
 });
 
 /* ------------------------------------------------------------------ *
+ * As médias que viram soma (T-143)
+ * ------------------------------------------------------------------ */
+
+/**
+ * O quanto a idade e o tempo de casa de uma área se afastam da média.
+ *
+ * **Derivado do turnover, não inventado.** Área que perde gente rápido tem
+ * quadro mais novo e mais recente — é a mesma relação que o dataset já conta em
+ * `pesoDeDesligamento`. Sem essa variação, "Idade média" continuaria dando 34,2
+ * em todo recorte, que é exatamente o defeito do achado 5 que esta tarefa
+ * existe para tirar.
+ *
+ * O tempo de casa varia mais que a idade: rotatividade zera tempo de casa e
+ * não zera idade.
+ */
+const TURNOVER_TIPICO = 16.5;
+const SENSIBILIDADE_DA_IDADE = 100;
+const SENSIBILIDADE_DO_TEMPO = 50;
+
+function fatorDaArea(area: string, sensibilidade: number): number {
+  return (
+    1 - (perfilDe(area).pesoDeDesligamento - TURNOVER_TIPICO) / sensibilidade
+  );
+}
+
+/** Reparte um total mensal pelas células, pesando por quadro e por área. */
+function somaDeAtributo(media: number, sensibilidade: number) {
+  const pesos = CELULAS.map(
+    (c, k) => (QUADRO_DEZEMBRO[k] ?? 0) * fatorDaArea(c.area, sensibilidade),
+  );
+  return MESES.map((_mes, m) => {
+    const quadro = (HEADCOUNT[m] ?? []).reduce((a, b) => a + b, 0);
+    // Pesos por célula, mas ponderados pelo quadro **daquele mês**, para que a
+    // média de cada área acompanhe o quadro que ela tem no mês.
+    const pesosDoMes = pesos.map(
+      (p, k) =>
+        p * ((HEADCOUNT[m]?.[k] ?? 0) / Math.max(1, QUADRO_DEZEMBRO[k] ?? 1)),
+    );
+    return repartir(Math.round(media * quadro), pesosDoMes);
+  });
+}
+
+const SOMA_DE_IDADE = somaDeAtributo(IDADE_MEDIA, SENSIBILIDADE_DA_IDADE);
+const SOMA_DE_TEMPO_DE_CASA = somaDeAtributo(
+  TEMPO_MEDIO_DE_CASA,
+  SENSIBILIDADE_DO_TEMPO,
+);
+
+/**
+ * Tempo de casa de quem saiu. Denominador: os desligamentos, não o quadro.
+ *
+ * É a diferença que o registro de KPIs já anotava: `tov-corte` mede taxa por
+ * gênero e faixa etária, em percentual; este KPI mede anos. Trocar o
+ * denominador daria um número plausível e errado.
+ */
+const SOMA_DE_TEMPO_ATE_A_SAIDA = MESES.map((_mes, m) => {
+  const saidas = (DESLIGAMENTOS[m] ?? []).reduce((a, b) => a + b, 0);
+  return repartir(
+    Math.round(TEMPO_MEDIO_ATE_A_SAIDA * saidas),
+    DESLIGAMENTOS[m] ?? [],
+  );
+});
+
+/* ------------------------------------------------------------------ *
  * vw_fato_rh_mes
  * ------------------------------------------------------------------ */
 
@@ -332,8 +438,27 @@ export type LinhaRhMes = {
   readonly headcountFte: number;
   readonly admissoes: number;
   readonly desligamentos: number;
-  /** Em reais. A conversão para `BRL_mi` é da apresentação (regra 2). */
+  /** Em reais. A soma das quatro parcelas abaixo, nunca uma coluna à parte. */
   readonly folhaReais: number;
+  readonly salarios: number;
+  readonly encargos: number;
+  readonly beneficios: number;
+  readonly variavel: number;
+  /**
+   * Quem pode responder à pesquisa de clima. Denominador de "Cobertura".
+   *
+   * Na fixture coincide com o quadro, porque ninguém está marcado como
+   * inelegível. A coluna existe assim mesmo, e é o ponto: a fórmula nomeia
+   * `elegiveis`, e no dia em que o dado real distinguir os dois — afastados,
+   * admitidos há menos de 90 dias — nada na fórmula muda.
+   */
+  readonly elegiveis: number;
+  /** Soma das idades. A média é `somaDeIdade / headcountFte`. */
+  readonly somaDeIdade: number;
+  /** Soma dos tempos de casa, em anos. */
+  readonly somaDeTempoDeCasa: number;
+  /** Soma do tempo de casa **de quem saiu**. Denominador: `desligamentos`. */
+  readonly somaDeTempoAteASaida: number;
   /** Denominador do absenteísmo. */
   readonly horasPrevistas: number;
   /** Numerador do absenteísmo. */
@@ -357,6 +482,14 @@ export const VW_FATO_RH_MES: readonly LinhaRhMes[] = MESES.flatMap((mes, m) =>
     admissoes: ADMISSOES[m]?.[k] ?? 0,
     desligamentos: DESLIGAMENTOS[m]?.[k] ?? 0,
     folhaReais: FOLHA[m]?.[k] ?? 0,
+    salarios: COMPONENTES_DA_FOLHA[0]?.[m]?.[k] ?? 0,
+    encargos: COMPONENTES_DA_FOLHA[1]?.[m]?.[k] ?? 0,
+    beneficios: COMPONENTES_DA_FOLHA[2]?.[m]?.[k] ?? 0,
+    variavel: COMPONENTES_DA_FOLHA[3]?.[m]?.[k] ?? 0,
+    elegiveis: HEADCOUNT[m]?.[k] ?? 0,
+    somaDeIdade: SOMA_DE_IDADE[m]?.[k] ?? 0,
+    somaDeTempoDeCasa: SOMA_DE_TEMPO_DE_CASA[m]?.[k] ?? 0,
+    somaDeTempoAteASaida: SOMA_DE_TEMPO_ATE_A_SAIDA[m]?.[k] ?? 0,
     horasPrevistas: HORAS_PREVISTAS[m]?.[k] ?? 0,
     horasAusentes: HORAS_AUSENTES[m]?.[k] ?? 0,
     respondentes: RESPONDENTES[m]?.[k] ?? 0,
@@ -428,6 +561,16 @@ export type LinhaVagas = {
   readonly fechadas: number;
   readonly canceladas: number;
   /**
+   * Custo de recrutamento do mês, em reais (T-143).
+   *
+   * O custo por contratação é `custoDeRecrutamento / contratados`. Varia por
+   * área porque acompanha o tempo de fechamento: vaga que demora custa mais
+   * anúncio, mais hora de entrevista e mais agência. Se fosse um múltiplo fixo
+   * das contratações, o KPI daria os mesmos R$ 8,6 mil em todo recorte — que é
+   * o defeito do achado 5 outra vez, com uma coluna a mais.
+   */
+  readonly custoDeRecrutamento: number;
+  /**
    * Soma dos dias de todas as vagas fechadas no mês.
    *
    * O tempo médio é `diasSomados / fechadas`. Guardar a média já pronta faria
@@ -441,6 +584,27 @@ export type LinhaVagas = {
   readonly contratados: number;
 };
 
+/**
+ * O custo de recrutamento, com o total do ano exato.
+ *
+ * Peso: contratações da célula vezes os dias que a área leva para fechar. A
+ * soma do ano é `8.600 x 96`, e a repartição por maior resto entrega isso
+ * exato — o KPI dá R$ 8,6 mil no consolidado e outro número em Tecnologia.
+ */
+const CUSTO_DE_RECRUTAMENTO = (() => {
+  const contratados = FUNIL[4] ?? [];
+  const total = contratados.reduce(
+    (t, linha) => t + linha.reduce((a, b) => a + b, 0),
+    0,
+  );
+  const pesos = MESES.flatMap((_mes, m) =>
+    AREAS_ARMAZENADAS.map(
+      (area, i) => (contratados[m]?.[i] ?? 0) * perfilDe(area).diasParaFechar,
+    ),
+  );
+  return repartir(CUSTO_POR_CONTRATACAO * total, pesos);
+})();
+
 export const VW_FATO_VAGAS: readonly LinhaVagas[] = MESES.flatMap((mes, m) =>
   AREAS_ARMAZENADAS.map((area, i) => {
     const fechadas = VAGAS_FECHADAS[m]?.[i] ?? 0;
@@ -451,6 +615,8 @@ export const VW_FATO_VAGAS: readonly LinhaVagas[] = MESES.flatMap((mes, m) =>
       emAndamento: VAGAS_ANDAMENTO[m]?.[i] ?? 0,
       fechadas,
       canceladas: VAGAS_CANCELADAS_MATRIZ[m]?.[i] ?? 0,
+      custoDeRecrutamento:
+        CUSTO_DE_RECRUTAMENTO[m * AREAS_ARMAZENADAS.length + i] ?? 0,
       // O dia médio do mês e o da área se combinam pela média dos dois, o que
       // preserva as duas leituras: o mês tem o perfil do mês, e Tecnologia
       // continua demorando mais que Logística em qualquer mês.

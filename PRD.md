@@ -390,13 +390,38 @@ O adaptador espera um modelo estrela simples, com grão mensal. Se o cliente já
 
 | View | Chaves e medidas | Origem típica |
 |---|---|---|
-| `vw_fato_rh_mes` | mês, entidade, área, modalidade · headcount FTE, admissões, desligamentos, folha, absenteísmo, eNPS, engajamento | Folha / HCM |
-| `vw_fato_fin_mes` | mês, entidade · receita bruta e líquida, CMV, despesas, EBITDA, resultado financeiro, lucro líquido, FCO, capex, saldo de caixa | ERP / contábil |
+| `vw_fato_rh_mes` | mês, entidade, área, modalidade · headcount FTE, admissões, desligamentos, folha (salários, encargos, benefícios, variável), horas previstas e ausentes, respondentes, elegíveis, promotores, neutros, detratores, pontos de engajamento, soma de idade, soma de tempo de casa, soma de tempo até a saída | Folha / HCM |
+| `vw_fato_rh_perfil` | mês, entidade, área, modalidade, **dimensão, valor** · headcount FTE | Folha / HCM |
+| `vw_fato_fin_mes` | mês, entidade · receita bruta e líquida, deduções, CMV, despesas, D&A, resultado financeiro, não operacional, FCO, capex, financiamento, entradas e saídas de caixa, estoque, saldo de caixa, notas emitidas | ERP / contábil |
 | `vw_fato_orcamento` | mês, entidade, centro de custo · orçado, realizado | Planejamento |
-| `vw_fato_vagas` | mês, área · abertas, em andamento, fechadas, canceladas, dias para fechar, etapas do funil, fonte do candidato | ATS |
-| `vw_fato_treinamento` | mês, área, trilha, modalidade · horas, investimento, participação, conclusão | LMS |
-| `vw_fato_contas` | mês, entidade, faixa de aging · a receber, a pagar, PMR, PME, PMP | ERP |
-| `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade | Cadastros |
+| `vw_fato_vagas` | mês, área · abertas, em andamento, fechadas, canceladas, dias somados, custo de recrutamento, etapas do funil | ATS |
+| `vw_fato_vagas_fonte` | mês, área, fonte do candidato · contratados | ATS |
+| `vw_fato_treinamento` | mês, área, trilha, modalidade da trilha · horas, investimento, trilhas iniciadas e concluídas, participantes | LMS |
+| `vw_fato_contas` | mês, entidade, faixa de aging · a receber, a pagar | ERP |
+| `vw_fato_faturamento_cliente` | mês, entidade, cliente · receita, margem de contribuição | ERP / comercial |
+| `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, mês | Cadastros |
+
+> **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
+> descrevia medida que não existe e omitia medida que os painéis precisam.
+>
+> **Nenhuma taxa é coluna.** `vw_fato_rh_mes` listava "absenteísmo, eNPS,
+> engajamento" e `vw_fato_contas` listava "PMR, PME, PMP" — os seis são taxas ou
+> prazos, e taxa guardada pronta não se recalcula sob recorte, que é o achado 5
+> do Anexo D em forma de esquema. No lugar entram os componentes: horas ausentes
+> sobre previstas, promotores e detratores sobre respondentes, saldos sobre
+> fluxos. O mesmo vale para "lucro líquido" e "EBITDA", que são degraus
+> derivados da ponte da DRE e não colunas.
+>
+> **Três acréscimos.** `vw_fato_rh_perfil` quebra o quadro por faixa etária,
+> tempo de casa, escolaridade, UF e faixa salarial — sem ela, quatro KPIs do
+> achado 5 não teriam de onde sair. `vw_fato_vagas_fonte` separa a origem do
+> candidato da contagem de vagas, porque vaga ainda aberta não tem candidato
+> contratado. `vw_fato_faturamento_cliente` sustenta a concentração top 10.
+>
+> **Duas colunas nomeadas pelo aceite de T-143** entraram: custo de recrutamento
+> em `vw_fato_vagas`, e respondentes com elegíveis em `vw_fato_rh_mes`. Na
+> fixture elegíveis coincide com o quadro; a coluna existe para que a fórmula
+> nomeie o denominador certo quando o dado real distinguir os dois.
 
 ### 10.2 · Sincronização
 
