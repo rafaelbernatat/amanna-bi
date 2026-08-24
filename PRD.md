@@ -337,7 +337,7 @@ interface DataSource {
 Todas verificáveis em teste automatizado. Uma regra que não é testável não entra aqui.
 
 1. **Reconciliação.** Para a mesma `Query`, o KPI e o painel que o detalha somam o mesmo total. Um painel que quebra por área, sob recorte de uma área, mostra só aquela área — nunca a lista inteira com o total de outro recorte.
-2. **Unidade declarada.** Todo valor volta com unidade (`BRL_mi`, `pct`, `pp`, `dias`, `FTE`), e a formatação pt-BR acontece **só** na apresentação.
+2. **Unidade declarada.** Todo valor volta com unidade (`BRL_mi`, `pct`, `pp`, `dias`, `FTE`, `horas`, `contagem`, `pontos`, `anos`), e a formatação pt-BR acontece **só** na apresentação. As quatro últimas entraram em 2026-08-24 por decisão de Produto ([D-H45](docs/decisoes/D-H45-unidades.md)): cinco painéis e treze KPIs do protótipo medem horas de treinamento, contagem de vagas e candidatos, pontos de eNPS e anos de tempo de casa, e nenhuma das cinco unidades originais os nomeia sem afirmar algo falso sobre o número. `pontos` e `anos` são taxas: não se somam ao longo do período, como `pct` e `pp`.
 3. **Vazio explícito.** Recorte sem dado devolve `null` com motivo (princípio P4).
 4. **Agregação correta por tipo.** Todo fato é mensal e aditivo, **exceto** taxas (turnover, margens, PMR) e estoques (headcount, saldo de caixa). O catálogo marca cada métrica como `agg: sum | last | ratio`, para que um recorte de 3 meses nunca some percentuais.
 5. **Idempotência.** A mesma `Query` devolve o mesmo resultado enquanto o *sync* não avançar.
