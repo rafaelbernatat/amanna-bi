@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 96 | 55 | 37 | 4 | 38 de 96 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 96 | 55 | 37 | 4 | 39 de 96 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **233** | **118** | **92** | **18** | **49 de 233** |
+| **Total** | **233** | **118** | **92** | **18** | **50 de 233** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -199,7 +199,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-117.2** `P0` `M` `auditoria` Declarar a fonte dos dois painéis de barras cujas medidas não existem em 10.1
   · **Aceite:** tov-custo e fat-risco ganham linha declarada na tabela 10.1 com as colunas nomeadas, a fixture as implementa, e as decisões de negócio de que elas dependem ficam registradas em INSTRUCOES.md; um teste percorre os 31 painéis de barras, linha e barras empilhadas e prova que nenhum ficou sem view de origem.
   · **PRD:** seção 10.1, Anexo A.1, Anexo D achado 5 · **Depende de:** T-111, T-143
-- [~] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal  ⏳ 2026-08-24 16:30 · sessao-68c8
+- [X] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
   · **Aceite:** Todo painel do registro cuja forma é barras, linha ou barras empilhadas responde com envelope válido no JSON Schema, muda de valor ao trocar entidade e área, e tem as categorias respeitando o recorte de período (12, 6, 3 e 1 mês).
   · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-110, T-111, T-114, T-143
 - [ ] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
