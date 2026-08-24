@@ -181,7 +181,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-112** `P0` `M` `dados` Definir o esquema do catálogo de métricas em YAML e o carregador validado
   · **Aceite:** O carregador rejeita entrada sem rótulo, fonte, fórmula, unidade, agg, sentido, grao_minimo ou sinônimos; agg fora de {sum,last,ratio} e grao_minimo abaixo de [area, mes] reprovam no CI, e catálogo inválido quebra o build, não o runtime.
   · **PRD:** seção 9.4, seção 8.1, seção 8.2 · **Depende de:** T-001, T-104
-- [ ] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo
+- [~] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo  ⏳ 2026-08-24 11:20 · sessao-68c8
   · **Aceite:** As 21 entradas trazem os nove campos preenchidos, com decisão presente nas métricas discutidas; um teste cruza catálogo x Anexo B e falha se faltar métrica, se o destino não for uma das 13 telas ou se o painel destacado não constar do registro dos 71 painéis.
   · **PRD:** Anexo B, seção 9.4, seção 7.5, D-P2, D-P3 · **Depende de:** T-107, T-112
 - [X] **T-114** `P0` `L` `dados` Implementar o adaptador de fixtures com filtro dimensional real
