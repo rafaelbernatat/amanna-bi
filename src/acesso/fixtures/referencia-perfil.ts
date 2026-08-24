@@ -174,23 +174,51 @@ export const NOTAS_EMITIDAS = 18_400;
  * "Concentração top 10" do protótipo. O número existe para ser calculado, não
  * transcrito.
  */
+/**
+ * As faixas de rating interno do painel `fat-risco`, da melhor para a pior.
+ *
+ * A ordem é a do desenho e não é decorativa: a barra empilhada lê da esquerda
+ * para a direita como "quanto da carteira está em cada nível de risco", e
+ * embaralhar as faixas destrói essa leitura.
+ *
+ * De onde vem o rating de verdade — cadastro do ERP, análise própria ou birô —
+ * é **H-53**, e a resposta pode trocar estas quatro faixas por outras. Ver o
+ * cabeçalho de `LinhaFaturamentoCliente`.
+ */
+export const FAIXAS_DE_RATING: readonly string[] = [
+  "AAA-A",
+  "BBB",
+  "BB",
+  "B-ou-inferior",
+];
+
 export const TOP_CLIENTES: readonly {
   readonly codigo: string;
   /** Receita do ano, em R$ mi. */
   readonly receita: number;
   /** Margem de contribuição, em %. */
   readonly margem: number;
+  /**
+   * Faixa de rating interno.
+   *
+   * Os enquadramentos abaixo foram escolhidos para que a participação de cada
+   * faixa na carteira dos dez maiores reproduza a do protótipo — 62 %, 21 %,
+   * 11 % e 6 %. É engenharia reversa de uma tela aprovada, e não avaliação de
+   * crédito: nenhum destes clientes existe, e o critério de enquadramento é
+   * justamente o que **H-53** precisa responder.
+   */
+  readonly rating: string;
 }[] = [
-  { codigo: "c1", receita: 118, margem: 32.4 },
-  { codigo: "c2", receita: 96, margem: 28.1 },
-  { codigo: "c3", receita: 84, margem: 35.2 },
-  { codigo: "c4", receita: 72, margem: 19.6 },
-  { codigo: "c5", receita: 66, margem: 24.8 },
-  { codigo: "c6", receita: 54, margem: 12.4 },
-  { codigo: "c7", receita: 48, margem: 29.7 },
-  { codigo: "c8", receita: 42, margem: 8.9 },
-  { codigo: "c9", receita: 38, margem: 22.1 },
-  { codigo: "c10", receita: 34, margem: 31.5 },
+  { codigo: "c1", receita: 118, margem: 32.4, rating: "AAA-A" },
+  { codigo: "c2", receita: 96, margem: 28.1, rating: "BBB" },
+  { codigo: "c3", receita: 84, margem: 35.2, rating: "AAA-A" },
+  { codigo: "c4", receita: 72, margem: 19.6, rating: "BB" },
+  { codigo: "c5", receita: 66, margem: 24.8, rating: "AAA-A" },
+  { codigo: "c6", receita: 54, margem: 12.4, rating: "AAA-A" },
+  { codigo: "c7", receita: 48, margem: 29.7, rating: "AAA-A" },
+  { codigo: "c8", receita: 42, margem: 8.9, rating: "BBB" },
+  { codigo: "c9", receita: 38, margem: 22.1, rating: "B-ou-inferior" },
+  { codigo: "c10", receita: 34, margem: 31.5, rating: "AAA-A" },
 ];
 
 /* ------------------------------------------------------------------ *

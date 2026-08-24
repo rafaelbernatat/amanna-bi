@@ -388,6 +388,15 @@ export type LinhaFaturamentoCliente = {
   readonly mes: string;
   readonly entidade: string;
   readonly cliente: string;
+  /**
+   * Faixa de rating interno do cliente (T-117.2).
+   *
+   * Qualificação do cliente, e não fato novo — por isso entra como chave aqui
+   * em vez de virar view própria. Quem preenche esta coluna com dado real, e
+   * com que critério, é **H-53**: pode vir do cadastro do ERP, de análise de
+   * crédito própria ou de birô externo, e as três dão escalas diferentes.
+   */
+  readonly rating: string;
   /** Receita do mês, em reais. */
   readonly receita: number;
   /** Margem de contribuição em pontos-base, para somar sem perder casa. */
@@ -419,6 +428,7 @@ export const VW_FATO_FATURAMENTO_CLIENTE: readonly LinhaFaturamentoCliente[] =
         mes,
         entidade,
         cliente: cliente.codigo,
+        rating: cliente.rating,
         receita: receita[e] ?? 0,
         margemBase: Math.round(
           ((receita[e] ?? 0) * cliente.margem) / BASE_DA_MARGEM,

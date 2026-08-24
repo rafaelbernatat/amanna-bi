@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 51 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 53 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 15 (4 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 17 (4 resolvidos) | 6 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **51** | **29** | **122** |
+| **Total** | **53** | **29** | **122** |
 
 **Por responsável**
 
@@ -51,9 +51,10 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|
 | Produto | 14 |
 | TI do cliente | 13 |
-| Controladoria | 10 |
+| Controladoria | 11 |
 | Engenharia | 6 |
 | Comercial | 4 |
+| Financeiro | 1 |
 | Juridico do cliente | 1 |
 | Produto, com Controladoria e RH | 1 |
 | Produto, com Engenharia | 1 |
@@ -75,7 +76,56 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*15 itens · 2 P0 abertos · 6 P1 abertos · 3 P2 abertos · 4 resolvidos*
+*17 itens · 2 P0 abertos · 8 P1 abertos · 3 P2 abertos · 4 resolvidos*
+
+### [ ] H-53 · Dizer de onde vem o rating de crédito do cliente e quais são as faixas
+
+`P1` · **Responsável:** Financeiro
+
+**O que fazer**
+
+O painel `fat-risco` mostra a carteira repartida por faixa de rating interno — no protótipo, `AAA–A`, `BBB`, `BB` e `B ou inferior`. Rating não era atributo de cliente nenhum em nenhuma view, e T-117.2 declarou a coluna em `vw_fato_faturamento_cliente`. Falta dizer o que a preenche.
+
+Três origens possíveis, e elas não dão o mesmo resultado:
+
+1. **O ERP já guarda um rating** atribuído no cadastro do cliente. Barato, e é o caso mais comum. Confirme quem o mantém e com que frequência é revisto — rating de 2019 num cliente que quebrou em 2024 é pior que rating nenhum.
+2. **Análise de crédito própria**, feita pelo Financeiro com critério interno. Precisa das faixas escritas e do critério de enquadramento, senão dois analistas classificam o mesmo cliente diferente.
+3. **Birô externo** (Serasa, Boa Vista). Traz escala própria, que não é a do protótipo — o mapeamento entre a escala do birô e as quatro faixas da tela vira parte da decisão.
+
+Diga também **o que fazer com cliente sem rating**. Ele não é "B ou inferior": é desconhecido, e juntar os dois faz a carteira parecer pior do que se sabe que ela é. O princípio PR-4 vale aqui — ausência é estado, não a pior categoria.
+
+**Enquanto não for decidido:** a fixture usa as quatro faixas do protótipo e reparte a carteira de forma a reproduzir as participações que ele mostra. É valor de protótipo, não medição.
+
+| | |
+|---|---|
+| **Resultado esperado** | Origem do rating definida com responsável nomeado, faixas escritas, critério de enquadramento e o tratamento de cliente sem rating |
+| **Onde o resultado vai** | docs/decisoes/, a coluna de rating na seção 10.1 do PRD, e o mapeamento de F2 |
+| **Destrava** | o painel fat-risco deixa de mostrar valor de protótipo |
+
+### [ ] H-52 · Definir com que parâmetro se calculam ramp-up e produtividade perdida
+
+`P1` · **Responsável:** Controladoria
+
+**O que fazer**
+
+O painel `tov-custo` decompõe o custo do turnover em quatro parcelas, e a fórmula do próprio protótipo as nomeia: **rescisão + recrutamento + ramp-up + produtividade perdida**. As duas primeiras são lançamento — rescisão sai da folha, recrutamento já está em `vw_fato_vagas`. As duas últimas **não existem em lançamento nenhum**: são custo modelado.
+
+Modelar exige parâmetro escrito, e o parâmetro muda o número numa ordem de grandeza:
+
+- **Ramp-up** — quantos meses uma pessoa nova leva para produzir como a que saiu, e que fração da produtividade ela entrega nesse intervalo. "Três meses a 50%" e "seis meses a 40%" diferem em mais de duas vezes.
+- **Produtividade perdida** — o intervalo entre a saída e a chegada da substituta, e o que se assume que a equipe absorve nesse meio-tempo. Assumir zero absorção superestima; assumir absorção total zera a parcela.
+
+Escreva os dois como parâmetro versionado, com a data e quem aprovou, e diga se valem por área ou são únicos para a empresa — cargo de operação e cargo especializado não têm a mesma curva.
+
+**Por que isto não é decisão de engenharia:** qualquer valor que eu escolhesse viraria "o custo do turnover é R$ 12,4 mi" numa reunião, e ninguém saberia que o número veio de um palpite meu. Custo modelado sem parâmetro aprovado é opinião com aparência de medição.
+
+**Enquanto não for decidido:** a fixture usa a decomposição do protótipo (rescisão 4,8 · ramp-up 3,4 · produtividade 2,3 · recrutamento 1,9, em R$ mi) repartida pelos desligamentos de cada célula. A repartição por desligamentos é defensável — custo de turnover segue quem saiu —, mas os quatro totais são valor de protótipo.
+
+| | |
+|---|---|
+| **Resultado esperado** | Parâmetros de ramp-up e de produtividade perdida aprovados com data e nome, dizendo se valem por área, e registrados como linha decisão no catálogo da métrica de custo do turnover |
+| **Onde o resultado vai** | docs/decisoes/, catalogo/metricas.yaml, e a view vw_fato_turnover_custo em F2 |
+| **Destrava** | o painel tov-custo deixa de mostrar valor de protótipo |
 
 ### [ ] H-51 · Decidir o que o sparkline do cartão mede
 

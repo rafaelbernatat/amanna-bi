@@ -30,6 +30,7 @@ import type {
   Query,
 } from "@/semantica/contrato";
 import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
+import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FATURAMENTO_CLIENTE,
@@ -58,6 +59,7 @@ export const VIEWS = {
   vw_fato_orcamento: VW_FATO_ORCAMENTO,
   vw_fato_contas: VW_FATO_CONTAS,
   vw_fato_faturamento_cliente: VW_FATO_FATURAMENTO_CLIENTE,
+  vw_fato_turnover_custo: VW_FATO_TURNOVER_CUSTO,
 } as const;
 
 export type NomeDeView = keyof typeof VIEWS;
