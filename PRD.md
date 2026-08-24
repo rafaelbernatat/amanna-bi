@@ -399,7 +399,8 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 | `vw_fato_vagas_fonte` | mês, área, fonte do candidato · contratados | ATS |
 | `vw_fato_treinamento` | mês, área, trilha, modalidade da trilha · horas, investimento, trilhas iniciadas e concluídas, participantes | LMS |
 | `vw_fato_contas` | mês, entidade, faixa de aging · a receber, a pagar | ERP |
-| `vw_fato_faturamento_cliente` | mês, entidade, cliente · receita, margem de contribuição | ERP / comercial |
+| `vw_fato_faturamento_cliente` | mês, entidade, cliente, **faixa de rating** · receita, margem de contribuição | ERP / comercial |
+| `vw_fato_turnover_custo` | mês, entidade, área, **componente** · valor | Folha / ATS / Controladoria |
 | `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, mês | Cadastros |
 
 > **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
@@ -439,6 +440,29 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 > um teste fixa a reconciliação nos dois sentidos. Sem essa amarra o produto
 > teria dois números de caixa que discordariam em silêncio — exatamente o que o
 > princípio PR-1 existe para impedir.
+
+> **Revisão de 2026-08-24 (T-117.2).** Dois painéis de barras do Anexo A.1
+> mostravam números que nenhuma view sabia produzir.
+>
+> `tov-custo` decompõe o custo do turnover em rescisão, recrutamento, ramp-up e
+> produtividade perdida — a própria fórmula do protótipo nomeia os quatro.
+> Recrutamento já estava em `vw_fato_vagas`; os outros três não estavam em lugar
+> nenhum. `vw_fato_turnover_custo` entra com grão de componente, e o grão
+> importa: sem ele o painel viraria um número só e a leitura que ele existe para
+> dar — *qual* parte do custo pesa mais — desapareceria.
+>
+> `fat-risco` mostra a carteira por faixa de rating interno, e rating não era
+> atributo de cliente nenhum. Entra como chave em
+> `vw_fato_faturamento_cliente`, e não como view nova: é uma qualificação do
+> cliente que já está lá, não um fato novo.
+>
+> **As duas dependem de decisão que não é de engenharia**, e ambas estão
+> registradas em INSTRUCOES.md. Ramp-up e produtividade perdida são custos
+> *modelados*, não lançamentos — alguém da Controladoria precisa dizer com que
+> parâmetro se calculam (**H-52**). E rating interno pode vir do ERP, de análise
+> de crédito própria ou de birô externo, com faixas que mudam conforme a origem
+> (**H-53**). A coluna declarada diz **que** o dado é necessário; quanto ele vale
+> continua sendo pergunta aberta, e na fixture é valor de protótipo.
 
 ### 10.2 · Sincronização
 
