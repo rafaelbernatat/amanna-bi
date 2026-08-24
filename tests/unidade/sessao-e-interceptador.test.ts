@@ -55,20 +55,62 @@ describe("AUTH_PROVIDER", () => {
    * autenticação com aparência de autenticação. E a forma de acontecer é
    * sempre a mesma: alguém copia o `docker-compose` da demonstração.
    */
-  it("recusa fixtures em produção", () => {
-    expect(() =>
-      lerProvedor({ AUTH_PROVIDER: "fixtures", NODE_ENV: "production" }),
-    ).toThrowError(/autenticação que não autentica/);
+  /*
+   * A trava mira o dado, e não o NODE_ENV.
+   *
+   * A primeira versão recusava `fixtures` quando `NODE_ENV=production`, e
+   * mirava errado nas duas direções. Recusava o inofensivo: `next start`
+   * define `NODE_ENV=production`, então a demonstração com dado fictício não
+   * subia em build de produção nenhum -- nem a suíte de e2e, que roda contra
+   * build. E deixava passar o perigoso: `AUTH_PROVIDER=fixtures` com
+   * `DATA_SOURCE=warehouse` montado numa máquina de desenvolvimento serve dado
+   * de cliente por trás de um perfil escolhido em variável de ambiente.
+   *
+   * O que separa demonstração de incidente é de onde vem o dado. Sessão falsa
+   * com dado falso é uma demonstração; sessão falsa com dado de cliente é o
+   * incidente. Os dois testes abaixo fixam as duas metades, e o segundo é o
+   * que impede a troca de eixo de ter virado afrouxamento.
+   */
+  it("recusa fixtures na frente do warehouse, em qualquer NODE_ENV", () => {
+    for (const ambiente of [
+      { AUTH_PROVIDER: "fixtures", DATA_SOURCE: "warehouse" },
+      {
+        AUTH_PROVIDER: "fixtures",
+        DATA_SOURCE: "warehouse",
+        NODE_ENV: "development",
+      },
+      {
+        AUTH_PROVIDER: "fixtures",
+        DATA_SOURCE: "warehouse",
+        NODE_ENV: "production",
+      },
+    ]) {
+      expect(
+        () => lerProvedor(ambiente),
+        JSON.stringify(ambiente),
+      ).toThrowError(/autenticação que não autentica/);
+    }
   });
 
-  it("mas aceita fixtures fora de produção, e oidc em qualquer lugar", () => {
+  it("aceita fixtures com dado fictício, inclusive em build de produção", () => {
+    // O caso que a trava antiga bloqueava sem motivo: a demonstração.
     expect(
-      lerProvedor({ AUTH_PROVIDER: "fixtures", NODE_ENV: "development" }),
+      lerProvedor({
+        AUTH_PROVIDER: "fixtures",
+        DATA_SOURCE: "fixtures",
+        NODE_ENV: "production",
+      }),
     ).toBe("fixtures");
     expect(lerProvedor({ AUTH_PROVIDER: "fixtures" })).toBe("fixtures");
+  });
+
+  it("oidc vale em qualquer lugar, inclusive na frente do warehouse", () => {
     expect(lerProvedor({ AUTH_PROVIDER: "oidc", NODE_ENV: "production" })).toBe(
       "oidc",
     );
+    expect(
+      lerProvedor({ AUTH_PROVIDER: "oidc", DATA_SOURCE: "warehouse" }),
+    ).toBe("oidc");
   });
 });
 

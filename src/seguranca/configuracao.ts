@@ -89,8 +89,9 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     /*
      * Faltava no esquema, e a falta aparecia tarde.
      *
-     * `getSession` exige `AUTH_PROVIDER` e a validação de boot não a conferia:
-     * o processo subia inteiro e **toda** requisição de tela devolvia 500. A
+     * A leitura de sessão exige `AUTH_PROVIDER` e esta validação não a
+     * conferia: o processo subia inteiro e **toda** requisição de tela
+     * devolvia 500 — porque quem exige a variável roda por requisição. A
      * validação de T-139 existe justamente para trocar "sobe e falha em cada
      * página" por "não sobe, e diz o que falta".
      */

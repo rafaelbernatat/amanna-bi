@@ -287,10 +287,19 @@ export default function Pagina() {
             <GraficoDeLinha
               eixo={eixoTurnover}
               referencia={{ valor: META_DE_TURNOVER, rotulo: "meta 14,0%" }}
-              pontos={MESES.map((categoria, i) => ({
-                categoria,
-                valor: TURNOVER[i] ?? 0,
-                rotulo: formatarValor(TURNOVER[i] ?? 0, "pct"),
+              /*
+               * A série manda, e o mês acompanha.
+               *
+               * Estava ao contrário — `MESES.map` com `TURNOVER[i] ?? 0` — e o
+               * `?? 0` que o `noUncheckedIndexedAccess` obriga era um número
+               * escrito à mão a um passo do formatador: bastava a série ficar
+               * mais curta que os meses para a tela desenhar "0,0%" como se
+               * fosse medida. Percorrendo o número, ele existe por construção.
+               */
+              pontos={TURNOVER.map((valor, i) => ({
+                categoria: MESES[i] ?? "",
+                valor,
+                rotulo: formatarValor(valor, "pct"),
               }))}
             />
           </CaixaDeGrafico>

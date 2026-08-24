@@ -29,7 +29,18 @@ import type { Kpi } from "@/semantica/contrato";
  * seria válido. É o princípio PR-4 no menor componente do produto.
  */
 export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
-  const temValor = kpi.value !== null;
+  /*
+   * O valor sai do objeto uma vez, e o resto do componente decide por ele.
+   *
+   * A versão anterior perguntava `kpi.value !== null` aqui e escrevia
+   * `formatarValor(kpi.value ?? 0, kpi.unit)` lá embaixo, porque o
+   * estreitamento não atravessa o JSX. O `?? 0` era inalcançável e mesmo assim
+   * era um número escrito à mão a um passo do formatador — T-141 hoje aponta
+   * para ele. Com o valor num `const`, o TypeScript estreita e não sobra
+   * literal nenhum.
+   */
+  const valor = kpi.value;
+  const temValor = valor !== null;
 
   return (
     <div
@@ -85,9 +96,9 @@ export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
           textOverflow: "ellipsis",
         }}
       >
-        {temValor
-          ? formatarValor(kpi.value ?? 0, kpi.unit)
-          : "sem dado neste recorte"}
+        {valor === null
+          ? "sem dado neste recorte"
+          : formatarValor(valor, kpi.unit)}
       </div>
 
       <div

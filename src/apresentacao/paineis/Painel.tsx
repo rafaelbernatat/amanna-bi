@@ -8,14 +8,20 @@ import type { PanelResponse } from "@/semantica/contrato";
  *
  * ## A fórmula não tem como ser desligada
  *
- * O achado 10 do Anexo D: *"a propriedade `mostrarMemoria` esconde a linha de
- * fórmula de todos os painéis"*. O tratamento decidido foi "a propriedade sai".
+ * O achado 10 do Anexo D descreve uma propriedade do protótipo que esconde a
+ * linha de fórmula de todos os painéis de uma vez. O tratamento decidido foi
+ * "a propriedade sai".
  *
  * Aqui ela não existe, e a ausência é estrutural e não uma escolha de quem
  * usa: `Painel` **não aceita** propriedade que controle a fórmula. Se
  * `PanelResponse.formula` tem texto, a linha aparece. Não há caminho pelo qual
  * ela não apareça, e é isso que faz RF-04 e o princípio PR-3 serem verdade em
  * vez de intenção.
+ *
+ * O nome daquela propriedade não aparece neste arquivo de propósito: a guarda
+ * de T-109 procura por ele no código do produto, e citá-lo aqui — ainda que só
+ * em comentário — faria a guarda apontar para a explicação em vez de apontar
+ * para o defeito. Quem quiser o nome exato o encontra no Anexo D.
  *
  * O tipo `Formula` de T-109 já garante que o texto não é vazio; este componente
  * garante que ele chega à tela.
@@ -136,9 +142,9 @@ export function Painel({
  * A linha de fórmula.
  *
  * Componente próprio e sem propriedade de controle: quem quiser escondê-la
- * precisa apagar a chamada, e isso aparece no diff. Uma propriedade
- * `mostrarFormula={false}` seria a mesma coisa que `mostrarMemoria`, com outro
- * nome.
+ * precisa apagar a chamada, e isso aparece no diff. Uma propriedade booleana
+ * de exibir-ou-não, com qualquer nome, seria a chave do achado 10 de volta —
+ * é por isso que a guarda de T-109 procura pela forma, e não só pelo nome.
  */
 function FormulaDoPainel({ formula }: { readonly formula: string }) {
   if (formula.trim() === "") return null;

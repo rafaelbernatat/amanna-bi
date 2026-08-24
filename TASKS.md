@@ -265,7 +265,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
   · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total), D-P8 · **Depende de:** T-002, T-004
-- [~] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador  ⏳ 2026-08-24 15:40 · sessao-68c8
+- [X] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
   · **Aceite:** qualquer literal numérico que alcance o módulo de formatação (pc, rs, n, sg) ou os campos value/delta/rodape de um Kpi reprova o CI; os cinco casos reais do protótipo (74, 54.3, 4.1, 40.0, -0.7) são apontados pelo teste num arquivo de exemplo; exceção só por allowlist nomeada (metas vindas do catálogo).
   · **PRD:** Anexo D achado 5 - cobertura da pesquisa 74%, concentração top 10 54,3%, inadimplência 4,1%
 - [ ] **T-142** `P0` `M` `auditoria` Decidir e implementar o tratamento de métricas posicionais (mediana/percentil)  ⛔ H-04
