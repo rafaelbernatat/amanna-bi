@@ -283,7 +283,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-146** `P0` `M` `auditoria` Reconciliar o Anexo C e publicar o dataset de referência fechado  ⛔ H-03
   · **Aceite:** uma planilha versionada deriva TODOS os valores do Anexo C de um único conjunto de fatos mensais; o headcount de dezembro fecha como saldo inicial + admissões - desligamentos, o turnover_12m fecha como soma(desligamentos,12m)/média(headcount_fte,12m) com os mesmos números, e cada divergência com o texto atual do anexo vira errata aprovada por Produto e Controladoria, com data, antes de T-110 e T-111 começarem.
   · **PRD:** Anexo C — linhas 'Headcount (dez) 1.240 FTE = 1.150 + 241 admissões - 145 saídas' e 'Turnover 12m 18,4% = saídas 12m / headcount médio'
-- [ ] **T-147** `P1` `M` `dados` Modelar as dimensões vw_dim_* e as faixas usadas pelos painéis de perfil
+- [~] **T-147** `P1` `M` `dados` Modelar as dimensões vw_dim_* e as faixas usadas pelos painéis de perfil  ⏳ 2026-08-24 11:25 · sessao-68c8
   · **Aceite:** Existem dimensões de entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa e escolaridade com as cardinalidades do Anexo C (7 áreas, 8 centros de custo, 12 UFs, 3 modalidades, 12 meses); teste de esquema falha se alguma expuser atributo identificável de pessoa.
   · **PRD:** seção 10.1, Anexo C, seção 11 · **Depende de:** T-110
 - [ ] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto
