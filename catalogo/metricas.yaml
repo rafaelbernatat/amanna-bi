@@ -235,17 +235,18 @@ receita_por_fte:
 inadimplencia:
   rotulo: Inadimplência
   fonte: vw_fato_contas
-  formula: soma(a_receber nas faixas vencidas) / soma(a_receber)
+  formula: a_receber(acima de 90 dias, fim da janela) / a_receber(fim da janela)
   unidade: pct
   agg: ratio
   sentido: menor_melhor
   grao_minimo: [faixa, mes]
   sinonimos: [inadimplencia, aging, recebiveis, atraso, vencido, calote]
   decisao: >-
-    PROVISORIO (D-H03, 2026-08-24). Conta como vencido tudo que nao esta na
-    faixa "a vencer" -- inclusive 1 a 30 dias. Muitas empresas so consideram
-    inadimplencia acima de 90 dias, e a escolha muda o numero por um fator de
-    tres. E uma das definicoes que precisam de Controladoria em H-08.
+    PROVISORIO (D-H03, 2026-08-24). Conta so a faixa ACIMA DE 90 DIAS, que e o
+    que o rodape do cartao no prototipo declara: "R$ 7 mi sobre R$ 171 mi".
+    Contar tudo fora de "a vencer" -- inclusive 1 a 30 dias -- levaria a taxa
+    de 4,1% para 31%, e parte das empresas conta assim. E uma das definicoes
+    que precisam de Controladoria em H-08.
 
 ciclo_financeiro:
   rotulo: Ciclo de conversão de caixa
@@ -942,3 +943,188 @@ remuneracao_variavel:
     PROVISORIO (D-H03, 2026-08-24). Junta bonus e horas extras, que tem origens
     opostas -- um premia resultado, o outro sinaliza falta de gente. Separa-los
     e uma das perguntas de H-08.
+
+# ===========================================================================
+# As métricas que os KPIs de Financeiro e Integração pedem (T-116)
+# ===========================================================================
+#
+# As 6 telas de Financeiro e Integração têm 28 cartões, que apontam para 22
+# métricas distintas. Dez já existiam — vieram do Anexo B ou do achado 5 — e
+# estas são as outras doze.
+#
+# Todas provisórias, pela mesma regra das anteriores.
+
+receita_bruta:
+  rotulo: Receita bruta
+  fonte: vw_fato_fin_mes
+  formula: soma(receita_bruta)
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [receita bruta, faturamento bruto, antes das deducoes, top line]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). E a receita ANTES das deducoes. O rodape do
+    cartao diz "deducoes de 15%", e a conta e 212 sobre 1.412 -- que da 15,0%.
+
+receita_liquida:
+  rotulo: Receita líquida
+  fonte: vw_fato_fin_mes
+  formula: soma(receita_liquida)
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [receita liquida, faturamento, vendas, receita]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). E o denominador de quase toda margem do
+    produto, entao mudar o que entra nela move meia dezena de KPIs juntos.
+
+ebitda:
+  rotulo: EBITDA
+  fonte: vw_fato_fin_mes
+  formula: soma(receita_liquida) - soma(cmv) - soma(despesas_operacionais)
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [ebitda, geracao operacional, lajida, resultado antes de juros]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Obtido por diferenca, e nao por soma de
+    contas. Nao existe coluna de EBITDA: se existisse, seria possivel ela
+    discordar das tres parcelas que a formam.
+
+lucro_liquido:
+  rotulo: Lucro líquido
+  fonte: vw_fato_fin_mes
+  formula: >-
+    soma(receita_liquida) - soma(cmv) - soma(despesas_operacionais) -
+    soma(depreciacao_e_amortizacao) - soma(resultado_financeiro) -
+    soma(nao_operacional)
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [lucro liquido, resultado do exercicio, bottom line, deu lucro]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). O ultimo degrau da ponte da DRE, derivado
+    dos outros seis. Da -R$ 8 mi no ano: a operacao gera resultado e a
+    estrutura de capital o anula.
+
+fco:
+  rotulo: Geração operacional
+  fonte: vw_fato_fin_mes
+  formula: soma(fco)
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [fco, geracao de caixa, caixa operacional, virou dinheiro]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Caixa que a operacao gerou, e nao lucro. A
+    diferenca entre os dois e o capital de giro, que e onde o ciclo de 76 dias
+    aparece.
+
+capex:
+  rotulo: Investimento (FCI)
+  fonte: vw_fato_fin_mes
+  formula: soma(capex)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos: [capex, investimento, fci, imobilizado, manutencao e expansao]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Positivo e SAIDA de caixa. Sentido neutro
+    porque investir mais nao e bom nem ruim sozinho -- depende do retorno, que
+    esta fora do escopo da v1.
+
+financiamento:
+  rotulo: Financiamento (FCF)
+  fonte: vw_fato_fin_mes
+  formula: soma(financiamento)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos: [fcf, financiamento, divida, amortizacao, captacao]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Positivo e SAIDA liquida -- amortizacao e
+    juros menos captacao. A fixture nao separa as tres, e separa-las e uma das
+    perguntas de H-08.
+
+orcado:
+  rotulo: Orçado
+  fonte: vw_fato_orcamento
+  formula: soma(orcado)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [centro_custo, mes]
+  sinonimos: [orcado, orcamento, planejado, budget, previsto]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Orcamento aprovado do periodo. Revisao de
+    orcamento no meio do ano nao esta modelada: a fixture tem uma versao so.
+
+realizado:
+  rotulo: Realizado
+  fonte: vw_fato_orcamento
+  formula: soma(realizado)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [centro_custo, mes]
+  sinonimos: [realizado, gasto, executado, o que saiu de fato]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). O gasto do periodo pela competencia, e nao
+    pelo caixa -- e por isso nao bate com as saidas de caixa.
+
+economia_orcamentaria:
+  rotulo: Economia obtida
+  fonte: vw_fato_orcamento
+  formula: >-
+    soma de (orcado - realizado) apenas nos centros de custo onde a diferenca
+    e positiva
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [centro_custo, mes]
+  sinonimos: [economia, sobra de orcamento, gastou menos, abaixo do orcado]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Conta SO os centros que gastaram menos,
+    ignorando os que estouraram -- por isso nao e o desvio com sinal trocado.
+    Sentido `maior_melhor` trata economizar como bom, e economia por projeto
+    nao executado aparece igual. E uma das definicoes que precisam de
+    Controladoria em H-08.
+
+ebitda_por_fte:
+  rotulo: EBITDA per capita
+  fonte: vw_fato_fin_mes, vw_fato_rh_mes
+  formula: >-
+    (soma(receita_liquida) - soma(cmv) - soma(despesas_operacionais)) /
+    headcount_fte(ultimo mes)
+  unidade: BRL_mi
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [ebitda per capita, ebitda por fte, resultado por pessoa]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Cruza duas views, e por isso herda o grao
+    da mais grossa: receita nao tem area, entao a razao tambem nao tem. Quebrar
+    por area exigiria ratear receita por quadro -- ver H-04 e T-144.
+
+folha_sobre_receita:
+  rotulo: Despesa de pessoal
+  fonte: vw_fato_rh_mes, vw_fato_fin_mes
+  formula: soma(folha) / soma(vw_fato_fin_mes.receita_liquida)
+  unidade: pct
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [folha sobre receita, despesa de pessoal, custo de pessoal, peso da folha]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-08-24). Da 15,5% -- o numero do Anexo C. Sentido
+    `menor_melhor` trata folha menor como melhor, o que ignora que cortar gente
+    tambem corta receita. E o tipo de leitura que a tela de Integracao existe
+    para complicar de proposito.

@@ -50,6 +50,7 @@ import {
   PONTE_DA_DRE,
   PONTE_DO_CAIXA,
   REALIZADO_MENSAL,
+  RECEITA_LIQUIDA_ANO_ANTERIOR,
   RECEITA_LIQUIDA_MENSAL,
   SAIDAS_MENSAL,
 } from "@/acesso/fixtures/referencia-fin";
@@ -196,6 +197,18 @@ export type LinhaFinMes = {
   /** Estoque no fechamento. Denominador do PME. */
   readonly estoque: number;
   /**
+   * Receita líquida do mesmo mês do ano anterior (T-116).
+   *
+   * É a série de comparação, e **não** um recorte de 2025 — a distinção é o
+   * achado 6 do Anexo D, que aponta que o protótipo tem `receitaLY` e não tem
+   * ano. Serve ao KPI de crescimento enquanto 2025 não entra na fixture com
+   * T-152; quando entrar, quem decide se esta coluna some é T-185.
+   *
+   * Somar 1.068 mi no ano é o que faz `1.200 / 1.068 - 1` dar os +12,4% do
+   * Anexo C.
+   */
+  readonly receitaLiquidaAnoAnterior: number;
+  /**
    * Notas fiscais emitidas no mês (T-143).
    *
    * O ticket médio é `receita_liquida / notas_emitidas`. Sem esta coluna ele
@@ -230,6 +243,10 @@ export const VW_FATO_FIN_MES: readonly LinhaFinMes[] = (() => {
     const saidas = porEntidade(SAIDAS[m] ?? 0, "caixa");
     const estoque = porEntidade(ESTOQUE[m] ?? 0, "cmv");
     const notas = porEntidade(NOTAS[m] ?? 0, "receita");
+    const receitaAnterior = porEntidade(
+      emReais(RECEITA_LIQUIDA_ANO_ANTERIOR[m] ?? 0),
+      "receita",
+    );
 
     ENTIDADES_ARMAZENADAS.forEach((entidade, e) => {
       corrente[e] = (corrente[e] ?? 0) + (entradas[e] ?? 0) - (saidas[e] ?? 0);
@@ -251,6 +268,7 @@ export const VW_FATO_FIN_MES: readonly LinhaFinMes[] = (() => {
         saidasDeCaixa: saidas[e] ?? 0,
         estoque: estoque[e] ?? 0,
         notasEmitidas: notas[e] ?? 0,
+        receitaLiquidaAnoAnterior: receitaAnterior[e] ?? 0,
         saldoDeCaixa: corrente[e] ?? 0,
       });
     });

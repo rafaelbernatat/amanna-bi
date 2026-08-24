@@ -225,6 +225,47 @@ function emMilhoes(reais: number | null): number | null {
   return reais === null ? null : reais / UM_MILHAO;
 }
 
+/** A receita líquida do recorte, em reais. Denominador de meia dúzia de KPIs. */
+function receita(r: Recorte): number | null {
+  return soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida);
+}
+
+/** O CMV do recorte, em reais. Denominador de PME e PMP. */
+function custoDasVendas(r: Recorte): number | null {
+  return soma("vw_fato_fin_mes", r, (l) => l.cmv);
+}
+
+/**
+ * O EBITDA em reais, por diferença.
+ *
+ * Não existe coluna de EBITDA na fixture, e é decisão: se existisse, seria
+ * possível ela discordar das três parcelas que a formam. Aqui a única forma de
+ * o EBITDA estar errado é uma das três estar.
+ */
+function ebitdaEmReais(r: Recorte): number | null {
+  const rec = receita(r);
+  if (rec === null) return null;
+  return (
+    rec -
+    (custoDasVendas(r) ?? 0) -
+    (soma("vw_fato_fin_mes", r, (l) => l.despesasOperacionais) ?? 0)
+  );
+}
+
+/**
+ * Um prazo médio em dias: saldo sobre fluxo, vezes os dias do ano.
+ *
+ * O `* 365` anualiza. Sob recorte de um mês, isso projeta o mês inteiro sobre
+ * um ano e exagera a sazonalidade — está anotado na `decisao` de `pmr` no
+ * catálogo, e é uma das perguntas de H-08.
+ */
+const DIAS_DO_ANO = 365;
+
+function prazo(saldo: number | null, fluxo: number | null): number | null {
+  const fracao = razao(saldo, fluxo);
+  return fracao === null ? null : fracao * DIAS_DO_ANO;
+}
+
 type Calculo = (r: Recorte) => number | null;
 
 /**
@@ -472,6 +513,211 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
 
   remuneracao_variavel: (r) =>
     emMilhoes(soma("vw_fato_rh_mes", r, (l) => l.variavel)),
+
+  /* ---------------- Financeiro (T-116) ---------------- */
+
+  receita_bruta: (r) =>
+    emMilhoes(soma("vw_fato_fin_mes", r, (l) => l.receitaBruta)),
+
+  receita_liquida: (r) =>
+    emMilhoes(soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida)),
+
+  ebitda: (r) => emMilhoes(ebitdaEmReais(r)),
+
+  lucro_liquido: (r) => {
+    const operacional = ebitdaEmReais(r);
+    if (operacional === null) return null;
+    return emMilhoes(
+      operacional -
+        (soma("vw_fato_fin_mes", r, (l) => l.depreciacaoEAmortizacao) ?? 0) -
+        (soma("vw_fato_fin_mes", r, (l) => l.resultadoFinanceiro) ?? 0) -
+        (soma("vw_fato_fin_mes", r, (l) => l.naoOperacional) ?? 0),
+    );
+  },
+
+  margem_bruta: (r) =>
+    emPorcento(
+      razao(
+        (soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida) ?? 0) -
+          (soma("vw_fato_fin_mes", r, (l) => l.cmv) ?? 0),
+        soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
+      ),
+    ),
+
+  margem_liquida: (r) => {
+    const operacional = ebitdaEmReais(r);
+    if (operacional === null) return null;
+    const lucro =
+      operacional -
+      (soma("vw_fato_fin_mes", r, (l) => l.depreciacaoEAmortizacao) ?? 0) -
+      (soma("vw_fato_fin_mes", r, (l) => l.resultadoFinanceiro) ?? 0) -
+      (soma("vw_fato_fin_mes", r, (l) => l.naoOperacional) ?? 0);
+    return emPorcento(
+      razao(
+        lucro,
+        soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
+      ),
+    );
+  },
+
+  saldo_caixa: (r) =>
+    emMilhoes(noFim("vw_fato_fin_mes", r, (l) => l.saldoDeCaixa)),
+
+  fco: (r) => emMilhoes(soma("vw_fato_fin_mes", r, (l) => l.fco)),
+  capex: (r) => emMilhoes(soma("vw_fato_fin_mes", r, (l) => l.capex)),
+  financiamento: (r) =>
+    emMilhoes(soma("vw_fato_fin_mes", r, (l) => l.financiamento)),
+
+  conversao_de_caixa: (r) =>
+    emPorcento(
+      razao(
+        soma("vw_fato_fin_mes", r, (l) => l.fco),
+        ebitdaEmReais(r),
+      ),
+    ),
+
+  orcado: (r) => emMilhoes(soma("vw_fato_orcamento", r, (l) => l.orcado)),
+  realizado: (r) => emMilhoes(soma("vw_fato_orcamento", r, (l) => l.realizado)),
+
+  desvio_orcamentario: (r) =>
+    emMilhoes(soma("vw_fato_orcamento", r, (l) => l.realizado - l.orcado)),
+
+  /**
+   * A economia conta **só** os centros que gastaram menos.
+   *
+   * Por isso não é o desvio com o sinal trocado: os que estouraram ficam de
+   * fora. Somar os dois lados daria o desvio, e o cartão perderia o que ele
+   * existe para mostrar — que houve economia em algum lugar, mesmo com estouro
+   * no total.
+   */
+  economia_orcamentaria: (r) => {
+    const porCentro = new Map<string, number>();
+    for (const l of linhas("vw_fato_orcamento", r)) {
+      porCentro.set(
+        l.centroDeCusto,
+        (porCentro.get(l.centroDeCusto) ?? 0) + (l.orcado - l.realizado),
+      );
+    }
+    if (porCentro.size === 0) return null;
+    const economia = [...porCentro.values()]
+      .filter((v) => v > 0)
+      .reduce((a, b) => a + b, 0);
+    return emMilhoes(economia);
+  },
+
+  crescimento_yoy: (r) =>
+    emPorcento(
+      razao(
+        (soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida) ?? 0) -
+          (soma("vw_fato_fin_mes", r, (l) => l.receitaLiquidaAnoAnterior) ?? 0),
+        soma("vw_fato_fin_mes", r, (l) => l.receitaLiquidaAnoAnterior),
+      ),
+    ),
+
+  /**
+   * Inadimplência: o que já venceu, sobre o que há a receber.
+   *
+   * "Já venceu" é **acima de 90 dias**, e não tudo fora do "a vencer". A
+   * diferença não é pequena: contando 1–30 dias junto, a taxa vai de 4,1% para
+   * 31%. O rodapé do cartão no protótipo diz "R$ 7 mi sobre R$ 171 mi", que é
+   * exatamente a faixa de mais de 90 dias — e foi ele que decidiu isto aqui.
+   *
+   * Continua sendo escolha de negócio, e está anotada como tal na `decisao` da
+   * métrica: parte das empresas conta a partir de 30 dias.
+   */
+  inadimplencia: (r) =>
+    emPorcento(
+      razao(
+        noFim("vw_fato_contas", r, (l) =>
+          l.faixaDeAging === "mais-90d" ? l.aReceber : 0,
+        ),
+        noFim("vw_fato_contas", r, (l) => l.aReceber),
+      ),
+    ),
+
+  /*
+   * Os três prazos leem **estoque no fim da janela** sobre **fluxo do período**.
+   *
+   * Somar o estoque ao longo dos meses dava PMR de 606 dias — doze vezes o
+   * saldo, dividido pela receita de um ano. O saldo a receber de janeiro e o de
+   * fevereiro não são duas dívidas: são a mesma conta, medida duas vezes.
+   */
+  pmr: (r) =>
+    prazo(
+      noFim("vw_fato_contas", r, (l) => l.aReceber),
+      receita(r),
+    ),
+  pme: (r) =>
+    prazo(
+      noFim("vw_fato_fin_mes", r, (l) => l.estoque),
+      custoDasVendas(r),
+    ),
+  pmp: (r) =>
+    prazo(
+      noFim("vw_fato_contas", r, (l) => l.aPagar),
+      custoDasVendas(r),
+    ),
+
+  ciclo_financeiro: (r) => {
+    const dePrazo = (n: number | null, d: number | null) => prazo(n, d) ?? 0;
+    if (receita(r) === null) return null;
+    return (
+      dePrazo(
+        noFim("vw_fato_contas", r, (l) => l.aReceber),
+        receita(r),
+      ) +
+      dePrazo(
+        noFim("vw_fato_fin_mes", r, (l) => l.estoque),
+        custoDasVendas(r),
+      ) -
+      dePrazo(
+        noFim("vw_fato_contas", r, (l) => l.aPagar),
+        custoDasVendas(r),
+      )
+    );
+  },
+
+  ticket_medio: (r) =>
+    emMilhoes(
+      razao(
+        soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
+        soma("vw_fato_fin_mes", r, (l) => l.notasEmitidas),
+      ),
+    ),
+
+  concentracao_top_10: (r) =>
+    emPorcento(
+      razao(
+        soma("vw_fato_faturamento_cliente", r, (l) => l.receita),
+        soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
+      ),
+    ),
+
+  /* ---------------- Integração (T-116) ---------------- */
+
+  receita_por_fte: (r) =>
+    emMilhoes(
+      razao(
+        soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
+        noFim("vw_fato_rh_mes", r, (l) => l.headcountFte),
+      ),
+    ),
+
+  ebitda_por_fte: (r) =>
+    emMilhoes(
+      razao(
+        ebitdaEmReais(r),
+        noFim("vw_fato_rh_mes", r, (l) => l.headcountFte),
+      ),
+    ),
+
+  folha_sobre_receita: (r) =>
+    emPorcento(
+      razao(
+        soma("vw_fato_rh_mes", r, (l) => l.folhaReais),
+        receita(r),
+      ),
+    ),
 };
 
 /* ------------------------------------------------------------------ *
@@ -534,6 +780,15 @@ function sentimento(
   return bom ? "good" : "bad";
 }
 
+/**
+ * O envelope de **um** KPI. Exportado para que o guarda de origem continue
+ * testável: agora que as 13 telas têm origem declarada, não há mais tela que
+ * sirva de exemplo de falta, e o caso precisa de um registro sintético.
+ */
+export function calcularKpi(registro: RegistroDeKpi, q: Query): Kpi {
+  return montar(registro, recorteDe(q));
+}
+
 function montar(registro: RegistroDeKpi, r: Recorte): Kpi {
   const origem = origemDoKpi(registro.id);
   if (origem === undefined) throw new KpiSemOrigem(registro.id);
@@ -558,7 +813,7 @@ function montar(registro: RegistroDeKpi, r: Recorte): Kpi {
 }
 
 /**
- * Os KPIs de uma tela, no recorte pedido.
+ * Os KPIs de uma tela, no recorte pedido. Serve as 13.
  *
  * A ordem é a do registro, que é a do protótipo. A seção 5 do PRD limita a seis
  * por tela e o registro já obedece — aqui não há corte, porque cortar em

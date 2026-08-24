@@ -26,6 +26,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  calcularKpi,
   calcularKpis,
   KpiSemOrigem,
   metricasComCalculo,
@@ -92,8 +93,23 @@ describe("as 7 telas devolvem até 6 KPIs, todos do catálogo", () => {
      * Vazio é um estado legítimo da seção 6.4 — "sem dado neste recorte". Usá-lo
      * para dizer "esqueci de declarar" misturaria as duas coisas na tela, e o
      * cartão em branco pareceria dado.
+     *
+     * O caso usa um registro **sintético**: enquanto Financeiro não tinha
+     * origem, `fin/visao` servia de exemplo, e com T-116 não serve mais. Um
+     * teste que depende de o produto estar incompleto some quando ele fica
+     * pronto — e o guarda deixa de ser conferido.
      */
-    expect(() => calcularKpis("fin/visao", QUERY_PADRAO)).toThrow(KpiSemOrigem);
+    const inventado = {
+      id: "rh-visao-inventado",
+      tela: "rh/visao",
+      rotulo: "Inventado",
+      unidade: "FTE",
+      sentido: "neutro",
+      rodape: null,
+      detalhadoPor: null,
+      constanteNoPrototipo: false,
+    } as const;
+    expect(() => calcularKpi(inventado, QUERY_PADRAO)).toThrow(KpiSemOrigem);
   });
 
   it("o envelope traz rótulo, unidade, delta e sentimento", () => {

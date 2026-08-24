@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 186 pendentes e 45 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 185 pendentes e 46 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 34 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 35 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **45 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **46 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -190,7 +190,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-115** `P0` `L` `dados` Implementar getKpis para as 7 telas de Recursos Humanos
   · **Aceite:** As 7 telas devolvem até 6 KPIs cada, todos originados do catálogo, e o teste falha se algum KPI ficar idêntico entre recortes distintos de área, período, entidade, ano ou modalidade sem constar de uma lista explícita de invariantes.
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.2 · **Depende de:** T-113, T-114
-- [~] **T-116** `P0` `M` `dados` Implementar getKpis para as 5 telas de Financeiro e para a de Integração  ⏳ 2026-08-24 12:30 · sessao-68c8
+- [X] **T-116** `P0` `M` `dados` Implementar getKpis para as 5 telas de Financeiro e para a de Integração
   · **Aceite:** As 6 telas devolvem até 6 KPIs cada, todos originados do catálogo, e o teste falha se algum KPI ficar idêntico entre recortes distintos sem constar da lista de invariantes.
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.3, Anexo A.4 · **Depende de:** T-113, T-114
 - [ ] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal

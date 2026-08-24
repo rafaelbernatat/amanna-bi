@@ -58,11 +58,12 @@ function identificadoresDeColuna(texto: string): readonly string[] {
  * ------------------------------------------------------------------ */
 
 describe("as métricas do achado 5 estão no catálogo", () => {
-  it("o catálogo cobre o Anexo B, o achado 5 e os cartões de RH", () => {
-    // 21 do Anexo B (T-113), 21 do achado 5 (T-148) e 14 que só existem como
-    // cartão de RH (T-115). Seriam 36 pela contagem do PRD; a diferença vem da
-    // subcontagem do achado 5 (H-48) e de o PRD não listar as de cartão.
-    expect(METRICAS).toHaveLength(56);
+  it("o catálogo cobre o Anexo B, o achado 5 e os cartões das 13 telas", () => {
+    // 21 do Anexo B (T-113), 21 do achado 5 (T-148), 14 de cartão de RH
+    // (T-115) e 12 de cartão de Financeiro e Integração (T-116). Seriam 36
+    // pela contagem do PRD; a diferença vem da subcontagem do achado 5 (H-48)
+    // e de o PRD não listar as métricas que só existem como cartão.
+    expect(METRICAS).toHaveLength(68);
   });
 
   it("os 15 que o aceite nomeia estão todos lá", () => {
