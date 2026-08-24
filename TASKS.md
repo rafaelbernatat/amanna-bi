@@ -175,7 +175,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade
   · **Aceite:** vw_fato_rh_mes, vw_fato_vagas e vw_fato_treinamento existem com uma linha por combinação; somar todas as linhas de 2026 reproduz o Anexo C: 1.240 FTE em dezembro, 241 admissões, 145 desligamentos, folha R$ 186 mi e 21.400 horas de treinamento.
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1, seção 9.1 · **Depende de:** T-001
-- [ ] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo
+- [~] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo  ⏳ 2026-08-24 09:45 · sessao-68c8
   · **Aceite:** vw_fato_fin_mes, vw_fato_orcamento e vw_fato_contas existem no grão mensal e a soma consolidada de 2026 reproduz receita líquida R$ 1.200 mi, EBITDA R$ 200 mi, lucro líquido -R$ 8 mi, desvio +R$ 56 mi e ciclo de 76 dias (PMR 52 + PME 75 - PMP 51).
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1 · **Depende de:** T-001
 - [X] **T-112** `P0` `M` `dados` Definir o esquema do catálogo de métricas em YAML e o carregador validado
