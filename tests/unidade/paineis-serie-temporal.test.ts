@@ -20,7 +20,6 @@ import {
   calcularPainel,
   paineisComDesenho,
   PainelDesconhecido,
-  PainelSemDesenho,
 } from "@/acesso/fixtures/paineis";
 import { MESES_DO_PERIODO } from "@/acesso/fixtures/recorte";
 import type { Query } from "@/semantica/contrato";
@@ -130,18 +129,21 @@ describe("todo painel responde com envelope válido", () => {
     );
   });
 
-  it("painel de forma que ainda não tem desenho lança nomeando a tarefa", () => {
+  it("todas as doze formas desenham — não sobrou nenhuma recusando", () => {
     /*
-     * "Outra forma" deixou de bastar quando T-118 cobriu cinco delas. As que
-     * ainda recusam são as quatro de T-119 — e é uma delas que precisa lançar,
-     * não uma que já desenha.
+     * Este caso já afirmou o contrário duas vezes.
+     *
+     * Nasceu como "painel de outra forma lança", virou "painel das quatro
+     * formas de T-119 lança", e agora afirma que não há mais nenhuma: com as
+     * três tarefas de getPanel fechadas, todo painel do registro desenha.
+     *
+     * A recusa por forma não some do código — ela continua lá para a próxima
+     * forma que alguém acrescentar ao Anexo A.1 sem implementar. O que este
+     * teste registra é que hoje ela não tem a quem se aplicar.
      */
-    const semDesenho = new Set(paineisComDesenho());
-    const deT119 = REGISTRO_DE_PAINEIS.find((p) => !semDesenho.has(p.id));
-    expect(deT119, "todas as formas já desenham?").toBeDefined();
-    expect(() => calcularPainel(deT119?.id ?? "", BASE)).toThrowError(
-      PainelSemDesenho,
-    );
+    const sabem = new Set(paineisComDesenho());
+    const semDesenho = REGISTRO_DE_PAINEIS.filter((p) => !sabem.has(p.id));
+    expect(semDesenho.map((p) => p.id)).toEqual([]);
   });
 });
 

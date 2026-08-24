@@ -63,15 +63,24 @@ import {
   DESENHO_CATEGORICO,
   paineisCategoricosComDesenho,
 } from "@/acesso/fixtures/paineis-categoricos";
+import {
+  DESENHO_COMPOSTO,
+  type DesenhoComposto,
+  paineisCompostosComDesenho,
+} from "@/acesso/fixtures/paineis-compostos";
 import type { Unidade } from "@/semantica/contrato";
 import type {
   PainelBarras,
   PainelBarrasEmpilhadas,
   PainelBarrasHorizontais,
+  PainelCascata,
+  PainelDispersao,
   PainelDivisao,
   PainelEstatisticas,
   PainelFunil,
   PainelLinha,
+  PainelMosaicoGeografico,
+  PainelReguaDeCiclo,
   PainelRosca,
   Query,
   Serie,
@@ -707,8 +716,16 @@ export type PainelCategorico =
   | PainelDivisao
   | PainelEstatisticas;
 
-/** O que `getPanel` sabe devolver hoje: T-117 mais T-118. */
-export type PainelDesenhado = PainelCartesiano | PainelCategorico;
+/** As quatro formas que T-119 cobre — as últimas. */
+export type PainelComposto =
+  | PainelCascata
+  | PainelDispersao
+  | PainelReguaDeCiclo
+  | PainelMosaicoGeografico;
+
+/** O que `getPanel` sabe devolver: as doze formas do Anexo A.1. */
+export type PainelDesenhado =
+  PainelCartesiano | PainelCategorico | PainelComposto;
 
 /**
  * O painel pedido, no recorte pedido.
@@ -731,6 +748,11 @@ export function calcularPainel(id: string, q: Query): PainelDesenhado {
   const categorico = DESENHO_CATEGORICO[id];
   if (categorico !== undefined) {
     return montarCategorico(id, registro, origem, recorteDe(q), categorico);
+  }
+
+  const composto = DESENHO_COMPOSTO[id];
+  if (composto !== undefined) {
+    return montarComposto(id, registro, origem, recorteDe(q), composto);
   }
 
   const desenhar = DESENHO[id];
@@ -860,7 +882,66 @@ function montarCategorico(
   };
 }
 
+/**
+ * O envelope das quatro formas compostas.
+ *
+ * Mesma disciplina de `montarCategorico`: um ramo por forma, para o compilador
+ * conferir cada envelope contra a variante certa da união. É o que impede uma
+ * cascata sair sem `ehTotal` ou uma régua sair sem faixas.
+ */
+function montarComposto(
+  id: string,
+  registro: { readonly titulo: string; readonly unidade: Unidade | null },
+  origem: OrigemDePainel,
+  r: Recorte,
+  desenhar: (recorte: Recorte) => DesenhoComposto,
+): PainelComposto {
+  const desenho = desenhar(r);
+  const comum = {
+    id,
+    title: registro.titulo,
+    unit: registro.unidade ?? origem.series[0]?.unidade ?? "contagem",
+    formula: origem.formula,
+    total: desenho.total,
+    note: null,
+    asOf: fechamentoDoRecorte(r),
+  };
+
+  if (desenho.forma === "cascata") {
+    return { ...comum, forma: "cascata", passos: desenho.passos };
+  }
+
+  if (desenho.forma === "dispersao") {
+    return {
+      ...comum,
+      forma: "dispersao",
+      eixoX: desenho.eixoX,
+      eixoY: desenho.eixoY,
+      pontos: desenho.pontos,
+    };
+  }
+
+  if (desenho.forma === "regua-de-ciclo") {
+    return {
+      ...comum,
+      forma: "regua-de-ciclo",
+      marcos: desenho.marcos,
+      faixas: desenho.faixas,
+    };
+  }
+
+  return {
+    ...comum,
+    forma: "mosaico-geografico",
+    celulas: desenho.celulas,
+  };
+}
+
 /** Os painéis que já sabem se desenhar. Serve à conferência de cobertura. */
 export function paineisComDesenho(): readonly string[] {
-  return [...Object.keys(DESENHO), ...paineisCategoricosComDesenho()];
+  return [
+    ...Object.keys(DESENHO),
+    ...paineisCategoricosComDesenho(),
+    ...paineisCompostosComDesenho(),
+  ];
 }

@@ -46,23 +46,26 @@ const COM_ORIGEM = REGISTRO_DE_PAINEIS.filter((p) =>
 );
 
 describe("a cobertura painel a painel", () => {
-  it("são 65 painéis nas nove formas cobertas, contados e não escritos", () => {
-    expect(COM_ORIGEM).toHaveLength(65);
+  it("as doze formas do Anexo A.1 têm origem, e são os 71 painéis", () => {
+    /*
+     * Foram 31 com T-117, 65 com T-118 e agora 71 — a lista inteira.
+     *
+     * A contagem cresceu tarefa a tarefa e o teste com ela; o que não muda é a
+     * pergunta que ele responde: existe painel que ninguém sabe alimentar? De
+     * agora em diante a resposta vale para o produto inteiro, e não para uma
+     * parte dele.
+     */
+    expect(COM_ORIGEM).toHaveLength(71);
+    expect(REGISTRO_DE_PAINEIS).toHaveLength(71);
   });
 
-  it("os seis que faltam são exatamente as quatro formas de T-119", () => {
-    // O outro lado da conta: sem isto, esquecer uma forma inteira passaria
-    // despercebido, porque o teste de cima só olha o que já foi coberto.
+  it("nenhuma forma do registro ficou fora da lista de formas cobertas", () => {
+    // O outro lado da conta: sem isto, uma forma nova no registro escaparia
+    // de tudo, porque o teste de cima só olha o que já foi declarado coberto.
     const fora = REGISTRO_DE_PAINEIS.filter(
       (p) => !FORMAS_COM_ORIGEM.some((f) => f === p.forma),
     );
-    expect(fora).toHaveLength(6);
-    expect([...new Set(fora.map((p) => p.forma))].sort()).toEqual([
-      "cascata",
-      "dispersao",
-      "mosaico-geografico",
-      "regua-de-ciclo",
-    ]);
+    expect(fora.map((p) => p.id)).toEqual([]);
   });
 
   it.each(COM_ORIGEM.map((p) => [p.id, p.forma]))(
