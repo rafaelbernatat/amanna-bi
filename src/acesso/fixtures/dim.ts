@@ -238,6 +238,91 @@ export const VW_DIM_FAIXA_SALARIAL: readonly FaixaDeDimensao[] = [
 ];
 
 /* ------------------------------------------------------------------ *
+ * Gênero (T-118.1)
+ * ------------------------------------------------------------------ *
+ *
+ * Entra como cadastro porque virou dimensão do quadro — a intenção 19 do
+ * Anexo B a pede, e `col-perfil` e `tov-corte` a mostram.
+ *
+ * "Outro / não informado" é uma linha só, e não deveria ser: quem se declarou e
+ * quem não foi perguntado são casos diferentes, e o segundo é sinal de cadastro
+ * incompleto. A separação é **H-55**.
+ */
+
+export const VW_DIM_GENERO: readonly LinhaDeDimensao[] = [
+  { codigo: "masculino", rotulo: "Masculino", ordem: 0 },
+  { codigo: "feminino", rotulo: "Feminino", ordem: 1 },
+  {
+    codigo: "outro-ou-nao-informado",
+    rotulo: "Outro / não informado",
+    ordem: 2,
+  },
+];
+
+/* ------------------------------------------------------------------ *
+ * Cargo (T-118.1)
+ * ------------------------------------------------------------------ *
+ *
+ * A política de remuneração, e não a folha. `de` e `ate` são os limites da
+ * **banda** do cargo; nenhuma linha aqui diz quanto alguém ganha, que é a mesma
+ * distinção que faz `vw_dim_faixa_salarial` ser cadastro.
+ *
+ * A área aparece no rótulo e não em coluna: o conjunto de atributos de dimensão
+ * é fechado de propósito (T-147), e alargá-lo para caber um caso seria trocar
+ * uma garantia por uma conveniência. O painel `sal-resumo` mostra o rótulo tal
+ * como está.
+ *
+ * **Cuidado que fica registrado:** um cargo com uma pessoa só transforma o
+ * limite da banda no salário dela. A supressão de grupo pequeno da seção 11
+ * vale aqui, e quem a implementa é T-151.
+ */
+
+export const VW_DIM_CARGO: readonly FaixaDeDimensao[] = [
+  {
+    codigo: "auxiliar-operacional",
+    rotulo: "Auxiliar operacional · Operações",
+    ordem: 0,
+    de: 2.1 * MIL,
+    ate: 3.4 * MIL,
+  },
+  {
+    codigo: "analista-junior",
+    rotulo: "Analista júnior · Corporativo",
+    ordem: 1,
+    de: 3.6 * MIL,
+    ate: 6.2 * MIL,
+  },
+  {
+    codigo: "analista-pleno",
+    rotulo: "Analista pleno · Corporativo",
+    ordem: 2,
+    de: 6.4 * MIL,
+    ate: 10.8 * MIL,
+  },
+  {
+    codigo: "especialista",
+    rotulo: "Especialista · Tecnologia",
+    ordem: 3,
+    de: 11.2 * MIL,
+    ate: 18.6 * MIL,
+  },
+  {
+    codigo: "coordenacao",
+    rotulo: "Coordenação · Operações",
+    ordem: 4,
+    de: 14.8 * MIL,
+    ate: 22.4 * MIL,
+  },
+  {
+    codigo: "gerencia-senior",
+    rotulo: "Gerência sênior · Tecnologia",
+    ordem: 5,
+    de: 19.6 * MIL,
+    ate: 28.4 * MIL,
+  },
+];
+
+/* ------------------------------------------------------------------ *
  * Escolaridade
  * ------------------------------------------------------------------ */
 
@@ -278,6 +363,8 @@ export const VW_DIM = {
   vw_dim_tempo_de_casa: VW_DIM_TEMPO_DE_CASA,
   vw_dim_escolaridade: VW_DIM_ESCOLARIDADE,
   vw_dim_faixa_salarial: VW_DIM_FAIXA_SALARIAL,
+  vw_dim_genero: VW_DIM_GENERO,
+  vw_dim_cargo: VW_DIM_CARGO,
   vw_dim_mes: vwDimMes("2026"),
 } as const;
 

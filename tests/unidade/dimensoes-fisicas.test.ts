@@ -82,13 +82,18 @@ describe("as cardinalidades do Anexo C", () => {
  * ------------------------------------------------------------------ */
 
 describe("nenhuma dimensão expõe atributo identificável de pessoa", () => {
-  it("as dez tabelas estão no catálogo — senão a varredura não as vê", () => {
+  it("as doze tabelas estão no catálogo — senão a varredura não as vê", () => {
     /*
      * A guarda contra o buraco mais provável: uma dimensão nova que ninguém
      * acrescentou ao mapa `VW_DIM` escaparia de todos os testes abaixo, e a
      * garantia da seção 11 falharia em silêncio.
+     *
+     * Eram dez até T-118.1, que acrescentou gênero e cargo — a primeira porque
+     * a intenção 19 do Anexo B a pede, a segunda porque `sal-resumo` mostra os
+     * limites da política de remuneração. O número está escrito de propósito:
+     * derivá-lo do próprio mapa faria o teste concordar com qualquer mapa.
      */
-    expect(TABELAS).toHaveLength(10);
+    expect(TABELAS).toHaveLength(12);
     for (const [nome, linhas] of TABELAS) {
       expect(linhas.length, nome).toBeGreaterThan(0);
     }

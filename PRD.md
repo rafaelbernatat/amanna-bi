@@ -403,7 +403,7 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 | `vw_fato_faturamento_cliente` | mês, entidade, cliente, **faixa de rating**, **segmento** · receita, margem de contribuição | ERP / comercial |
 | `vw_fato_saida_categoria` | mês, entidade, **categoria** · valor | ERP / contábil |
 | `vw_fato_turnover_custo` | mês, entidade, área, **componente** · valor | Folha / ATS / Controladoria |
-| `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, mês | Cadastros |
+| `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, **gênero**, **cargo**, mês | Cadastros |
 
 > **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
 > descrevia medida que não existe e omitia medida que os painéis precisam.

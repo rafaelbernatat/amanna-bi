@@ -73,6 +73,27 @@ export const QUADRO_POR_ESCOLARIDADE: readonly ParteDoQuadro[] = [
   { codigo: "mestrado-mais", headcount: 34 },
 ];
 
+/**
+ * Gênero. Soma 1.240 (T-118.1).
+ *
+ * A intenção 19 do Anexo B pede o quadro por gênero, e os painéis `col-perfil`
+ * e `tov-corte` a mostram. As três categorias são as do protótipo.
+ *
+ * **"Outro / não informado" é uma categoria só aqui, e não deveria ser.** Uma
+ * pessoa que se declarou e uma que não foi perguntada são casos diferentes, e
+ * juntá-los apaga justamente o sinal de cadastro incompleto. A separação é
+ * decisão do RH com o Jurídico e está em **H-55** — a fixture herda a junção do
+ * protótipo para não inventar uma resposta.
+ *
+ * A supressão de grupo pequeno da seção 11 vale para esta dimensão como para as
+ * demais, e quem a implementa é T-151.
+ */
+export const QUADRO_POR_GENERO: readonly ParteDoQuadro[] = [
+  { codigo: "masculino", headcount: 706 },
+  { codigo: "feminino", headcount: 512 },
+  { codigo: "outro-ou-nao-informado", headcount: 22 },
+];
+
 /** UF. Soma 1.240, em doze estados. */
 export const QUADRO_POR_UF: readonly ParteDoQuadro[] = [
   { codigo: "SP", headcount: 468 },
@@ -106,6 +127,7 @@ export const QUEBRAS_DO_QUADRO = {
   escolaridade: QUADRO_POR_ESCOLARIDADE,
   uf: QUADRO_POR_UF,
   faixa_salarial: QUADRO_POR_FAIXA_SALARIAL,
+  genero: QUADRO_POR_GENERO,
 } as const;
 
 export type NomeDeQuebra = keyof typeof QUEBRAS_DO_QUADRO;
@@ -185,6 +207,15 @@ export const NOTAS_EMITIDAS = 18_400;
  * é **H-53**, e a resposta pode trocar estas quatro faixas por outras. Ver o
  * cabeçalho de `LinhaFaturamentoCliente`.
  */
+/** Os segmentos comerciais do painel `fat-segm`, na ordem do desenho. */
+export const SEGMENTOS_DE_CLIENTE: readonly string[] = [
+  "industria",
+  "varejo",
+  "servicos",
+  "governo",
+  "outros",
+];
+
 export const FAIXAS_DE_RATING: readonly string[] = [
   "AAA-A",
   "BBB",
@@ -208,17 +239,79 @@ export const TOP_CLIENTES: readonly {
    * justamente o que **H-53** precisa responder.
    */
   readonly rating: string;
+  /**
+   * Segmento comercial do cliente (T-118.1).
+   *
+   * Os enquadramentos reproduzem as participações que o protótipo mostra em
+   * `fat-segm`. Quem classifica de verdade, com que critério, e o que fazer com
+   * cliente que atua em dois segmentos, é **H-57**.
+   */
+  readonly segmento: string;
 }[] = [
-  { codigo: "c1", receita: 118, margem: 32.4, rating: "AAA-A" },
-  { codigo: "c2", receita: 96, margem: 28.1, rating: "BBB" },
-  { codigo: "c3", receita: 84, margem: 35.2, rating: "AAA-A" },
-  { codigo: "c4", receita: 72, margem: 19.6, rating: "BB" },
-  { codigo: "c5", receita: 66, margem: 24.8, rating: "AAA-A" },
-  { codigo: "c6", receita: 54, margem: 12.4, rating: "AAA-A" },
-  { codigo: "c7", receita: 48, margem: 29.7, rating: "AAA-A" },
-  { codigo: "c8", receita: 42, margem: 8.9, rating: "BBB" },
-  { codigo: "c9", receita: 38, margem: 22.1, rating: "B-ou-inferior" },
-  { codigo: "c10", receita: 34, margem: 31.5, rating: "AAA-A" },
+  {
+    codigo: "c1",
+    receita: 118,
+    margem: 32.4,
+    rating: "AAA-A",
+    segmento: "industria",
+  },
+  {
+    codigo: "c2",
+    receita: 96,
+    margem: 28.1,
+    rating: "BBB",
+    segmento: "industria",
+  },
+  {
+    codigo: "c3",
+    receita: 84,
+    margem: 35.2,
+    rating: "AAA-A",
+    segmento: "industria",
+  },
+  { codigo: "c4", receita: 72, margem: 19.6, rating: "BB", segmento: "varejo" },
+  {
+    codigo: "c5",
+    receita: 66,
+    margem: 24.8,
+    rating: "AAA-A",
+    segmento: "varejo",
+  },
+  {
+    codigo: "c6",
+    receita: 54,
+    margem: 12.4,
+    rating: "AAA-A",
+    segmento: "servicos",
+  },
+  {
+    codigo: "c7",
+    receita: 48,
+    margem: 29.7,
+    rating: "AAA-A",
+    segmento: "servicos",
+  },
+  {
+    codigo: "c8",
+    receita: 42,
+    margem: 8.9,
+    rating: "BBB",
+    segmento: "governo",
+  },
+  {
+    codigo: "c9",
+    receita: 38,
+    margem: 22.1,
+    rating: "B-ou-inferior",
+    segmento: "governo",
+  },
+  {
+    codigo: "c10",
+    receita: 34,
+    margem: 31.5,
+    rating: "AAA-A",
+    segmento: "outros",
+  },
 ];
 
 /* ------------------------------------------------------------------ *
