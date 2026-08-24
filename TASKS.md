@@ -235,7 +235,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha
   · **Aceite:** As três formas reproduzem rh-headcount com eixo secundário, rec-vagas empilhada com legenda e tov-12m com linha de referência de meta, com snapshot SVG estável; série vazia devolve o estado 'sem dado neste recorte' em vez de gráfico em branco.
   · **PRD:** Anexo A.1, Anexo A.2, seção 8.2 gráficos · **Depende de:** T-129
-- [ ] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI
+- [~] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI  ⏳ 2026-08-24 13:15 · sessao-68c8
   · **Aceite:** A linha de fórmula é renderizada sempre que PanelResponse.formula existe, sem propriedade capaz de escondê-la; valor, delta, rodapé e sparkline do KPI vêm exclusivamente de getKpis, nenhuma tela renderiza mais de 6 cartões, e a análise estática falha diante de literal numérico formatado no código de KPI.
   · **PRD:** RF-04, RF-07, PR-3, D-P8, Anexo D achado 5, Anexo D achado 10 · **Depende de:** T-002, T-102, T-115, T-124
 - [ ] **T-132** `P0` `L` `paineis` Implementar os seis estados obrigatórios de painel e KPI, com esqueletos
