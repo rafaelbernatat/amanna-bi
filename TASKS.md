@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 96 | 55 | 37 | 4 | 39 de 96 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 39 de 97 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **233** | **118** | **92** | **18** | **50 de 233** |
+| **Total** | **234** | **119** | **92** | **18** | **50 de 234** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -202,6 +202,9 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
   · **Aceite:** Todo painel do registro cuja forma é barras, linha ou barras empilhadas responde com envelope válido no JSON Schema, muda de valor ao trocar entidade e área, e tem as categorias respeitando o recorte de período (12, 6, 3 e 1 mês).
   · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-110, T-111, T-114, T-143
+- [~] **T-118.1** `P0` `M` `auditoria` Declarar as fontes dos sete painéis categóricos cujas medidas não existem em 10.1  ⏳ 2026-08-24 19:25 · sessao-68c8
+  · **Aceite:** as duas views e as três colunas que faltam entram na tabela 10.1 com as chaves nomeadas e a fixture as implementa reconciliando exatamente com as medidas mensais já existentes; as decisões de negócio de que dependem ficam registradas em INSTRUCOES.md; e o teste de cobertura de origem passa a percorrer os 65 painéis de T-117 e T-118, provando que nenhum ficou sem view.
+  · **PRD:** seção 10.1, Anexo A.1, Anexo B intenção 19, seção 11 · **Depende de:** T-110, T-111, T-143
 - [~] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas  ⏳ 2026-08-24 19:10 · sessao-68c8
   · **Aceite:** Todo painel com forma barras horizontais, rosca, funil, divisão ou estatísticas responde com envelope válido; sob recorte de uma única área o painel quebrado por área devolve exatamente uma categoria e as fatias da rosca somam o total declarado.
   · **PRD:** seção 9.3, Anexo A.1, seção 9.2 regra 1, RF-01 · **Depende de:** T-107, T-114
