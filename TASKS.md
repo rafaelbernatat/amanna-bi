@@ -202,7 +202,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
   · **Aceite:** Todo painel do registro cuja forma é barras, linha ou barras empilhadas responde com envelope válido no JSON Schema, muda de valor ao trocar entidade e área, e tem as categorias respeitando o recorte de período (12, 6, 3 e 1 mês).
   · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-110, T-111, T-114, T-143
-- [ ] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
+- [~] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas  ⏳ 2026-08-24 19:10 · sessao-68c8
   · **Aceite:** Todo painel com forma barras horizontais, rosca, funil, divisão ou estatísticas responde com envelope válido; sob recorte de uma única área o painel quebrado por área devolve exatamente uma categoria e as fatias da rosca somam o total declarado.
   · **PRD:** seção 9.3, Anexo A.1, seção 9.2 regra 1, RF-01 · **Depende de:** T-107, T-114
 - [ ] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas
