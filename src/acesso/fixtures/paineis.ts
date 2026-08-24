@@ -59,13 +59,25 @@ import {
 } from "@/acesso/fixtures/referencia-perfil";
 import { VW_FATO_RH_MES, VW_FATO_VAGAS } from "@/acesso/fixtures/rh";
 import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
+import {
+  DESENHO_CATEGORICO,
+  paineisCategoricosComDesenho,
+} from "@/acesso/fixtures/paineis-categoricos";
+import type { Unidade } from "@/semantica/contrato";
 import type {
   PainelBarras,
   PainelBarrasEmpilhadas,
+  PainelBarrasHorizontais,
+  PainelDivisao,
+  PainelEstatisticas,
+  PainelFunil,
   PainelLinha,
+  PainelRosca,
   Query,
   Serie,
 } from "@/semantica/contrato";
+import type { DesenhoCategorico } from "@/acesso/fixtures/paineis-categoricos";
+import type { OrigemDePainel } from "@/semantica/origem-de-painel";
 import { origemDoPainel } from "@/semantica/origem-de-painel";
 import { painelPorId } from "@/semantica/paineis";
 
@@ -687,6 +699,17 @@ function agingDe(
 export type PainelCartesiano =
   PainelBarras | PainelLinha | PainelBarrasEmpilhadas;
 
+/** As cinco formas que T-118 cobre. */
+export type PainelCategorico =
+  | PainelBarrasHorizontais
+  | PainelRosca
+  | PainelFunil
+  | PainelDivisao
+  | PainelEstatisticas;
+
+/** O que `getPanel` sabe devolver hoje: T-117 mais T-118. */
+export type PainelDesenhado = PainelCartesiano | PainelCategorico;
+
 /**
  * O painel pedido, no recorte pedido.
  *
@@ -697,15 +720,21 @@ export type PainelCartesiano =
  * e `series` não existe em nove delas — quem chamasse esta função e lesse
  * `.series` descobriria isso em produção, não aqui.
  */
-export function calcularPainel(id: string, q: Query): PainelCartesiano {
+export function calcularPainel(id: string, q: Query): PainelDesenhado {
   const registro = painelPorId(id);
   if (registro === undefined) throw new PainelDesconhecido(id);
 
   const origem = origemDoPainel(id);
-  const desenhar = DESENHO[id];
   const forma = registro.forma;
+  if (origem === undefined) throw new PainelSemDesenho(id, forma);
+
+  const categorico = DESENHO_CATEGORICO[id];
+  if (categorico !== undefined) {
+    return montarCategorico(id, registro, origem, recorteDe(q), categorico);
+  }
+
+  const desenhar = DESENHO[id];
   if (
-    origem === undefined ||
     desenhar === undefined ||
     (forma !== "barras" && forma !== "linha" && forma !== "barras-empilhadas")
   ) {
@@ -751,7 +780,87 @@ function fechamentoDoRecorte(r: Recorte): string {
   return `${ultimo}-${String(dia)}`;
 }
 
+/**
+ * O envelope das cinco formas categóricas.
+ *
+ * Cada forma carrega uma coisa diferente — fatias e centro, passos, grupos de
+ * partes, números soltos — e por isso o `switch` é por forma e não por
+ * conveniência. O compilador confere cada ramo contra a variante certa da
+ * união, que é o que impede um envelope de `rosca` sair sem centro.
+ */
+function montarCategorico(
+  id: string,
+  registro: { readonly titulo: string; readonly unidade: Unidade | null },
+  origem: OrigemDePainel,
+  r: Recorte,
+  desenhar: (recorte: Recorte) => DesenhoCategorico,
+): PainelCategorico {
+  const desenho = desenhar(r);
+  const comum = {
+    id,
+    title: registro.titulo,
+    unit: registro.unidade ?? origem.series[0]?.unidade ?? "contagem",
+    formula: origem.formula,
+    total: desenho.total,
+    // A nota é de T-133, pela mesma razão das formas cartesianas.
+    note: null,
+    asOf: fechamentoDoRecorte(r),
+  };
+
+  if (desenho.forma === "barras-horizontais") {
+    const series: Serie[] = origem.series.map((declarada, i) => ({
+      name: declarada.nome,
+      values: desenho.valores[i] ?? [],
+      papel: declarada.papel,
+    }));
+    return {
+      ...comum,
+      forma: "barras-horizontais",
+      categories: desenho.categorias,
+      series,
+    };
+  }
+
+  if (desenho.forma === "rosca") {
+    return {
+      ...comum,
+      forma: "rosca",
+      fatias: desenho.fatias,
+      centro: desenho.centro,
+    };
+  }
+
+  if (desenho.forma === "funil") {
+    return { ...comum, forma: "funil", passos: desenho.passos };
+  }
+
+  if (desenho.forma === "divisao") {
+    return { ...comum, forma: "divisao", grupos: desenho.grupos };
+  }
+
+  /*
+   * Estatísticas: cada número traz a **própria** fórmula, que vem da
+   * declaração e não do painel. PR-3 vale por número, e "vagas movimentadas" e
+   * "taxa de conversão" não compartilham como foram obtidas.
+   */
+  return {
+    ...comum,
+    forma: "estatisticas",
+    estatisticas: desenho.estatisticas.map((calculada, i) => {
+      const declarada = origem.series[i];
+      return {
+        rotulo: declarada?.nome ?? "",
+        valor: calculada.valor,
+        unidade: declarada?.unidade ?? "contagem",
+        formula: declarada?.formulaPropria ?? origem.formula,
+        sentido: calculada.sentido,
+        rodape: calculada.rodape,
+      };
+    }),
+  };
+}
+
 /** Os painéis que já sabem se desenhar. Serve à conferência de cobertura. */
 export function paineisComDesenho(): readonly string[] {
-  return Object.keys(DESENHO);
+  return [...Object.keys(DESENHO), ...paineisCategoricosComDesenho()];
 }
