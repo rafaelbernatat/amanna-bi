@@ -31,9 +31,11 @@ import type {
 } from "@/semantica/contrato";
 import {
   VW_FATO_CONTAS,
+  VW_FATO_FATURAMENTO_CLIENTE,
   VW_FATO_FIN_MES,
   VW_FATO_ORCAMENTO,
 } from "@/acesso/fixtures/fin";
+import { VW_FATO_RH_PERFIL } from "@/acesso/fixtures/perfil";
 import {
   VW_FATO_RH_MES,
   VW_FATO_TREINAMENTO,
@@ -45,12 +47,14 @@ import { linhasDoRecorte, recortar, somar } from "@/acesso/fixtures/recorte";
 /** As seis views da seção 10.1 que a fixture publica, por nome. */
 export const VIEWS = {
   vw_fato_rh_mes: VW_FATO_RH_MES,
+  vw_fato_rh_perfil: VW_FATO_RH_PERFIL,
   vw_fato_vagas: VW_FATO_VAGAS,
   vw_fato_vagas_fonte: VW_FATO_VAGAS_FONTE,
   vw_fato_treinamento: VW_FATO_TREINAMENTO,
   vw_fato_fin_mes: VW_FATO_FIN_MES,
   vw_fato_orcamento: VW_FATO_ORCAMENTO,
   vw_fato_contas: VW_FATO_CONTAS,
+  vw_fato_faturamento_cliente: VW_FATO_FATURAMENTO_CLIENTE,
 } as const;
 
 export type NomeDeView = keyof typeof VIEWS;

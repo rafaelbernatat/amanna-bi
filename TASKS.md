@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 188 pendentes e 43 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 187 pendentes e 44 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 32 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 33 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **43 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **44 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -286,7 +286,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-147** `P1` `M` `dados` Modelar as dimensões vw_dim_* e as faixas usadas pelos painéis de perfil
   · **Aceite:** Existem dimensões de entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa e escolaridade com as cardinalidades do Anexo C (7 áreas, 8 centros de custo, 12 UFs, 3 modalidades, 12 meses); teste de esquema falha se alguma expuser atributo identificável de pessoa.
   · **PRD:** seção 10.1, Anexo C, seção 11 · **Depende de:** T-110
-- [~] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto  ⏳ 2026-08-24 12:15 · sessao-68c8
+- [X] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto
   · **Aceite:** As 15 métricas do achado 5 (idade média, tempo de casa, tempo de fechamento, custo por contratação, encargos, mediana salarial, participação e conclusão de treinamento, cobertura da pesquisa, ticket médio, concentração top 10, PMR, PME, PMP e inadimplência) existem no catálogo com fórmula, unidade e agg, e cada uma tem medida correspondente nas fixtures.
   · **PRD:** Anexo D achado 5, RF-07, seção 9.4 · **Depende de:** T-112, T-147
 - [ ] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha

@@ -240,10 +240,16 @@ describe("o catálogo versionado do repositório", () => {
     expect(conferirCatalogo(documento)).toEqual([]);
   });
 
-  it("e traz as 21 do Anexo B (T-113), não mais só uma", () => {
-    // O arquivo esteve incompleto de propósito enquanto H-08 travava tudo. A
-    // decisão de modo mockup destravou a escrita; a aprovação continua em H-08.
-    expect(carregarCatalogo(documento).size).toBe(21);
+  it("e traz as 42 métricas, não mais só uma", () => {
+    /*
+     * O arquivo esteve incompleto de propósito enquanto H-08 travava tudo. A
+     * decisão de modo mockup destravou a escrita: T-113 trouxe as 21 do Anexo B
+     * e T-148 as 21 do achado 5. A aprovação continua em H-08.
+     *
+     * Seriam 36 pela contagem do PRD — 21 mais os 15 do achado. A diferença é
+     * a subcontagem do próprio achado, registrada em H-48.
+     */
+    expect(carregarCatalogo(documento).size).toBe(42);
   });
 
   it("traz a métrica que a seção 9.4 escreve por extenso", () => {

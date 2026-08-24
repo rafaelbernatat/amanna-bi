@@ -29,6 +29,14 @@
 /** De onde sai um número: a view, o que soma em cima, o que soma embaixo. */
 export type OrigemDeKpi = {
   readonly kpi: string;
+  /**
+   * A métrica do catálogo que define este número.
+   *
+   * É o elo que faz "todo KPI vem do catálogo" ser conferivel: sem ele, a
+   * fórmula estaria escrita duas vezes — no catálogo e no código do KPI — e as
+   * duas divergiriam no primeiro ajuste.
+   */
+  readonly metrica: string;
   /** A view de fato da seção 10.1 que tem a coluna. */
   readonly view: string;
   /** A coluna que é numerador — ou a expressão, quando é diferença de colunas. */
@@ -53,6 +61,7 @@ export type OrigemDeKpi = {
 export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   {
     kpi: "rh-colab-idade-media",
+    metrica: "idade_media",
     view: "vw_fato_rh_mes",
     medida: "somaDeIdade",
     denominador: "headcountFte",
@@ -60,6 +69,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-colab-tempo-medio-de-casa",
+    metrica: "tempo_medio_de_casa",
     view: "vw_fato_rh_mes",
     medida: "somaDeTempoDeCasa",
     denominador: "headcountFte",
@@ -67,6 +77,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-colab-estados-atendidos",
+    metrica: "estados_atendidos",
     view: "vw_fato_rh_perfil",
     medida: "contagem de valores distintos da dimensão uf com headcountFte > 0",
     denominador: null,
@@ -74,6 +85,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-colab-superior-ou-mais",
+    metrica: "escolaridade_superior",
     view: "vw_fato_rh_perfil",
     medida:
       "headcountFte da dimensão escolaridade em superior, pos-graduacao e mestrado-mais",
@@ -83,6 +95,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-turnover-tempo-ate-a-saida",
+    metrica: "tempo_ate_a_saida",
     view: "vw_fato_rh_mes",
     medida: "somaDeTempoAteASaida",
     denominador: "desligamentos",
@@ -91,6 +104,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-recrut-tempo-de-fechamento",
+    metrica: "tempo_fechamento",
     view: "vw_fato_vagas",
     medida: "diasSomados",
     denominador: "fechadas",
@@ -98,6 +112,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-recrut-custo-por-contratacao",
+    metrica: "custo_por_contratacao",
     view: "vw_fato_vagas",
     medida: "custoDeRecrutamento",
     denominador: "contratados",
@@ -105,6 +120,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-trein-participacao",
+    metrica: "participacao_treinamento",
     view: "vw_fato_treinamento",
     medida: "participantes",
     denominador: "vw_fato_rh_mes.elegiveis",
@@ -112,6 +128,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-trein-conclusao-media",
+    metrica: "conclusao_treinamento",
     view: "vw_fato_treinamento",
     medida: "trilhasConcluidas",
     denominador: "trilhasIniciadas",
@@ -119,6 +136,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-trein-custo-por-hora",
+    metrica: "custo_por_hora_treinamento",
     view: "vw_fato_treinamento",
     medida: "investimentoReais",
     denominador: "horas",
@@ -126,6 +144,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-engaj-promotores",
+    metrica: "promotores",
     view: "vw_fato_rh_mes",
     medida: "promotores",
     denominador: "respondentes",
@@ -133,6 +152,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-engaj-cobertura-da-pesquisa",
+    metrica: "cobertura_da_pesquisa",
     view: "vw_fato_rh_mes",
     medida: "respondentes",
     denominador: "elegiveis",
@@ -140,6 +160,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "rh-sal-encargos",
+    metrica: "encargos_sobre_salarios",
     view: "vw_fato_rh_mes",
     medida: "encargos",
     denominador: "salarios",
@@ -148,6 +169,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-visao-margem-bruta",
+    metrica: "margem_bruta",
     view: "vw_fato_fin_mes",
     medida: "receitaLiquida - cmv",
     denominador: "receitaLiquida",
@@ -155,6 +177,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-visao-margem-liquida",
+    metrica: "margem_liquida",
     view: "vw_fato_fin_mes",
     medida:
       "receitaLiquida - cmv - despesasOperacionais - depreciacaoEAmortizacao - resultadoFinanceiro - naoOperacional",
@@ -163,6 +186,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-caixa-conversao-de-dez",
+    metrica: "conversao_de_caixa",
     view: "vw_fato_fin_mes",
     medida: "fco",
     denominador: "receitaLiquida - cmv - despesasOperacionais",
@@ -170,6 +194,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-contas-pmr",
+    metrica: "pmr",
     view: "vw_fato_contas",
     medida: "aReceber",
     denominador: "vw_fato_fin_mes.receitaLiquida",
@@ -177,6 +202,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-contas-pme",
+    metrica: "pme",
     view: "vw_fato_fin_mes",
     medida: "estoque",
     denominador: "cmv",
@@ -184,6 +210,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-contas-pmp",
+    metrica: "pmp",
     view: "vw_fato_contas",
     medida: "aPagar",
     denominador: "vw_fato_fin_mes.cmv",
@@ -191,6 +218,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-contas-ciclo-de-conversao",
+    metrica: "ciclo_financeiro",
     view: "vw_fato_contas",
     medida: "pmr + pme - pmp, dos três acima",
     denominador: null,
@@ -198,6 +226,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-contas-inadimplencia",
+    metrica: "inadimplencia",
     view: "vw_fato_contas",
     medida: "aReceber nas faixas de aging vencidas",
     denominador: "aReceber em todas as faixas",
@@ -205,6 +234,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-fat-ticket-medio",
+    metrica: "ticket_medio",
     view: "vw_fato_fin_mes",
     medida: "receitaLiquida",
     denominador: "notasEmitidas",
@@ -212,6 +242,7 @@ export const ORIGEM_DOS_KPIS_CONSTANTES: readonly OrigemDeKpi[] = [
   },
   {
     kpi: "fin-fat-concentracao-top-10",
+    metrica: "concentracao_top_10",
     view: "vw_fato_faturamento_cliente",
     medida: "receita",
     denominador: "vw_fato_fin_mes.receitaLiquida",

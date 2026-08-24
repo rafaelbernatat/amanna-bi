@@ -28,6 +28,7 @@ import { describe, expect, it } from "vitest";
 import { MODULOS } from "@/apresentacao/navegacao/telas";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import { carregarCatalogo, type Metrica } from "@/semantica/catalogo";
+import { ORIGEM_DOS_KPIS_CONSTANTES } from "@/semantica/origem-de-kpi";
 
 const RAIZ = process.cwd();
 
@@ -88,8 +89,11 @@ describe("as duas fontes foram lidas — senão o resto não prova nada", () => 
     );
   });
 
-  it("o catálogo tem 21 métricas", () => {
-    expect(CATALOGO).toHaveLength(21);
+  it("o catálogo tem as 21 do Anexo B, e mais as do achado 5", () => {
+    // Eram 21 quando T-113 as escreveu. T-148 acrescentou as do achado 5, e
+    // este arquivo continua sendo sobre o Anexo B: o que importa aqui é que
+    // as 21 estejam lá, não que nada mais esteja.
+    expect(CATALOGO.length).toBeGreaterThanOrEqual(21);
   });
 
   it("e existem 13 telas e 71 painéis para cruzar contra", () => {
@@ -111,14 +115,31 @@ describe("catálogo × Anexo B", () => {
     expect(faltando).toEqual([]);
   });
 
-  it("e nenhuma métrica do catálogo sobra fora do Anexo B", () => {
-    // O outro lado: uma métrica que só existe no catálogo não é alcançável por
-    // pergunta nenhuma, e o chat nunca vai encontrá-la.
+  it("e toda métrica fora do Anexo B é do achado 5 — nenhuma órfã", () => {
+    /*
+     * Este caso conferia "nada além do Anexo B", e o catálogo cresceu com
+     * T-148. A versão forte da mesma preocupação: uma métrica que não é do
+     * Anexo B **nem** do achado 5 não é alcançável por pergunta nenhuma e não
+     * abre nenhum KPI — existe só no arquivo, e ninguém vai encontrá-la.
+     */
     const doAnexo = new Set(ANEXO_B.map((i) => i.metrica));
-    const sobrando = CATALOGO.filter((m) => !doAnexo.has(m.id)).map(
-      (m) => m.id,
-    );
-    expect(sobrando).toEqual([]);
+    const doAchado = new Set(ORIGEM_DOS_KPIS_CONSTANTES.map((o) => o.metrica));
+
+    /*
+     * Uma terceira categoria, com um membro só e nomeado.
+     *
+     * `mediana_salarial` não abre KPI nenhum — é texto de **nota** do painel
+     * `sal-faixas`, e por isso não está no registro de origens, que é de KPI.
+     * Nota com número declara fórmula do mesmo jeito (PR-3, RF-09), então ela
+     * pertence ao catálogo. Nomear a exceção em vez de abrir uma classe faz a
+     * segunda aparecer no diff.
+     */
+    const DE_NOTA = new Set(["mediana_salarial"]);
+
+    const orfas = CATALOGO.filter(
+      (m) => !doAnexo.has(m.id) && !doAchado.has(m.id) && !DE_NOTA.has(m.id),
+    ).map((m) => m.id);
+    expect(orfas).toEqual([]);
   });
 
   it.each(ANEXO_B)(
