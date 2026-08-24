@@ -176,6 +176,20 @@ export type Kpi = {
   readonly delta: number | null;
   readonly sentiment: "good" | "bad" | "neutral";
   readonly rodape: string;
+  /**
+   * A série do sparkline: um ponto por mês da janela do recorte.
+   *
+   * Faltava, e a falta era do tipo que passa despercebida porque nada quebra.
+   * O protótipo desenha um sparkline em cada cartão a partir de um vetor
+   * `sv` escrito à mão junto do número, e T-131 exige que ele venha de
+   * `getKpis` como o valor e o delta vêm — senão é o achado 5 outra vez, só
+   * que em forma de linha em vez de em forma de número.
+   *
+   * Cada ponto é a **mesma métrica com a mesma fórmula**, avaliada num mês só.
+   * Ponto nulo é mês sem dado no recorte, e desenha lacuna: princípio PR-4
+   * vale para o traço tanto quanto para o número.
+   */
+  readonly serie: readonly (number | null)[];
 };
 
 /**

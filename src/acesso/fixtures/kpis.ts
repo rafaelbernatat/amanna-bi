@@ -809,7 +809,33 @@ function montar(registro: RegistroDeKpi, r: Recorte): Kpi {
     delta: variacao,
     sentiment: sentimento(registro.sentido, variacao),
     rodape: registro.rodape ?? "",
+    serie: serieDoKpi(calculo, r),
   };
+}
+
+/**
+ * A série do sparkline: a métrica avaliada mês a mês, com o mesmo cálculo.
+ *
+ * Não há tabela de séries nem fórmula paralela. Cada ponto é `calculo`
+ * rodando num recorte de um mês só, com os mesmos filtros dimensionais — o que
+ * garante, por construção, que a linha e o número não podem divergir de
+ * definição. Se alguém corrigir a fórmula do turnover, o traço corrige junto.
+ *
+ * ## O que a série NÃO é
+ *
+ * Ela é o valor **de cada mês**, e não a janela do KPI deslizando mês a mês.
+ * Para métrica de fluxo acumulada na janela — turnover de 12 meses, por
+ * exemplo — o último ponto vale menos que o número grande do cartão, porque um
+ * mês acumula menos que doze. As duas leituras são defensáveis e a escolha é
+ * de Produto, não minha: está registrada como H-51 em INSTRUCOES.md. Enquanto
+ * não houver resposta, vale a leitura mensal, que é a que o protótipo desenha
+ * (doze pontos ao longo do ano) e a que não inventa janela que ninguém pediu.
+ */
+function serieDoKpi(
+  calculo: (r: Recorte) => number | null,
+  r: Recorte,
+): readonly (number | null)[] {
+  return r.meses.map((mes) => calculo({ ...r, meses: [mes] }));
 }
 
 /**

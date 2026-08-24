@@ -1,4 +1,9 @@
 import { formatarValor } from "@/apresentacao/formato/formato";
+import {
+  ALTURA_DA_SPARKLINE,
+  caminhosDaSparkline,
+  LARGURA_DA_SPARKLINE,
+} from "@/apresentacao/paineis/sparkline";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Kpi } from "@/semantica/contrato";
 
@@ -14,6 +19,18 @@ import type { Kpi } from "@/semantica/contrato";
  *
  * Uma regra de lint confere isso: os números que sobram aqui são geometria, e
  * cada um passa por um nome estrutural da lista de T-181.
+ *
+ * ## O sparkline é dado, não enfeite
+ *
+ * A linha vem de `kpi.serie`, que `getKpis` calcula com a mesma fórmula do
+ * número, mês a mês. No protótipo o vetor era digitado ao lado do valor — o
+ * achado 5 em forma de traço — e o resultado era um cartão cuja linha não
+ * reagia a filtro nenhum. Aqui o componente não sabe de onde a série veio nem
+ * o que ela mede: recebe pontos e desenha.
+ *
+ * Ela é decorativa para quem usa leitor de tela (`aria-hidden`), e isso é
+ * deliberado: o número, o delta e o rodapé já dizem em texto tudo o que o
+ * traço sugere. Um `<path>` narrado ponto a ponto seria ruído, não informação.
  *
  * ## Cor nunca é o único sinal
  *
@@ -101,6 +118,8 @@ export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
           : formatarValor(valor, kpi.unit)}
       </div>
 
+      <SparklineDoKpi serie={kpi.serie} cor={corDoSentimento(kpi.sentiment)} />
+
       <div
         style={{
           display: "flex",
@@ -138,6 +157,53 @@ export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
           {kpi.rodape}
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * O traço da série.
+ *
+ * Reserva a altura mesmo quando não desenha, para o cartão não mudar de tamanho
+ * entre um KPI com série e outro sem — que é o mesmo cuidado com deslocamento
+ * de layout que o painel tem (seção 13).
+ */
+function SparklineDoKpi({
+  serie,
+  cor,
+}: {
+  readonly serie: readonly (number | null)[];
+  readonly cor: string;
+}) {
+  const caminhos = caminhosDaSparkline(serie);
+
+  return (
+    <div
+      data-teste="sparkline-do-kpi"
+      data-tracos={caminhos.length}
+      style={{ height: ALTURA_DA_SPARKLINE, minWidth: 0 }}
+    >
+      {caminhos.length === 0 ? null : (
+        <svg
+          aria-hidden="true"
+          viewBox={`0 0 ${LARGURA_DA_SPARKLINE} ${ALTURA_DA_SPARKLINE}`}
+          preserveAspectRatio="none"
+          style={{ width: "100%", height: "100%", display: "block" }}
+        >
+          {caminhos.map((d) => (
+            <path
+              key={d}
+              d={d}
+              fill="none"
+              stroke={cor}
+              strokeWidth={1.25}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 50 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 51 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,17 +39,17 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 14 (4 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 15 (4 resolvidos) | 6 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **50** | **29** | **122** |
+| **Total** | **51** | **29** | **122** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
-| Produto | 13 |
+| Produto | 14 |
 | TI do cliente | 13 |
 | Controladoria | 10 |
 | Engenharia | 6 |
@@ -75,7 +75,30 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*14 itens · 2 P0 abertos · 6 P1 abertos · 2 P2 abertos · 4 resolvidos*
+*15 itens · 2 P0 abertos · 6 P1 abertos · 3 P2 abertos · 4 resolvidos*
+
+### [ ] H-51 · Decidir o que o sparkline do cartão mede
+
+`P2` · **Responsável:** Produto
+
+**O que fazer**
+
+Cada cartão de KPI tem um sparkline. No protótipo ele vem de um vetor escrito à mão ao lado do número — o achado 5 do Anexo D em forma de traço, uma linha que não reage a filtro nenhum. T-131 fez a série vir de `getKpis`, calculada com a mesma fórmula do número. Falta dizer **qual série**.
+
+Há duas leituras, e as duas são defensáveis:
+
+1. **O valor de cada mês.** Doze pontos, um por mês da janela. É o que o protótipo desenha e é a leitura mais direta: "como isso se comportou ao longo do ano". Para métrica acumulada na janela — turnover de 12 meses, admissões do período — o último ponto vale **menos** que o número grande do cartão, porque um mês acumula menos que doze. Quem olhar os dois juntos vai estranhar.
+2. **A janela do KPI deslizando.** Para cada mês, a métrica calculada sobre uma janela do mesmo tamanho terminando ali. O último ponto passa a ser exatamente o número do cartão, por construção. Custa história: uma janela de 12 meses terminando em janeiro de 2026 precisa de 2025 inteiro, e o recorte de 2025 não tem 2024 para trás — nesses meses a série fica mais curta ou vazia.
+
+**Por que não decidi:** a saída 2 é tecnicamente melhor — o traço e o número deixam de poder divergir — mas muda o que o cartão *diz*, e mudar o significado de um gráfico do protótipo sem que alguém peça é decidir produto por conta própria. A saída 1 é a do protótipo e não inventa nada.
+
+**Enquanto não for decidido:** vale a leitura mensal (saída 1). Está escrita em `serieDoKpi` em `src/acesso/fixtures/kpis.ts`, com esta pendência citada, e um teste fixa que a série tem um ponto por mês da janela.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador, escolhendo entre valor mensal e janela deslizante, e dizendo o que a série mostra quando falta história |
+| **Onde o resultado vai** | docs/decisoes/, e `serieDoKpi` em `src/acesso/fixtures/kpis.ts` |
+| **Destrava** | nada — o traço já vem do cálculo; o que falta é dizer qual leitura ele carrega |
 
 ### [ ] H-50 · Decidir como o produto mostra dinheiro em três escalas
 

@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 35 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 36 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **46 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **47 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -235,7 +235,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-130** `P0` `L` `paineis` Portar as primitivas de série: barras, barras empilhadas e linha
   · **Aceite:** As três formas reproduzem rh-headcount com eixo secundário, rec-vagas empilhada com legenda e tov-12m com linha de referência de meta, com snapshot SVG estável; série vazia devolve o estado 'sem dado neste recorte' em vez de gráfico em branco.
   · **PRD:** Anexo A.1, Anexo A.2, seção 8.2 gráficos · **Depende de:** T-129
-- [~] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI  ⏳ 2026-08-24 13:15 · sessao-68c8
+- [X] **T-131** `P0` `M` `paineis` Construir o componente de painel e o cartão de KPI
   · **Aceite:** A linha de fórmula é renderizada sempre que PanelResponse.formula existe, sem propriedade capaz de escondê-la; valor, delta, rodapé e sparkline do KPI vêm exclusivamente de getKpis, nenhuma tela renderiza mais de 6 cartões, e a análise estática falha diante de literal numérico formatado no código de KPI.
   · **PRD:** RF-04, RF-07, PR-3, D-P8, Anexo D achado 5, Anexo D achado 10 · **Depende de:** T-002, T-102, T-115, T-124
 - [ ] **T-132** `P0` `L` `paineis` Implementar os seis estados obrigatórios de painel e KPI, com esqueletos
