@@ -7,6 +7,7 @@ import {
   formatarValor,
   type Unidade,
 } from "@/apresentacao/formato/formato";
+import { UNIDADES } from "@/semantica/contrato";
 
 /**
  * O modulo unico de formatacao (T-125).
@@ -142,6 +143,41 @@ describe("Determinismo: o fuso e o idioma do processo nao mudam a saida", () => 
       if (langOriginal === undefined) delete process.env["LANG"];
       else process.env["LANG"] = langOriginal;
     }
+  });
+});
+
+describe("toda unidade do contrato sabe se formatar", () => {
+  /*
+   * O teste que faltava, e que teria pegado o defeito no dia em que ele
+   * entrou.
+   *
+   * Este modulo declarava a propria copia do tipo `Unidade`, com cinco valores.
+   * D-H45 estendeu o enum do contrato para nove; a copia nao seguiu, e
+   * `formatarValor` passou a devolver **undefined** para `horas`, `contagem`,
+   * `pontos` e `anos`. Sem erro de compilacao, porque o `switch` era exaustivo
+   * sobre a copia. Sem teste vermelho, porque nenhum caso percorria o enum.
+   *
+   * A tela teria mostrado a palavra "undefined" onde deveria haver numero.
+   *
+   * Percorrer `UNIDADES` -- e nao uma lista escrita aqui -- e o que faz a
+   * proxima unidade nao poder entrar sem formatacao.
+   */
+  it.each(UNIDADES)("%s devolve texto, e nao undefined", (unidade) => {
+    const saida = formatarValor(12.34, unidade);
+    expect(typeof saida, unidade).toBe("string");
+    expect(saida, unidade).not.toContain("undefined");
+    expect(saida.trim(), unidade).not.toBe("");
+  });
+
+  it("as quatro unidades novas de D-H45 formatam como se espera", () => {
+    expect(formatarValor(21400, "horas")).toBe("21.400,0 h");
+    expect(formatarValor(17.3, "horas")).toBe("17,3 h");
+    expect(formatarValor(48, "contagem")).toBe("48");
+    expect(formatarValor(32, "pontos")).toBe("32");
+    expect(formatarValor(34.2, "anos")).toBe("34,2 anos");
+    // Com uma casa, 1 vira "1,0" -- e o singular continua valendo. As duas
+    // regras sao independentes: casas decimais e concordancia.
+    expect(formatarValor(1, "anos")).toBe("1,0 ano");
   });
 });
 

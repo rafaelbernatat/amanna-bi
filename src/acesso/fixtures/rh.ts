@@ -65,6 +65,7 @@ import {
 } from "@/acesso/fixtures/referencia-rh";
 import {
   COMPOSICAO_DA_FOLHA,
+  CUSTO_DO_TURNOVER,
   CUSTO_POR_CONTRATACAO,
   IDADE_MEDIA,
   TEMPO_MEDIO_ATE_A_SAIDA,
@@ -425,6 +426,38 @@ const SOMA_DE_TEMPO_ATE_A_SAIDA = MESES.map((_mes, m) => {
   );
 });
 
+/**
+ * O custo do turnover, em duas parcelas (T-115).
+ *
+ * `custoDeReposicao` e ramp-up mais produtividade perdida; `custoDeDesligamento`
+ * e rescisao mais o recrutamento de reposicao. A soma das duas e o custo total,
+ * e o painel `tov-custo` quebra as quatro.
+ *
+ * Repartido pelos **desligamentos**, ponderado pela folha por FTE da area:
+ * perder uma pessoa cara custa mais que perder uma barata. Sem essa segunda
+ * ponderacao o custo seria um multiplo fixo dos desligamentos, e o KPI
+ * responderia ao recorte pelo motivo errado.
+ */
+const PESO_DE_CUSTO_DE_SAIDA = CELULAS.map(
+  (c, k) =>
+    (QUADRO_DEZEMBRO[k] ?? 0) *
+    perfilDe(c.area).pesoDeDesligamento *
+    (perfilDe(c.area).folhaReais / Math.max(1, perfilDe(c.area).headcount)),
+);
+
+function custoDeSaida(ehReposicao: boolean) {
+  const total = CUSTO_DO_TURNOVER.filter(
+    (p) => p.ehReposicao === ehReposicao,
+  ).reduce((a, p) => a + p.milhoes, 0);
+  return porMesECelula(
+    repartir(Math.round(total * UM_MILHAO), DESLIGAMENTOS_MENSAL),
+    PESO_DE_CUSTO_DE_SAIDA,
+  );
+}
+
+const CUSTO_DE_REPOSICAO = custoDeSaida(true);
+const CUSTO_DE_DESLIGAMENTO = custoDeSaida(false);
+
 /* ------------------------------------------------------------------ *
  * vw_fato_rh_mes
  * ------------------------------------------------------------------ */
@@ -459,6 +492,10 @@ export type LinhaRhMes = {
   readonly somaDeTempoDeCasa: number;
   /** Soma do tempo de casa **de quem saiu**. Denominador: `desligamentos`. */
   readonly somaDeTempoAteASaida: number;
+  /** Ramp-up e produtividade perdida, em reais. */
+  readonly custoDeReposicao: number;
+  /** Rescisão e recrutamento de reposição, em reais. */
+  readonly custoDeDesligamento: number;
   /** Denominador do absenteísmo. */
   readonly horasPrevistas: number;
   /** Numerador do absenteísmo. */
@@ -490,6 +527,8 @@ export const VW_FATO_RH_MES: readonly LinhaRhMes[] = MESES.flatMap((mes, m) =>
     somaDeIdade: SOMA_DE_IDADE[m]?.[k] ?? 0,
     somaDeTempoDeCasa: SOMA_DE_TEMPO_DE_CASA[m]?.[k] ?? 0,
     somaDeTempoAteASaida: SOMA_DE_TEMPO_ATE_A_SAIDA[m]?.[k] ?? 0,
+    custoDeReposicao: CUSTO_DE_REPOSICAO[m]?.[k] ?? 0,
+    custoDeDesligamento: CUSTO_DE_DESLIGAMENTO[m]?.[k] ?? 0,
     horasPrevistas: HORAS_PREVISTAS[m]?.[k] ?? 0,
     horasAusentes: HORAS_AUSENTES[m]?.[k] ?? 0,
     respondentes: RESPONDENTES[m]?.[k] ?? 0,

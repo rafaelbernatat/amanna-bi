@@ -192,3 +192,53 @@ export const TOP_CLIENTES: readonly {
   { codigo: "c9", receita: 38, margem: 22.1 },
   { codigo: "c10", receita: 34, margem: 31.5 },
 ];
+
+/* ------------------------------------------------------------------ *
+ * Custo do turnover
+ * ------------------------------------------------------------------ */
+
+/**
+ * As quatro parcelas do custo do turnover, em R$ mi. Somam 12,4.
+ *
+ * O protótipo mostra `R$ 12,4 mi` e a nota diz "equivale a 6,7% da folha anual"
+ * — e `12,4 / 186` dá exatamente 6,7%. As duas leituras fecham.
+ *
+ * ## Uma divergência entre dois custos de recrutamento
+ *
+ * A parcela `recrutamento` vale **R$ 1,9 mi**. O KPI "Custo por contratação"
+ * vale R$ 8,6 mil, e `8.600 x 96` dá **R$ 0,83 mi**. Os dois medem recrutamento
+ * e diferem por mais do dobro.
+ *
+ * A leitura que reconcilia: o custo por contratação conta o gasto direto de
+ * atrair e selecionar, e a parcela do turnover conta o custo de recrutar **de
+ * novo** — hora de gestor, entrevistas repetidas, agência para vaga difícil.
+ * São despesas diferentes com o mesmo nome curto. Fica anotado porque a
+ * pergunta vai aparecer na reunião, e a resposta não pode ser descoberta ali.
+ */
+export const CUSTO_DO_TURNOVER: readonly {
+  readonly codigo: string;
+  readonly rotulo: string;
+  readonly milhoes: number;
+  /** Entra em "custo de reposição"? Ramp-up e produtividade entram. */
+  readonly ehReposicao: boolean;
+}[] = [
+  {
+    codigo: "rescisao",
+    rotulo: "Rescisão",
+    milhoes: 4.8,
+    ehReposicao: false,
+  },
+  { codigo: "ramp-up", rotulo: "Ramp-up", milhoes: 3.4, ehReposicao: true },
+  {
+    codigo: "produtividade",
+    rotulo: "Produtividade",
+    milhoes: 2.3,
+    ehReposicao: true,
+  },
+  {
+    codigo: "recrutamento",
+    rotulo: "Recrutamento",
+    milhoes: 1.9,
+    ehReposicao: false,
+  },
+];
