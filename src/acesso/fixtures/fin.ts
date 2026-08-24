@@ -53,6 +53,10 @@ import {
   RECEITA_LIQUIDA_MENSAL,
   SAIDAS_MENSAL,
 } from "@/acesso/fixtures/referencia-fin";
+import {
+  NOTAS_EMITIDAS,
+  TOP_CLIENTES,
+} from "@/acesso/fixtures/referencia-perfil";
 import { repartir, repartirMatriz } from "@/acesso/fixtures/reparticao";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
 
@@ -148,6 +152,18 @@ const FINANCIAMENTO = repartir(
 const ENTRADAS = ENTRADAS_MENSAL.map(emReais);
 const SAIDAS = SAIDAS_MENSAL.map(emReais);
 
+/**
+ * Notas emitidas por mês.
+ *
+ * Repartidas pela receita, mas **não proporcionais a ela**: o peso leva a raiz
+ * da receita, o que faz o ticket médio subir em mês forte. Nota proporcional à
+ * receita daria ticket constante, e o KPI voltaria a ignorar o recorte.
+ */
+const NOTAS = repartir(
+  NOTAS_EMITIDAS,
+  RECEITA_LIQUIDA_MENSAL.map((r) => Math.sqrt(r)),
+);
+
 /** Estoque mensal: acompanha o CMV, e dezembro reproduz o valor derivado do PME. */
 const ESTOQUE = MESES.map((_, m) =>
   Math.round(emReais(ESTOQUE_DEZEMBRO) * ((CMV[m] ?? 0) / (CMV.at(-1) ?? 1))),
@@ -179,6 +195,14 @@ export type LinhaFinMes = {
   readonly saidasDeCaixa: number;
   /** Estoque no fechamento. Denominador do PME. */
   readonly estoque: number;
+  /**
+   * Notas fiscais emitidas no mês (T-143).
+   *
+   * O ticket médio é `receita_liquida / notas_emitidas`. Sem esta coluna ele
+   * seria os R$ 65,2 mil cravados do protótipo, iguais em todo recorte — o
+   * achado 5. Com ela, o ticket de um mês difere do ticket do ano.
+   */
+  readonly notasEmitidas: number;
   /** Saldo no fechamento do mês: o inicial mais o acumulado de entradas e saídas. */
   readonly saldoDeCaixa: number;
 };
@@ -205,6 +229,7 @@ export const VW_FATO_FIN_MES: readonly LinhaFinMes[] = (() => {
     const entradas = porEntidade(ENTRADAS[m] ?? 0, "caixa");
     const saidas = porEntidade(SAIDAS[m] ?? 0, "caixa");
     const estoque = porEntidade(ESTOQUE[m] ?? 0, "cmv");
+    const notas = porEntidade(NOTAS[m] ?? 0, "receita");
 
     ENTIDADES_ARMAZENADAS.forEach((entidade, e) => {
       corrente[e] = (corrente[e] ?? 0) + (entradas[e] ?? 0) - (saidas[e] ?? 0);
@@ -225,6 +250,7 @@ export const VW_FATO_FIN_MES: readonly LinhaFinMes[] = (() => {
         entradasDeCaixa: entradas[e] ?? 0,
         saidasDeCaixa: saidas[e] ?? 0,
         estoque: estoque[e] ?? 0,
+        notasEmitidas: notas[e] ?? 0,
         saldoDeCaixa: corrente[e] ?? 0,
       });
     });
@@ -325,3 +351,60 @@ export const VW_FATO_CONTAS: readonly LinhaContas[] = MESES.flatMap((mes, m) =>
     }));
   }),
 );
+
+/* ------------------------------------------------------------------ *
+ * vw_fato_faturamento_cliente
+ * ------------------------------------------------------------------ */
+
+/**
+ * Receita e margem dos dez maiores clientes (T-143).
+ *
+ * A concentração top 10 é `soma(receita destes) / receita_liquida`, e dá os
+ * 54,3% que o protótipo mostra. Guardar 54,3% pronto seria o achado 5: um
+ * número que não muda quando o recorte muda.
+ *
+ * Cliente é pessoa jurídica e vem anonimizado desde o protótipo (`c1`..`c10`).
+ * A seção 11 fala de dado de **pessoa**, e nada aqui desce a esse grão.
+ */
+export type LinhaFaturamentoCliente = {
+  readonly mes: string;
+  readonly entidade: string;
+  readonly cliente: string;
+  /** Receita do mês, em reais. */
+  readonly receita: number;
+  /** Margem de contribuição em pontos-base, para somar sem perder casa. */
+  readonly margemBase: number;
+};
+
+const BASE_DA_MARGEM = 100;
+
+const RECEITA_POR_CLIENTE = repartirMatriz(
+  RECEITA_LIQUIDA_MENSAL.map(emReais),
+  repartir(
+    emReais(TOP_CLIENTES.reduce((a, c) => a + c.receita, 0)),
+    TOP_CLIENTES.map((c) => c.receita),
+  ).concat(
+    // A parcela que não é dos dez maiores fecha a receita do mês. Sem ela, a
+    // soma das colunas não daria a receita e a matriz não teria como fechar.
+    emReais(
+      RECEITA_LIQUIDA_MENSAL.reduce((a, b) => a + b, 0) -
+        TOP_CLIENTES.reduce((a, c) => a + c.receita, 0),
+    ),
+  ),
+);
+
+export const VW_FATO_FATURAMENTO_CLIENTE: readonly LinhaFaturamentoCliente[] =
+  MESES.flatMap((mes, m) =>
+    TOP_CLIENTES.flatMap((cliente, c) => {
+      const receita = porEntidade(RECEITA_POR_CLIENTE[m]?.[c] ?? 0, "receita");
+      return ENTIDADES_ARMAZENADAS.map((entidade, e) => ({
+        mes,
+        entidade,
+        cliente: cliente.codigo,
+        receita: receita[e] ?? 0,
+        margemBase: Math.round(
+          ((receita[e] ?? 0) * cliente.margem) / BASE_DA_MARGEM,
+        ),
+      }));
+    }),
+  );

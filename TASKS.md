@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 189 pendentes e 42 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 188 pendentes e 43 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 31 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 32 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **42 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **43 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -195,7 +195,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.3, Anexo A.4 · **Depende de:** T-113, T-114
 - [ ] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
   · **Aceite:** Todo painel do registro cuja forma é barras, linha ou barras empilhadas responde com envelope válido no JSON Schema, muda de valor ao trocar entidade e área, e tem as categorias respeitando o recorte de período (12, 6, 3 e 1 mês).
-  · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-114
+  · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-110, T-111, T-114, T-143
 - [ ] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
   · **Aceite:** Todo painel com forma barras horizontais, rosca, funil, divisão ou estatísticas responde com envelope válido; sob recorte de uma única área o painel quebrado por área devolve exatamente uma categoria e as fatias da rosca somam o total declarado.
   · **PRD:** seção 9.3, Anexo A.1, seção 9.2 regra 1, RF-01 · **Depende de:** T-107, T-114
@@ -271,7 +271,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-142** `P0` `M` `auditoria` Decidir e implementar o tratamento de métricas posicionais (mediana/percentil)  ⛔ H-04
   · **Aceite:** ou existe um quarto agg (precomputado) com o valor materializado por área x mês na view, ou a métrica sai do catálogo e o KPI vira faixa modal; a mediana salarial e sal-faixas respondem nos 768 recortes; um teste prova que a mediana de 'Todas' não é a média das medianas por área; a supressão k<5 continua valendo sobre as faixas.
   · **PRD:** Anexo D achado 5 - mediana salarial R$ 6.240 (e o painel sal-faixas)
-- [~] **T-143** `P0` `M` `auditoria` Levantamento de medidas ausentes (não só dimensões) e extensão de 10.1 e das fixtures  ⏳ 2026-08-24 11:45 · sessao-68c8
+- [X] **T-143** `P0` `M` `auditoria` Levantamento de medidas ausentes (não só dimensões) e extensão de 10.1 e das fixtures
   · **Aceite:** para cada um dos 15 KPIs do achado 5 estão declarados view, coluna-medida e denominador; custo de recrutamento entra em vw_fato_vagas; respondentes e elegíveis entram em vw_fato_rh_mes; soma de idade e soma de tempo de casa (ou média ponderada declarada) entram em vw_fato_rh_mes; T-117 passa a depender das tarefas de fixture e nenhuma das 15 métricas fica sem coluna de origem.
   · **PRD:** Anexo D achado 5 - custo por contratação R$ 8,6 mil, cobertura da pesquisa 74%, idade média 34,2 anos, tempo médio de casa 3,1 anos
 - [ ] **T-144** `P0` `M` `auditoria` Decidir e implementar a semântica de Area no módulo Financeiro  ⛔ H-04
