@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 49 itens (3 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 49 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,7 +39,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 13 (4 resolvidos) | 6 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
@@ -75,7 +75,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*13 itens · 3 P0 abertos · 5 P1 abertos · 2 P2 abertos · 3 resolvidos*
+*13 itens · 2 P0 abertos · 5 P1 abertos · 2 P2 abertos · 4 resolvidos*
 
 ### [ ] H-49 · Confirmar que o filtro é aplicado por botão, e não a cada troca
 
@@ -197,7 +197,7 @@ Escolha uma:
 | **Onde o resultado vai** | docs/decisoes/, `src/seguranca/cabecalhos.ts` e o teste que fixa `style-src` como única diretiva permissiva |
 | **Destrava** | T-139 *(1 tarefa)* |
 
-### [ ] H-45 · Decidir a unidade de horas, candidatos, vagas e pontos de eNPS
+### [X] H-45 · Decidir a unidade de horas, candidatos, vagas e pontos de eNPS
 
 `P0` · **Responsável:** Produto, com Controladoria e RH
 
@@ -234,6 +234,25 @@ Escolha uma das três saídas, e registre a escolha:
 | **Resultado esperado** | Decisão registrada com data e nome do aprovador, dizendo qual das três saídas e, se for a 2, o significado de cada reinterpretação |
 | **Onde o resultado vai** | docs/decisoes/, PRD seção 9.2 regra 2, `UNIDADES` em `src/semantica/contrato.ts` e a lista fixada no teste de T-107 |
 | **Destrava** | T-113, T-164, T-165 *(3 tarefas, as duas últimas parcialmente)* |
+
+> **Resolvido em 2026-08-24.** Produto escolheu a saída 1 — **estender o
+> enum** — com o critério de que é a única que não muda o que nenhum número
+> significa. `horas`, `contagem`, `pontos` e `anos` entraram na regra 2 da
+> seção 9.2 do PRD; `pontos` e `anos` entraram também nos não-somáveis, junto
+> de `pct` e `pp`.
+>
+> Artefato conferido: `docs/decisoes/D-H45-unidades.md`, `UNIDADES` com nove
+> valores em `src/semantica/contrato.ts`, os **5** painéis e os **13** KPIs com
+> unidade declarada, e o schema publicado em `contratos/painel.schema.json`
+> regerado. Sobram sete painéis com `unidade: null`, todos de forma
+> `estatisticas`, onde cada número declara a própria — e esses nunca foram
+> pendência.
+>
+> ⚠️ **Uma correção de contagem no próprio item:** a prosa acima diz "13
+> KPIs" e a tabela detalha 12. O que faltava era
+> `rh-turnover-tempo-ate-a-saida`, em **anos** — a linha de `anos` cita só os
+> dois de `rh/colab`. Os treze estão nomeados em teste.
+
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 

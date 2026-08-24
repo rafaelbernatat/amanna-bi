@@ -131,7 +131,17 @@
     },
     "Unidade": {
       "type": "string",
-      "enum": ["BRL_mi", "pct", "pp", "dias", "FTE"]
+      "enum": [
+        "BRL_mi",
+        "pct",
+        "pp",
+        "dias",
+        "FTE",
+        "horas",
+        "contagem",
+        "pontos",
+        "anos"
+      ]
     },
     "Formula": {
       "type": "string",

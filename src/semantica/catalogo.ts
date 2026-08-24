@@ -28,6 +28,7 @@
 
 import type { Agregacao, Sentido, Unidade } from "@/semantica/contrato";
 import { AGREGACOES, UNIDADES } from "@/semantica/contrato";
+import { podeSomar } from "@/semantica/agregacao";
 
 /* ------------------------------------------------------------------ *
  * O grão mínimo
@@ -181,16 +182,20 @@ export function conferirEntrada(
   /*
    * A guarda da regra 4 da seção 9.2, no catálogo.
    *
-   * `pct` com `agg: sum` é o erro exato que T-104 torna impossível em
+   * Unidade não somável com `agg: sum` é o erro exato que T-104 torna impossível em
    * execução — mas T-104 só protege quem chama `agregar()`. Uma métrica
    * declarada assim no catálogo é a mesma falha uma camada acima, e aqui ela
    * é pega antes de existir consulta.
    */
-  if ((e["unidade"] === "pct" || e["unidade"] === "pp") && e["agg"] === "sum") {
+  if (
+    incluido(UNIDADES, e["unidade"]) &&
+    !podeSomar(e["unidade"] as Unidade) &&
+    e["agg"] === "sum"
+  ) {
     erro(
       "agg",
-      `'sum' com unidade '${String(e["unidade"])}' soma percentuais ao longo ` +
-        "do período (seção 9.2 regra 4). Use 'ratio' ou 'last'.",
+      `'sum' com unidade '${String(e["unidade"])}' soma taxa ao longo do ` +
+        "período (seção 9.2 regra 4). Use 'ratio' ou 'last'.",
     );
   }
 

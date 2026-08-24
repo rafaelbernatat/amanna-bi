@@ -23,7 +23,15 @@ import {
 } from "@/semantica/vazio";
 
 /** Unidades que **não** podem ser somadas ao longo do período. */
-const NAO_SOMAVEIS: readonly Unidade[] = ["pct", "pp"];
+/**
+ * As unidades que somar ao longo do período é sempre errado.
+ *
+ * `pct` e `pp` desde sempre; `pontos` e `anos` desde D-H45. eNPS de doze meses
+ * somados dá um número que não existe, e a mesma coisa vale para idade média:
+ * as duas são taxas disfarçadas de contagem, e se agregam por `ratio` ou
+ * `last`.
+ */
+const NAO_SOMAVEIS: readonly Unidade[] = ["pct", "pp", "pontos", "anos"];
 
 export class SomaInvalida extends Error {
   constructor(unidade: Unidade) {

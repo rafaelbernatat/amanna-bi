@@ -106,8 +106,28 @@ export const QUERY_PADRAO: Query = {
  * Unidade e agregação (seção 9.2, regras 2 e 4)
  * ------------------------------------------------------------------ */
 
-/** Enum fechado: todo valor volta com unidade declarada (regra 2). */
-export const UNIDADES = ["BRL_mi", "pct", "pp", "dias", "FTE"] as const;
+/**
+ * Enum fechado: todo valor volta com unidade declarada (regra 2).
+ *
+ * Nove valores desde 2026-08-24. As quatro últimas entraram por decisão de
+ * Produto ([D-H45](../../docs/decisoes/D-H45-unidades.md)): cinco painéis e
+ * treze KPIs do protótipo medem horas, contagem, pontos de eNPS e anos de tempo
+ * de casa, e nenhuma das cinco originais os nomeia sem afirmar algo falso.
+ *
+ * Fechado continua sendo o ponto: uma unidade nova entra por decisão
+ * registrada, nunca por digitação.
+ */
+export const UNIDADES = [
+  "BRL_mi",
+  "pct",
+  "pp",
+  "dias",
+  "FTE",
+  "horas",
+  "contagem",
+  "pontos",
+  "anos",
+] as const;
 export type Unidade = (typeof UNIDADES)[number];
 
 /**

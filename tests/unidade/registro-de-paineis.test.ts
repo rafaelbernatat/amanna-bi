@@ -189,52 +189,58 @@ describe("registro e navegação apontam para as mesmas telas", () => {
   });
 });
 
-describe("as unidades que o enum fechado não nomeia (H-45)", () => {
+describe("as unidades ausentes, depois de H-45", () => {
   /**
-   * O conjunto está fixado para **só encolher**.
+   * O conjunto está fixado para **só encolher**, e encolheu.
    *
-   * Um painel novo sem unidade entra calado se ninguém contar; e aí o enum
-   * fechado da seção 9.2 deixa de fechar sem que nenhuma decisão tenha sido
-   * tomada. Quando H-45 for respondido, esta lista diminui e o teste é
-   * atualizado junto — de propósito, na mesma revisão.
+   * Eram doze: sete de forma `estatisticas`, onde cada número declara a própria
+   * unidade, e cinco que eram pendência de verdade. Os cinco ganharam unidade em
+   * 2026-08-24 com a decisão D-H45, que estendeu o enum com `horas`, `contagem`,
+   * `pontos` e `anos`.
+   *
+   * A regra continua: painel novo sem unidade entra calado se ninguém contar, e
+   * aí o enum fechado da seção 9.2 deixa de fechar sem decisão nenhuma.
    */
-  it("são exatamente estes doze, e nenhum a mais", () => {
+  it("sobram os sete de forma `estatisticas`, e nenhum a mais", () => {
     expect([...SEM_UNIDADE_NO_ENUM].sort()).toEqual([
       "col-geo",
       "eng-clima",
-      "eng-enps",
-      "rec-funil",
       "rec-resumo",
-      "rec-vagas",
       "rh-flash",
       "sal-resumo",
       "tov-resumo",
-      "tre-area",
-      "tre-horas",
       "tre-invest",
     ]);
   });
 
-  it("os sete de forma `estatisticas` são os que misturam unidade", () => {
-    // Nesses, cada número declara a própria unidade (T-102) — a ausência no
-    // registro é correta, não pendência. Os outros cinco são a pendência real.
+  it("e todos os sete são mesmo de forma `estatisticas`", () => {
+    // A ausência ali é correta, não pendência: cada número do painel declara a
+    // própria unidade (T-102).
     const estatisticos = SEM_UNIDADE_NO_ENUM.filter(
       (id) => painelPorId(id)?.forma === "estatisticas",
     );
-    expect(estatisticos.length).toBe(7);
-    expect(SEM_UNIDADE_NO_ENUM.length - estatisticos.length).toBe(5);
+    expect(estatisticos.length).toBe(SEM_UNIDADE_NO_ENUM.length);
   });
 
   it("todo painel de outra forma tem unidade declarada", () => {
+    // Era a lista dos cinco de H-45; hoje é vazia, e é esse o entregável da
+    // decisão.
     const sem = REGISTRO_DE_PAINEIS.filter(
       (p) => p.unidade === null && p.forma !== "estatisticas",
     ).map((p) => p.id);
-    expect(sem.sort()).toEqual([
-      "eng-enps",
-      "rec-funil",
-      "rec-vagas",
-      "tre-area",
-      "tre-horas",
-    ]);
+    expect(sem).toEqual([]);
+  });
+
+  it("os cinco de H-45 ganharam a unidade que a decisão nomeia", () => {
+    const esperado: Readonly<Record<string, string>> = {
+      "rec-funil": "contagem",
+      "rec-vagas": "contagem",
+      "tre-horas": "horas",
+      "tre-area": "horas",
+      "eng-enps": "pontos",
+    };
+    for (const [id, unidade] of Object.entries(esperado)) {
+      expect(painelPorId(id)?.unidade, id).toBe(unidade);
+    }
   });
 });
