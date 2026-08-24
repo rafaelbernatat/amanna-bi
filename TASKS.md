@@ -190,7 +190,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-115** `P0` `L` `dados` Implementar getKpis para as 7 telas de Recursos Humanos
   · **Aceite:** As 7 telas devolvem até 6 KPIs cada, todos originados do catálogo, e o teste falha se algum KPI ficar idêntico entre recortes distintos de área, período, entidade, ano ou modalidade sem constar de uma lista explícita de invariantes.
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.2 · **Depende de:** T-113, T-114
-- [ ] **T-116** `P0` `M` `dados` Implementar getKpis para as 5 telas de Financeiro e para a de Integração
+- [~] **T-116** `P0` `M` `dados` Implementar getKpis para as 5 telas de Financeiro e para a de Integração  ⏳ 2026-08-24 12:30 · sessao-68c8
   · **Aceite:** As 6 telas devolvem até 6 KPIs cada, todos originados do catálogo, e o teste falha se algum KPI ficar idêntico entre recortes distintos sem constar da lista de invariantes.
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.3, Anexo A.4 · **Depende de:** T-113, T-114
 - [ ] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
