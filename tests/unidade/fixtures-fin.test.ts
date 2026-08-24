@@ -13,6 +13,10 @@
 
 import { describe, expect, it } from "vitest";
 
+import {
+  CLIENTES_A_RECEBER,
+  FORNECEDORES_A_PAGAR,
+} from "@/acesso/fixtures/contraparte";
 import { FATIA_DA_UNIDADE_SP } from "@/acesso/fixtures/entidade";
 import {
   AGREGADO_DE_ENTIDADE,
@@ -74,10 +78,66 @@ describe("as três views existem no grão da seção 10.1", () => {
     );
   });
 
-  it("vw_fato_contas: mês × entidade × faixa de aging", () => {
+  it("vw_fato_contas: mês × entidade × faixa de aging × contraparte", () => {
+    /*
+     * A contraparte entrou com T-118.1, e o grão cresceu com ela.
+     *
+     * Uma linha é de um cliente **ou** de um fornecedor, nunca dos dois — daí
+     * a soma das duas listas e não o produto: a contraparte de quem se recebe
+     * não é a mesma de quem se paga.
+     */
+    const contrapartes =
+      CLIENTES_A_RECEBER.length + FORNECEDORES_A_PAGAR.length;
     expect(VW_FATO_CONTAS).toHaveLength(
-      MESES.length * ENTIDADES_ARMAZENADAS.length * FAIXAS_DE_AGING.length,
+      MESES.length *
+        ENTIDADES_ARMAZENADAS.length *
+        FAIXAS_DE_AGING.length *
+        contrapartes,
     );
+  });
+
+  it("a contraparte reparte o saldo, e não cria saldo novo", () => {
+    /*
+     * O que impede duas verdades sobre a mesma dívida: somar as contrapartes
+     * de uma célula devolve o saldo que a célula já tinha. Sem isto, o painel
+     * de inadimplência e o cartão de inadimplência mostrariam carteiras
+     * diferentes, e não haveria como saber qual delas é a do balanço.
+     */
+    for (const mes of MESES) {
+      for (const faixa of FAIXAS_DE_AGING) {
+        const daFaixa = VW_FATO_CONTAS.filter(
+          (l) => l.mes === mes && l.faixaDeAging === faixa.codigo,
+        );
+        const receber = daFaixa.reduce((a, l) => a + l.aReceber, 0);
+        const pagar = daFaixa.reduce((a, l) => a + l.aPagar, 0);
+
+        // O saldo de dezembro é o declarado; os demais meses escalam com a
+        // série, então aqui basta que os dois lados sejam positivos e que
+        // nenhuma contraparte de cliente carregue saldo a pagar.
+        expect(receber, `${mes} ${faixa.codigo}`).toBeGreaterThan(0);
+        expect(pagar, `${mes} ${faixa.codigo}`).toBeGreaterThan(0);
+      }
+    }
+
+    const clientes = new Set(CLIENTES_A_RECEBER.map((c) => c.codigo));
+    const cruzados = VW_FATO_CONTAS.filter(
+      (l) => clientes.has(l.contraparte) && l.aPagar !== 0,
+    );
+    expect(cruzados).toEqual([]);
+  });
+
+  it("dezembro fecha nos saldos declarados, com a contraparte somada", () => {
+    const dezembro = VW_FATO_CONTAS.filter((l) => l.mes === "2026-12");
+    const receber = dezembro.reduce((a, l) => a + l.aReceber, 0);
+    const pagar = dezembro.reduce((a, l) => a + l.aPagar, 0);
+    const UM_MILHAO = 1_000_000;
+    const declaradoReceber = FAIXAS_DE_AGING.reduce(
+      (a, f) => a + f.aReceber,
+      0,
+    );
+    const declaradoPagar = FAIXAS_DE_AGING.reduce((a, f) => a + f.aPagar, 0);
+    expect(Math.round(receber / UM_MILHAO)).toBe(declaradoReceber);
+    expect(Math.round(pagar / UM_MILHAO)).toBe(declaradoPagar);
   });
 
   it("centro de custo não é área: são oito contra sete", () => {

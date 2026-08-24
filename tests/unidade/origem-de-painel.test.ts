@@ -13,6 +13,7 @@
 import { describe, expect, it } from "vitest";
 
 import { VIEWS } from "@/acesso/fixtures/adaptador";
+import { VW_DIM } from "@/acesso/fixtures/dim";
 import { VW_FATO_FATURAMENTO_CLIENTE } from "@/acesso/fixtures/fin";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
 import {
@@ -25,22 +26,46 @@ import {
   TOP_CLIENTES,
 } from "@/acesso/fixtures/referencia-perfil";
 import {
-  FORMAS_DE_SERIE_TEMPORAL,
+  FORMAS_COM_ORIGEM,
   ORIGEM_DOS_PAINEIS,
   origemDoPainel,
 } from "@/semantica/origem-de-painel";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 
-const DAS_TRES_FORMAS = REGISTRO_DE_PAINEIS.filter((p) =>
-  FORMAS_DE_SERIE_TEMPORAL.some((f) => f === p.forma),
+/*
+ * As formas com origem declarada crescem tarefa a tarefa.
+ *
+ * T-117 trouxe 31 (barras, linha, empilhadas) e T-118.1 trouxe 34 (barras
+ * horizontais, rosca, funil, divisão, estatísticas). As quatro formas
+ * restantes — cascata, dispersão, régua e mosaico — entram com T-119, e este
+ * arquivo cresce junto: é ele que garante que "o painel novo não tem fonte"
+ * reprove o CI em vez de aparecer vazio numa demonstração.
+ */
+const COM_ORIGEM = REGISTRO_DE_PAINEIS.filter((p) =>
+  FORMAS_COM_ORIGEM.some((f) => f === p.forma),
 );
 
 describe("a cobertura painel a painel", () => {
-  it("são 31 painéis nas três formas, contados e não escritos", () => {
-    expect(DAS_TRES_FORMAS).toHaveLength(31);
+  it("são 65 painéis nas nove formas cobertas, contados e não escritos", () => {
+    expect(COM_ORIGEM).toHaveLength(65);
   });
 
-  it.each(DAS_TRES_FORMAS.map((p) => [p.id, p.forma]))(
+  it("os seis que faltam são exatamente as quatro formas de T-119", () => {
+    // O outro lado da conta: sem isto, esquecer uma forma inteira passaria
+    // despercebido, porque o teste de cima só olha o que já foi coberto.
+    const fora = REGISTRO_DE_PAINEIS.filter(
+      (p) => !FORMAS_COM_ORIGEM.some((f) => f === p.forma),
+    );
+    expect(fora).toHaveLength(6);
+    expect([...new Set(fora.map((p) => p.forma))].sort()).toEqual([
+      "cascata",
+      "dispersao",
+      "mosaico-geografico",
+      "regua-de-ciclo",
+    ]);
+  });
+
+  it.each(COM_ORIGEM.map((p) => [p.id, p.forma]))(
     "%s (%s) declara de qual view lê",
     (id) => {
       const origem = origemDoPainel(id);
@@ -60,7 +85,18 @@ describe("a cobertura painel a painel", () => {
      * texto. Um tipo garantiria grafia; este caso garante EXISTÊNCIA — que é o
      * que separa "escrevi certo" de "a view está lá".
      */
-    const existentes = new Set(Object.keys(VIEWS));
+    /*
+     * Fato **e** dimensão.
+     *
+     * A primeira versão olhava só `VIEWS` e reprovou `sal-resumo → vw_dim_cargo`
+     * — um painel legítimo que lê um cadastro, e não um fato. `sal-resumo`
+     * mostra os limites da política de remuneração, que são cadastro por
+     * definição: não há mês nem célula, há a banda do cargo.
+     *
+     * Aceitar as duas famílias não afrouxa nada: a checagem continua sendo
+     * "esta view existe", só que sobre o catálogo inteiro em vez de metade dele.
+     */
+    const existentes = new Set([...Object.keys(VIEWS), ...Object.keys(VW_DIM)]);
     const inventadas = ORIGEM_DOS_PAINEIS.flatMap((o) =>
       o.views
         .filter((v) => !existentes.has(v))
@@ -78,6 +114,36 @@ describe("a cobertura painel a painel", () => {
       (o) => !doRegistro.has(o.painel),
     ).map((o) => o.painel);
     expect(orfas).toEqual([]);
+  });
+
+  it("todo painel de estatísticas dá fórmula própria a cada número", () => {
+    /*
+     * PR-3 vale por número, e não por painel. Num painel de estatísticas cada
+     * caixa é de uma medida diferente — "vagas movimentadas" e "taxa de
+     * conversão" não compartilham fórmula —, então a do painel não basta.
+     */
+    const deEstatistica = ORIGEM_DOS_PAINEIS.filter(
+      (o) => o.eixo === "estatistica",
+    );
+    expect(deEstatistica.length).toBeGreaterThan(0);
+
+    const mudos = deEstatistica.flatMap((o) =>
+      o.series
+        .filter((s) => (s.formulaPropria ?? "").trim() === "")
+        .map((s) => `${o.painel} · ${s.nome}`),
+    );
+    expect(mudos).toEqual([]);
+  });
+
+  it("as demais formas não inventam fórmula por série", () => {
+    // O contraste: onde a fórmula do painel serve a todas as séries, uma
+    // fórmula por série seria uma segunda declaração para o mesmo número.
+    const comPropriaIndevida = ORIGEM_DOS_PAINEIS.filter(
+      (o) => o.eixo !== "estatistica",
+    ).flatMap((o) =>
+      o.series.filter((s) => s.formulaPropria !== null).map(() => o.painel),
+    );
+    expect(comPropriaIndevida).toEqual([]);
   });
 
   it("painel que lê de mais de uma view diz por que", () => {

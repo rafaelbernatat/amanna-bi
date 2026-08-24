@@ -30,10 +30,12 @@ import type {
   Query,
 } from "@/semantica/contrato";
 import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
+import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
 import { calcularPainel } from "@/acesso/fixtures/paineis";
 import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
 import {
   VW_FATO_CONTAS,
+  VW_FATO_SAIDA_CATEGORIA,
   VW_FATO_FATURAMENTO_CLIENTE,
   VW_FATO_FIN_MES,
   VW_FATO_ORCAMENTO,
@@ -61,6 +63,8 @@ export const VIEWS = {
   vw_fato_contas: VW_FATO_CONTAS,
   vw_fato_faturamento_cliente: VW_FATO_FATURAMENTO_CLIENTE,
   vw_fato_turnover_custo: VW_FATO_TURNOVER_CUSTO,
+  vw_fato_rh_desligamento: VW_FATO_RH_DESLIGAMENTO,
+  vw_fato_saida_categoria: VW_FATO_SAIDA_CATEGORIA,
 } as const;
 
 export type NomeDeView = keyof typeof VIEWS;
