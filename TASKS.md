@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 193 pendentes e 38 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 192 pendentes e 39 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 27 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 28 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **38 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **39 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -175,7 +175,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade
   · **Aceite:** vw_fato_rh_mes, vw_fato_vagas e vw_fato_treinamento existem com uma linha por combinação; somar todas as linhas de 2026 reproduz o Anexo C: 1.240 FTE em dezembro, 241 admissões, 145 desligamentos, folha R$ 186 mi e 21.400 horas de treinamento.
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1, seção 9.1 · **Depende de:** T-001
-- [~] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo  ⏳ 2026-08-24 09:45 · sessao-68c8
+- [X] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo
   · **Aceite:** vw_fato_fin_mes, vw_fato_orcamento e vw_fato_contas existem no grão mensal e a soma consolidada de 2026 reproduz receita líquida R$ 1.200 mi, EBITDA R$ 200 mi, lucro líquido -R$ 8 mi, desvio +R$ 56 mi e ciclo de 76 dias (PMR 52 + PME 75 - PMP 51).
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1 · **Depende de:** T-001
 - [X] **T-112** `P0` `M` `dados` Definir o esquema do catálogo de métricas em YAML e o carregador validado

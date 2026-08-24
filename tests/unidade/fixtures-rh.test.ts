@@ -34,10 +34,10 @@ import {
   MODALIDADES_ARMAZENADAS,
   mesesDe,
 } from "@/acesso/fixtures/eixos";
+import { FATIA_DA_UNIDADE_SP } from "@/acesso/fixtures/entidade";
 import {
   ABSENTEISMO_MENSAL,
   ADMISSOES_MENSAL,
-  FATIA_DA_UNIDADE_SP,
   DESLIGAMENTOS_MENSAL,
   DESLIGAMENTOS_POR_TIPO,
   ENGAJAMENTO_MENSAL,

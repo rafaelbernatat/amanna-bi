@@ -40,6 +40,7 @@ import {
   mesesDe,
   type Celula,
 } from "@/acesso/fixtures/eixos";
+import { fatiaDaEntidade } from "@/acesso/fixtures/entidade";
 import {
   ABSENTEISMO_MENSAL,
   ADMISSOES_MENSAL,
@@ -49,7 +50,6 @@ import {
   DIAS_PARA_FECHAR_MENSAL,
   ENGAJAMENTO_MENSAL,
   ENPS_MENSAL,
-  FATIA_DA_UNIDADE_SP,
   FOLHA_MENSAL_REAIS,
   FONTES_DE_CANDIDATO,
   FUNIL_ANUAL,
@@ -79,12 +79,6 @@ const CEM_PORCENTO = 100;
 /* ------------------------------------------------------------------ *
  * Auxiliares de peso
  * ------------------------------------------------------------------ */
-
-/** A fatia de uma entidade numa medida. `demais-unidades` leva o complemento. */
-function fatiaDaEntidade(entidade: string, medida: string): number {
-  const sp = FATIA_DA_UNIDADE_SP[medida] ?? 0.5;
-  return entidade === ENTIDADES_ARMAZENADAS[0] ? sp : 1 - sp;
-}
 
 function perfilDe(area: string) {
   const achado = PERFIL_POR_AREA.find((p) => p.codigo === area);

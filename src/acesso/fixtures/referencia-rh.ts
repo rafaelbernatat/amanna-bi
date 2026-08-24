@@ -262,32 +262,6 @@ export const HEADCOUNT_POR_MODALIDADE: readonly {
 ];
 
 /* ------------------------------------------------------------------ *
- * Repartição por entidade
- * ------------------------------------------------------------------ */
-
-/**
- * A fatia da Unidade SP em cada medida.
- *
- * **Uma fração por medida, e não uma só.** O protótipo usa 0,62 para tudo
- * (achado 3), e é justamente isso que faz a reconciliação parecer correta sem
- * ser: KPI e painel escalam pelo mesmo fator. Com frações diferentes por
- * medida, um adaptador que multiplique tudo por um número só passa a errar —
- * que é o controle negativo de T-140.
- *
- * A leitura de negócio: SP concentra o quadro (62%) e concentra ainda mais a
- * folha (68%), porque os salários são maiores; demite um pouco mais (66%) e
- * contrata um pouco menos (58%), que é um quadro em estabilização.
- */
-export const FATIA_DA_UNIDADE_SP: Readonly<Record<string, number>> = {
-  headcount: 0.62,
-  admissoes: 0.58,
-  desligamentos: 0.66,
-  folha: 0.68,
-  treinamento: 0.55,
-  vagas: 0.6,
-};
-
-/* ------------------------------------------------------------------ *
  * Recrutamento e treinamento
  * ------------------------------------------------------------------ */
 
