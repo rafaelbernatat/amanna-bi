@@ -208,7 +208,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
   · **Aceite:** Todo painel com forma barras horizontais, rosca, funil, divisão ou estatísticas responde com envelope válido; sob recorte de uma única área o painel quebrado por área devolve exatamente uma categoria e as fatias da rosca somam o total declarado.
   · **PRD:** seção 9.3, Anexo A.1, seção 9.2 regra 1, RF-01 · **Depende de:** T-107, T-114
-- [ ] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas
+- [~] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas  ⏳ 2026-08-24 21:40 · sessao-68c8
   · **Aceite:** Todo painel com forma cascata, dispersão, régua de ciclo ou mosaico geográfico responde com envelope válido; a cascata da ponte da DRE fecha da receita líquida ao lucro líquido sem resíduo, a régua devolve PMR, PME, PMP e o ciclo, e os três lotes de getPanel cobrem exatamente os 71 painéis.
   · **PRD:** seção 9.3, Anexo A.1, Anexo C, RF-01 · **Depende de:** T-107, T-114
 - [ ] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B
