@@ -286,7 +286,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-147** `P1` `M` `dados` Modelar as dimensões vw_dim_* e as faixas usadas pelos painéis de perfil
   · **Aceite:** Existem dimensões de entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa e escolaridade com as cardinalidades do Anexo C (7 áreas, 8 centros de custo, 12 UFs, 3 modalidades, 12 meses); teste de esquema falha se alguma expuser atributo identificável de pessoa.
   · **PRD:** seção 10.1, Anexo C, seção 11 · **Depende de:** T-110
-- [ ] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto
+- [~] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto  ⏳ 2026-08-24 12:15 · sessao-68c8
   · **Aceite:** As 15 métricas do achado 5 (idade média, tempo de casa, tempo de fechamento, custo por contratação, encargos, mediana salarial, participação e conclusão de treinamento, cobertura da pesquisa, ticket médio, concentração top 10, PMR, PME, PMP e inadimplência) existem no catálogo com fórmula, unidade e agg, e cada uma tem medida correspondente nas fixtures.
   · **PRD:** Anexo D achado 5, RF-07, seção 9.4 · **Depende de:** T-112, T-147
 - [ ] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha
