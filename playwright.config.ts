@@ -52,7 +52,7 @@ export default defineConfig({
      * local e pipeline com o mesmo ambiente, que e a unica forma de o verde
      * local significar alguma coisa.
      */
-    env: { DATA_SOURCE: "fixtures" },
+    env: { DATA_SOURCE: "fixtures", AUTH_PROVIDER: "fixtures" },
     url: BASE_URL,
     reuseExistingServer: !process.env["CI"],
     timeout: 180_000,

@@ -17,10 +17,21 @@
  *
  * 1. **O modo é lido uma vez, no boot**, junto do resto da configuração
  *    (T-139). Não há como alternar em requisição.
- * 2. **`NODE_ENV=production` com `AUTH_PROVIDER=fixtures` aborta.** Um perfil
- *    escolhido por ambiente em produção é autenticação que não autentica, e a
- *    forma de esse engano acontecer é sempre a mesma: alguém copia o
- *    `docker-compose` da demonstração.
+ * 2. **Sessão de fixtures com dado real aborta.** Um perfil escolhido por
+ *    variável de ambiente na frente do warehouse do cliente é autenticação que
+ *    não autentica, e a forma de esse engano acontecer é sempre a mesma:
+ *    alguém copia o `docker-compose` da demonstração e troca só o banco.
+ *
+ *    A primeira versão desta trava mirava `NODE_ENV=production`, e mirava
+ *    errado nas duas direções. Recusava a demonstração — `next start` define
+ *    `NODE_ENV=production`, então o mockup com fixtures não subia em build de
+ *    produção nenhum, e a suíte de e2e junto. E não recusava o caso perigoso
+ *    montado em desenvolvimento: `AUTH_PROVIDER=fixtures` com
+ *    `DATA_SOURCE=warehouse` passava.
+ *
+ *    O que separa demonstração de risco não é o `NODE_ENV`, é **de onde vem o
+ *    dado**. Sessão falsa com dado falso é uma demonstração; sessão falsa com
+ *    dado de cliente é o incidente.
  */
 
 import type { Perfil, Session } from "@/seguranca/identidade";
@@ -45,9 +56,8 @@ export class ProvedorInvalido extends Error {
 /**
  * Lê e valida `AUTH_PROVIDER`.
  *
- * A segunda condição é a que importa: `fixtures` em produção não é
- * configuração ruim, é ausência de autenticação com aparência de
- * autenticação.
+ * A terceira condição é a que importa: `fixtures` na frente do warehouse não é
+ * configuração ruim, é ausência de autenticação com aparência de autenticação.
  */
 export function lerProvedor(
   ambiente: Record<string, string | undefined>,
@@ -59,10 +69,11 @@ export function lerProvedor(
   if (!(PROVEDORES as readonly string[]).includes(bruto)) {
     throw new ProvedorInvalido(`'${bruto}' não é um modo válido`);
   }
-  if (bruto === "fixtures" && ambiente["NODE_ENV"] === "production") {
+  if (bruto === "fixtures" && ambiente["DATA_SOURCE"] === "warehouse") {
     throw new ProvedorInvalido(
-      "'fixtures' em produção escolhe o perfil por variável de ambiente, " +
-        "o que é autenticação que não autentica",
+      "'fixtures' escolhe o perfil por variável de ambiente, e DATA_SOURCE=" +
+        "warehouse serve dado real do cliente. A combinação é autenticação " +
+        "que não autentica na frente de dado que importa",
     );
   }
   return bruto as ProvedorDeSessao;

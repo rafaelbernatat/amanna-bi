@@ -42,6 +42,7 @@ import {
   VW_FATO_VAGAS,
   VW_FATO_VAGAS_FONTE,
 } from "@/acesso/fixtures/rh";
+import { calcularKpis } from "@/acesso/fixtures/kpis";
 import { linhasDoRecorte, recortar, somar } from "@/acesso/fixtures/recorte";
 
 /** As seis views da seção 10.1 que a fixture publica, por nome. */
@@ -113,8 +114,9 @@ export function criarFonteDeFixtures(): DataSource {
     getMeta(): Promise<Meta> {
       throw new AindaNaoImplementado("getMeta", "T-149");
     },
-    getKpis(_tela: string, _q: Query): Promise<readonly Kpi[]> {
-      throw new AindaNaoImplementado("getKpis", "T-115 e T-116");
+    /** As 13 telas, com todo numero saindo do catalogo (T-115 e T-116). */
+    getKpis(tela: string, q: Query): Promise<readonly Kpi[]> {
+      return Promise.resolve(calcularKpis(tela, q));
     },
     getPanel(_id: string, _q: Query): Promise<PanelResponse> {
       throw new AindaNaoImplementado("getPanel", "T-117 a T-119");
