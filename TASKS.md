@@ -271,7 +271,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [ ] **T-142** `P0` `M` `auditoria` Decidir e implementar o tratamento de métricas posicionais (mediana/percentil)  ⛔ H-04
   · **Aceite:** ou existe um quarto agg (precomputado) com o valor materializado por área x mês na view, ou a métrica sai do catálogo e o KPI vira faixa modal; a mediana salarial e sal-faixas respondem nos 768 recortes; um teste prova que a mediana de 'Todas' não é a média das medianas por área; a supressão k<5 continua valendo sobre as faixas.
   · **PRD:** Anexo D achado 5 - mediana salarial R$ 6.240 (e o painel sal-faixas)
-- [ ] **T-143** `P0` `M` `auditoria` Levantamento de medidas ausentes (não só dimensões) e extensão de 10.1 e das fixtures
+- [~] **T-143** `P0` `M` `auditoria` Levantamento de medidas ausentes (não só dimensões) e extensão de 10.1 e das fixtures  ⏳ 2026-08-24 11:45 · sessao-68c8
   · **Aceite:** para cada um dos 15 KPIs do achado 5 estão declarados view, coluna-medida e denominador; custo de recrutamento entra em vw_fato_vagas; respondentes e elegíveis entram em vw_fato_rh_mes; soma de idade e soma de tempo de casa (ou média ponderada declarada) entram em vw_fato_rh_mes; T-117 passa a depender das tarefas de fixture e nenhuma das 15 métricas fica sem coluna de origem.
   · **PRD:** Anexo D achado 5 - custo por contratação R$ 8,6 mil, cobertura da pesquisa 74%, idade média 34,2 anos, tempo médio de casa 3,1 anos
 - [ ] **T-144** `P0` `M` `auditoria` Decidir e implementar a semântica de Area no módulo Financeiro  ⛔ H-04
