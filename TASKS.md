@@ -187,7 +187,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-114** `P0` `L` `dados` Implementar o adaptador de fixtures com filtro dimensional real
   · **Aceite:** Busca no repositório pelos multiplicadores do protótipo (0.62, 0.38 e participação da área) retorna zero ocorrências, e para toda medida aditiva soma(Unidade SP) + soma(Demais unidades) = soma(Consolidado) e a soma das 7 áreas = 'Todas', verificado nos 12 meses e nos 4 períodos.
   · **PRD:** Anexo D achado 3, Anexo D achado 4, seção 8.3, RF-01 · **Depende de:** T-103, T-104, T-106, T-110, T-111
-- [ ] **T-115** `P0` `L` `dados` Implementar getKpis para as 7 telas de Recursos Humanos
+- [~] **T-115** `P0` `L` `dados` Implementar getKpis para as 7 telas de Recursos Humanos  ⏳ 2026-08-24 12:50 · sessao-68c8
   · **Aceite:** As 7 telas devolvem até 6 KPIs cada, todos originados do catálogo, e o teste falha se algum KPI ficar idêntico entre recortes distintos de área, período, entidade, ano ou modalidade sem constar de uma lista explícita de invariantes.
   · **PRD:** seção 9.1, RF-01, RF-07, Anexo A.2 · **Depende de:** T-113, T-114
 - [ ] **T-116** `P0` `M` `dados` Implementar getKpis para as 5 telas de Financeiro e para a de Integração
