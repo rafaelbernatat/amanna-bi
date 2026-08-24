@@ -386,13 +386,14 @@ Decisão D2: o produto lê de uma **réplica em warehouse próprio**, alimentada
 
 ### 10.1 · As views esperadas
 
-O adaptador espera um modelo estrela simples, com grão mensal. Se o cliente já tem warehouse, o trabalho é escrever seis *views* de fato mais as dimensões; se não tem, as mesmas podem sair direto do ERP.
+O adaptador espera um modelo estrela simples, de grão mensal — com **uma exceção declarada**, `vw_fato_caixa_diario`, que é de grão dia porque o painel de movimentação de caixa mostra dia útil e não mês. Se o cliente já tem warehouse, o trabalho é escrever as *views* de fato mais as dimensões; se não tem, as mesmas podem sair direto do ERP.
 
 | View | Chaves e medidas | Origem típica |
 |---|---|---|
 | `vw_fato_rh_mes` | mês, entidade, área, modalidade · headcount FTE, admissões, desligamentos, folha (salários, encargos, benefícios, variável), horas previstas e ausentes, respondentes, elegíveis, promotores, neutros, detratores, pontos de engajamento, soma de idade, soma de tempo de casa, soma de tempo até a saída | Folha / HCM |
 | `vw_fato_rh_perfil` | mês, entidade, área, modalidade, **dimensão, valor** · headcount FTE | Folha / HCM |
 | `vw_fato_fin_mes` | mês, entidade · receita bruta e líquida, deduções, CMV, despesas, D&A, resultado financeiro, não operacional, FCO, capex, financiamento, entradas e saídas de caixa, estoque, saldo de caixa, notas emitidas | ERP / contábil |
+| `vw_fato_caixa_diario` | **dia**, entidade · entradas, saídas | ERP / tesouraria |
 | `vw_fato_orcamento` | mês, entidade, centro de custo · orçado, realizado | Planejamento |
 | `vw_fato_vagas` | mês, área · abertas, em andamento, fechadas, canceladas, dias somados, custo de recrutamento, etapas do funil | ATS |
 | `vw_fato_vagas_fonte` | mês, área, fonte do candidato · contratados | ATS |
@@ -422,6 +423,22 @@ O adaptador espera um modelo estrela simples, com grão mensal. Se o cliente já
 > em `vw_fato_vagas`, e respondentes com elegíveis em `vw_fato_rh_mes`. Na
 > fixture elegíveis coincide com o quadro; a coluna existe para que a fórmula
 > nomeie o denominador certo quando o dado real distinguir os dois.
+
+> **Revisão de 2026-08-24 (T-117.1).** Faltava um grão, e não uma coluna.
+>
+> O painel `cx-diario` do Anexo A.1 mostra "movimentação diária de caixa —
+> últimos 30 dias": trinta barras, uma por dia útil, com os dias negativos
+> concentrados nas datas de vencimento. Nenhuma das nove views acima tem grão
+> menor que o mês, então esse painel não tinha de onde sair — e a falta não
+> aparecia em lugar nenhum, porque o levantamento de T-143 percorreu as medidas
+> dos KPIs do achado 5 e não os painéis.
+>
+> `vw_fato_caixa_diario` entra com duas colunas e uma obrigação: **a soma dos
+> dias de um mês tem de bater com as colunas mensais de `vw_fato_fin_mes`**. Não
+> é uma segunda verdade sobre o caixa, é a mesma verdade com mais resolução, e
+> um teste fixa a reconciliação nos dois sentidos. Sem essa amarra o produto
+> teria dois números de caixa que discordariam em silêncio — exatamente o que o
+> princípio PR-1 existe para impedir.
 
 ### 10.2 · Sincronização
 
