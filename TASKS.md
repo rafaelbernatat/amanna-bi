@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 194 pendentes e 37 já concluídas (5 no protótipo) |
+| **Total** | 231 tarefas: 191 pendentes e 40 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 26 de 94 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 94 | 53 | 37 | 4 | 29 de 94 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **231** | **116** | **92** | **18** | **37 de 231** |
+| **Total** | **231** | **116** | **92** | **18** | **40 de 231** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -172,19 +172,19 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-109** `P0` `S` `dados` Tornar a fórmula obrigatória no contrato e remover a chave que a desliga
   · **Aceite:** O tipo exige fórmula não vazia em todo painel de indicador derivado, um teste enumera os 71 painéis e falha se algum derivado vier sem fórmula, e a busca por mostrarMemoria no repositório retorna zero ocorrências.
   · **PRD:** Anexo D achado 10, RF-04, PR-3, seção 9.3 · **Depende de:** T-102, T-107
-- [ ] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade  ⛔ H-03
+- [X] **T-110** `P0` `L` `dados` Modelar as fixtures dimensionais de RH no grão mês x entidade x área x modalidade
   · **Aceite:** vw_fato_rh_mes, vw_fato_vagas e vw_fato_treinamento existem com uma linha por combinação; somar todas as linhas de 2026 reproduz o Anexo C: 1.240 FTE em dezembro, 241 admissões, 145 desligamentos, folha R$ 186 mi e 21.400 horas de treinamento.
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1, seção 9.1 · **Depende de:** T-001
-- [ ] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo  ⛔ H-03
+- [X] **T-111** `P0` `L` `dados` Modelar as fixtures dimensionais de Financeiro no grão mês x entidade x centro de custo
   · **Aceite:** vw_fato_fin_mes, vw_fato_orcamento e vw_fato_contas existem no grão mensal e a soma consolidada de 2026 reproduz receita líquida R$ 1.200 mi, EBITDA R$ 200 mi, lucro líquido -R$ 8 mi, desvio +R$ 56 mi e ciclo de 76 dias (PMR 52 + PME 75 - PMP 51).
   · **PRD:** Anexo D achado 3, Anexo C, seção 10.1 · **Depende de:** T-001
 - [X] **T-112** `P0` `M` `dados` Definir o esquema do catálogo de métricas em YAML e o carregador validado
   · **Aceite:** O carregador rejeita entrada sem rótulo, fonte, fórmula, unidade, agg, sentido, grao_minimo ou sinônimos; agg fora de {sum,last,ratio} e grao_minimo abaixo de [area, mes] reprovam no CI, e catálogo inválido quebra o build, não o runtime.
   · **PRD:** seção 9.4, seção 8.1, seção 8.2 · **Depende de:** T-001, T-104
-- [ ] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo  ⛔ H-06, H-07, H-08
+- [ ] **T-113** `P0` `L` `dados` Escrever as 21 métricas do Anexo B no catálogo  ⛔ H-45
   · **Aceite:** As 21 entradas trazem os nove campos preenchidos, com decisão presente nas métricas discutidas; um teste cruza catálogo x Anexo B e falha se faltar métrica, se o destino não for uma das 13 telas ou se o painel destacado não constar do registro dos 71 painéis.
   · **PRD:** Anexo B, seção 9.4, seção 7.5, D-P2, D-P3 · **Depende de:** T-107, T-112
-- [ ] **T-114** `P0` `L` `dados` Implementar o adaptador de fixtures com filtro dimensional real
+- [X] **T-114** `P0` `L` `dados` Implementar o adaptador de fixtures com filtro dimensional real
   · **Aceite:** Busca no repositório pelos multiplicadores do protótipo (0.62, 0.38 e participação da área) retorna zero ocorrências, e para toda medida aditiva soma(Unidade SP) + soma(Demais unidades) = soma(Consolidado) e a soma das 7 áreas = 'Todas', verificado nos 12 meses e nos 4 períodos.
   · **PRD:** Anexo D achado 3, Anexo D achado 4, seção 8.3, RF-01 · **Depende de:** T-103, T-104, T-106, T-110, T-111
 - [ ] **T-115** `P0` `L` `dados` Implementar getKpis para as 7 telas de Recursos Humanos

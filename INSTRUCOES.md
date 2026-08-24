@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 49 itens (3 resolvidos), destravando 126 tarefas do backlog |
+| **Total** | 49 itens (3 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 39 |
-| Fase 2 · Dado real | 22 | 18 | 57 |
+| Fase 1 · Contrato | 13 (3 resolvidos) | 6 | 36 |
+| Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **49** | **29** | **126** |
+| **Total** | **49** | **29** | **122** |
 
 **Por responsável**
 
@@ -65,9 +65,9 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|---|
 | **H-28** Criar a conta na Anthropic e emitir as chaves de API | 14 tarefas | Produto |
 | **H-12** Levantar com a TI do cliente o sistema de origem de cada uma das 7 views (P1) | 8 tarefas | TI do cliente |
-| **H-08** Sessão de aprovação do catálogo de métricas e do mapeamento das views | 7 tarefas | Controladoria |
 | **H-18** Obter do cliente as 7 views publicadas e populadas na origem | 7 tarefas | TI do cliente |
-| **H-06** Decidir P2: transferência interna conta como desligamento | 6 tarefas | RH |
+| **H-08** Sessão de aprovação do catálogo de métricas e do mapeamento das views | 6 tarefas | Controladoria |
+| **H-14** Criar o usuário somente leitura na base de origem e entregar a conexão | 6 tarefas | TI do cliente |
 
 ---
 
@@ -233,7 +233,7 @@ Escolha uma das três saídas, e registre a escolha:
 |---|---|
 | **Resultado esperado** | Decisão registrada com data e nome do aprovador, dizendo qual das três saídas e, se for a 2, o significado de cada reinterpretação |
 | **Onde o resultado vai** | docs/decisoes/, PRD seção 9.2 regra 2, `UNIDADES` em `src/semantica/contrato.ts` e a lista fixada no teste de T-107 |
-| **Destrava** | T-164, T-165 *(2 tarefas, parcialmente)* |
+| **Destrava** | T-113, T-164, T-165 *(3 tarefas, as duas últimas parcialmente)* |
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 
@@ -310,7 +310,13 @@ Reúna Produto e Controladoria para conferir linha a linha os números do Anexo 
 |---|---|
 | **Resultado esperado** | Planilha de reconciliação versionada que deriva todos os valores do Anexo C de um único conjunto de fatos mensais, mais a errata aprovada por Produto e Controladoria com data e nomes |
 | **Onde o resultado vai** | docs/dados/anexo-c-reconciliacao.xlsx e docs/decisoes/errata-anexo-c.md, ambos versionados no repositório |
-| **Destrava** | T-110, T-111, T-114, T-119, T-146 *(5 tarefas)* |
+| **Destrava** | T-146 *(1 tarefa)* |
+> **Liberado em parte em 2026-08-24 — modo mockup.** Produto decidiu que o dado
+> pode ser fictício enquanto o objetivo for aprovar gráficos e telas
+> ([D-H03](docs/decisoes/D-H03-modo-mockup.md)). T-110, T-111, T-114 e T-119 seguem com fixtures fictícias e internamente reconciliadas; **T-146 continua parada aqui**, porque é justamente o dataset de referência fechado e a errata assinada. Este item **continua
+> aberto**: números escolhidos pela Engenharia não são números aprovados, e
+> nada aqui autoriza escrever uma aprovação que não aconteceu.
+
 
 ### [ ] H-04 · Decidir as quatro regras de recorte que mudam o comportamento do protótipo
 
@@ -404,7 +410,13 @@ Reúna RH e Controladoria na mesma sessão e decida se a transferência de um co
 |---|---|
 | **Resultado esperado** | Decisão aprovada por RH e Controladoria, com data e áreas aprovadoras, dizendo se transferência interna entra ou não na contagem de desligamentos |
 | **Onde o resultado vai** | Campo decisao da métrica turnover_12m em config/catalogo-metricas.yaml, com o filtro correspondente em config/mapeamento.yaml |
-| **Destrava** | T-007, T-113, T-155, T-189, T-218, T-239 *(6 tarefas)* |
+| **Destrava** | T-007, T-155, T-189, T-218, T-239 *(5 tarefas)* |
+> **Liberado em parte em 2026-08-24 — modo mockup.** Produto decidiu que o dado
+> pode ser fictício enquanto o objetivo for aprovar gráficos e telas
+> ([D-H03](docs/decisoes/D-H03-modo-mockup.md)). T-113 escreve a definição provisória no catálogo, marcada como provisória. Este item **continua
+> aberto**: números escolhidos pela Engenharia não são números aprovados, e
+> nada aqui autoriza escrever uma aprovação que não aconteceu.
+
 
 ### [ ] H-07 · Decidir P3: rescisão entra na folha por competência ou por pagamento
 
@@ -418,7 +430,13 @@ Leve à Controladoria a pergunta: o valor da rescisão entra na folha do mês de
 |---|---|
 | **Resultado esperado** | Decisão da Controladoria registrada com data, indicando competência ou pagamento como base da folha |
 | **Onde o resultado vai** | Campo decisao da métrica folha_total em config/catalogo-metricas.yaml, com a regra correspondente em config/mapeamento.yaml |
-| **Destrava** | T-008, T-113, T-155, T-189, T-219, T-239 *(6 tarefas)* |
+| **Destrava** | T-008, T-155, T-189, T-219, T-239 *(5 tarefas)* |
+> **Liberado em parte em 2026-08-24 — modo mockup.** Produto decidiu que o dado
+> pode ser fictício enquanto o objetivo for aprovar gráficos e telas
+> ([D-H03](docs/decisoes/D-H03-modo-mockup.md)). T-113 escreve a definição provisória no catálogo, marcada como provisória. Este item **continua
+> aberto**: números escolhidos pela Engenharia não são números aprovados, e
+> nada aqui autoriza escrever uma aprovação que não aconteceu.
+
 
 ### [ ] H-08 · Sessão de aprovação do catálogo de métricas e do mapeamento das views
 
@@ -432,7 +450,13 @@ Marque uma sessão de trabalho com Controladoria e RH juntos, com duração de m
 |---|---|
 | **Resultado esperado** | Catálogo com as 36 métricas aprovadas, cada métrica discutida com o campo decisao preenchido com data e áreas aprovadoras, o mapeamento revisado e uma versão semântica nomeada, com ata datada |
 | **Onde o resultado vai** | config/catalogo-metricas.yaml (campo decisao e campo versao), config/catalogo-metricas.CHANGELOG.md, config/mapeamento.yaml e a ata em docs/decisoes/aprovacao-catalogo.md |
-| **Destrava** | T-113, T-155, T-189, T-201, T-210, T-211, T-217 *(7 tarefas)* |
+| **Destrava** | T-155, T-189, T-201, T-210, T-211, T-217 *(6 tarefas)* |
+> **Liberado em parte em 2026-08-24 — modo mockup.** Produto decidiu que o dado
+> pode ser fictício enquanto o objetivo for aprovar gráficos e telas
+> ([D-H03](docs/decisoes/D-H03-modo-mockup.md)). T-113 preenche as 21 métricas com valores provisórios; **T-189 continua parada aqui**, porque é a própria sessão de aprovação. Este item **continua
+> aberto**: números escolhidos pela Engenharia não são números aprovados, e
+> nada aqui autoriza escrever uma aprovação que não aconteceu.
+
 
 ### [ ] H-09 · Decidir P6 em contrato: Docker no cliente ou nuvem dedicada
 
@@ -933,11 +957,7 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-013 | H-42 |
 | T-101 | H-01 |
 | T-103 | H-01 |
-| T-110 | H-03 |
-| T-111 | H-03 |
-| T-113 | H-06, H-07, H-08 |
-| T-114 | H-03 |
-| T-119 | H-03 |
+| T-113 | H-45 |
 | T-123 | H-02 |
 | T-129 | H-44 |
 | T-130 | H-44 |
