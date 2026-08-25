@@ -31,6 +31,7 @@ import type {
 } from "@/semantica/contrato";
 import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
 import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
+import { calcularMetrica } from "@/acesso/fixtures/metricas";
 import { calcularPainel } from "@/acesso/fixtures/paineis";
 import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
 import {
@@ -132,8 +133,10 @@ export function criarFonteDeFixtures(): DataSource {
       // lançam `PainelSemDesenho`, que nomeia T-118 ou T-119.
       return Promise.resolve(calcularPainel(id, q));
     },
-    getMetric(_id: string, _q: Query): Promise<MetricValue> {
-      throw new AindaNaoImplementado("getMetric", "T-120");
+    getMetric(id: string, q: Query): Promise<MetricValue> {
+      // Métrica fora do catálogo lança `MetricaDesconhecida`, com sugestões:
+      // ver o cabeçalho de `metricas.ts`.
+      return Promise.resolve(calcularMetrica(id, q));
     },
   };
 }

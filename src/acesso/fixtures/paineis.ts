@@ -40,10 +40,8 @@ import {
 import {
   calculoDaMetrica,
   emMilhoes,
-  emPorcento,
   pertence,
   perfil,
-  razao,
   type Recorte,
   recorteDe,
   soma,
@@ -421,7 +419,7 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
     categorias: r.meses,
     valores: [
       serieDaMetrica(r, "margem_bruta"),
-      porMes(r, margemEbitda),
+      serieDaMetrica(r, "margem_ebitda"),
       serieDaMetrica(r, "margem_liquida"),
     ],
     // Margem nao se soma: o total e a margem bruta da janela inteira.
@@ -626,20 +624,6 @@ const META_DE_DIAS_DE_FECHAMENTO = 40;
 
 /** O limiar da zona favorável de eNPS. Traço de `eng-enps`. */
 const ZONA_FAVORAVEL_DE_ENPS = 30;
-
-/**
- * Margem EBITDA: não é métrica do catálogo, e o painel precisa dela.
- *
- * `margem_bruta` e `margem_liquida` existem porque viraram cartão; a de EBITDA
- * só aparece como linha. Fica aqui em vez de virar entrada de catálogo porque
- * entrada de catálogo carrega decisão registrada e versionada — e esta é
- * derivada de dois números que já a têm.
- */
-function margemEbitda(r: Recorte): number | null {
-  const ebitda = daMetrica("ebitda")(r);
-  const receita = daMetrica("receita_liquida")(r);
-  return emPorcento(razao(ebitda, receita));
-}
 
 /** Os valores de uma quebra do quadro, na ordem declarada. */
 function valoresDaQuebra(dimensao: NomeDeQuebra): readonly string[] {
