@@ -211,7 +211,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas
   · **Aceite:** Todo painel com forma cascata, dispersão, régua de ciclo ou mosaico geográfico responde com envelope válido; a cascata da ponte da DRE fecha da receita líquida ao lucro líquido sem resíduo, a régua devolve PMR, PME, PMP e o ciclo, e os três lotes de getPanel cobrem exatamente os 71 painéis.
   · **PRD:** seção 9.3, Anexo A.1, Anexo C, RF-01 · **Depende de:** T-107, T-114
-- [ ] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B
+- [~] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B  ⏳ 2026-08-25 09:10 · sessao-68c8
   · **Aceite:** getMetric devolve valor, unidade, fórmula e série nas 21 métricas x 4 períodos x 3 entidades, e métrica fora do catálogo devolve recusa tipada com ao menos duas métricas próximas.
   · **PRD:** seção 9.1, Anexo B, seção 7.1, RF-16 · **Depende de:** T-113, T-114
 - [ ] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância
