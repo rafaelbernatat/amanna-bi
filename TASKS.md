@@ -217,7 +217,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância
   · **Aceite:** O comando roda com --source=fixtures e --source=warehouse sobre o mesmo arquivo de casos; um arquivo versionado enumera as 768 combinações marcando exaustivas e amostradas, a tolerância por unidade é fixada em código, e o relatório identifica painel x recorte x regra em cada falha.
   · **PRD:** RF-21, seção 9.2, seção 10.4, seção 13 precisão · **Depende de:** T-006, T-101, T-114
-- [ ] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel
+- [~] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel  ⏳ 2026-08-25 14:05 · sessao-68c8
   · **Aceite:** A suíte compara soma do painel e valor do KPI nos 768 recortes para cada par mapeado e falha em delta acima da tolerância; sob recorte de uma única área, o painel quebrado por área devolve exatamente uma categoria e nunca a lista inteira.
   · **PRD:** seção 9.2 regra 1, RF-03, Anexo D achado 3, Anexo D achado 4 · **Depende de:** T-108, T-115, T-116, T-117, T-118, T-119, T-121
 - [ ] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
