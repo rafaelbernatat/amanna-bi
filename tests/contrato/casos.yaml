@@ -1,0 +1,33 @@
+# Os casos da suíte de contrato (T-121)
+#
+# É o arquivo que as duas fontes compartilham. O RF-21 diz que a suíte passa
+# "idêntica em fixtures e no warehouse", e é isto que torna a frase verificável:
+# se cada modo tivesse o próprio arquivo, "idêntica" seria uma promessa sem
+# como ser conferida.
+#
+# ---------------------------------------------------------------------------
+# O que é um caso
+# ---------------------------------------------------------------------------
+#
+#   regra     o número da regra da seção 9.2 (1 a 5)
+#   assunto   o painel, o KPI ou a métrica que o caso exercita
+#   nota      por que este caso existe, quando não é óbvio
+#
+# A matriz de recortes NÃO entra aqui: todo caso roda em todos os recortes
+# exaustivos de tests/contrato/matriz-recortes.yaml. Um caso que valesse só em
+# alguns recortes seria amostragem disfarçada, e amostragem precisa de
+# justificativa assinada (H-05).
+#
+# ---------------------------------------------------------------------------
+# Por que a lista está vazia
+# ---------------------------------------------------------------------------
+#
+# As regras chegam por tarefa: a regra 1 (reconciliação KPI × painel) é T-122,
+# e as regras 2 a 5 são T-159. T-121 entregou o arnês — o comando, a matriz, a
+# tolerância e o formato do relatório —, não o que ele verifica.
+#
+# Enquanto não houver regra registrada, o comando RECUSA rodar. Zero regras
+# sobre 768 recortes devolve zero falhas, e zero falhas se parece com sucesso.
+
+versao: 1
+casos: []

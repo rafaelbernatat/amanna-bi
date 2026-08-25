@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 43 de 97 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 44 de 97 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **234** | **119** | **92** | **18** | **54 de 234** |
+| **Total** | **234** | **119** | **92** | **18** | **55 de 234** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -214,7 +214,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B
   · **Aceite:** getMetric devolve valor, unidade, fórmula e série nas 21 métricas x 4 períodos x 3 entidades, e métrica fora do catálogo devolve recusa tipada com ao menos duas métricas próximas.
   · **PRD:** seção 9.1, Anexo B, seção 7.1, RF-16 · **Depende de:** T-113, T-114
-- [~] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância  ⏳ 2026-08-25 11:20 · sessao-68c8
+- [X] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância
   · **Aceite:** O comando roda com --source=fixtures e --source=warehouse sobre o mesmo arquivo de casos; um arquivo versionado enumera as 768 combinações marcando exaustivas e amostradas, a tolerância por unidade é fixada em código, e o relatório identifica painel x recorte x regra em cada falha.
   · **PRD:** RF-21, seção 9.2, seção 10.4, seção 13 precisão · **Depende de:** T-006, T-101, T-114
 - [ ] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel
