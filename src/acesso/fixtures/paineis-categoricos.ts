@@ -37,7 +37,6 @@ import {
   emMilhoes,
   emPorcento,
   linhas,
-  noFim,
   perfil,
   pertence,
   razao,
@@ -761,11 +760,25 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
   },
 
   "eng-cat": (r) => {
+    /*
+     * Somado na janela, e não lido no último mês.
+     *
+     * A primeira versão usava `noFim`, e a suíte da regra 1 pegou: o cartão
+     * `rh-engaj-promotores` dizia 41,27 % e este painel, na mesma tela, dizia
+     * 41,07 %. Dois números para a mesma coisa, com 0,2 p.p. de diferença — o
+     * suficiente para aparecer e para ninguém saber qual seguir.
+     *
+     * O certo é somar: respondente de pesquisa é FLUXO, não estoque. Cada mês
+     * traz uma rodada nova, e "quantos promotores houve no período" soma as
+     * rodadas. Ler só dezembro faria o filtro de período não chegar ao dado —
+     * o achado 6 do Anexo D em outra forma —, e é o que a fórmula do catálogo
+     * já dizia: `soma(promotores) / soma(respondentes)`.
+     */
     const rotulos = ["Promotores", "Neutros", "Detratores"];
     const valores = [
-      noFim("vw_fato_rh_mes", r, (l) => l.promotores),
-      noFim("vw_fato_rh_mes", r, (l) => l.neutros),
-      noFim("vw_fato_rh_mes", r, (l) => l.detratores),
+      soma("vw_fato_rh_mes", r, (l) => l.promotores),
+      soma("vw_fato_rh_mes", r, (l) => l.neutros),
+      soma("vw_fato_rh_mes", r, (l) => l.detratores),
     ];
     return {
       forma: "divisao",

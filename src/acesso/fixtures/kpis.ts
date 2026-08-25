@@ -38,6 +38,7 @@ import {
   mesesDe,
 } from "@/acesso/fixtures/eixos";
 import { VW_DIM_FAIXA_SALARIAL } from "@/acesso/fixtures/dim";
+import { CUSTO_DO_TURNOVER } from "@/acesso/fixtures/referencia-perfil";
 import { VW_FATO_RH_PERFIL } from "@/acesso/fixtures/perfil";
 import {
   MESES_DO_PERIODO,
@@ -52,6 +53,11 @@ const CEM = 100;
 
 /** O divisor da mediana: a metade do quadro. */
 const DOIS = 2;
+
+/** Os componentes que contam como custo de reposição, e não de rescisão. */
+const COMPONENTES_DE_REPOSICAO = new Set(
+  CUSTO_DO_TURNOVER.filter((c) => c.ehReposicao).map((c) => c.codigo),
+);
 const UM_MILHAO = 1_000_000;
 
 /* ------------------------------------------------------------------ *
@@ -491,17 +497,36 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
 
   desligamentos: (r) => soma("vw_fato_rh_mes", r, (l) => l.desligamentos),
 
+  /*
+   * O custo do turnover sai de `vw_fato_turnover_custo`, e não mais de duas
+   * colunas de `vw_fato_rh_mes`.
+   *
+   * A suíte da regra 1 pegou: o cartão dizia 6,04 mi sob recorte de presencial
+   * e o painel da mesma tela dizia 12,4 mi. Duas fontes para a mesma medida —
+   * o cartão lia colunas do fato mensal, o painel lia a view que T-118.1
+   * declarou —, e o cartão reagia a modalidade porque o fato mensal a tem,
+   * enquanto a view não.
+   *
+   * As colunas que o cartão lia **não estavam na seção 10.1**: eram anteriores
+   * à view e sobreviveram sem declaração. Ler da view alinha os dois por
+   * construção e faz o número obedecer ao grão que o PRD publica.
+   */
   custo_do_turnover: (r) =>
+    emMilhoes(soma("vw_fato_turnover_custo", r, (l) => l.valor)),
+
+  /**
+   * Reposição: os componentes que a decomposição marca como tal.
+   *
+   * Rescisão é verba paga a quem sai; reposição é o que custa colocar outra
+   * pessoa no lugar. A separação vem de `CUSTO_DO_TURNOVER`, onde cada
+   * componente traz a marca — e é ela, não uma lista repetida aqui, que decide.
+   */
+  custo_de_reposicao: (r) =>
     emMilhoes(
-      soma(
-        "vw_fato_rh_mes",
-        r,
-        (l) => l.custoDeReposicao + l.custoDeDesligamento,
+      soma("vw_fato_turnover_custo", r, (l) =>
+        COMPONENTES_DE_REPOSICAO.has(l.componente) ? l.valor : 0,
       ),
     ),
-
-  custo_de_reposicao: (r) =>
-    emMilhoes(soma("vw_fato_rh_mes", r, (l) => l.custoDeReposicao)),
 
   vagas_abertas: (r) => soma("vw_fato_vagas", r, (l) => l.abertas),
   vagas_em_andamento: (r) => soma("vw_fato_vagas", r, (l) => l.emAndamento),

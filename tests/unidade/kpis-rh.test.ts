@@ -188,6 +188,17 @@ const INVARIANTES: ReadonlyArray<{
   },
   {
     dimensao: "modalidade",
+    kpis: ["rh-turnover-custo-do-turnover", "rh-turnover-custo-de-reposicao"],
+    porque:
+      "passaram a ler vw_fato_turnover_custo, cujo grão é mês × entidade × " +
+      "área × componente e não tem modalidade — o custo de repor alguém é do " +
+      "cargo, não do arranjo de trabalho de quem saiu. Antes de T-122 os dois " +
+      "liam duas colunas de vw_fato_rh_mes que a seção 10.1 nem declarava, e " +
+      "por isso reagiam a um filtro que o painel da mesma tela ignorava: o " +
+      "cartão dizia 6,04 mi sob presencial e o painel dizia 12,4 mi",
+  },
+  {
+    dimensao: "modalidade",
     kpis: [
       "rh-trein-horas-de-treinamento",
       "rh-trein-investimento",
