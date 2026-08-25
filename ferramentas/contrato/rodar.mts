@@ -34,6 +34,7 @@ import {
   obterFonteDeDados,
 } from "../../src/acesso/fabrica.ts";
 import "../../src/acesso/registrar.ts";
+import "../../src/acesso/contrato/registrar.ts";
 import { matrizDeRecortes } from "../../src/semantica/recortes.ts";
 import {
   relatorioEmTexto,
