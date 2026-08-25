@@ -63,6 +63,20 @@ const ONDE_A_FRACAO_E_DADO = [
   "src/acesso/fixtures/referencia-fin.ts",
   "src/acesso/fixtures/rh.ts",
   "src/acesso/fixtures/fin.ts",
+  /*
+   * A tolerância da suíte de contrato (T-121).
+   *
+   * As frações aqui — 0,05 e 0,5 — são **limiar declarado**, e não fator de
+   * escala. O achado 3 é sobre multiplicar um total por uma participação; este
+   * arquivo não multiplica nada: diz quanto dois caminhos podem divergir antes
+   * de a diferença aparecer na tela.
+   *
+   * A entrada não afrouxa a guarda porque a tolerância tem uma sua: o teste de
+   * T-121 confere que nenhum valor passa de meio dígito exibido. Uma fração que
+   * virasse fator de escala estouraria esse limite muito antes de passar
+   * despercebida aqui.
+   */
+  "src/semantica/tolerancia.ts",
 ];
 
 function todosOsArquivos(pasta: string): readonly string[] {
@@ -162,9 +176,16 @@ describe("os multiplicadores do protótipo não existem", () => {
     }
   });
 
-  it("a lista de onde a fração é dado tem cinco arquivos, e todos existem", () => {
-    // A guarda contra a lista virar um lugar onde qualquer coisa cabe.
-    expect(ONDE_A_FRACAO_E_DADO).toHaveLength(5);
+  it("a lista de onde a fração é dado tem seis arquivos, e todos existem", () => {
+    /*
+     * A guarda contra a lista virar um lugar onde qualquer coisa cabe.
+     *
+     * Eram cinco até T-121 acrescentar `tolerancia.ts` — e a contagem escrita é
+     * justamente o que obrigou a decisão a passar por aqui em vez de a lista
+     * crescer sozinha. Cada entrada precisa dizer por que a fração dela é dado,
+     * e a da tolerância diz: é limiar declarado, não fator de escala.
+     */
+    expect(ONDE_A_FRACAO_E_DADO).toHaveLength(6);
     for (const c of ONDE_A_FRACAO_E_DADO) expect(ARQUIVOS).toContain(c);
   });
 });
