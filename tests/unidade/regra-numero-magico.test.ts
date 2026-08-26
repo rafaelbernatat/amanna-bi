@@ -15,6 +15,7 @@
  * 4. a lista branca está vazia — e cresce só por revisão.
  */
 
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { ESLint } from "eslint";
@@ -183,23 +184,43 @@ describe("a lista branca", () => {
    * nenhum caso individual — o que significa que a regra descreve o código em
    * vez de negociar com ele.
    *
-   * O aceite pede que a lista seja "revisada no CI quando cresce": este teste é
-   * a revisão. Uma entrada nova reprova até alguém atualizar a contagem aqui,
-   * e isso aparece no diff da revisão junto com o motivo escrito.
+   * O aceite pede que a lista seja "revisada no CI quando cresce": estes dois
+   * casos são a revisão. O primeiro lê o valor; o segundo confere que a
+   * configuração do produto usa esse valor, e não um literal próprio.
+   *
+   * ## Por que são dois, e não um
+   *
+   * Eram um só, que importava `eslint.config.mjs` inteiro para ler um array
+   * vazio — e junto vinham `eslint-config-next` e `typescript-eslint`. Sob a
+   * carga da suíte esse import chegou a 78 s contra um limite de 30 s, e o
+   * caso reprovava sem haver defeito (T-123.1).
+   *
+   * Separar o valor da fiação não afrouxa nada: cobre mais. Antes, trocar a
+   * lista por um literal inline dentro da configuração passava despercebido;
+   * agora reprova.
    */
-  it("está vazia na configuração do produto", async () => {
-    // @ts-expect-error — configuração em .mjs, sem tipos declarados.
-    const { default: bruto } = await import("../../eslint.config.mjs");
-    const config = bruto as readonly { rules?: Record<string, unknown> }[];
-    const bloco = config.find(
-      (c) => c.rules?.["painel/sem-numero-magico"] !== undefined,
-    );
-    expect(bloco, "o bloco de T-181 sumiu da configuração").toBeDefined();
+  it("está vazia", async () => {
+    // @ts-expect-error — módulo em .mjs, sem tipos declarados.
+    const { LISTA_BRANCA } =
+      await import("../../ferramentas/eslint/lista-branca-numero-magico.mjs");
+    expect(LISTA_BRANCA).toEqual([]);
+  });
 
-    const opcoes = (
-      bloco?.rules?.["painel/sem-numero-magico"] as [string, { allowlist?: [] }]
-    )[1];
-    expect(opcoes.allowlist ?? []).toEqual([]);
+  it("e é ela que a configuração do produto usa", () => {
+    const texto = readFileSync(join(RAIZ, "eslint.config.mjs"), "utf8");
+
+    expect(
+      texto,
+      "eslint.config.mjs deixou de importar a lista branca",
+    ).toContain("lista-branca-numero-magico.mjs");
+
+    const linha = texto
+      .split("\n")
+      .find((l) => l.includes('"painel/sem-numero-magico"'));
+    expect(linha, "o bloco de T-181 sumiu da configuração").toBeDefined();
+    expect(linha ?? "", "a lista branca virou literal na configuração").toMatch(
+      /allowlist:\s*LISTA_BRANCA/,
+    );
   });
 
   it("toda entrada, se existir, carrega motivo escrito", async () => {
