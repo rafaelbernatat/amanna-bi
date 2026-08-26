@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 45 de 97 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 97 | 56 | 37 | 4 | 44 de 97 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **234** | **119** | **92** | **18** | **56 de 234** |
+| **Total** | **234** | **119** | **92** | **18** | **55 de 234** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -217,7 +217,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância
   · **Aceite:** O comando roda com --source=fixtures e --source=warehouse sobre o mesmo arquivo de casos; um arquivo versionado enumera as 768 combinações marcando exaustivas e amostradas, a tolerância por unidade é fixada em código, e o relatório identifica painel x recorte x regra em cada falha.
   · **PRD:** RF-21, seção 9.2, seção 10.4, seção 13 precisão · **Depende de:** T-006, T-101, T-114
-- [X] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel
+- [~] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel   ⏳ 2026-08-26 10:05 · sessao-68c842a0
   · **Aceite:** A suíte compara soma do painel e valor do KPI nos 768 recortes para cada par mapeado e falha em delta acima da tolerância; sob recorte de uma única área, o painel quebrado por área devolve exatamente uma categoria e nunca a lista inteira.
   · **PRD:** seção 9.2 regra 1, RF-03, Anexo D achado 3, Anexo D achado 4 · **Depende de:** T-108, T-115, T-116, T-117, T-118, T-119, T-121
 - [ ] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
