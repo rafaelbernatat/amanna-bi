@@ -39,6 +39,7 @@ export function PainelEmEstado({
   forma,
   estado,
   destacado = false,
+  subtitulo,
   desenhar,
 }: {
   readonly identidade: {
@@ -49,6 +50,15 @@ export function PainelEmEstado({
   readonly forma: Forma;
   readonly estado: EstadoDe<PanelResponse>;
   readonly destacado?: boolean;
+  /**
+   * O subtítulo, já resolvido para o recorte (T-133).
+   *
+   * Atravessa os **seis** estados, e não só os dois que desenham. Um painel
+   * vazio sob recorte de Tecnologia precisa dizer que está sob recorte de
+   * Tecnologia tanto quanto um painel com dado — talvez mais: sem número na
+   * tela, o subtítulo é a única coisa que diz o que se estava olhando.
+   */
+  readonly subtitulo?: string | null;
   readonly desenhar: (carga: PanelResponse) => ReactNode;
 }) {
   if (temCarga(estado)) {
@@ -58,6 +68,7 @@ export function PainelEmEstado({
         altura={alturaDaForma(forma)}
         destacado={destacado}
         {...(estado.estado === "defasado" ? { frescor: estado.frescor } : {})}
+        {...(subtitulo === undefined ? {} : { subtitulo })}
       >
         {desenhar(estado.carga)}
       </Painel>
@@ -72,6 +83,7 @@ export function PainelEmEstado({
       {...(identidade.unidade === undefined
         ? {}
         : { unidade: identidade.unidade })}
+      {...(subtitulo === undefined ? {} : { subtitulo })}
     >
       <div
         data-teste="caixa-do-painel"

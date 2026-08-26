@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 48 de 98 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 49 de 98 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **235** | **120** | **92** | **18** | **59 de 235** |
+| **Total** | **235** | **120** | **92** | **18** | **60 de 235** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -253,7 +253,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-132** `P0` `L` `paineis` Implementar os seis estados obrigatórios de painel e KPI, com esqueletos
   · **Aceite:** Teste de interface exercita com dado forjado carregando, com dado, vazio no recorte, erro de fonte, sem permissão e defasado em ao menos uma forma de cada família; o vazio exibe o motivo e o atalho para ampliar o recorte, o sem permissão não contém agregado no HTML servido, e cada uma das 12 formas tem esqueleto com altura igual à do gráfico final dentro de 4 px, sem piscar valor.
   · **PRD:** seção 6.4, RF-06, PR-4, seção 13 desempenho · **Depende de:** T-105, T-131
-- [ ] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte
+- [X] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte
   · **Aceite:** Para cada um dos 71 painéis, sob recorte fora do padrão a nota vem nula ou escrita para aquele recorte e o subtítulo passa a 'No recorte ativo · <area>'; um detector de valor absoluto roda sobre todas as notas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
   · **PRD:** RF-09, seção 6.3, PR-4, seção 9.3 · **Depende de:** T-117, T-118, T-119, T-131
 - [ ] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação

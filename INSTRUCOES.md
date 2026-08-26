@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 58 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 59 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 22 (4 resolvidos) | 7 | 36 |
+| Fase 1 · Contrato | 23 (4 resolvidos) | 7 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **58** | **30** | **122** |
+| **Total** | **59** | **30** | **122** |
 
 **Por responsável**
 
@@ -54,10 +54,10 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Controladoria | 12 |
 | Engenharia | 7 |
 | Comercial | 5 |
+| Produto, com Controladoria e RH | 2 |
 | RH | 2 |
 | Financeiro | 1 |
 | Juridico do cliente | 1 |
-| Produto, com Controladoria e RH | 1 |
 | Produto, com Engenharia | 1 |
 | RH · **Consultar:** Jurídico / DPO | 1 |
 
@@ -77,7 +77,33 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*22 itens · 3 P0 abertos · 11 P1 abertos · 4 P2 abertos · 4 resolvidos*
+*23 itens · 3 P0 abertos · 12 P1 abertos · 4 P2 abertos · 4 resolvidos*
+
+### [ ] H-59 · Escrever a narrativa dos painéis, ou decidir que não há
+
+`P1` · **Responsável:** Produto, com Controladoria e RH
+
+**O que fazer**
+
+O protótipo traz uma nota em prosa em 55 painéis — frases como *"51,3% do quadro está em algum modelo flexível"*, *"22% do quadro tem menos de 1 ano — reflexo direto do turnover de 18,4%"*, *"São Paulo responde por 37,7% do quadro"*. Nenhuma delas foi trazida para o produto, e a razão não é esquecimento: **os números dentro delas são digitados**. São o achado 5 do Anexo D em forma de prosa — texto que não reage a filtro nenhum, afirmando proporções que ninguém recalcula. Copiá-las importaria o defeito com aparência de conteúdo.
+
+T-133 entregou o mecanismo: cada painel declara o escopo da sua nota (`sem_nota`, `so_no_padrao`, `do_recorte`), a nota calculada é recomputada a cada recorte, a de escopo consolidado some sob filtro, e um detector varre as notas nos 768 recortes reprovando número que não pertence ao recorte. Hoje 9 painéis têm nota calculada e 62 declaram `sem_nota` — que é a resposta certa de RF-09 enquanto ninguém escrever uma frase conferível.
+
+Falta decidir **o conteúdo**, e é decisão de Produto porque uma nota é o produto afirmando algo. Três perguntas:
+
+1. **Quais painéis merecem narrativa?** Nem todo gráfico precisa de uma frase. Uma nota em todos os 71 vira ruído que ninguém lê, e aí a que importa também não é lida.
+2. **Cada frase é calculável ou é editorial?** Uma frase calculável (*"as duas maiores respondem por N% do total"*) vale em qualquer recorte porque o número vem do envelope. Uma editorial (*"a retenção cai enquanto a empresa cresce"*) é uma leitura de quem entende do assunto, e vale só no recorte para o qual foi escrita — some sob filtro, e é assim que deve ser. Para cada painel escolhido, diga qual das duas.
+3. **Quem assina a frase editorial, e com que revisão?** Uma nota é o produto afirmando algo sobre a empresa. Se a afirmação envelhecer, ela envelhece na tela de quem decide.
+
+Não decida (1) sem olhar as 55 do protótipo: várias dizem a mesma coisa em painéis diferentes, o que sugere que foram escritas uma vez e coladas — e isso é informação sobre quanto elas foram pensadas.
+
+| | |
+|---|---|
+| **Resultado esperado** | Lista de painéis com narrativa, cada um marcado como frase calculável (com a receita descrita em palavras) ou editorial (com o texto e o responsável), registrada com data e nome |
+| **Onde o resultado vai** | `src/semantica/nota-de-painel.ts`, no mapa de escopos declarados, e para as receitas novas em `src/acesso/fixtures/nota.ts` |
+| **Destrava** | Nada de novo — T-133 já entregou o mecanismo e o produto funciona sem narrativa. Isto é conteúdo, não bloqueio |
+
+---
 
 ### [ ] H-58 · Acrescentar `contrato` às checagens obrigatórias em main
 

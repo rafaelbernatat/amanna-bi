@@ -57,3 +57,38 @@ export function filtrosForaDoPadrao(q: Query): readonly FiltroForaDoPadrao[] {
 export function temRecorteAtivo(q: Query): boolean {
   return filtrosForaDoPadrao(q).length > 0;
 }
+
+/**
+ * O subtítulo de um painel sob recorte (T-133, PRD seção 6.3).
+ *
+ * > "detecta valores absolutos no texto e suprime a nota, trocando o subtítulo
+ * > por 'No recorte ativo · área'."
+ *
+ * O subtítulo próprio de um painel descreve o que ele mostra no consolidado —
+ * "Headcount FTE e participação no total", por exemplo. Sob recorte ele deixa
+ * de descrever o que está na tela, do mesmo jeito que a nota deixa. Trocá-lo
+ * por "No recorte ativo · Tecnologia" diz duas coisas de uma vez: que a
+ * descrição antiga não vale mais, e qual recorte está no lugar dela.
+ *
+ * ## Por que a área, e não a lista inteira
+ *
+ * O banner de recorte ativo (T-128) já lista os cinco filtros fora do padrão,
+ * e ele fica no topo da tela. Repetir a lista em cada painel encheria a tela
+ * de texto igual — e o subtítulo tem uma linha.
+ *
+ * A área é o que o protótipo escolheu mostrar, e a escolha faz sentido: dos
+ * cinco filtros, é o que mais muda a leitura de um gráfico quebrado por
+ * categoria. Quando o recorte está ativo por outro filtro que não a área, o
+ * subtítulo fica em "No recorte ativo", sem sufixo — que continua verdadeiro.
+ */
+export function subtituloSobRecorte(
+  q: Query,
+  subtituloProprio: string | null = null,
+): string | null {
+  if (!temRecorteAtivo(q)) return subtituloProprio;
+
+  const area = filtrosForaDoPadrao(q).find((f) => f.campo === "area");
+  return area === undefined
+    ? "No recorte ativo"
+    : `No recorte ativo · ${area.rotuloDoValor}`;
+}

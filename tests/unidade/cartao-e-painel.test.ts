@@ -114,17 +114,26 @@ describe("a fórmula do painel não tem como não aparecer", () => {
    * Se `Painel` passar a aceitar mais uma propriedade, este teste fica vermelho
    * e quem a acrescentou precisa dizer, no diff, por quê.
    *
-   * ## A quinta, e por que ela entrou
+   * ## A quinta e a sexta, e por que entraram
    *
    * `frescor` entrou em T-132. A tabela 6.4 exige que o estado "dado defasado"
    * mostre **o painel** com o selo de frescor em destaque — o painel continua
    * aparecendo, com o número e com a fórmula; o que muda é o selo.
    *
-   * Ela não é um interruptor: não é booleana, não decide o que aparece, e o
-   * caso abaixo confere que a fórmula segue lá com ela ligada. A guarda ficou
-   * vermelha, foi lida, e esta é a resposta que o comentário acima pedia.
+   * `subtitulo` entrou em T-133. A seção 6.3 troca o subtítulo por "No recorte
+   * ativo · Área" quando há filtro fora do padrão, junto com a supressão da
+   * nota. É texto que entra, não conteúdo que sai.
+   *
+   * Nenhuma das duas é interruptor: não são booleanas, não decidem o que
+   * aparece, e os casos abaixo conferem que a fórmula segue lá com as duas
+   * ligadas. A guarda ficou vermelha duas vezes, foi lida as duas, e estas são
+   * as respostas que o comentário acima pedia.
+   *
+   * A pergunta que importa a cada nova propriedade não é "quantas são", é
+   * "esta some com alguma coisa". Se um dia a resposta for sim, a lista não
+   * deve crescer: a propriedade é que não deve entrar.
    */
-  it("Painel aceita cinco propriedades, e nenhuma liga ou desliga a fórmula", () => {
+  it("Painel aceita seis propriedades, e nenhuma liga ou desliga a fórmula", () => {
     const fonte = readFileSync("src/apresentacao/paineis/Painel.tsx", "utf8");
     const bloco = /export function Painel\(\{([^}]*)\}/.exec(fonte);
     expect(bloco, "não achei a assinatura de Painel").not.toBeNull();
@@ -140,7 +149,26 @@ describe("a fórmula do painel não tem como não aparecer", () => {
       "destacado",
       "frescor",
       "painel",
+      "subtitulo",
     ]);
+  });
+
+  it("e a fórmula continua aparecendo com subtítulo de recorte ativo", () => {
+    /*
+     * O subtítulo de T-133 substitui uma descrição que deixou de valer. Ele
+     * acrescenta uma linha ao cabeçalho; não tem como tirar a fórmula do
+     * rodapé. Este caso é o que faz essa frase ser verificável.
+     */
+    const marcacao = html(
+      createElement(Painel, {
+        painel: PAINEL,
+        altura: 216,
+        subtitulo: "No recorte ativo · Tecnologia",
+      }),
+    );
+    expect(quantos(marcacao, "formula-do-painel")).toBe(1);
+    expect(quantos(marcacao, "subtitulo-do-painel")).toBe(1);
+    expect(marcacao).toContain("No recorte ativo · Tecnologia");
   });
 
   it("e a fórmula continua aparecendo com o selo de frescor ligado", () => {

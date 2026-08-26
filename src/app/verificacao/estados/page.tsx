@@ -6,6 +6,7 @@ import { alturaDaForma } from "@/apresentacao/graficos/altura";
 import { Esqueleto } from "@/apresentacao/graficos/Esqueleto";
 import { CartaoEmEstado } from "@/apresentacao/paineis/CartaoEmEstado";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
+import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import type { Frescor, Kpi, PanelResponse } from "@/semantica/contrato";
@@ -40,6 +41,9 @@ export const metadata: Metadata = {
 /* ------------------------------------------------------------------ *
  * O dado forjado
  * ------------------------------------------------------------------ */
+
+/** Um recorte fora do padrao, para o subtitulo ter o que dizer (T-133). */
+const RECORTE_DE_EXEMPLO = { ...QUERY_PADRAO, area: "tecnologia" } as const;
 
 const FRESCOR_EM_DIA: Frescor = {
   asOf: "2026-12-31",
@@ -146,6 +150,10 @@ export default async function Page() {
                 unidade: "FTE",
               }}
               forma="barras"
+              subtitulo={subtituloSobRecorte(
+                RECORTE_DE_EXEMPLO,
+                "Headcount FTE",
+              )}
               estado={CASOS.painel[nome] ?? { estado: "carregando" }}
               desenhar={(carga) => (
                 <CaixaDeGrafico
