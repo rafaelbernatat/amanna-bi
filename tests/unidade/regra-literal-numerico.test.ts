@@ -169,3 +169,85 @@ describe("A regra pega o número no campo de KPI", () => {
     expect(mensagens).toEqual([]);
   });
 });
+
+/*
+ * O caminho indireto, que a primeira versao da regra nao via.
+ *
+ * O aceite de T-141 diz "qualquer literal numerico que ALCANCE o modulo de
+ * formatacao". Alcancar nao e o mesmo que estar escrito no argumento: quando o
+ * valor lido e nulo, o numero do `??` e exatamente o que o formatador recebe.
+ * O primeiro cartao de KPI de verdade (T-131) trouxe o caso pronto --
+ * `formatarValor(kpi.value ?? 0, kpi.unit)` -- e a regra deixou passar.
+ */
+describe("A regra segue o literal que chega por caminho indireto", () => {
+  const DECLARACAO = `
+declare function formatarValor(v: number, u: string): string;
+declare const lido: number | null;
+declare const lidoFirme: number;
+declare const serie: readonly number[];
+`;
+
+  const comDeclaracao = (expressao: string) =>
+    `${DECLARACAO}export const m = ${expressao};
+`;
+
+  it.each([
+    ["o fallback de ??", "formatarValor(lido ?? 0, 'pct')", "0"],
+    ["o fallback de ||", "formatarValor(lido || 40, 'pct')", "40"],
+    ["o lado direito de &&", "formatarValor(lido && 12, 'pct')", "12"],
+    ["um ramo de ternario", "formatarValor(lido ? lido : 4.1, 'pct')", "4.1"],
+    ["um literal negativo", "formatarValor(lido ?? -0.7, 'pp')", "-0.7"],
+  ])("%s e apontado", async (_caso, expressao, esperado) => {
+    const mensagens = await analisar(comDeclaracao(expressao));
+    expect(mensagens).toHaveLength(1);
+    expect(mensagens[0]?.message).toContain(esperado);
+    expect(mensagens[0]?.message).toMatch(/formatador/);
+  });
+
+  it("ternario com numero dos dois lados da dois erros, um por numero", async () => {
+    const mensagens = await analisar(
+      comDeclaracao("formatarValor(lido ? 12 : 40, 'pct')"),
+    );
+    expect(mensagens).toHaveLength(2);
+    const juntas = mensagens.map((m) => m.message).join(" ");
+    expect(juntas).toContain("12");
+    expect(juntas).toContain("40");
+  });
+
+  it("o campo de KPI tambem: value com fallback escrito a mao e reprovado", async () => {
+    const mensagens = await analisar(
+      comDeclaracao("{ label: 'x', value: lido ?? 0 }"),
+    );
+    expect(mensagens).toHaveLength(1);
+    expect(mensagens[0]?.message).toMatch(/Anexo D/);
+  });
+
+  it("o embrulho do TypeScript nao esconde o literal", async () => {
+    const mensagens = await analisar(
+      comDeclaracao("formatarValor(74 as number, 'pct')"),
+    );
+    expect(mensagens).toHaveLength(1);
+    expect(mensagens[0]?.message).toContain("74");
+  });
+
+  /*
+   * O outro lado da linha, e a razao de a regra parar onde para.
+   *
+   * Ela desce por operador que ENTREGA o valor, nao por operador que o calcula
+   * ou o compara. Sem estes casos, "reforcar a regra" viraria "proibir
+   * aritmetica", e quem programa esconderia o fator numa constante de nome
+   * vazio: o numero continuaria ali, agora disfarcado, e a regra estaria pior
+   * do que antes por parecer mais forte.
+   */
+  it.each([
+    ["fator de escala", "formatarValor(lidoFirme * 100, 'pct')"],
+    ["divisor", "formatarValor(lidoFirme / 1000, 'BRL_mi')"],
+    [
+      "limiar de comparacao",
+      "formatarValor(lidoFirme > 0 ? lidoFirme : lidoFirme, 'pct')",
+    ],
+    ["indice de vetor", "formatarValor(serie[2] as number, 'pct')"],
+  ])("%s continua passando", async (_caso, expressao) => {
+    expect(await analisar(comDeclaracao(expressao))).toEqual([]);
+  });
+});

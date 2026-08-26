@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
+import { lerKpisDaTela } from "@/acesso/leitura";
+import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
 import { BarraLateral } from "@/apresentacao/shell/BarraLateral";
@@ -210,6 +212,15 @@ export default async function Pagina({
             query={query}
             painelDestacado={painelDestacado}
           />
+
+          {/*
+            Os KPIs da tela, no recorte da URL.
+
+            Lidos pela fronteira de seguranca (secao 11), e nao pelo adaptador:
+            o recorte por perfil e aplicado no servidor, antes de qualquer
+            leitura. `lerKpisDaTela` e o unico ponto onde essa cadeia se monta.
+          */}
+          <FaixaDeKpis kpis={await lerKpisDaTela(rota.slice(1), query)} />
 
           {avisos.length > 0 ? (
             <p

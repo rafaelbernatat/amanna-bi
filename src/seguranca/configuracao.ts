@@ -86,6 +86,22 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     conferir: umDentre(["fixtures", "warehouse"]),
   },
   {
+    /*
+     * Faltava no esquema, e a falta aparecia tarde.
+     *
+     * A leitura de sessão exige `AUTH_PROVIDER` e esta validação não a
+     * conferia: o processo subia inteiro e **toda** requisição de tela
+     * devolvia 500 — porque quem exige a variável roda por requisição. A
+     * validação de T-139 existe justamente para trocar "sobe e falha em cada
+     * página" por "não sobe, e diz o que falta".
+     */
+    nome: "AUTH_PROVIDER",
+    proposito: "quem autentica a sessão (seção 8.2, RF-23)",
+    obrigatoria: true,
+    segredo: false,
+    conferir: umDentre(["fixtures", "oidc"]),
+  },
+  {
     nome: "DATABASE_URL",
     proposito: "conexão com a réplica em warehouse (seção 10)",
     obrigatoria: false,

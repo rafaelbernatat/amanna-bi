@@ -22,12 +22,23 @@ import {
 } from "@/seguranca/configuracao";
 
 describe("validação do ambiente no boot", () => {
+  /*
+   * O que um ambiente completo tem hoje: quem serve o dado e quem autentica.
+   *
+   * `AUTH_PROVIDER` entrou no esquema depois, quando a tela passou a ler dado
+   * de verdade e a falta dele deixou de ser teórica: o processo subia inteiro
+   * e toda requisição de tela devolvia 500, porque quem exige a variável é a
+   * leitura de sessão, e ela roda por requisição. Esta validação existe para
+   * trocar "sobe e falha em cada página" por "não sobe, e diz o que falta".
+   */
+  const MINIMO = { DATA_SOURCE: "fixtures", AUTH_PROVIDER: "fixtures" };
+
   it("aceita o mínimo viável", () => {
-    expect(conferirAmbiente({ DATA_SOURCE: "fixtures" })).toEqual([]);
+    expect(conferirAmbiente(MINIMO)).toEqual([]);
   });
 
   it("recusa DATA_SOURCE ausente, nomeando a variável e o propósito", () => {
-    const p = conferirAmbiente({});
+    const p = conferirAmbiente({ AUTH_PROVIDER: "fixtures" });
     expect(p).toHaveLength(1);
     expect(p[0]?.variavel).toBe("DATA_SOURCE");
     expect(p[0]?.problema).toContain("ausente");
@@ -35,24 +46,39 @@ describe("validação do ambiente no boot", () => {
   });
 
   it("recusa DATA_SOURCE fora do enum, listando os aceitos", () => {
-    const p = conferirAmbiente({ DATA_SOURCE: "producao" });
+    const p = conferirAmbiente({ ...MINIMO, DATA_SOURCE: "producao" });
     expect(p[0]?.problema).toContain("fixtures");
     expect(p[0]?.problema).toContain("warehouse");
+  });
+
+  it("recusa AUTH_PROVIDER ausente, e não deixa a falta para a primeira tela", () => {
+    const p = conferirAmbiente({ DATA_SOURCE: "fixtures" });
+    expect(p).toHaveLength(1);
+    expect(p[0]?.variavel).toBe("AUTH_PROVIDER");
+    expect(p[0]?.problema).toContain("ausente");
+  });
+
+  it("recusa AUTH_PROVIDER fora do enum, listando os aceitos", () => {
+    const p = conferirAmbiente({ ...MINIMO, AUTH_PROVIDER: "ldap" });
+    expect(p[0]?.variavel).toBe("AUTH_PROVIDER");
+    expect(p[0]?.problema).toContain("fixtures");
+    expect(p[0]?.problema).toContain("oidc");
   });
 
   it("exige DATABASE_URL quando a fonte é warehouse", () => {
     // O caso que mais dói: o modo diz "leia do banco" e não há banco. Sem esta
     // regra o erro só apareceria na primeira consulta, com a tela já carregada.
-    const p = conferirAmbiente({ DATA_SOURCE: "warehouse" });
+    const p = conferirAmbiente({ ...MINIMO, DATA_SOURCE: "warehouse" });
     expect(p.map((x) => x.variavel)).toEqual(["DATABASE_URL"]);
   });
 
   it("não exige DATABASE_URL quando a fonte é fixtures", () => {
-    expect(conferirAmbiente({ DATA_SOURCE: "fixtures" })).toEqual([]);
+    expect(conferirAmbiente(MINIMO)).toEqual([]);
   });
 
   it("recusa DATABASE_URL que não é URL de postgres", () => {
     const p = conferirAmbiente({
+      ...MINIMO,
       DATA_SOURCE: "warehouse",
       DATABASE_URL: "mysql://h/d",
     });
@@ -68,6 +94,7 @@ describe("validação do ambiente no boot", () => {
     });
     expect(p.map((x) => x.variavel).sort()).toEqual([
       "ANTHROPIC_API_KEY",
+      "AUTH_PROVIDER",
       "DATA_SOURCE",
     ]);
   });

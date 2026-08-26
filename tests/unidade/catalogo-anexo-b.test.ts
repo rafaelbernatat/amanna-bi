@@ -305,15 +305,30 @@ describe("as 21 são provisórias, e dizem isso", () => {
      * "aprovado" só pode aparecer negada — como em `turnover_12m`, que explica
      * que a aprovação citada no exemplo da seção 9.4 do PRD **não aconteceu**.
      */
+    /*
+     * O que se procura é **alguém aprovando a métrica**, e não a palavra solta.
+     *
+     * A primeira versão procurava "aprovad" em qualquer lugar e reprovou
+     * `orcado`, cuja decisão diz "orçamento aprovado do período" — que descreve
+     * o orçamento, não a métrica. Um guarda que confunde as duas coisas é um
+     * guarda que alguém desliga.
+     *
+     * A forma que importa é "aprovado por <alguém>", e ela só passa negada.
+     */
+    const APROVACAO = /(aprovad[oa]|assinad[oa]|homologad[oa])\s+(por|em)\b/i;
+    const NEGADA = /(nao|não)\s+aprovad|aprovacao nao aconteceu/i;
+
     const suspeitas = CATALOGO.filter((m) => {
       const d = m.decisao ?? "";
-      if (!/aprovad|assinad|homologad/i.test(d)) return false;
-      // Negado é o uso legítimo: "Nao aprovado por", "aprovacao nao aconteceu".
-      return !/(nao|não)\s+(aprovad|foi aprovad)|aprovacao nao aconteceu/i.test(
-        d,
-      );
+      return APROVACAO.test(d) && !NEGADA.test(d);
     }).map((m) => m.id);
     expect(suspeitas).toEqual([]);
+
+    // E a guarda contra o vácuo: a forma proibida é reconhecida.
+    expect(APROVACAO.test("Aprovado por RH e Controladoria em 2026-08")).toBe(
+      true,
+    );
+    expect(APROVACAO.test("orcamento aprovado do periodo")).toBe(false);
   });
 
   it("o exemplo da seção 9.4 do PRD não virou afirmação", () => {

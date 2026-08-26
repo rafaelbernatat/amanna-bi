@@ -240,21 +240,21 @@ describe("o catálogo versionado do repositório", () => {
     expect(conferirCatalogo(documento)).toEqual([]);
   });
 
-  it("e traz as 56 métricas, não mais só uma", () => {
+  it("e traz as 68 métricas, não mais só uma", () => {
     /*
      * O arquivo esteve incompleto de propósito enquanto H-08 travava tudo. A
      * decisão de modo mockup destravou a escrita, em três etapas:
      *
      *   T-113   as 21 do Anexo B
      *   T-148   as 21 do achado 5
-     *   T-115   as 14 que os cartões de RH pedem e que não vinham de nenhum
-     *           dos dois — custo por FTE, vagas por status, benefícios
+     *   T-115   as 14 que os cartões de RH pedem
+     *   T-116   as 12 que os cartões de Financeiro e Integração pedem
      *
      * A aprovação continua em H-08. Seriam 36 pela contagem do PRD; a
      * diferença vem da subcontagem do achado 5 (H-48) e de o PRD não listar as
      * métricas que só existem como cartão.
      */
-    expect(carregarCatalogo(documento).size).toBe(56);
+    expect(carregarCatalogo(documento).size).toBe(68);
   });
 
   it("traz a métrica que a seção 9.4 escreve por extenso", () => {
