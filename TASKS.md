@@ -253,7 +253,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-132** `P0` `L` `paineis` Implementar os seis estados obrigatórios de painel e KPI, com esqueletos
   · **Aceite:** Teste de interface exercita com dado forjado carregando, com dado, vazio no recorte, erro de fonte, sem permissão e defasado em ao menos uma forma de cada família; o vazio exibe o motivo e o atalho para ampliar o recorte, o sem permissão não contém agregado no HTML servido, e cada uma das 12 formas tem esqueleto com altura igual à do gráfico final dentro de 4 px, sem piscar valor.
   · **PRD:** seção 6.4, RF-06, PR-4, seção 13 desempenho · **Depende de:** T-105, T-131
-- [ ] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte
+- [~] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte   ⏳ 2026-08-26 19:20 · sessao-68c842a0
   · **Aceite:** Para cada um dos 71 painéis, sob recorte fora do padrão a nota vem nula ou escrita para aquele recorte e o subtítulo passa a 'No recorte ativo · <area>'; um detector de valor absoluto roda sobre todas as notas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
   · **PRD:** RF-09, seção 6.3, PR-4, seção 9.3 · **Depende de:** T-117, T-118, T-119, T-131
 - [ ] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação
