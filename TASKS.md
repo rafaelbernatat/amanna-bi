@@ -220,7 +220,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel
   · **Aceite:** A suíte compara soma do painel e valor do KPI nos 768 recortes para cada par mapeado e falha em delta acima da tolerância; sob recorte de uma única área, o painel quebrado por área devolve exatamente uma categoria e nunca a lista inteira.
   · **PRD:** seção 9.2 regra 1, RF-03, Anexo D achado 3, Anexo D achado 4 · **Depende de:** T-108, T-115, T-116, T-117, T-118, T-119, T-121
-- [ ] **T-123.1** `P0` `S` `plataforma` Eliminar o vermelho intermitente da suíte de unidade
+- [~] **T-123.1** `P0` `S` `plataforma` Eliminar o vermelho intermitente da suíte de unidade   ⏳ 2026-08-26 11:35 · sessao-68c842a0
   · **Aceite:** O caso `a lista branca > está vazia na configuração do produto` deixa de carregar `eslint.config.mjs` pelo transform do Vite, dez execuções seguidas de `npm test` terminam verdes, e o caso continua reprovando quando uma entrada é acrescentada à lista branca.
   · **PRD:** seção 8.2 testes, RF-07 · **Depende de:** T-005.1, T-181
 - [ ] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
