@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 96 | 55 | 37 | 4 | 39 de 96 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 47 de 98 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **233** | **118** | **92** | **18** | **50 de 233** |
+| **Total** | **235** | **120** | **92** | **18** | **58 de 235** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -202,22 +202,28 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-117** `P0` `L` `dados` Implementar getPanel para as primitivas de série temporal
   · **Aceite:** Todo painel do registro cuja forma é barras, linha ou barras empilhadas responde com envelope válido no JSON Schema, muda de valor ao trocar entidade e área, e tem as categorias respeitando o recorte de período (12, 6, 3 e 1 mês).
   · **PRD:** seção 9.3, Anexo A.1, RF-01, RF-05 · **Depende de:** T-107, T-110, T-111, T-114, T-143
-- [ ] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
+- [X] **T-118.1** `P0` `M` `auditoria` Declarar as fontes dos sete painéis categóricos cujas medidas não existem em 10.1
+  · **Aceite:** as duas views e as três colunas que faltam entram na tabela 10.1 com as chaves nomeadas e a fixture as implementa reconciliando exatamente com as medidas mensais já existentes; as decisões de negócio de que dependem ficam registradas em INSTRUCOES.md; e o teste de cobertura de origem passa a percorrer os 65 painéis de T-117 e T-118, provando que nenhum ficou sem view.
+  · **PRD:** seção 10.1, Anexo A.1, Anexo B intenção 19, seção 11 · **Depende de:** T-110, T-111, T-143
+- [X] **T-118** `P0` `L` `dados` Implementar getPanel para as primitivas categóricas
   · **Aceite:** Todo painel com forma barras horizontais, rosca, funil, divisão ou estatísticas responde com envelope válido; sob recorte de uma única área o painel quebrado por área devolve exatamente uma categoria e as fatias da rosca somam o total declarado.
   · **PRD:** seção 9.3, Anexo A.1, seção 9.2 regra 1, RF-01 · **Depende de:** T-107, T-114
-- [ ] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas
+- [X] **T-119** `P0` `M` `dados` Implementar getPanel para as primitivas compostas
   · **Aceite:** Todo painel com forma cascata, dispersão, régua de ciclo ou mosaico geográfico responde com envelope válido; a cascata da ponte da DRE fecha da receita líquida ao lucro líquido sem resíduo, a régua devolve PMR, PME, PMP e o ciclo, e os três lotes de getPanel cobrem exatamente os 71 painéis.
   · **PRD:** seção 9.3, Anexo A.1, Anexo C, RF-01 · **Depende de:** T-107, T-114
-- [ ] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B
+- [X] **T-120** `P0` `M` `dados` Implementar getMetric para as 21 métricas do Anexo B
   · **Aceite:** getMetric devolve valor, unidade, fórmula e série nas 21 métricas x 4 períodos x 3 entidades, e métrica fora do catálogo devolve recusa tipada com ao menos duas métricas próximas.
   · **PRD:** seção 9.1, Anexo B, seção 7.1, RF-16 · **Depende de:** T-113, T-114
-- [ ] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância
+- [X] **T-121** `P0` `M` `dados` Construir o arnês da suíte de contrato, a matriz canônica de recortes e a tolerância
   · **Aceite:** O comando roda com --source=fixtures e --source=warehouse sobre o mesmo arquivo de casos; um arquivo versionado enumera as 768 combinações marcando exaustivas e amostradas, a tolerância por unidade é fixada em código, e o relatório identifica painel x recorte x regra em cada falha.
   · **PRD:** RF-21, seção 9.2, seção 10.4, seção 13 precisão · **Depende de:** T-006, T-101, T-114
-- [ ] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel
+- [X] **T-122** `P0` `L` `dados` Escrever a suíte da regra 1 - reconciliação entre KPI e painel
   · **Aceite:** A suíte compara soma do painel e valor do KPI nos 768 recortes para cada par mapeado e falha em delta acima da tolerância; sob recorte de uma única área, o painel quebrado por área devolve exatamente uma categoria e nunca a lista inteira.
   · **PRD:** seção 9.2 regra 1, RF-03, Anexo D achado 3, Anexo D achado 4 · **Depende de:** T-108, T-115, T-116, T-117, T-118, T-119, T-121
-- [ ] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
+- [X] **T-123.1** `P0` `S` `plataforma` Eliminar o vermelho intermitente da suíte de unidade
+  · **Aceite:** O caso `a lista branca > está vazia na configuração do produto` deixa de carregar `eslint.config.mjs` pelo transform do Vite, dez execuções seguidas de `npm test` terminam verdes, e o caso continua reprovando quando uma entrada é acrescentada à lista branca.
+  · **PRD:** seção 8.2 testes, RF-07 · **Depende de:** T-005.1, T-181
+- [X] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
   · **Aceite:** O CI roda a suíte com DATA_SOURCE=fixtures em job próprio cobrindo os 71 painéis, e o job falha quando qualquer regra da seção 9.2 é violada, com o relatório arquivado como artefato.
   · **PRD:** RF-21, RF-03, seção 10.4, Anexo A · **Depende de:** T-006, T-121, T-122
 - [X] **T-124** `P0` `S` `paineis` Extrair os tokens visuais do protótipo para um tema tipado

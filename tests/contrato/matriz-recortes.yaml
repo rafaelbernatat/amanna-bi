@@ -1,0 +1,6198 @@
+# A matriz canônica de recortes da suíte de contrato (T-121)
+#
+# GERADO. Não edite. A fonte são as dimensões do produto; para mudar a matriz,
+# mude as dimensões e rode 'npm run matriz'.
+#
+# Este arquivo é versionado porque alguém precisa assinar o que a suíte cobre
+# (H-05). Uma matriz que vive só em código muda com um commit e ninguém percebe
+# que a cobertura encolheu; em arquivo, encolher vira diff.
+#
+# ---------------------------------------------------------------------------
+# Cobertura
+# ---------------------------------------------------------------------------
+#
+#   exaustiva  a suíte roda esta combinação
+#   amostrada  a suíte pula, e o porquê está na seção 'amostragem' abaixo
+#
+# Hoje TODAS são exaustivas, e isso não é preguiça de amostrar: amostragem exige
+# justificativa com responsável e data, e o item H-05 — que aprova a matriz —
+# está aberto. Enquanto estiver, cobrir demais custa tempo de CI e cobrir de
+# menos custa uma divergência que ninguém viu.
+#
+# A regra 1 (reconciliação KPI × painel) roda SEMPRE exaustiva, mesmo depois de
+# H-05: é o que o item exige por escrito, e T-193 reprova o CI se alguma
+# combinação dela for marcada como amostrada.
+
+versao: 1
+gerado_por: ferramentas/contrato/matriz.mts
+dimensoes:
+  periodo: ["12-meses", "6-meses", "4-trimestre", "dezembro"]
+  ano: ["2026", "2025"]
+  entidade: ["consolidado", "unidade-sp", "demais-unidades"]
+  area:
+    [
+      "todas",
+      "operacoes",
+      "comercial",
+      "tecnologia",
+      "logistica",
+      "financeiro",
+      "marketing",
+      "rh",
+    ]
+  modalidade: ["todas", "presencial", "hibrido", "remoto"]
+
+# Contado a partir das dimensões, nunca escrito.
+total: 768
+exaustivas: 768
+amostradas: 0
+
+# Uma entrada por dimensão amostrada, com responsável e data (H-05).
+# Vazio enquanto H-05 não assinar.
+amostragem: []
+
+recortes:
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 12-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 6-meses,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: 4-trimestre,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2026,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: consolidado,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: unidade-sp,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: todas,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: operacoes,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: comercial,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: tecnologia,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: logistica,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: financeiro,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: marketing,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: todas,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: presencial,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: hibrido,
+      cobertura: exaustiva,
+    }
+  - {
+      periodo: dezembro,
+      ano: 2025,
+      entidade: demais-unidades,
+      area: rh,
+      modalidade: remoto,
+      cobertura: exaustiva,
+    }

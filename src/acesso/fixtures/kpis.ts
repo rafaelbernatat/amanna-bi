@@ -37,6 +37,8 @@ import {
   AREAS_ARMAZENADAS,
   mesesDe,
 } from "@/acesso/fixtures/eixos";
+import { VW_DIM_FAIXA_SALARIAL } from "@/acesso/fixtures/dim";
+import { CUSTO_DO_TURNOVER } from "@/acesso/fixtures/referencia-perfil";
 import { VW_FATO_RH_PERFIL } from "@/acesso/fixtures/perfil";
 import {
   MESES_DO_PERIODO,
@@ -48,6 +50,14 @@ import { kpisDaTela, type RegistroDeKpi } from "@/semantica/kpis";
 import { origemDoKpi } from "@/semantica/origem-de-kpi";
 
 const CEM = 100;
+
+/** O divisor da mediana: a metade do quadro. */
+const DOIS = 2;
+
+/** Os componentes que contam como custo de reposição, e não de rescisão. */
+const COMPONENTES_DE_REPOSICAO = new Set(
+  CUSTO_DO_TURNOVER.filter((c) => c.ehReposicao).map((c) => c.codigo),
+);
 const UM_MILHAO = 1_000_000;
 
 /* ------------------------------------------------------------------ *
@@ -217,6 +227,45 @@ export function perfil(
     : somar(escolhidas, (l) => l.headcountFte);
 }
 
+/**
+ * A faixa salarial que contém a pessoa do meio, interpolada.
+ *
+ * Devolve `null` quando não há quadro — e não zero, que seria "a mediana é zero
+ * real" (princípio PR-4).
+ */
+function medianaSalarial(r: Recorte): number | null {
+  const faixas = VW_DIM_FAIXA_SALARIAL;
+  const contagens = faixas.map((f) => perfil(r, "faixa_salarial", [f.codigo]));
+  const total = contagens.reduce<number>((a, v) => a + (v ?? 0), 0);
+  if (total === 0) return null;
+
+  const meio = total / DOIS;
+  let acumulado = 0;
+
+  for (const [i, faixa] of faixas.entries()) {
+    const quantos = contagens[i] ?? 0;
+    if (acumulado + quantos < meio) {
+      acumulado += quantos;
+      continue;
+    }
+    if (quantos === 0) continue;
+
+    /*
+     * O teto da última faixa é aberto ("acima de 30k"). Interpolar dentro de
+     * uma faixa sem teto exigiria inventar um; em vez disso, a mediana ali é o
+     * piso — que é o que se sabe.
+     */
+    const piso = faixa.de;
+    const teto = faixa.ate;
+    if (teto === null) return emMilhoes(piso);
+
+    const posicao = (meio - acumulado) / quantos;
+    return emMilhoes(piso + (teto - piso) * posicao);
+  }
+
+  return null;
+}
+
 /* ------------------------------------------------------------------ *
  * O cálculo de cada métrica
  * ------------------------------------------------------------------ */
@@ -293,6 +342,62 @@ type Calculo = (r: Recorte) => number | null;
  * a que ninguém compara.
  */
 const CALCULO: Readonly<Record<string, Calculo>> = {
+  /* ---------------------------------------------------------------- *
+   * As seis que só o chat pede (T-120)
+   * ---------------------------------------------------------------- *
+   *
+   * Nenhuma delas vira cartão, e é por isso que faltavam: `CALCULO` cresceu
+   * junto com os KPIs de T-115 e T-116. `getMetric` responde ao catálogo
+   * inteiro, e catálogo com métrica que não sabe se calcular é catálogo que
+   * promete o que não entrega.
+   */
+
+  /**
+   * A margem EBITDA.
+   *
+   * Estava calculada dentro de `paineis.ts`, para a linha de `fin-margens`.
+   * Uma métrica do catálogo definida fora do catálogo é a divergência de PR-1
+   * esperando acontecer: bastaria alguém corrigir uma das duas.
+   */
+  margem_ebitda: (r) => emPorcento(razao(ebitdaEmReais(r), receita(r))),
+
+  /** Vagas movimentadas: os quatro status somados. */
+  vagas_status: (r) =>
+    soma(
+      "vw_fato_vagas",
+      r,
+      (l) => l.abertas + l.emAndamento + l.fechadas + l.canceladas,
+    ),
+
+  /*
+   * As três distribuições devolvem **o quadro**, e não uma quebra.
+   *
+   * `getMetric` responde um número; a quebra é o que o painel desenha. A
+   * fórmula do catálogo diz exatamente isso — "headcount_fte quebrado por
+   * faixa etária" —, então o valor da métrica é o headcount e a quebra é a
+   * apresentação dele. Devolver a maior faixa, ou a contagem de faixas, seria
+   * responder outra pergunta.
+   *
+   * As três coincidirem em valor não é descuido: são três intenções diferentes
+   * sobre o mesmo agregado, e é o `rotulo` e a `formula` que as separam.
+   */
+  distribuicao_etaria: (r) => noFim("vw_fato_rh_mes", r, (l) => l.headcountFte),
+  distribuicao_uf: (r) => noFim("vw_fato_rh_mes", r, (l) => l.headcountFte),
+  perfil_quadro: (r) => noFim("vw_fato_rh_mes", r, (l) => l.headcountFte),
+
+  /**
+   * A mediana salarial, por interpolação dentro da faixa que contém o meio.
+   *
+   * Não é a média, e a diferença é o motivo de a métrica existir: uma folha com
+   * poucos salários muito altos tem média bem acima da mediana, e é a mediana
+   * que responde "quanto ganha quem está no meio".
+   *
+   * Como o quadro é conhecido por faixa e não por pessoa, a posição dentro da
+   * faixa é interpolada linearmente — o que assume distribuição uniforme dentro
+   * dela. É aproximação declarada, e está escrita na fórmula do catálogo.
+   */
+  mediana_salarial: (r) => medianaSalarial(r),
+
   headcount_fte: (r) => noFim("vw_fato_rh_mes", r, (l) => l.headcountFte),
 
   turnover_12m: turnover,
@@ -392,17 +497,36 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
 
   desligamentos: (r) => soma("vw_fato_rh_mes", r, (l) => l.desligamentos),
 
+  /*
+   * O custo do turnover sai de `vw_fato_turnover_custo`, e não mais de duas
+   * colunas de `vw_fato_rh_mes`.
+   *
+   * A suíte da regra 1 pegou: o cartão dizia 6,04 mi sob recorte de presencial
+   * e o painel da mesma tela dizia 12,4 mi. Duas fontes para a mesma medida —
+   * o cartão lia colunas do fato mensal, o painel lia a view que T-118.1
+   * declarou —, e o cartão reagia a modalidade porque o fato mensal a tem,
+   * enquanto a view não.
+   *
+   * As colunas que o cartão lia **não estavam na seção 10.1**: eram anteriores
+   * à view e sobreviveram sem declaração. Ler da view alinha os dois por
+   * construção e faz o número obedecer ao grão que o PRD publica.
+   */
   custo_do_turnover: (r) =>
+    emMilhoes(soma("vw_fato_turnover_custo", r, (l) => l.valor)),
+
+  /**
+   * Reposição: os componentes que a decomposição marca como tal.
+   *
+   * Rescisão é verba paga a quem sai; reposição é o que custa colocar outra
+   * pessoa no lugar. A separação vem de `CUSTO_DO_TURNOVER`, onde cada
+   * componente traz a marca — e é ela, não uma lista repetida aqui, que decide.
+   */
+  custo_de_reposicao: (r) =>
     emMilhoes(
-      soma(
-        "vw_fato_rh_mes",
-        r,
-        (l) => l.custoDeReposicao + l.custoDeDesligamento,
+      soma("vw_fato_turnover_custo", r, (l) =>
+        COMPONENTES_DE_REPOSICAO.has(l.componente) ? l.valor : 0,
       ),
     ),
-
-  custo_de_reposicao: (r) =>
-    emMilhoes(soma("vw_fato_rh_mes", r, (l) => l.custoDeReposicao)),
 
   vagas_abertas: (r) => soma("vw_fato_vagas", r, (l) => l.abertas),
   vagas_em_andamento: (r) => soma("vw_fato_vagas", r, (l) => l.emAndamento),

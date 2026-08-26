@@ -44,3 +44,10 @@ Thumbs.db
 
 # Configuracao local do agente
 .claude/settings.local.json
+
+# Relatorios de execucao da suite de contrato (T-123).
+#
+# Sao saida, nao fonte: o CI os publica como artefato e o repositorio nao os
+# versiona. Um relatorio commitado envelhece em silencio e passa a descrever
+# uma rodada que ninguem rodou.
+/relatorios/

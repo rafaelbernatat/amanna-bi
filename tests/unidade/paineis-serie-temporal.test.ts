@@ -20,7 +20,6 @@ import {
   calcularPainel,
   paineisComDesenho,
   PainelDesconhecido,
-  PainelSemDesenho,
 } from "@/acesso/fixtures/paineis";
 import { MESES_DO_PERIODO } from "@/acesso/fixtures/recorte";
 import type { Query } from "@/semantica/contrato";
@@ -49,9 +48,27 @@ const IDS = DAS_TRES_FORMAS.map((p) => p.id);
 
 const PERIODOS = ["12-meses", "6-meses", "4-trimestre", "dezembro"] as const;
 
+/**
+ * O envelope, estreitado às formas cartesianas.
+ *
+ * `calcularPainel` passou a devolver também as formas categóricas de T-118, e
+ * nove das doze variantes não têm `series`. Estreitar aqui é o oposto de um
+ * `as`: se um painel destas três formas deixar de trazer carga cartesiana, o
+ * teste falha com uma frase, em vez de o compilador ser calado.
+ */
+function cartesiano(id: string, q: Query) {
+  const envelope = calcularPainel(id, q);
+  if (!("categories" in envelope) || !("series" in envelope)) {
+    throw new Error(
+      `${id} devolveu um envelope sem carga cartesiana — forma ${envelope.forma}`,
+    );
+  }
+  return envelope;
+}
+
 /** As séries de um painel, como texto — para comparar dois recortes. */
 function assinatura(id: string, q: Query): string {
-  return JSON.stringify(calcularPainel(id, q).series.map((s) => s.values));
+  return JSON.stringify(cartesiano(id, q).series.map((s) => s.values));
 }
 
 /* ------------------------------------------------------------------ *
@@ -67,13 +84,21 @@ describe("todo painel responde com envelope válido", () => {
   const validar = new Ajv({ allErrors: true, strict: false }).compile(schema);
 
   it.each(IDS)("%s valida contra o JSON Schema publicado", (id) => {
-    const envelope = calcularPainel(id, BASE);
+    const envelope = cartesiano(id, BASE);
     const ok = validar(envelope);
     expect(ok, JSON.stringify(validar.errors?.slice(0, 3))).toBe(true);
   });
 
-  it("os 31 são exatamente os que sabem se desenhar", () => {
-    expect([...paineisComDesenho()].sort()).toEqual([...IDS].sort());
+  it("os 31 estão entre os que sabem se desenhar", () => {
+    /*
+     * Era igualdade até T-118, quando 34 painéis categóricos passaram a saber
+     * se desenhar também. A afirmação que continua sendo desta tarefa é a
+     * inclusão: nenhum dos 31 pode ter deixado de desenhar. A conta total dos
+     * que desenham é do arquivo de T-118, onde ela é o assunto.
+     */
+    const sabem = new Set(paineisComDesenho());
+    const sem = IDS.filter((id) => !sabem.has(id));
+    expect(sem).toEqual([]);
     expect(IDS).toHaveLength(31);
   });
 
@@ -85,7 +110,7 @@ describe("todo painel responde com envelope válido", () => {
   it.each(IDS)(
     "%s tem uma série por série declarada, do mesmo tamanho",
     (id) => {
-      const envelope = calcularPainel(id, BASE);
+      const envelope = cartesiano(id, BASE);
       const origem = origemDoPainel(id);
       expect(envelope.series).toHaveLength(origem?.series.length ?? -1);
       for (const serie of envelope.series) {
@@ -104,14 +129,21 @@ describe("todo painel responde com envelope válido", () => {
     );
   });
 
-  it("painel de forma que ainda não tem desenho lança nomeando a tarefa", () => {
-    const deOutraForma = REGISTRO_DE_PAINEIS.find(
-      (p) => !FORMAS_DE_SERIE_TEMPORAL.some((f) => f === p.forma),
-    );
-    expect(deOutraForma).toBeDefined();
-    expect(() => calcularPainel(deOutraForma?.id ?? "", BASE)).toThrowError(
-      PainelSemDesenho,
-    );
+  it("todas as doze formas desenham — não sobrou nenhuma recusando", () => {
+    /*
+     * Este caso já afirmou o contrário duas vezes.
+     *
+     * Nasceu como "painel de outra forma lança", virou "painel das quatro
+     * formas de T-119 lança", e agora afirma que não há mais nenhuma: com as
+     * três tarefas de getPanel fechadas, todo painel do registro desenha.
+     *
+     * A recusa por forma não some do código — ela continua lá para a próxima
+     * forma que alguém acrescentar ao Anexo A.1 sem implementar. O que este
+     * teste registra é que hoje ela não tem a quem se aplicar.
+     */
+    const sabem = new Set(paineisComDesenho());
+    const semDesenho = REGISTRO_DE_PAINEIS.filter((p) => !sabem.has(p.id));
+    expect(semDesenho.map((p) => p.id)).toEqual([]);
   });
 });
 
@@ -234,13 +266,13 @@ describe("as categorias respeitam o recorte de período", () => {
   it.each(temporais.flatMap((id) => PERIODOS.map((p) => [id, p] as const)))(
     "%s em %s tem uma categoria por mês da janela",
     (id, periodo) => {
-      const envelope = calcularPainel(id, { ...BASE, periodo });
+      const envelope = cartesiano(id, { ...BASE, periodo });
       expect(envelope.categories).toHaveLength(MESES_DO_PERIODO[periodo] ?? -1);
     },
   );
 
   it.each(temporais)("%s enumera meses do ano pedido, em ordem", (id) => {
-    const cats = calcularPainel(id, BASE).categories;
+    const cats = cartesiano(id, BASE).categories;
     expect(cats[0]).toBe("2026-01");
     expect(cats.at(-1)).toBe("2026-12");
     expect([...cats].sort()).toEqual([...cats]);
@@ -264,8 +296,8 @@ describe("as categorias respeitam o recorte de período", () => {
   it.each(naoTemporais)(
     "%s mantém as categorias entre 12 meses e o mês",
     (id) => {
-      const doze = calcularPainel(id, BASE).categories;
-      const dezembro = calcularPainel(id, {
+      const doze = cartesiano(id, BASE).categories;
+      const dezembro = cartesiano(id, {
         ...BASE,
         periodo: "dezembro",
       }).categories;
@@ -277,10 +309,9 @@ describe("as categorias respeitam o recorte de período", () => {
     // O aging é estoque no fim da janela e as quatro janelas terminam em
     // dezembro, então ele é o contraexemplo errado. `tov-custo` é fluxo: o
     // custo de três meses é menor que o de doze.
-    const doze = calcularPainel("tov-custo", BASE).total ?? 0;
+    const doze = cartesiano("tov-custo", BASE).total ?? 0;
     const tri =
-      calcularPainel("tov-custo", { ...BASE, periodo: "4-trimestre" }).total ??
-      0;
+      cartesiano("tov-custo", { ...BASE, periodo: "4-trimestre" }).total ?? 0;
     expect(tri).toBeLessThan(doze);
     expect(tri).toBeGreaterThan(0);
   });
@@ -298,13 +329,13 @@ describe("as categorias respeitam o recorte de período", () => {
    * dado que o filtro excluiu.
    */
   it("o painel diário mostra trinta dias úteis, como o título promete", () => {
-    const envelope = calcularPainel("cx-diario", BASE);
+    const envelope = cartesiano("cx-diario", BASE);
     expect(envelope.categories).toHaveLength(30);
     expect(envelope.categories.at(-1)).toBe("2026-12-31");
   });
 
   it("e devolve o que existe quando a janela é mais curta que trinta", () => {
-    const dezembro = calcularPainel("cx-diario", {
+    const dezembro = cartesiano("cx-diario", {
       ...BASE,
       periodo: "dezembro",
     });
@@ -328,7 +359,7 @@ describe("o total do painel", () => {
      * passaria a afirmar algo que não existe. O total é a mesma medida sobre a
      * janela inteira — que é como o cartão da mesma tela a calcula.
      */
-    const envelope = calcularPainel("int-pct", BASE);
+    const envelope = cartesiano("int-pct", BASE);
     const soma = (envelope.series[0]?.values ?? []).reduce(
       (a: number, v: number | null) => a + (v ?? 0),
       0,
@@ -339,12 +370,12 @@ describe("o total do painel", () => {
   });
 
   it("de estoque é o saldo do fim, e não a soma dos doze saldos", () => {
-    const envelope = calcularPainel("cx-saldo", BASE);
+    const envelope = cartesiano("cx-saldo", BASE);
     expect(envelope.total).toBe(envelope.series[0]?.values.at(-1));
   });
 
   it("de partição é a soma das partes", () => {
-    const envelope = calcularPainel("cr-aging", BASE);
+    const envelope = cartesiano("cr-aging", BASE);
     const soma = (envelope.series[0]?.values ?? []).reduce(
       (a: number, v: number | null) => a + (v ?? 0),
       0,

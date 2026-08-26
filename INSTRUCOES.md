@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 53 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 58 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 17 (4 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 22 (4 resolvidos) | 7 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **53** | **29** | **122** |
+| **Total** | **58** | **30** | **122** |
 
 **Por responsável**
 
@@ -51,14 +51,15 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|
 | Produto | 14 |
 | TI do cliente | 13 |
-| Controladoria | 11 |
-| Engenharia | 6 |
-| Comercial | 4 |
+| Controladoria | 12 |
+| Engenharia | 7 |
+| Comercial | 5 |
+| RH | 2 |
 | Financeiro | 1 |
 | Juridico do cliente | 1 |
 | Produto, com Controladoria e RH | 1 |
 | Produto, com Engenharia | 1 |
-| RH | 1 |
+| RH · **Consultar:** Jurídico / DPO | 1 |
 
 **Os cinco que mais destravam** — se a fila estiver parada, comece por estes:
 
@@ -76,7 +77,119 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*17 itens · 2 P0 abertos · 8 P1 abertos · 3 P2 abertos · 4 resolvidos*
+*22 itens · 3 P0 abertos · 11 P1 abertos · 4 P2 abertos · 4 resolvidos*
+
+### [ ] H-58 · Acrescentar `contrato` às checagens obrigatórias em main
+
+`P0` · **Responsável:** Engenharia
+
+**O que fazer**
+
+O workflow de CI passou de cinco jobs para seis: T-123 acrescentou `contrato`, que roda a suíte da seção 9.2 sobre os 768 recortes. O ruleset `21192375` em `main` — criado por H-02 — exige apenas os cinco antigos. Enquanto o sexto não for marcado, ele **roda e reporta, mas não bloqueia merge**: um pull request que quebre a reconciliação entre cartão e painel continua mesclável, com o vermelho visível e inofensivo ao lado do botão verde.
+
+Alguém com permissão de administrador precisa entrar em Settings > Rules > Rulesets, abrir a regra de `main` e acrescentar `contrato` à lista de required status checks. O nome precisa ser idêntico ao nome do job em `.github/workflows/ci.yml`.
+
+Valide como H-02 pede: abra um pull request de teste que quebre a suíte de contrato de propósito — trocar a fonte de um KPI para uma coluna diferente da do painel que o detalha basta — e confirme que o botão de merge fica bloqueado. Depois feche o pull request sem mesclar.
+
+> **Por que isto não é detalhe.** A suíte de contrato é o único lugar onde uma divergência de definição aparece antes de virar número na tela de alguém. Ela achou uma divergência real no primeiro dia em que rodou (duas fontes para o custo do turnover, em T-122). Um portão que só reporta transforma esse achado em aviso, e aviso convive com merge.
+
+| | |
+|---|---|
+| **Resultado esperado** | Ruleset de `main` exigindo seis checagens — typecheck, lint, teste, build, e2e e contrato — comprovado por um pull request de teste com a suíte de contrato quebrada de propósito que não pode ser mesclado |
+| **Onde o resultado vai** | Configuração do repositório em github.com/rafaelbernatat/amanna-bi (Settings > Rules), casando com os nomes dos jobs em `.github/workflows/ci.yml` |
+| **Destrava** | Nada de novo — endurece o portão que H-02 montou, do qual T-006 e T-123 dependem |
+
+---
+
+### [ ] H-57 · Definir a segmentação comercial de cliente
+
+`P2` · **Responsável:** Comercial
+
+**O que fazer**
+
+O painel `fat-segm` reparte a carteira por segmento — no protótipo, Indústria, Varejo, Serviços, Governo e Outros. Segmento não era atributo de cliente nenhum, e T-118.1 declarou a coluna em `vw_fato_faturamento_cliente`. Falta dizer quem classifica e com que critério.
+
+Duas perguntas que mudam o desenho:
+
+1. **Um cliente pode estar em mais de um segmento?** Uma rede que tem loja e fábrica é varejo ou indústria? Se a resposta for "os dois", a rosca deixa de somar 100% e o painel precisa de outra forma — decida antes, não depois.
+2. **"Outros" é categoria ou é falta de classificação?** São coisas diferentes e a tela as mostra igual. Cliente ainda não classificado pertence a "não classificado", e a diferença aparece quando alguém pergunta por que "Outros" cresceu.
+
+**Enquanto não for decidido:** a fixture usa os cinco segmentos do protótipo e reparte a carteira para reproduzir as participações que ele mostra.
+
+| | |
+|---|---|
+| **Resultado esperado** | Lista de segmentos, critério de enquadramento, responsável pela classificação e o tratamento de cliente não classificado |
+| **Onde o resultado vai** | docs/decisoes/, a coluna de segmento na seção 10.1 do PRD, e o mapeamento de F2 |
+| **Destrava** | o painel fat-segm deixa de mostrar valor de protótipo |
+
+### [ ] H-56 · Mapear o plano de contas nas naturezas de saída de caixa
+
+`P1` · **Responsável:** Controladoria
+
+**O que fazer**
+
+O painel `cx-cat` mostra o desembolso anual por natureza — no protótipo, matéria-prima, pessoal, juros, serviços de terceiros, impostos, fretes, marketing e outros. `vw_fato_fin_mes` traz a saída de caixa como um número só, e T-118.1 declarou `vw_fato_saida_categoria` para abri-la.
+
+O que falta é o **mapeamento**: quais contas do plano do cliente caem em cada natureza. Não é trabalho de engenharia — é a Controladoria dizendo, conta a conta, onde cada uma entra. Sem isso a view existe e não tem como ser preenchida.
+
+Dois cuidados que a leitura do painel exige:
+
+1. **A soma das naturezas tem de ser a saída de caixa do mês**, e não uma seleção das maiores. Se algumas contas ficarem de fora, "Outros" precisa carregá-las — senão o painel mostra uma empresa que gasta menos do que gasta.
+2. **Juros são desembolso, não despesa financeira contabilizada.** A nota do protótipo diz "juros já são a 3ª maior saída"; essa leitura só vale se a natureza for de caixa e não de competência. Diga qual das duas.
+
+**Enquanto não for decidido:** a fixture usa as oito naturezas do protótipo, repartidas para somar exatamente a saída de caixa de cada mês.
+
+| | |
+|---|---|
+| **Resultado esperado** | Mapeamento conta a conta para as naturezas, com a regra de "Outros" escrita e a base (caixa ou competência) definida |
+| **Onde o resultado vai** | docs/decisoes/, e a view vw_fato_saida_categoria em F2 |
+| **Destrava** | o painel cx-cat deixa de mostrar valor de protótipo |
+
+### [ ] H-55 · Definir as categorias de gênero e o tratamento de "não informado"
+
+`P1` · **Responsável:** RH · **Consultar:** Jurídico / DPO
+
+**O que fazer**
+
+A intenção 19 do Anexo B (`perfil_quadro`) pede o quadro por gênero, e os painéis `col-perfil` e `tov-corte` a mostram. T-118.1 declarou gênero como dimensão de `vw_fato_rh_perfil` e de `vw_fato_rh_desligamento`. Falta o que só o RH com o Jurídico pode dizer.
+
+1. **Quais categorias.** O protótipo usa "Masculino", "Feminino" e "Outro / n/i". Juntar "outro" com "não informado" numa categoria só apaga a diferença entre uma pessoa que se declarou e uma que não foi perguntada — e é a segunda que indica problema de cadastro, não de composição.
+2. **A base legal do tratamento.** Gênero é dado pessoal, e o painel o agrega. A seção 11 já exige que nenhum grupo desça de cinco pessoas (T-151 implementa), mas a base legal do uso e a finalidade declarada são decisão de quem responde pela LGPD, não de quem programa.
+3. **Se o dado existe no cadastro.** Pode simplesmente não estar preenchido para parte do quadro. Nesse caso o painel mostra a cobertura, e não uma composição que finge estar completa.
+
+**Por que não decidi:** qualquer escolha minha de categoria vira, na tela, uma afirmação sobre como a empresa classifica as pessoas dela. Não é decisão de engenharia em nenhuma leitura.
+
+**Enquanto não for decidido:** a fixture usa as três categorias do protótipo.
+
+| | |
+|---|---|
+| **Resultado esperado** | Categorias definidas com a separação entre "outro" e "não informado" resolvida, base legal registrada e confirmação de que o campo existe no cadastro |
+| **Onde o resultado vai** | docs/decisoes/, a dimensão de gênero na seção 10.1, e o mapeamento de F2 |
+| **Destrava** | col-perfil e tov-corte deixam de mostrar valor de protótipo |
+
+### [ ] H-54 · Definir a taxonomia de tipo de desligamento
+
+`P1` · **Responsável:** RH
+
+**O que fazer**
+
+O painel `tov-tipos` reparte as saídas por tipo — no protótipo, Voluntário, Sem justa causa, Aposentadoria e Outros. T-118.1 declarou `vw_fato_rh_desligamento` com a dimensão de tipo. Falta a lista fechada e a regra de enquadramento.
+
+A leitura do painel depende inteiramente dela: saída voluntária pede retenção, saída involuntária pede seleção, e a nota do protótipo — "62% de saídas voluntárias indica problema de retenção, não de gestão de performance" — vira o contrário se a classificação mudar.
+
+Três casos que a lista precisa resolver:
+
+1. **Acordo entre as partes** (art. 484-A). É voluntário ou involuntário? Contam-se hoje como voluntário em muitas empresas e o número de retenção fica melhor do que é.
+2. **Fim de contrato temporário ou de experiência.** Não é nenhum dos dois, e jogá-lo em "Outros" some com um volume que às vezes é grande.
+3. **Transferência interna.** Já está registrada como **H-06** (decisão D-P2, tarefa T-007) — a resposta lá vale aqui, e as duas não podem divergir.
+
+**Enquanto não for decidido:** a fixture usa os quatro tipos do protótipo, repartidos de forma a somar exatamente os 145 desligamentos do período.
+
+| | |
+|---|---|
+| **Resultado esperado** | Lista fechada de tipos com regra de enquadramento escrita, resolvendo acordo, fim de contrato e transferência interna, coerente com o que D-P2 decidir |
+| **Onde o resultado vai** | docs/decisoes/, catalogo/metricas.yaml na métrica de turnover, e a view vw_fato_rh_desligamento em F2 |
+| **Destrava** | o painel tov-tipos deixa de mostrar valor de protótipo |
 
 ### [ ] H-53 · Dizer de onde vem o rating de crédito do cliente e quais são as faixas
 

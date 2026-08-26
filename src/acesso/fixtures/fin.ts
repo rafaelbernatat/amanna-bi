@@ -36,6 +36,11 @@
  * apresentação, que pela regra 2 do contrato só aparece na formatação.
  */
 
+import {
+  CLIENTES_A_RECEBER,
+  FORNECEDORES_A_PAGAR,
+  NATUREZAS_DE_SAIDA,
+} from "@/acesso/fixtures/contraparte";
 import { fatiaDaEntidade } from "@/acesso/fixtures/entidade";
 import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/fixtures/eixos";
 import {
@@ -346,9 +351,34 @@ export type LinhaContas = {
   readonly mes: string;
   readonly entidade: string;
   readonly faixaDeAging: string;
+  /**
+   * Quem deve ou a quem se deve (T-118.1).
+   *
+   * Uma linha é de um cliente **ou** de um fornecedor, nunca dos dois: a
+   * contraparte de quem se recebe não é a mesma de quem se paga. Por isso a
+   * linha de cliente tem `aPagar` zero e a de fornecedor tem `aReceber` zero —
+   * zero de verdade, e não ausência: não há saldo a pagar com um cliente.
+   */
+  readonly contraparte: string;
   readonly aReceber: number;
   readonly aPagar: number;
 };
+
+/**
+ * Reparte um saldo entre contrapartes, com a soma exata.
+ *
+ * Sem repartição exata o painel mostraria uma carteira diferente da que o
+ * cartão de inadimplência calcula — dois números para a mesma dívida.
+ */
+function porContraparte(
+  saldo: number,
+  lista: readonly { readonly codigo: string; readonly peso: number }[],
+): readonly number[] {
+  return repartir(
+    saldo,
+    lista.map((c) => c.peso),
+  );
+}
 
 export const VW_FATO_CONTAS: readonly LinhaContas[] = MESES.flatMap((mes, m) =>
   FAIXAS_DE_AGING.flatMap((faixa) => {
@@ -360,15 +390,71 @@ export const VW_FATO_CONTAS: readonly LinhaContas[] = MESES.flatMap((mes, m) =>
       saldoDoMes(emReais(faixa.aPagar), CMV, m),
       "contas",
     );
-    return ENTIDADES_ARMAZENADAS.map((entidade, e) => ({
-      mes,
-      entidade,
-      faixaDeAging: faixa.codigo,
-      aReceber: receber[e] ?? 0,
-      aPagar: pagar[e] ?? 0,
-    }));
+    return ENTIDADES_ARMAZENADAS.flatMap((entidade, e) => {
+      const doCliente = porContraparte(receber[e] ?? 0, CLIENTES_A_RECEBER);
+      const doFornecedor = porContraparte(pagar[e] ?? 0, FORNECEDORES_A_PAGAR);
+      return [
+        ...CLIENTES_A_RECEBER.map((c, i) => ({
+          mes,
+          entidade,
+          faixaDeAging: faixa.codigo,
+          contraparte: c.codigo,
+          aReceber: doCliente[i] ?? 0,
+          aPagar: 0,
+        })),
+        ...FORNECEDORES_A_PAGAR.map((c, i) => ({
+          mes,
+          entidade,
+          faixaDeAging: faixa.codigo,
+          contraparte: c.codigo,
+          aReceber: 0,
+          aPagar: doFornecedor[i] ?? 0,
+        })),
+      ];
+    });
   }),
 );
+
+/* ------------------------------------------------------------------ *
+ * vw_fato_saida_categoria
+ * ------------------------------------------------------------------ */
+
+export type LinhaSaidaCategoria = {
+  readonly mes: string;
+  readonly entidade: string;
+  readonly categoria: string;
+  /** Desembolso do mês naquela natureza, em reais. */
+  readonly valor: number;
+};
+
+/**
+ * A saída de caixa aberta por natureza.
+ *
+ * A soma das naturezas de um mês é **exatamente** a coluna `saidasDeCaixa` de
+ * `vw_fato_fin_mes`. Não é uma segunda contabilidade: é a mesma saída, dita com
+ * mais detalhe. O mapeamento conta a conta é H-56.
+ */
+export const VW_FATO_SAIDA_CATEGORIA: readonly LinhaSaidaCategoria[] =
+  VW_FATO_FIN_MES.flatMap((linha) => {
+    const partes = repartir(
+      linha.saidasDeCaixa,
+      NATUREZAS_DE_SAIDA.map((n) => n.peso),
+    );
+    /*
+     * Percorre as partes, e não os índices delas.
+     *
+     * `partes[i] ?? 0` transformaria natureza sem parcela em "desembolso zero",
+     * que é afirmação sobre o negócio e não sobre a estrutura de dados — e a
+     * regra de T-141 reprova, com razão. Iterando o vetor, o valor existe por
+     * construção.
+     */
+    return partes.map((valor, i) => ({
+      mes: linha.mes,
+      entidade: linha.entidade,
+      categoria: NATUREZAS_DE_SAIDA[i]?.codigo ?? "",
+      valor,
+    }));
+  });
 
 /* ------------------------------------------------------------------ *
  * vw_fato_faturamento_cliente
@@ -397,6 +483,13 @@ export type LinhaFaturamentoCliente = {
    * crédito própria ou de birô externo, e as três dão escalas diferentes.
    */
   readonly rating: string;
+  /**
+   * Segmento comercial do cliente (T-118.1).
+   *
+   * Mesma natureza do rating: qualificação de quem já está na view, e não fato
+   * novo. Quem classifica e com que critério é **H-57**.
+   */
+  readonly segmento: string;
   /** Receita do mês, em reais. */
   readonly receita: number;
   /** Margem de contribuição em pontos-base, para somar sem perder casa. */
@@ -429,6 +522,7 @@ export const VW_FATO_FATURAMENTO_CLIENTE: readonly LinhaFaturamentoCliente[] =
         entidade,
         cliente: cliente.codigo,
         rating: cliente.rating,
+        segmento: cliente.segmento,
         receita: receita[e] ?? 0,
         margemBase: Math.round(
           ((receita[e] ?? 0) * cliente.margem) / BASE_DA_MARGEM,

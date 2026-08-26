@@ -5,6 +5,7 @@ import prettierRecomendado from "eslint-plugin-prettier/recommended";
 
 import pluginLiteral from "./ferramentas/eslint/sem-literal-numerico.mjs";
 import regraNumeroMagico from "./ferramentas/eslint/sem-numero-magico.mjs";
+import { LISTA_BRANCA } from "./ferramentas/eslint/lista-branca-numero-magico.mjs";
 
 /**
  * O plugin local, com as duas regras de RF-07.
@@ -97,7 +98,7 @@ export default tseslint.config(
     ignores: ["src/apresentacao/graficos/nucleo.ts"],
     plugins: { painel },
     rules: {
-      "painel/sem-numero-magico": ["error", {}],
+      "painel/sem-numero-magico": ["error", { allowlist: LISTA_BRANCA }],
     },
   },
 

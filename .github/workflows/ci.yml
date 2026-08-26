@@ -1,10 +1,10 @@
 # Pipeline de qualidade (T-006).
 #
-# Os nomes dos cinco jobs — typecheck, lint, teste, build e e2e — sao os mesmos
-# que precisam ser marcados como required status checks na regra da branch main
-# (item H-02 de INSTRUCOES.md). Renomear um job aqui sem renomear la faz a
-# checagem obrigatoria apontar para um job que nao existe mais, e o portao
-# silenciosamente para de reprovar.
+# Os nomes dos seis jobs — typecheck, lint, teste, build, e2e e contrato — sao
+# os mesmos que precisam ser marcados como required status checks na regra da
+# branch main (item H-02 de INSTRUCOES.md). Renomear um job aqui sem renomear
+# la faz a checagem obrigatoria apontar para um job que nao existe mais, e o
+# portao silenciosamente para de reprovar.
 name: CI
 
 on:
@@ -136,3 +136,44 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  # A suite de contrato da secao 9.2 (T-123).
+  #
+  # Job proprio, e nao um passo dentro de `teste`, por duas razoes. A primeira e
+  # de leitura: quando ela reprova, o que quebrou nao e "um teste" -- e o
+  # contrato entre o cartao e o painel, que e outra conversa e outro dono. A
+  # segunda e de tempo: ela percorre 768 recortes e leva ~40 s, e pendurada no
+  # `teste` faria a suite de unidade parecer lenta pelo motivo errado.
+  #
+  # A fonte sai de DATA_SOURCE, e nao de um literal aqui. Repetir "fixtures" no
+  # flag criaria duas verdades no mesmo job: trocar a variavel deixaria o job
+  # rodando fixtures com nome de warehouse. O RF-21 e justamente que a suite
+  # passa identica nas duas fontes -- em F2, so esta variavel muda.
+  contrato:
+    name: contrato
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Suite de contrato
+        run: npm run contrato -- --source=$DATA_SOURCE
+
+      # Arquivado SEMPRE, e nao so no vermelho.
+      #
+      # O relatorio de uma rodada verde e o que diz quanto ela verificou: 71 de
+      # 71 paineis percorridos, 40 de 71 conferidos por alguma regra, e os 31
+      # restantes nomeados um a um. E comparando duas rodadas verdes que se
+      # descobre que a cobertura encolheu -- um artefato que so existe no
+      # vermelho nunca responde "o que deixou de ser olhado".
+      - name: Arquivar o relatorio
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-de-contrato
+          path: relatorios/contrato/
+          retention-days: 30

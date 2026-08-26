@@ -48,12 +48,33 @@ export type EixoDePainel =
   | "dia-util"
   | "ano"
   | "area"
+  | "cargo"
+  | "categoria-de-enps"
   | "centro-de-custo"
   | "componente"
+  | "componente-da-folha"
+  | "contraparte"
+  | "corte-de-turnover"
+  | "escolaridade"
+  | "estatistica"
   | "faixa-de-aging"
   | "faixa-de-rating"
   | "faixa-de-tempo-de-casa"
-  | "faixa-salarial";
+  | "faixa-etaria"
+  | "faixa-salarial"
+  | "fonte-de-candidato"
+  | "genero"
+  | "grupo-de-perfil"
+  | "modalidade-de-trilha"
+  | "natureza-de-saida"
+  | "passo-do-funil"
+  | "segmento"
+  | "status-de-vaga"
+  | "tipo-de-saida"
+  | "uf"
+  | "degrau-da-ponte"
+  | "marco-do-ciclo"
+  | "ponto";
 
 /** Os eixos cujas categorias são a janela de tempo do recorte. */
 export const EIXOS_TEMPORAIS: readonly EixoDePainel[] = ["mes", "dia-util"];
@@ -71,6 +92,14 @@ export type SerieDeclarada = {
    */
   readonly unidade: Unidade;
   readonly papel: PapelDeSerie;
+  /**
+   * A fórmula **deste** número, quando ele tem uma própria.
+   *
+   * Só os painéis de `estatisticas` usam: ali cada número é de uma medida
+   * diferente, e o princípio PR-3 vale por número e não por painel. Nas demais
+   * formas a fórmula do painel serve a todas as séries, e este campo é nulo.
+   */
+  readonly formulaPropria: Formula | null;
 };
 
 export type OrigemDePainel = {
@@ -85,12 +114,26 @@ export type OrigemDePainel = {
 
 /** Atalho: uma série de valor. */
 function valor(nome: string, unidade: Unidade): SerieDeclarada {
-  return { nome, unidade, papel: "valor" };
+  return { nome, unidade, papel: "valor", formulaPropria: null };
 }
 
 /** Atalho: uma linha de referência — meta, zona, média. */
 function referencia(nome: string, unidade: Unidade): SerieDeclarada {
-  return { nome, unidade, papel: "referencia" };
+  return { nome, unidade, papel: "referencia", formulaPropria: null };
+}
+
+/** Atalho: um número de painel de estatísticas, com fórmula própria. */
+function estatistica(
+  nome: string,
+  unidade: Unidade,
+  texto: string,
+): SerieDeclarada {
+  return {
+    nome,
+    unidade,
+    papel: "valor",
+    formulaPropria: formula(texto, nome),
+  };
 }
 
 /**
@@ -522,6 +565,614 @@ export const ORIGEM_DOS_PAINEIS: readonly OrigemDePainel[] = [
       referencia("Média do período", "pct"),
     ],
   },
+
+  /* ================================================================ *
+   * T-118 — as formas categóricas
+   * ================================================================ */
+
+  /* ---------------- rh/visao ---------------- */
+  {
+    painel: "rh-flash",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "três leituras do período, cada uma com a fórmula do próprio número",
+      "rh-flash",
+    ),
+    series: [
+      estatistica(
+        "Saldo do período",
+        "contagem",
+        "admissões menos desligamentos no recorte",
+      ),
+      estatistica(
+        "Melhor retenção",
+        "pct",
+        "a área com a menor taxa de saída do recorte",
+      ),
+      estatistica(
+        "Maior risco",
+        "pct",
+        "a área com a maior taxa de saída do recorte",
+      ),
+    ],
+  },
+  {
+    painel: "rh-areas",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula(
+      "headcount FTE por área, no último mês do recorte",
+      "rh-areas",
+    ),
+    series: [valor("FTE", "FTE")],
+  },
+
+  /* ---------------- rh/colab ---------------- */
+  {
+    painel: "col-area",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula(
+      "headcount FTE por área, no último mês do recorte",
+      "col-area",
+    ),
+    series: [valor("FTE", "FTE")],
+  },
+  {
+    painel: "col-perfil",
+    views: ["vw_fato_rh_perfil", "vw_fato_rh_mes"],
+    cruzamento:
+      "gênero é dimensão do perfil e modalidade é chave do fato mensal — os " +
+      "dois cortes vivem em views diferentes e o painel os põe lado a lado",
+    eixo: "grupo-de-perfil",
+    formula: formula(
+      "repartição de 100% do quadro dentro de cada corte, no fim do recorte",
+      "col-perfil",
+    ),
+    series: [valor("Gênero", "pct"), valor("Modalidade", "pct")],
+  },
+  {
+    painel: "col-idade",
+    views: ["vw_fato_rh_perfil"],
+    cruzamento: null,
+    eixo: "faixa-etaria",
+    formula: formula(
+      "headcount FTE por faixa etária, no último mês do recorte",
+      "col-idade",
+    ),
+    series: [valor("FTE", "FTE")],
+  },
+  {
+    painel: "col-escol",
+    views: ["vw_fato_rh_perfil"],
+    cruzamento: null,
+    eixo: "escolaridade",
+    formula: formula(
+      "headcount FTE por escolaridade, no último mês do recorte",
+      "col-escol",
+    ),
+    series: [valor("FTE", "FTE")],
+  },
+  {
+    painel: "col-geo",
+    views: ["vw_fato_rh_perfil"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "leituras da distribuição do quadro por UF, no fim do recorte",
+      "col-geo",
+    ),
+    series: [
+      estatistica(
+        "Estados com presença",
+        "contagem",
+        "UFs com ao menos uma pessoa no recorte",
+      ),
+      estatistica(
+        "São Paulo",
+        "pct",
+        "quadro em SP dividido pelo quadro do recorte",
+      ),
+      estatistica(
+        "Top 4 estados",
+        "pct",
+        "soma das quatro maiores UFs dividida pelo quadro do recorte",
+      ),
+    ],
+  },
+
+  /* ---------------- rh/turnover ---------------- */
+  {
+    painel: "tov-tipos",
+    views: ["vw_fato_rh_desligamento"],
+    cruzamento: null,
+    eixo: "tipo-de-saida",
+    formula: formula(
+      "participação de cada tipo de saída no total de desligamentos do recorte",
+      "tov-tipos",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+  {
+    painel: "tov-area",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula(
+      "turnover da área = desligamentos da área ÷ headcount médio da área",
+      "tov-area",
+    ),
+    series: [valor("Turnover", "pct"), referencia("Meta anual", "pct")],
+  },
+  {
+    painel: "tov-corte",
+    views: ["vw_fato_rh_desligamento", "vw_fato_rh_perfil"],
+    cruzamento:
+      "as saídas de cada corte vêm de uma view e o quadro que serve de " +
+      "denominador vem da outra; sem as duas a taxa não existe",
+    eixo: "corte-de-turnover",
+    formula: formula(
+      "turnover do corte = desligamentos do corte ÷ quadro do corte",
+      "tov-corte",
+    ),
+    series: [valor("Turnover", "pct"), referencia("Meta anual", "pct")],
+  },
+  {
+    painel: "tov-resumo",
+    views: ["vw_fato_turnover_custo"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "o custo do turnover separado entre o que é rescisão e o que é reposição",
+      "tov-resumo",
+    ),
+    series: [
+      estatistica(
+        "Custo total com rescisões",
+        "BRL_mi",
+        "soma dos componentes de rescisão no recorte",
+      ),
+      estatistica(
+        "Custo estimado de reposição",
+        "BRL_mi",
+        "soma de recrutamento, ramp-up e produtividade perdida no recorte",
+      ),
+      estatistica(
+        "Total",
+        "BRL_mi",
+        "soma dos quatro componentes do custo do turnover no recorte",
+      ),
+    ],
+  },
+
+  /* ---------------- rh/recrut ---------------- */
+  {
+    painel: "rec-status",
+    views: ["vw_fato_vagas"],
+    cruzamento: null,
+    eixo: "status-de-vaga",
+    formula: formula(
+      "participação de cada status no total de vagas movimentadas no recorte",
+      "rec-status",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+  {
+    painel: "rec-funil",
+    views: ["vw_fato_vagas"],
+    cruzamento: null,
+    eixo: "passo-do-funil",
+    formula: formula(
+      "soma de cada etapa do funil no recorte, da candidatura à contratação",
+      "rec-funil",
+    ),
+    series: [valor("Pessoas", "contagem")],
+  },
+  {
+    painel: "rec-fontes",
+    views: ["vw_fato_vagas_fonte"],
+    cruzamento: null,
+    eixo: "fonte-de-candidato",
+    formula: formula(
+      "participação de cada fonte no total de contratados do recorte",
+      "rec-fontes",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+  {
+    painel: "rec-tempo",
+    views: ["vw_fato_vagas"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula(
+      "dias médios da área = dias somados da área ÷ vagas fechadas da área",
+      "rec-tempo",
+    ),
+    series: [valor("Dias", "dias"), referencia("Meta", "dias")],
+  },
+  {
+    painel: "rec-resumo",
+    views: ["vw_fato_vagas"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "o fechamento do ciclo de recrutamento no recorte, número a número",
+      "rec-resumo",
+    ),
+    series: [
+      estatistica(
+        "Vagas movimentadas",
+        "contagem",
+        "abertas, em andamento, fechadas e canceladas no recorte",
+      ),
+      estatistica(
+        "Taxa de conversão",
+        "pct",
+        "vagas fechadas ÷ vagas movimentadas no recorte",
+      ),
+      estatistica(
+        "Custo médio de contratação",
+        "BRL_mi",
+        "custo de recrutamento ÷ contratados no recorte",
+      ),
+      estatistica(
+        "Tempo médio",
+        "dias",
+        "dias somados ÷ vagas fechadas no recorte",
+      ),
+    ],
+  },
+
+  /* ---------------- rh/trein ---------------- */
+  {
+    painel: "tre-conclusao",
+    views: ["vw_fato_treinamento"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "trilhas concluídas contra iniciadas no recorte",
+      "tre-conclusao",
+    ),
+    series: [
+      estatistica(
+        "Concluídas",
+        "pct",
+        "trilhas concluídas ÷ trilhas iniciadas no recorte",
+      ),
+      estatistica(
+        "Em andamento",
+        "pct",
+        "100% menos a participação de concluídas",
+      ),
+    ],
+  },
+  {
+    painel: "tre-modal",
+    views: ["vw_fato_treinamento"],
+    cruzamento: null,
+    eixo: "modalidade-de-trilha",
+    formula: formula(
+      "repartição de 100% das horas do recorte entre as modalidades de trilha",
+      "tre-modal",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+  {
+    painel: "tre-conclmod",
+    views: ["vw_fato_treinamento"],
+    cruzamento: null,
+    eixo: "modalidade-de-trilha",
+    formula: formula(
+      "conclusão da modalidade = concluídas ÷ iniciadas naquela modalidade",
+      "tre-conclmod",
+    ),
+    series: [valor("Conclusão", "pct")],
+  },
+  {
+    painel: "tre-invest",
+    views: ["vw_fato_treinamento", "vw_fato_rh_mes"],
+    cruzamento:
+      "o investimento e as horas vêm do LMS; a participação precisa do quadro " +
+      "como denominador, que só o fato mensal tem",
+    eixo: "estatistica",
+    formula: formula(
+      "as três leituras do investimento em desenvolvimento no recorte",
+      "tre-invest",
+    ),
+    series: [
+      estatistica(
+        "Investimento total",
+        "BRL_mi",
+        "soma do investimento em treinamento no recorte",
+      ),
+      estatistica(
+        "Horas realizadas",
+        "horas",
+        "soma das horas de treinamento no recorte",
+      ),
+      estatistica(
+        "Participação",
+        "pct",
+        "participantes ÷ headcount FTE no último mês do recorte",
+      ),
+    ],
+  },
+  {
+    painel: "tre-area",
+    views: ["vw_fato_treinamento"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula("soma das horas de treinamento por área", "tre-area"),
+    series: [valor("Horas", "horas")],
+  },
+
+  /* ---------------- rh/engaj ---------------- */
+  {
+    painel: "eng-area",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula(
+      "engajamento da área = pontos da pesquisa ÷ respondentes da área",
+      "eng-area",
+    ),
+    series: [valor("Engajamento", "pct")],
+  },
+  {
+    painel: "eng-cat",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "categoria-de-enps",
+    formula: formula(
+      "repartição de 100% dos respondentes entre promotores, neutros e detratores",
+      "eng-cat",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+  {
+    painel: "eng-clima",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "as leituras de clima do recorte, cada uma com a própria fórmula",
+      "eng-clima",
+    ),
+    series: [
+      estatistica(
+        "eNPS atual",
+        "pontos",
+        "(promotores − detratores) ÷ respondentes × 100 no recorte",
+      ),
+      estatistica(
+        "Engajamento médio",
+        "pct",
+        "pontos da pesquisa ÷ respondentes no recorte",
+      ),
+      estatistica(
+        "Absenteísmo médio",
+        "pct",
+        "horas ausentes ÷ horas previstas no recorte",
+      ),
+      estatistica(
+        "Pior área",
+        "pct",
+        "a área com o menor engajamento do recorte",
+      ),
+    ],
+  },
+
+  /* ---------------- rh/sal ---------------- */
+  {
+    painel: "sal-medio",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula(
+      "salário médio da área = folha da área ÷ headcount FTE da área",
+      "sal-medio",
+    ),
+    series: [valor("Salário médio", "BRL_mi")],
+  },
+  {
+    painel: "sal-comp",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "componente-da-folha",
+    formula: formula(
+      "repartição de 100% da folha do recorte entre os quatro componentes",
+      "sal-comp",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+  {
+    painel: "sal-folha",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "area",
+    formula: formula("soma da folha por área no recorte", "sal-folha"),
+    series: [valor("Folha", "BRL_mi")],
+  },
+  {
+    painel: "sal-benef",
+    views: ["vw_fato_rh_mes"],
+    cruzamento: null,
+    eixo: "componente-da-folha",
+    formula: formula(
+      "soma de encargos e benefícios no recorte, em reais",
+      "sal-benef",
+    ),
+    series: [valor("Valor", "BRL_mi")],
+  },
+  {
+    painel: "sal-resumo",
+    views: ["vw_dim_cargo"],
+    cruzamento: null,
+    eixo: "estatistica",
+    formula: formula(
+      "os limites da política de remuneração, lidos das bandas de cargo",
+      "sal-resumo",
+    ),
+    series: [
+      estatistica(
+        "Maior salário base",
+        "BRL_mi",
+        "o teto da banda mais alta do cadastro de cargos",
+      ),
+      estatistica(
+        "Menor salário base",
+        "BRL_mi",
+        "o piso da banda mais baixa do cadastro de cargos",
+      ),
+      estatistica(
+        "Amplitude",
+        "contagem",
+        "o teto mais alto dividido pelo piso mais baixo",
+      ),
+    ],
+  },
+
+  /* ---------------- fin/caixa ---------------- */
+  {
+    painel: "cx-cat",
+    views: ["vw_fato_saida_categoria"],
+    cruzamento: null,
+    eixo: "natureza-de-saida",
+    formula: formula(
+      "soma do desembolso de cada natureza no recorte",
+      "cx-cat",
+    ),
+    series: [valor("Desembolso", "BRL_mi")],
+  },
+
+  /* ---------------- fin/orc ---------------- */
+  {
+    painel: "orc-gastos",
+    views: ["vw_fato_orcamento"],
+    cruzamento: null,
+    eixo: "centro-de-custo",
+    formula: formula(
+      "soma do realizado por centro de custo no recorte",
+      "orc-gastos",
+    ),
+    series: [valor("Realizado", "BRL_mi")],
+  },
+
+  /* ---------------- fin/contas ---------------- */
+  {
+    painel: "cr-inadim",
+    views: ["vw_fato_contas"],
+    cruzamento: null,
+    eixo: "contraparte",
+    formula: formula(
+      "saldo vencido por cliente no fim do recorte, do maior para o menor",
+      "cr-inadim",
+    ),
+    series: [valor("Vencido", "BRL_mi")],
+  },
+  {
+    painel: "cp-fornec",
+    views: ["vw_fato_contas"],
+    cruzamento: null,
+    eixo: "contraparte",
+    formula: formula(
+      "saldo a pagar por fornecedor no fim do recorte, do maior para o menor",
+      "cp-fornec",
+    ),
+    series: [valor("A pagar", "BRL_mi")],
+  },
+
+  /* ---------------- fin/fat ---------------- */
+  {
+    painel: "fat-segm",
+    views: ["vw_fato_faturamento_cliente"],
+    cruzamento: null,
+    eixo: "segmento",
+    formula: formula(
+      "participação de cada segmento na receita da carteira no recorte",
+      "fat-segm",
+    ),
+    series: [valor("Participação", "pct")],
+  },
+
+  /* ================================================================ *
+   * T-119 — as formas compostas
+   * ================================================================ */
+
+  {
+    painel: "col-mapa",
+    views: ["vw_fato_rh_perfil"],
+    cruzamento: null,
+    eixo: "uf",
+    formula: formula(
+      "headcount FTE por UF, no último mês do recorte",
+      "col-mapa",
+    ),
+    series: [valor("FTE", "FTE")],
+  },
+  {
+    painel: "fin-dre",
+    views: ["vw_fato_fin_mes"],
+    cruzamento: null,
+    eixo: "degrau-da-ponte",
+    formula: formula(
+      "receita líquida − CMV − despesas = EBITDA; − D&A − financeiro − não operacional = lucro líquido",
+      "fin-dre",
+    ),
+    series: [valor("Degrau", "BRL_mi")],
+  },
+  {
+    painel: "cx-ponte",
+    views: ["vw_fato_fin_mes"],
+    cruzamento: null,
+    eixo: "degrau-da-ponte",
+    formula: formula(
+      "saldo inicial + FCO − investimento − financiamento = saldo final",
+      "cx-ponte",
+    ),
+    series: [valor("Degrau", "BRL_mi")],
+  },
+  {
+    painel: "ct-ciclo",
+    views: ["vw_fato_contas", "vw_fato_fin_mes"],
+    cruzamento:
+      "PMR e PMP saem dos saldos de contas; PME precisa do estoque e do CMV, " +
+      "que só o fato financeiro tem — o ciclo é a diferença entre os três",
+    eixo: "marco-do-ciclo",
+    formula: formula("ciclo financeiro = PMR + PME − PMP, em dias", "ct-ciclo"),
+    series: [valor("Dias", "dias")],
+  },
+  {
+    painel: "fat-margem",
+    views: ["vw_fato_faturamento_cliente"],
+    cruzamento: null,
+    eixo: "ponto",
+    formula: formula(
+      "um ponto por cliente: receita no eixo X, margem de contribuição no eixo Y",
+      "fat-margem",
+    ),
+    series: [valor("Receita", "BRL_mi"), valor("Margem", "pct")],
+  },
+  {
+    painel: "int-scatter",
+    views: ["vw_fato_rh_mes", "vw_fato_fin_mes"],
+    cruzamento:
+      "um eixo é custo de pessoal e o outro é receita atribuída, ambos por " +
+      "FTE — a leitura do painel é justamente a razão entre os dois",
+    eixo: "ponto",
+    formula: formula(
+      "um ponto por área: custo anual por FTE no eixo X, receita por FTE no eixo Y",
+      "int-scatter",
+    ),
+    series: [
+      valor("Custo por FTE", "BRL_mi"),
+      valor("Receita por FTE", "BRL_mi"),
+    ],
+  },
 ];
 
 /* ------------------------------------------------------------------ *
@@ -641,9 +1292,39 @@ export function origemDoPainel(id: string): OrigemDePainel | undefined {
   return POR_PAINEL.get(id);
 }
 
-/** As formas cobertas por T-117. As demais entram com T-118 e T-119. */
+/** As formas cobertas por T-117. */
 export const FORMAS_DE_SERIE_TEMPORAL = [
   "barras",
   "linha",
   "barras-empilhadas",
 ] as const;
+
+/** As formas cobertas por T-118. As quatro restantes entram com T-119. */
+export const FORMAS_CATEGORICAS = [
+  "barras-horizontais",
+  "rosca",
+  "funil",
+  "divisao",
+  "estatisticas",
+] as const;
+
+/** As quatro formas cobertas por T-119 — as últimas. */
+export const FORMAS_COMPOSTAS = [
+  "cascata",
+  "dispersao",
+  "regua-de-ciclo",
+  "mosaico-geografico",
+] as const;
+
+/**
+ * As formas com origem declarada.
+ *
+ * Com T-119 são as doze, e o teste de cobertura passa a percorrer os 71 —
+ * momento em que "existe painel que ninguém sabe alimentar?" deixa de ser uma
+ * pergunta sobre parte do produto e passa a ser sobre o produto inteiro.
+ */
+export const FORMAS_COM_ORIGEM: readonly string[] = [
+  ...FORMAS_DE_SERIE_TEMPORAL,
+  ...FORMAS_CATEGORICAS,
+  ...FORMAS_COMPOSTAS,
+];

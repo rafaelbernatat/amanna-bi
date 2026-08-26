@@ -392,16 +392,18 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 |---|---|---|
 | `vw_fato_rh_mes` | mês, entidade, área, modalidade · headcount FTE, admissões, desligamentos, folha (salários, encargos, benefícios, variável), horas previstas e ausentes, respondentes, elegíveis, promotores, neutros, detratores, pontos de engajamento, soma de idade, soma de tempo de casa, soma de tempo até a saída | Folha / HCM |
 | `vw_fato_rh_perfil` | mês, entidade, área, modalidade, **dimensão, valor** · headcount FTE | Folha / HCM |
+| `vw_fato_rh_desligamento` | mês, entidade, área, modalidade, **dimensão, valor** · desligamentos | Folha / HCM |
 | `vw_fato_fin_mes` | mês, entidade · receita bruta e líquida, deduções, CMV, despesas, D&A, resultado financeiro, não operacional, FCO, capex, financiamento, entradas e saídas de caixa, estoque, saldo de caixa, notas emitidas | ERP / contábil |
 | `vw_fato_caixa_diario` | **dia**, entidade · entradas, saídas | ERP / tesouraria |
 | `vw_fato_orcamento` | mês, entidade, centro de custo · orçado, realizado | Planejamento |
 | `vw_fato_vagas` | mês, área · abertas, em andamento, fechadas, canceladas, dias somados, custo de recrutamento, etapas do funil | ATS |
 | `vw_fato_vagas_fonte` | mês, área, fonte do candidato · contratados | ATS |
 | `vw_fato_treinamento` | mês, área, trilha, modalidade da trilha · horas, investimento, trilhas iniciadas e concluídas, participantes | LMS |
-| `vw_fato_contas` | mês, entidade, faixa de aging · a receber, a pagar | ERP |
-| `vw_fato_faturamento_cliente` | mês, entidade, cliente, **faixa de rating** · receita, margem de contribuição | ERP / comercial |
+| `vw_fato_contas` | mês, entidade, faixa de aging, **contraparte** · a receber, a pagar | ERP |
+| `vw_fato_faturamento_cliente` | mês, entidade, cliente, **faixa de rating**, **segmento** · receita, margem de contribuição | ERP / comercial |
+| `vw_fato_saida_categoria` | mês, entidade, **categoria** · valor | ERP / contábil |
 | `vw_fato_turnover_custo` | mês, entidade, área, **componente** · valor | Folha / ATS / Controladoria |
-| `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, mês | Cadastros |
+| `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, **gênero**, **cargo**, mês | Cadastros |
 
 > **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
 > descrevia medida que não existe e omitia medida que os painéis precisam.
@@ -463,6 +465,47 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 > de crédito própria ou de birô externo, com faixas que mudam conforme a origem
 > (**H-53**). A coluna declarada diz **que** o dado é necessário; quanto ele vale
 > continua sendo pergunta aberta, e na fixture é valor de protótipo.
+
+> **Revisão de 2026-08-24 (T-118.1).** Sete painéis categóricos do Anexo A.1
+> pediam quebra que nenhuma view sabia produzir. Duas views e três colunas
+> fecham os sete.
+>
+> **`vw_fato_rh_desligamento`** é o espelho de `vw_fato_rh_perfil` para quem
+> saiu. `vw_fato_rh_mes` guarda quantos saíram; não guarda *quem* — por tipo de
+> saída, por gênero, por faixa etária. Sem isso, `tov-tipos` e `tov-corte` não
+> existem, e a leitura que eles dão é a que muda decisão: saída voluntária pede
+> retenção, saída involuntária pede seleção, e a faixa 18–24 saindo várias vezes
+> mais que a de 55+ é um problema de integração e não de mercado.
+>
+> A view **não** repete o quadro: a soma dos desligamentos de cada célula é a
+> mesma coluna que `vw_fato_rh_mes` já traz, e um teste fixa a igualdade.
+>
+> **Gênero entra como dimensão** de `vw_fato_rh_perfil` e de
+> `vw_fato_rh_desligamento`. Não é acréscimo de escopo: a intenção 19 do Anexo B
+> — `perfil_quadro`, que alimenta `col-perfil` — já a nomeia. A supressão de
+> grupo pequeno da seção 11 vale para ela como para as demais, e é T-151 quem a
+> implementa.
+>
+> **`contraparte`** em `vw_fato_contas` sustenta `cr-inadim` e `cp-fornec`. É a
+> chave que faltava para sair de "R$ 53 mi vencidos" para "três clientes
+> concentram 66% do vencido" — a primeira é um número, a segunda é uma lista de
+> ligações a fazer.
+>
+> **`segmento`** em `vw_fato_faturamento_cliente` sustenta `fat-segm`, pelo
+> mesmo raciocínio de `rating`: qualificação do cliente que já está lá.
+>
+> **`vw_fato_saida_categoria`** sustenta `cx-cat`. `vw_fato_fin_mes` traz a
+> saída de caixa como um número só, e o painel existe para dizer de que ela é
+> feita — o desembolso com juros ao lado do desembolso com pessoal é uma
+> comparação que o total esconde. A soma das categorias de um mês é a coluna
+> mensal de saída, e um teste fixa isso.
+>
+> **Quatro decisões de negócio** ficam registradas em INSTRUCOES.md: a taxonomia
+> de tipo de desligamento (**H-54**, e ela depende de D-P2, que já é H-06), as
+> categorias de gênero e o tratamento de "não informado" (**H-55**), o plano de
+> contas das naturezas de saída (**H-56**) e a segmentação comercial de cliente
+> (**H-57**). As colunas declaradas dizem **que** o dado é necessário; quanto
+> ele vale continua pergunta aberta, e na fixture é valor de protótipo.
 
 ### 10.2 · Sincronização
 
