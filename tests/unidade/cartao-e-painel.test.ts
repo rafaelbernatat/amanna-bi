@@ -111,10 +111,20 @@ describe("a fórmula do painel não tem como não aparecer", () => {
    * pelo nome que o protótipo usou; esta procura pela FORMA, que é o que
    * sobrevive a alguém escolher outro nome.
    *
-   * Se `Painel` passar a aceitar uma quinta propriedade, este teste fica
-   * vermelho e quem a acrescentou precisa dizer, no diff, por quê.
+   * Se `Painel` passar a aceitar mais uma propriedade, este teste fica vermelho
+   * e quem a acrescentou precisa dizer, no diff, por quê.
+   *
+   * ## A quinta, e por que ela entrou
+   *
+   * `frescor` entrou em T-132. A tabela 6.4 exige que o estado "dado defasado"
+   * mostre **o painel** com o selo de frescor em destaque — o painel continua
+   * aparecendo, com o número e com a fórmula; o que muda é o selo.
+   *
+   * Ela não é um interruptor: não é booleana, não decide o que aparece, e o
+   * caso abaixo confere que a fórmula segue lá com ela ligada. A guarda ficou
+   * vermelha, foi lida, e esta é a resposta que o comentário acima pedia.
    */
-  it("Painel aceita quatro propriedades, e nenhuma liga ou desliga a fórmula", () => {
+  it("Painel aceita cinco propriedades, e nenhuma liga ou desliga a fórmula", () => {
     const fonte = readFileSync("src/apresentacao/paineis/Painel.tsx", "utf8");
     const bloco = /export function Painel\(\{([^}]*)\}/.exec(fonte);
     expect(bloco, "não achei a assinatura de Painel").not.toBeNull();
@@ -128,8 +138,53 @@ describe("a fórmula do painel não tem como não aparecer", () => {
       "altura",
       "children",
       "destacado",
+      "frescor",
       "painel",
     ]);
+  });
+
+  it("e a fórmula continua aparecendo com o selo de frescor ligado", () => {
+    /*
+     * O caso que faz a justificativa acima ser verificável em vez de escrita.
+     *
+     * Uma propriedade nova é inofensiva enquanto não muda o que aparece. Aqui
+     * ela é ligada nos dois valores possíveis de `defasado`, e a fórmula
+     * aparece exatamente uma vez nas duas — que é a única coisa que a guarda
+     * do achado 10 precisa continuar garantindo.
+     */
+    for (const defasado of [true, false]) {
+      const marcacao = html(
+        createElement(Painel, {
+          painel: PAINEL,
+          altura: 216,
+          frescor: {
+            asOf: "2026-12-31",
+            sincronizadoEm: "2026-08-26T06:15",
+            defasado,
+          },
+        }),
+      );
+      expect(quantos(marcacao, "formula-do-painel"), String(defasado)).toBe(1);
+      expect(quantos(marcacao, "selo-de-frescor"), String(defasado)).toBe(1);
+    }
+  });
+
+  it("a moldura não tem como esconder a fórmula: ela não a desenha", () => {
+    /*
+     * T-132 extraiu `MolduraDePainel` de dentro de `Painel`, e uma extração é
+     * onde uma garantia se perde sem ninguém notar. A fórmula ficou **fora** da
+     * moldura de propósito: a moldura desenha borda, título, unidade e selo, e
+     * quem desenha a fórmula continua sendo `Painel`.
+     *
+     * Uma moldura que também desenhasse a fórmula poderia deixar de desenhá-la,
+     * e o caminho de esconder existiria de novo — com outro nome e num arquivo
+     * onde ninguém procuraria.
+     */
+    const fonte = readFileSync("src/apresentacao/paineis/Painel.tsx", "utf8");
+    const moldura = /export function MolduraDePainel\([\s\S]*?\n\}/.exec(fonte);
+    expect(moldura, "não achei MolduraDePainel").not.toBeNull();
+    expect(moldura?.[0] ?? "").not.toContain("FormulaDoPainel");
+    expect(moldura?.[0] ?? "").not.toContain("formula");
   });
 });
 
