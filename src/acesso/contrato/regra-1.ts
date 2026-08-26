@@ -32,7 +32,7 @@ import {
 } from "@/acesso/contrato/suite";
 import { AGREGADO_DE_AREA } from "@/acesso/fixtures/eixos";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
-import { origemDoPainel } from "@/semantica/origem-de-painel";
+import { ORIGEM_DOS_PAINEIS } from "@/semantica/origem-de-painel";
 
 const NUMERO = 1;
 
@@ -125,10 +125,27 @@ export function conferirQuebraPorArea(
   return falhas;
 }
 
-/** Os painéis cujo eixo é a área. Contados do registro, nunca escritos. */
-function paineisQuebradosPorArea(): readonly string[] {
-  return [...new Set(PARES.map((p) => p.painel))].filter(
-    (p) => origemDoPainel(p)?.eixo === "area",
+/**
+ * Os painéis cujo eixo é a área. Contados do registro, nunca escritos.
+ *
+ * ## A primeira versão contava do lugar errado
+ *
+ * Ela partia de `PARES` — os painéis que têm cartão reconciliado — e filtrava
+ * por eixo. Isso conferia 5 dos 9, e os 4 de fora eram exatamente os que não
+ * têm KPI: `rec-vagas`, `rh-areas`, `tov-area`, `tre-area`.
+ *
+ * O achado 4 do Anexo D não fala de KPI. Fala de filtro que muda a escala das
+ * barras e mantém as sete. Um painel sem cartão está igualmente exposto — e um
+ * deles é turnover por área, que é onde a pergunta "qual área está perdendo
+ * gente" é feita.
+ *
+ * Partir do registro faz a lista crescer sozinha quando um painel novo declara
+ * `eixo: "area"`, que é o oposto de uma lista que só cresce quando alguém
+ * lembra.
+ */
+export function paineisQuebradosPorArea(): readonly string[] {
+  return ORIGEM_DOS_PAINEIS.filter((o) => o.eixo === "area").map(
+    (o) => o.painel,
   );
 }
 

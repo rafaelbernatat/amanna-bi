@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   conferirQuebraPorArea,
+  paineisQuebradosPorArea,
   paresConferidos,
   REGRA_1,
 } from "@/acesso/contrato/regra-1";
@@ -187,6 +188,30 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
 
   it("há painéis quebrados por área para conferir", () => {
     expect(QUEBRADOS_POR_AREA.length).toBeGreaterThan(5);
+  });
+
+  it("e a REGRA confere todos os 9, não só os que têm cartão", () => {
+    /*
+     * A guarda que faltava, e o defeito que ela pegou.
+     *
+     * A primeira versão de `paineisQuebradosPorArea` partia de `PARES` — os
+     * painéis com KPI reconciliado — e filtrava por eixo. Conferia 5 dos 9.
+     * Os 4 de fora eram os que não têm cartão que os detalhe:
+     *
+     *   rec-vagas, rh-areas, tov-area, tre-area
+     *
+     * Os casos `it.each` acima passavam do mesmo jeito, porque conferem a
+     * PROPRIEDADE nos painéis, e ela era verdadeira nos nove. O que ninguém
+     * conferia era a COBERTURA da regra — e é por isso que este caso compara
+     * a lista da regra com a do registro, e não com uma lista escrita aqui.
+     */
+    expect([...paineisQuebradosPorArea()].sort()).toEqual(
+      [...QUEBRADOS_POR_AREA].sort(),
+    );
+
+    for (const semCartao of ["rec-vagas", "rh-areas", "tov-area", "tre-area"]) {
+      expect(paineisQuebradosPorArea(), semCartao).toContain(semCartao);
+    }
   });
 
   it.each(QUEBRADOS_POR_AREA)(
