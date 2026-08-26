@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 57 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 58 itens (4 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,11 +39,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 21 (4 resolvidos) | 6 | 36 |
+| Fase 1 · Contrato | 22 (4 resolvidos) | 7 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **57** | **29** | **122** |
+| **Total** | **58** | **30** | **122** |
 
 **Por responsável**
 
@@ -52,7 +52,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Produto | 14 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
-| Engenharia | 6 |
+| Engenharia | 7 |
 | Comercial | 5 |
 | RH | 2 |
 | Financeiro | 1 |
@@ -77,7 +77,29 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*21 itens · 2 P0 abertos · 11 P1 abertos · 4 P2 abertos · 4 resolvidos*
+*22 itens · 3 P0 abertos · 11 P1 abertos · 4 P2 abertos · 4 resolvidos*
+
+### [ ] H-58 · Acrescentar `contrato` às checagens obrigatórias em main
+
+`P0` · **Responsável:** Engenharia
+
+**O que fazer**
+
+O workflow de CI passou de cinco jobs para seis: T-123 acrescentou `contrato`, que roda a suíte da seção 9.2 sobre os 768 recortes. O ruleset `21192375` em `main` — criado por H-02 — exige apenas os cinco antigos. Enquanto o sexto não for marcado, ele **roda e reporta, mas não bloqueia merge**: um pull request que quebre a reconciliação entre cartão e painel continua mesclável, com o vermelho visível e inofensivo ao lado do botão verde.
+
+Alguém com permissão de administrador precisa entrar em Settings > Rules > Rulesets, abrir a regra de `main` e acrescentar `contrato` à lista de required status checks. O nome precisa ser idêntico ao nome do job em `.github/workflows/ci.yml`.
+
+Valide como H-02 pede: abra um pull request de teste que quebre a suíte de contrato de propósito — trocar a fonte de um KPI para uma coluna diferente da do painel que o detalha basta — e confirme que o botão de merge fica bloqueado. Depois feche o pull request sem mesclar.
+
+> **Por que isto não é detalhe.** A suíte de contrato é o único lugar onde uma divergência de definição aparece antes de virar número na tela de alguém. Ela achou uma divergência real no primeiro dia em que rodou (duas fontes para o custo do turnover, em T-122). Um portão que só reporta transforma esse achado em aviso, e aviso convive com merge.
+
+| | |
+|---|---|
+| **Resultado esperado** | Ruleset de `main` exigindo seis checagens — typecheck, lint, teste, build, e2e e contrato — comprovado por um pull request de teste com a suíte de contrato quebrada de propósito que não pode ser mesclado |
+| **Onde o resultado vai** | Configuração do repositório em github.com/rafaelbernatat/amanna-bi (Settings > Rules), casando com os nomes dos jobs em `.github/workflows/ci.yml` |
+| **Destrava** | Nada de novo — endurece o portão que H-02 montou, do qual T-006 e T-123 dependem |
+
+---
 
 ### [ ] H-57 · Definir a segmentação comercial de cliente
 

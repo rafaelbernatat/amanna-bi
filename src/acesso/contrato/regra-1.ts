@@ -156,6 +156,18 @@ export function paineisQuebradosPorArea(): readonly string[] {
 export const REGRA_1: Regra = {
   numero: NUMERO,
   nome: "reconciliação entre KPI e painel",
+  /**
+   * Os painéis que esta regra confere, contados das duas metades.
+   *
+   * A primeira metade confere os painéis que detalham um cartão; a segunda,
+   * todos os quebrados por área. A união é o que a regra 1 realmente olha — e
+   * é menor que 71, porque painel sem cartão e sem eixo de área não tem o que
+   * reconciliar. Os que faltam são cobertos pelas regras 2 a 5 (T-159), que
+   * valem para todo painel.
+   */
+  cobre: () => [
+    ...new Set([...PARES.map((p) => p.painel), ...paineisQuebradosPorArea()]),
+  ],
   rodar: (ctx) => {
     const falhas: Falha[] = [];
 

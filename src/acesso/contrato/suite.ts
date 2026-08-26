@@ -37,6 +37,7 @@
  */
 
 import type { DataSource, Query, Unidade } from "@/semantica/contrato";
+import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import type { Recorte } from "@/semantica/recortes";
 import { dentroDaTolerancia } from "@/semantica/tolerancia";
 
@@ -82,6 +83,17 @@ export type Regra = {
    * "falha em toda área menos consolidado" é um diagnóstico; "falha" não é.
    */
   readonly rodar: (ctx: Contexto) => Promise<readonly Falha[]>;
+
+  /**
+   * Os painéis que esta regra confere. Contados da própria regra, nunca
+   * escritos à mão.
+   *
+   * Existe para que a cobertura seja **medida**, e não afirmada. Sem isto, a
+   * frase "a suíte cobre os 71 painéis" é uma promessa que ninguém confere —
+   * e uma regra que deixasse de olhar metade deles continuaria devolvendo
+   * zero falhas, que se parece com sucesso.
+   */
+  readonly cobre?: () => readonly string[];
 };
 
 /** A suíte não tem o que rodar. Ver o cabeçalho. */
@@ -99,6 +111,15 @@ export class SuiteSemRegra extends Error {
 /* ------------------------------------------------------------------ *
  * O registro
  * ------------------------------------------------------------------ */
+
+/**
+ * O número que marca uma falha de percurso, e não de regra da 9.2.
+ *
+ * Zero porque a seção 9.2 numera as regras de 1 a 5, e o percurso não é uma
+ * delas: é a leitura que precede qualquer regra. Misturar os dois no relatório
+ * faria "regra 1 falhou" significar duas coisas diferentes.
+ */
+const PERCURSO = 0;
 
 const REGISTRO = new Map<number, Regra>();
 
@@ -128,6 +149,29 @@ export function regrasRegistradas(): readonly Regra[] {
  * A execução
  * ------------------------------------------------------------------ */
 
+/**
+ * A cobertura da suíte: quais painéis ela tocou, e a que profundidade.
+ *
+ * São duas profundidades, e a diferença entre elas é o que este tipo existe
+ * para não deixar confundir:
+ *
+ * - **percorrido** é o painel que a suíte leu pelas quatro portas em todo
+ *   recorte da matriz. Pega painel que lança, painel que devolve o envelope de
+ *   outro, painel que quebra em dezembro e não em janeiro.
+ * - **verificado** é o painel que alguma regra da seção 9.2 confere de fato.
+ *
+ * Percorrer não é verificar, e chamar os dois de "cobertura" seria o tipo de
+ * frase que faz um relatório verde parecer mais forte do que é.
+ */
+export type Cobertura = {
+  /** Os painéis do registro. Contados, nunca escritos. */
+  readonly declarados: readonly string[];
+  /** Lidos pelas portas em todo recorte, sem lançar e com a identidade certa. */
+  readonly percorridos: readonly string[];
+  /** Conferidos por alguma regra da 9.2. */
+  readonly verificados: readonly string[];
+};
+
 /** O que a suíte devolve. */
 export type Relatorio = {
   readonly fonte: string;
@@ -136,6 +180,7 @@ export type Relatorio = {
   readonly falhas: readonly Falha[];
   /** Quantas verificações rodaram. Zero aqui é suíte que não verificou nada. */
   readonly verificacoes: number;
+  readonly cobertura: Cobertura;
 };
 
 /** Um recorte da matriz vira a `Query` que as portas entendem. */
@@ -165,16 +210,28 @@ export async function rodarSuite(
   const regras = regrasRegistradas();
   if (regras.length === 0) throw new SuiteSemRegra();
 
+  const declarados = REGISTRO_DE_PAINEIS.map((p) => p.id);
+  const quebrados = new Set<string>();
+
   const falhas: Falha[] = [];
   let verificacoes = 0;
 
   for (const recorte of matriz) {
     const consulta = consultaDe(recorte, anoPadrao);
+
+    falhas.push(
+      ...(await percorrerPaineis(fonte, recorte, consulta, quebrados)),
+    );
+
     for (const regra of regras) {
       verificacoes += 1;
       falhas.push(...(await regra.rodar({ fonte, recorte, consulta })));
     }
   }
+
+  const verificados = [
+    ...new Set(regras.flatMap((r) => (r.cobre === undefined ? [] : r.cobre()))),
+  ];
 
   return {
     fonte: nomeDaFonte,
@@ -182,7 +239,59 @@ export async function rodarSuite(
     regras: regras.map((r) => r.numero),
     falhas,
     verificacoes,
+    cobertura: {
+      declarados,
+      percorridos: declarados.filter((id) => !quebrados.has(id)),
+      verificados: declarados.filter((id) => verificados.includes(id)),
+    },
   };
+}
+
+/**
+ * Lê os 71 painéis pelas quatro portas, num recorte.
+ *
+ * O que se exige é o mínimo que não pode falhar: a leitura volta, e volta com
+ * a identidade pedida. É pouco como verificação e é muito como percurso —
+ * painel que lança em dezembro e não em janeiro, ou que devolve o envelope do
+ * vizinho, aparece aqui e em lugar nenhum das regras.
+ *
+ * Vai pelas portas, e não por `calcularPainel`, porque é o que faz o percurso
+ * valer igual em `--source=warehouse` no dia em que o adaptador entrar. Um
+ * percurso que importasse as fixtures diria "os 71 painéis respondem" sobre
+ * uma fonte que ninguém vai usar em produção.
+ */
+async function percorrerPaineis(
+  fonte: DataSource,
+  recorte: Recorte,
+  consulta: Query,
+  quebrados: Set<string>,
+): Promise<readonly Falha[]> {
+  const falhas: Falha[] = [];
+
+  for (const registro of REGISTRO_DE_PAINEIS) {
+    try {
+      const envelope = await fonte.getPanel(registro.id, consulta);
+      if (envelope.id !== registro.id) {
+        quebrados.add(registro.id);
+        falhas.push({
+          assunto: registro.id,
+          recorte,
+          regra: PERCURSO,
+          mensagem: `a porta devolveu o envelope de '${envelope.id}'`,
+        });
+      }
+    } catch (erro) {
+      quebrados.add(registro.id);
+      falhas.push({
+        assunto: registro.id,
+        recorte,
+        regra: PERCURSO,
+        mensagem: erro instanceof Error ? erro.message : String(erro),
+      });
+    }
+  }
+
+  return falhas;
 }
 
 /* ------------------------------------------------------------------ *
@@ -207,8 +316,10 @@ export function relatorioEmTexto(r: Relatorio): string {
     `suíte de contrato · fonte ${r.fonte} · ${String(r.recortes)} recortes · ` +
     `regras ${r.regras.join(", ")} · ${String(r.verificacoes)} verificações`;
 
+  const cobertura = coberturaEmTexto(r.cobertura);
+
   if (r.falhas.length === 0) {
-    return `${cabecalho}\n\nnenhuma divergência.`;
+    return `${cabecalho}\n\n${cobertura}\n\nnenhuma divergência.`;
   }
 
   const linhas = r.falhas.map((f) => {
@@ -223,9 +334,46 @@ export function relatorioEmTexto(r: Relatorio): string {
   });
 
   return (
-    `${cabecalho}\n\n${String(r.falhas.length)} divergência` +
+    `${cabecalho}\n\n${cobertura}\n\n${String(r.falhas.length)} divergência` +
     `${r.falhas.length === 1 ? "" : "s"}:\n\n${linhas.join("\n")}`
   );
+}
+
+/**
+ * A cobertura em texto, com as duas profundidades separadas.
+ *
+ * Os painéis percorridos e não verificados aparecem **nomeados**, e não
+ * contados. Um relatório que dissesse "40 de 71 verificados" e parasse aí
+ * deixaria quem lê supondo quais são os 31 — e a suposição mais confortável é
+ * sempre a de que são os que não importam.
+ */
+function coberturaEmTexto(c: Cobertura): string {
+  const total = c.declarados.length;
+  const linhas = [
+    `cobertura · ${String(c.percorridos.length)} de ${String(total)} painéis ` +
+      `percorridos pelas portas · ${String(c.verificados.length)} de ` +
+      `${String(total)} verificados por alguma regra`,
+  ];
+
+  const naoPercorridos = c.declarados.filter(
+    (id) => !c.percorridos.includes(id),
+  );
+  if (naoPercorridos.length > 0) {
+    linhas.push(
+      `  não percorridos (${String(naoPercorridos.length)}): ` +
+        naoPercorridos.join(", "),
+    );
+  }
+
+  const semRegra = c.percorridos.filter((id) => !c.verificados.includes(id));
+  if (semRegra.length > 0) {
+    linhas.push(
+      `  percorridos sem regra que os confira (${String(semRegra.length)}): ` +
+        semRegra.join(", "),
+    );
+  }
+
+  return linhas.join("\n");
 }
 
 /**

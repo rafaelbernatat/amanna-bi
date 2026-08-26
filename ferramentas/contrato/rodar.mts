@@ -21,7 +21,7 @@
  * promessa do RF-21 que a Fase 2 vai cobrar.
  */
 
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,6 +45,16 @@ import {
 const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CASOS = resolve(RAIZ, "tests", "contrato", "casos.yaml");
 const MATRIZ = resolve(RAIZ, "tests", "contrato", "matriz-recortes.yaml");
+
+/**
+ * Onde o relatório é gravado, sempre — passando ou falhando (T-123).
+ *
+ * Gravar só quando falha parece economia e não é: o relatório de uma rodada
+ * verde é o que diz **quanto** ela verificou, e é comparando duas rodadas
+ * verdes que se descobre que a cobertura encolheu. Um artefato que só existe
+ * no vermelho responde "o que quebrou" e nunca "o que deixou de ser olhado".
+ */
+const RELATORIO = resolve(RAIZ, "relatorios", "contrato");
 
 /* ------------------------------------------------------------------ *
  * Os argumentos
@@ -144,8 +154,29 @@ console.log(
 try {
   const fonte = await obterFonteDeDados({ DATA_SOURCE: fonteEscolhida });
   const relatorio = await rodarSuite(fonte, fonteEscolhida, matriz, ano);
-  console.log(relatorioEmTexto(relatorio));
-  if (relatorio.falhas.length > 0) process.exit(1);
+  const texto = relatorioEmTexto(relatorio);
+  console.log(texto);
+
+  mkdirSync(RELATORIO, { recursive: true });
+  writeFileSync(
+    resolve(RELATORIO, `${fonteEscolhida}.txt`),
+    `${texto}\n`,
+    "utf8",
+  );
+
+  /*
+   * Duas razões para sair diferente de zero, e elas não são a mesma.
+   *
+   * Divergência é regra da 9.2 reprovando: o número do cartão e o do painel
+   * não fecham. Painel não percorrido é a leitura que nem chegou a acontecer —
+   * o painel lançou, ou devolveu o envelope de outro. O segundo caso passaria
+   * despercebido num relatório que só contasse divergências, porque painel que
+   * não responde não produz divergência nenhuma: produz silêncio.
+   */
+  const naoPercorridos =
+    relatorio.cobertura.declarados.length -
+    relatorio.cobertura.percorridos.length;
+  if (relatorio.falhas.length > 0 || naoPercorridos > 0) process.exit(1);
 } catch (erro) {
   const previsto =
     erro instanceof FonteInvalida || erro instanceof SuiteSemRegra;

@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 46 de 98 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 47 de 98 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **235** | **120** | **92** | **18** | **57 de 235** |
+| **Total** | **235** | **120** | **92** | **18** | **58 de 235** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -223,7 +223,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-123.1** `P0` `S` `plataforma` Eliminar o vermelho intermitente da suíte de unidade
   · **Aceite:** O caso `a lista branca > está vazia na configuração do produto` deixa de carregar `eslint.config.mjs` pelo transform do Vite, dez execuções seguidas de `npm test` terminam verdes, e o caso continua reprovando quando uma entrada é acrescentada à lista branca.
   · **PRD:** seção 8.2 testes, RF-07 · **Depende de:** T-005.1, T-181
-- [~] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures   ⏳ 2026-08-26 16:10 · sessao-68c842a0
+- [X] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
   · **Aceite:** O CI roda a suíte com DATA_SOURCE=fixtures em job próprio cobrindo os 71 painéis, e o job falha quando qualquer regra da seção 9.2 é violada, com o relatório arquivado como artefato.
   · **PRD:** RF-21, RF-03, seção 10.4, Anexo A · **Depende de:** T-006, T-121, T-122
 - [X] **T-124** `P0` `S` `paineis` Extrair os tokens visuais do protótipo para um tema tipado
