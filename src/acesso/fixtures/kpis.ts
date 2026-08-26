@@ -90,7 +90,7 @@ export function recorteDe(q: Query): Recorte {
 }
 
 /** Uma linha pertence ao recorte? Sem multiplicação: escolha de linha. */
-function pertence(
+export function pertence(
   linha: { mes: string; entidade?: string; area?: string; modalidade?: string },
   r: Recorte,
 ): boolean {
@@ -110,8 +110,25 @@ function pertence(
   return true;
 }
 
+/* ------------------------------------------------------------------ *
+ * As auxiliares de medida, compartilhadas com os painéis
+ * ------------------------------------------------------------------ *
+ *
+ * `export` aqui não é conveniência: é o princípio PR-1 aplicado ao código.
+ *
+ * O painel `rh-turnover` e o cartão `rh-visao-turnover-12m` mostram a mesma
+ * medida na mesma tela. Se cada um a somasse por conta própria, bastaria uma
+ * divergência de arredondamento — ou de denominador — para a tela exibir dois
+ * números para a mesma coisa, e quem os visse não teria como saber qual está
+ * certo. Compartilhando estas funções, e o `CALCULO` que elas alimentam, a
+ * divergência deixa de ser possível.
+ *
+ * O que fica privado continua privado: `delta`, `sentimento` e `montar` são do
+ * cartão e não têm equivalente no painel.
+ */
+
 /** As linhas de uma view no recorte. */
-function linhas<N extends NomeDeView>(
+export function linhas<N extends NomeDeView>(
   view: N,
   r: Recorte,
 ): readonly (typeof VIEWS)[N][number][] {
@@ -120,7 +137,7 @@ function linhas<N extends NomeDeView>(
 }
 
 /** A soma de uma medida no recorte. `null` quando não há linha (PR-4). */
-function soma<N extends NomeDeView>(
+export function soma<N extends NomeDeView>(
   view: N,
   r: Recorte,
   medida: (l: (typeof VIEWS)[N][number]) => number,
@@ -130,7 +147,7 @@ function soma<N extends NomeDeView>(
 }
 
 /** A soma no **último mês** da janela — o que `agg: last` significa. */
-function noFim<N extends NomeDeView>(
+export function noFim<N extends NomeDeView>(
   view: N,
   r: Recorte,
   medida: (l: (typeof VIEWS)[N][number]) => number,
@@ -149,7 +166,7 @@ function noFim<N extends NomeDeView>(
  * Soma o estoque de cada mês e divide pelo número de meses. Não é a soma dos
  * meses: somar o quadro de doze meses daria doze vezes a empresa.
  */
-function mediaMensal(
+export function mediaMensal(
   r: Recorte,
   medida: (l: (typeof VIEWS)["vw_fato_rh_mes"][number]) => number,
 ): number | null {
@@ -169,7 +186,7 @@ function mediaMensal(
 }
 
 /** Uma divisão que devolve `null` em vez de `Infinity` ou `NaN`. */
-function razao(numerador: number | null, denominador: number | null) {
+export function razao(numerador: number | null, denominador: number | null) {
   if (numerador === null || denominador === null || denominador === 0) {
     return null;
   }
@@ -177,12 +194,12 @@ function razao(numerador: number | null, denominador: number | null) {
 }
 
 /** Multiplica por 100, preservando a ausência. */
-function emPorcento(fracao: number | null): number | null {
+export function emPorcento(fracao: number | null): number | null {
   return fracao === null ? null : fracao * CEM;
 }
 
 /** O quadro por atributo de perfil, no fim da janela. */
-function perfil(
+export function perfil(
   r: Recorte,
   dimensao: string,
   valores?: readonly string[],
@@ -221,7 +238,7 @@ function engajamento(r: Recorte): number | null {
 }
 
 /** Reais para `BRL_mi`, preservando a ausência. */
-function emMilhoes(reais: number | null): number | null {
+export function emMilhoes(reais: number | null): number | null {
   return reais === null ? null : reais / UM_MILHAO;
 }
 
@@ -853,4 +870,15 @@ export function calcularKpis(tela: string, q: Query): readonly Kpi[] {
 /** As métricas que sabem se calcular. Serve à conferência de cobertura. */
 export function metricasComCalculo(): readonly string[] {
   return Object.keys(CALCULO);
+}
+
+/**
+ * O cálculo de uma métrica do catálogo, para quem não é cartão.
+ *
+ * O painel que mostra a mesma medida do cartão usa **esta** função, e não uma
+ * cópia da fórmula. Corrigir o turnover num lugar corrige nos dois, e nenhuma
+ * tela pode passar a exibir dois números para a mesma coisa.
+ */
+export function calculoDaMetrica(metrica: string): Calculo | undefined {
+  return CALCULO[metrica];
 }

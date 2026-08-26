@@ -386,19 +386,21 @@ Decisão D2: o produto lê de uma **réplica em warehouse próprio**, alimentada
 
 ### 10.1 · As views esperadas
 
-O adaptador espera um modelo estrela simples, com grão mensal. Se o cliente já tem warehouse, o trabalho é escrever seis *views* de fato mais as dimensões; se não tem, as mesmas podem sair direto do ERP.
+O adaptador espera um modelo estrela simples, de grão mensal — com **uma exceção declarada**, `vw_fato_caixa_diario`, que é de grão dia porque o painel de movimentação de caixa mostra dia útil e não mês. Se o cliente já tem warehouse, o trabalho é escrever as *views* de fato mais as dimensões; se não tem, as mesmas podem sair direto do ERP.
 
 | View | Chaves e medidas | Origem típica |
 |---|---|---|
 | `vw_fato_rh_mes` | mês, entidade, área, modalidade · headcount FTE, admissões, desligamentos, folha (salários, encargos, benefícios, variável), horas previstas e ausentes, respondentes, elegíveis, promotores, neutros, detratores, pontos de engajamento, soma de idade, soma de tempo de casa, soma de tempo até a saída | Folha / HCM |
 | `vw_fato_rh_perfil` | mês, entidade, área, modalidade, **dimensão, valor** · headcount FTE | Folha / HCM |
 | `vw_fato_fin_mes` | mês, entidade · receita bruta e líquida, deduções, CMV, despesas, D&A, resultado financeiro, não operacional, FCO, capex, financiamento, entradas e saídas de caixa, estoque, saldo de caixa, notas emitidas | ERP / contábil |
+| `vw_fato_caixa_diario` | **dia**, entidade · entradas, saídas | ERP / tesouraria |
 | `vw_fato_orcamento` | mês, entidade, centro de custo · orçado, realizado | Planejamento |
 | `vw_fato_vagas` | mês, área · abertas, em andamento, fechadas, canceladas, dias somados, custo de recrutamento, etapas do funil | ATS |
 | `vw_fato_vagas_fonte` | mês, área, fonte do candidato · contratados | ATS |
 | `vw_fato_treinamento` | mês, área, trilha, modalidade da trilha · horas, investimento, trilhas iniciadas e concluídas, participantes | LMS |
 | `vw_fato_contas` | mês, entidade, faixa de aging · a receber, a pagar | ERP |
-| `vw_fato_faturamento_cliente` | mês, entidade, cliente · receita, margem de contribuição | ERP / comercial |
+| `vw_fato_faturamento_cliente` | mês, entidade, cliente, **faixa de rating** · receita, margem de contribuição | ERP / comercial |
+| `vw_fato_turnover_custo` | mês, entidade, área, **componente** · valor | Folha / ATS / Controladoria |
 | `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, mês | Cadastros |
 
 > **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
@@ -422,6 +424,45 @@ O adaptador espera um modelo estrela simples, com grão mensal. Se o cliente já
 > em `vw_fato_vagas`, e respondentes com elegíveis em `vw_fato_rh_mes`. Na
 > fixture elegíveis coincide com o quadro; a coluna existe para que a fórmula
 > nomeie o denominador certo quando o dado real distinguir os dois.
+
+> **Revisão de 2026-08-24 (T-117.1).** Faltava um grão, e não uma coluna.
+>
+> O painel `cx-diario` do Anexo A.1 mostra "movimentação diária de caixa —
+> últimos 30 dias": trinta barras, uma por dia útil, com os dias negativos
+> concentrados nas datas de vencimento. Nenhuma das nove views acima tem grão
+> menor que o mês, então esse painel não tinha de onde sair — e a falta não
+> aparecia em lugar nenhum, porque o levantamento de T-143 percorreu as medidas
+> dos KPIs do achado 5 e não os painéis.
+>
+> `vw_fato_caixa_diario` entra com duas colunas e uma obrigação: **a soma dos
+> dias de um mês tem de bater com as colunas mensais de `vw_fato_fin_mes`**. Não
+> é uma segunda verdade sobre o caixa, é a mesma verdade com mais resolução, e
+> um teste fixa a reconciliação nos dois sentidos. Sem essa amarra o produto
+> teria dois números de caixa que discordariam em silêncio — exatamente o que o
+> princípio PR-1 existe para impedir.
+
+> **Revisão de 2026-08-24 (T-117.2).** Dois painéis de barras do Anexo A.1
+> mostravam números que nenhuma view sabia produzir.
+>
+> `tov-custo` decompõe o custo do turnover em rescisão, recrutamento, ramp-up e
+> produtividade perdida — a própria fórmula do protótipo nomeia os quatro.
+> Recrutamento já estava em `vw_fato_vagas`; os outros três não estavam em lugar
+> nenhum. `vw_fato_turnover_custo` entra com grão de componente, e o grão
+> importa: sem ele o painel viraria um número só e a leitura que ele existe para
+> dar — *qual* parte do custo pesa mais — desapareceria.
+>
+> `fat-risco` mostra a carteira por faixa de rating interno, e rating não era
+> atributo de cliente nenhum. Entra como chave em
+> `vw_fato_faturamento_cliente`, e não como view nova: é uma qualificação do
+> cliente que já está lá, não um fato novo.
+>
+> **As duas dependem de decisão que não é de engenharia**, e ambas estão
+> registradas em INSTRUCOES.md. Ramp-up e produtividade perdida são custos
+> *modelados*, não lançamentos — alguém da Controladoria precisa dizer com que
+> parâmetro se calculam (**H-52**). E rating interno pode vir do ERP, de análise
+> de crédito própria ou de birô externo, com faixas que mudam conforme a origem
+> (**H-53**). A coluna declarada diz **que** o dado é necessário; quanto ele vale
+> continua sendo pergunta aberta, e na fixture é valor de protótipo.
 
 ### 10.2 · Sincronização
 
