@@ -28,7 +28,7 @@ import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
 import { getSession } from "@/acesso/sessao";
-import type { Kpi, Query } from "@/semantica/contrato";
+import type { Kpi, PanelResponse, Query } from "@/semantica/contrato";
 import { escopoDaSessao } from "@/seguranca/identidade";
 
 /**
@@ -51,4 +51,33 @@ export async function lerKpisDaTela(
     dimensoesProvisorias(),
   );
   return fronteira.lerKpis(tela, consulta);
+}
+
+/**
+ * Um painel, já restringido ao perfil de quem pediu (T-132).
+ *
+ * Mesmo caminho de `lerKpisDaTela`, e pelo mesmo motivo: o recorte por perfil é
+ * aplicado no servidor, antes de qualquer leitura. Uma tela que chamasse
+ * `getPanel` direto pularia a fronteira da seção 11 — e o adaptador não sabe
+ * quem está perguntando.
+ *
+ * O `breakdown` vem por parâmetro com o padrão da seção 6.3: sem quebra. Quem
+ * precisa de quebra a pede explicitamente, e a fronteira valida se o perfil
+ * alcança aquele nível de detalhe.
+ */
+export async function lerPainel(
+  painel: string,
+  consulta: Query,
+  breakdown = "none",
+): Promise<PanelResponse> {
+  const [sessao, fonte] = await Promise.all([
+    getSession(),
+    obterFonteDeDados(),
+  ]);
+  const fronteira = criarFronteira(
+    fonte,
+    escopoDaSessao(sessao),
+    dimensoesProvisorias(),
+  );
+  return fronteira.lerPainel({ painel, consulta, breakdown });
 }

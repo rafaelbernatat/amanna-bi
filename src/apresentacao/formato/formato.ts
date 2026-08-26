@@ -152,3 +152,35 @@ export function formatarMesAno(iso: string): string {
   }
   return `${nome}/${partes[1]}`;
 }
+
+/**
+ * Um instante ISO em dia, mes, ano e hora — para o selo de frescor (T-132).
+ *
+ * A secao 6.4 pede "o horario da ultima leitura bem-sucedida" no estado de erro
+ * de fonte, e a 10.2 pede o mesmo no selo. `formatarMesAno` nao serve: quem
+ * quer saber se o dado e de hoje precisa da hora.
+ *
+ * Le a string com expressao regular, e nao com `Date`, pela mesma razao do
+ * resto do modulo: `new Date(iso).getHours()` devolve a hora **no fuso do
+ * processo**, e o mesmo instante viraria 14:32 na maquina de quem desenvolve e
+ * 17:32 no contentor. O selo diria horarios diferentes para a mesma leitura, e
+ * a diferenca seria invisivel ate alguem comparar duas telas.
+ *
+ * O fuso da string e preservado como ela veio: a fonte declara o instante, e a
+ * apresentacao nao o reinterpreta.
+ */
+export function formatarInstante(iso: string): string {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(iso);
+  if (
+    partes?.[1] === undefined ||
+    partes[2] === undefined ||
+    partes[3] === undefined ||
+    partes[4] === undefined ||
+    partes[5] === undefined
+  ) {
+    throw new RangeError(
+      `formatarInstante esperava uma data ISO com hora (AAAA-MM-DDTHH:MM), recebeu "${iso}".`,
+    );
+  }
+  return `${partes[3]}/${partes[2]}/${partes[1]} às ${partes[4]}:${partes[5]}`;
+}
