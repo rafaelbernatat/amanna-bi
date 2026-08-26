@@ -200,10 +200,11 @@ describe("a lista branca", () => {
    * agora reprova.
    */
   it("está vazia", async () => {
-    // @ts-expect-error — módulo em .mjs, sem tipos declarados.
-    const { LISTA_BRANCA } =
-      await import("../../ferramentas/eslint/lista-branca-numero-magico.mjs");
-    expect(LISTA_BRANCA).toEqual([]);
+    const modulo = await import(
+      // @ts-expect-error — módulo em .mjs, sem tipos declarados.
+      "../../ferramentas/eslint/lista-branca-numero-magico.mjs"
+    );
+    expect(modulo.LISTA_BRANCA).toEqual([]);
   });
 
   it("e é ela que a configuração do produto usa", () => {
