@@ -223,7 +223,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-123.1** `P0` `S` `plataforma` Eliminar o vermelho intermitente da suíte de unidade
   · **Aceite:** O caso `a lista branca > está vazia na configuração do produto` deixa de carregar `eslint.config.mjs` pelo transform do Vite, dez execuções seguidas de `npm test` terminam verdes, e o caso continua reprovando quando uma entrada é acrescentada à lista branca.
   · **PRD:** seção 8.2 testes, RF-07 · **Depende de:** T-005.1, T-181
-- [ ] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures
+- [~] **T-123** `P0` `S` `plataforma` Executar a suíte de contrato em CI no modo fixtures   ⏳ 2026-08-26 16:10 · sessao-68c842a0
   · **Aceite:** O CI roda a suíte com DATA_SOURCE=fixtures em job próprio cobrindo os 71 painéis, e o job falha quando qualquer regra da seção 9.2 é violada, com o relatório arquivado como artefato.
   · **PRD:** RF-21, RF-03, seção 10.4, Anexo A · **Depende de:** T-006, T-121, T-122
 - [X] **T-124** `P0` `S` `paineis` Extrair os tokens visuais do protótipo para um tema tipado
