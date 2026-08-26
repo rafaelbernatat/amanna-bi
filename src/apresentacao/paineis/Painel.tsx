@@ -39,6 +39,7 @@ export function Painel({
   altura,
   destacado = false,
   frescor,
+  subtitulo,
   children,
 }: {
   readonly painel: PanelResponse;
@@ -48,6 +49,16 @@ export function Painel({
   readonly destacado?: boolean;
   /** O selo da seção 10.2. Em destaque quando `defasado` (T-132). */
   readonly frescor?: Frescor;
+  /**
+   * O subtítulo do painel (T-133).
+   *
+   * Quem chama passa o resultado de `subtituloSobRecorte`, que troca o
+   * subtítulo próprio por "No recorte ativo · Área" quando há filtro fora do
+   * padrão. A troca não acontece aqui de propósito: este componente não
+   * conhece a `Query`, e dar-lhe a `Query` faria dele um segundo lugar que
+   * decide o que o recorte significa.
+   */
+  readonly subtitulo?: string | null;
   readonly children?: ReactNode;
 }) {
   return (
@@ -57,6 +68,7 @@ export function Painel({
       unidade={painel.unit}
       destacado={destacado}
       {...(frescor === undefined ? {} : { frescor })}
+      {...(subtitulo === undefined ? {} : { subtitulo })}
     >
       {/*
         A caixa do desenho, reservada por altura antes de o conteúdo montar.
@@ -108,6 +120,7 @@ export function MolduraDePainel({
   unidade,
   destacado = false,
   frescor,
+  subtitulo = null,
   children,
 }: {
   readonly id: string;
@@ -115,6 +128,8 @@ export function MolduraDePainel({
   readonly unidade?: string;
   readonly destacado?: boolean;
   readonly frescor?: Frescor;
+  /** Ver `Painel`. `null` é ausência de subtítulo, e é o padrão. */
+  readonly subtitulo?: string | null;
   readonly children?: ReactNode;
 }) {
   return (
@@ -166,6 +181,21 @@ export function MolduraDePainel({
             </span>
           )}
         </div>
+        {subtitulo === null || subtitulo === "" ? null : (
+          <p
+            data-teste="subtitulo-do-painel"
+            style={{
+              margin: 0,
+              font: `400 10px/1.4 ${TIPOGRAFIA.texto}`,
+              color: PALETA.textoTerciario,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {subtitulo}
+          </p>
+        )}
         {destacado ? (
           <span
             data-teste="rotulo-de-referencia"

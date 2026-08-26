@@ -32,6 +32,7 @@ import {
   VW_FATO_CAIXA_DIARIO,
 } from "@/acesso/fixtures/caixa-diario";
 import { AGREGADO_DE_AREA } from "@/acesso/fixtures/eixos";
+import { type CargaParaNota, notaDoPainel } from "@/acesso/fixtures/nota";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FATURAMENTO_CLIENTE,
@@ -762,9 +763,18 @@ export function calcularPainel(id: string, q: Query): PainelDesenhado {
     unit: registro.unidade ?? origem.series[0]?.unidade ?? "contagem",
     formula: origem.formula,
     total: desenho.total,
-    // A nota é de T-133: escrevê-la aqui deixaria um absoluto do consolidado
-    // aparecer sob qualquer recorte.
-    note: null,
+    /*
+     * A nota sai do desenho **deste** recorte (T-133).
+     *
+     * Não há texto guardado, então não há texto escrito sobre outro recorte
+     * para sobreviver a este. O escopo de cada painel está declarado em
+     * `nota-de-painel.ts`, e a maioria declara `sem_nota` — que é a resposta
+     * certa de RF-09 enquanto ninguém escrever uma frase conferível.
+     */
+    note: notaDoPainel(registro.id, r.q, {
+      categorias: desenho.categorias,
+      valores: desenho.valores,
+    }),
     asOf: fechamentoDoRecorte(r),
     categories: desenho.categorias,
     series,
@@ -794,6 +804,31 @@ function fechamentoDoRecorte(r: Recorte): string {
  * conveniência. O compilador confere cada ramo contra a variante certa da
  * união, que é o que impede um envelope de `rosca` sair sem centro.
  */
+/**
+ * As categorias e valores de um desenho, quando ele tem os dois (T-133).
+ *
+ * Só `barras-horizontais` casa entre as formas categóricas e compostas: as
+ * outras guardam a carga com outro nome — fatias, passos, grupos, células — e
+ * cada nome desses é uma forma diferente de repartir, não a mesma com outro
+ * rótulo.
+ *
+ * Devolver `null` para elas é a resposta certa: a receita `concentracao` diz
+ * "as duas maiores respondem por N% do total", e isso só é honesto onde as
+ * partes somam o todo numa lista de categorias. Forçar as outras a caber aqui
+ * produziria frases que somam o que não soma.
+ *
+ * As formas que faltam ganham receita própria quando alguém escrever uma frase
+ * que se possa conferir para elas — ver H-59.
+ */
+function cargaParaNota(
+  desenho: DesenhoCategorico | DesenhoComposto,
+): CargaParaNota | null {
+  if (desenho.forma === "barras-horizontais") {
+    return { categorias: desenho.categorias, valores: desenho.valores };
+  }
+  return null;
+}
+
 function montarCategorico(
   id: string,
   registro: { readonly titulo: string; readonly unidade: Unidade | null },
@@ -808,8 +843,7 @@ function montarCategorico(
     unit: registro.unidade ?? origem.series[0]?.unidade ?? "contagem",
     formula: origem.formula,
     total: desenho.total,
-    // A nota é de T-133, pela mesma razão das formas cartesianas.
-    note: null,
+    note: notaDoPainel(id, r.q, cargaParaNota(desenho)),
     asOf: fechamentoDoRecorte(r),
   };
 
@@ -887,7 +921,7 @@ function montarComposto(
     unit: registro.unidade ?? origem.series[0]?.unidade ?? "contagem",
     formula: origem.formula,
     total: desenho.total,
-    note: null,
+    note: notaDoPainel(id, r.q, cargaParaNota(desenho)),
     asOf: fechamentoDoRecorte(r),
   };
 
