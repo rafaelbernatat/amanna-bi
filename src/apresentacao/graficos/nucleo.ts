@@ -152,10 +152,11 @@ export function configuracaoDeEixo(entrada: {
 
   const f = faixa(min, max);
   const amplitude = f.max - f.min;
+  const casas = casasDecimais(amplitude, divisoes);
 
   const cortes: number[] = [];
   for (let i = 0; i <= divisoes; i += 1) {
-    cortes.push(arredondar(f.min + (amplitude * i) / divisoes));
+    cortes.push(arredondar(f.min + (amplitude * i) / divisoes, casas));
   }
 
   const categorias = entrada.categorias ?? [];
@@ -166,7 +167,7 @@ export function configuracaoDeEixo(entrada: {
       : passoDeRotulo(largura / categorias.length, categorias);
 
   return {
-    dominio: [arredondar(f.min), arredondar(f.max)],
+    dominio: [arredondar(f.min, casas), arredondar(f.max, casas)],
     cortes,
     // recharts conta `interval` como "quantos pular", nao "de quantos em quantos".
     intervaloDeRotulo: passo - 1,
@@ -176,12 +177,40 @@ export function configuracaoDeEixo(entrada: {
 }
 
 /**
- * Duas casas nas coordenadas do eixo.
+ * Arredondamento das coordenadas do eixo, na precisao que o passo exige.
  *
  * Nao e arredondamento de valor de negocio — que a secao 13 do PRD proibe fora
  * da apresentacao. E o que impede o mesmo eixo de sair com `12.000000001` numa
  * maquina e `12` noutra, quebrando a comparacao por ruido de ponto flutuante.
  */
-function arredondar(n: number): number {
-  return Math.round(n * 100) / 100;
+function arredondar(n: number, casas: number): number {
+  const fator = 10 ** casas;
+  return Math.round(n * fator) / fator;
+}
+
+/** Casas decimais minimas do eixo, quando a faixa e grande. */
+const CASAS_MINIMAS = 2;
+
+/** Teto de casas: alem disto o ruido de ponto flutuante volta a aparecer. */
+const CASAS_MAXIMAS = 10;
+
+/**
+ * Quantas casas decimais o eixo precisa para os cortes nao se repetirem.
+ *
+ * Duas casas fixas quebravam em toda serie de faixa pequena. Salario medio por
+ * area vem em `BRL_mi` — a faixa inteira vai de 0,0059 a 0,0126, e os cinco
+ * cortes arredondados a duas casas viravam `0,01` cinco vezes. O eixo mostrava
+ * o mesmo numero em todas as linhas de grade, e o recharts ainda avisava no
+ * console que havia chaves repetidas.
+ *
+ * A precisao sai do **passo** entre cortes, e nao da grandeza dos valores: o
+ * que precisa ser distinguivel e a diferenca de uma linha de grade para a
+ * seguinte. Uma casa a mais que o passo garante que duas linhas vizinhas nunca
+ * arredondem para o mesmo texto.
+ */
+function casasDecimais(amplitude: number, divisoes: number): number {
+  const passo = amplitude / divisoes;
+  if (!Number.isFinite(passo) || passo <= 0) return CASAS_MINIMAS;
+  const necessarias = Math.ceil(-Math.log10(passo)) + 1;
+  return Math.min(Math.max(CASAS_MINIMAS, necessarias), CASAS_MAXIMAS);
 }

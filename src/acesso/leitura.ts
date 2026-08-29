@@ -29,7 +29,9 @@ import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
 import { getSession } from "@/acesso/sessao";
 import type { Kpi, PanelResponse, Query } from "@/semantica/contrato";
-import { escopoDaSessao } from "@/seguranca/identidade";
+import type { EstadoDe } from "@/semantica/estado";
+import { GraoProibido } from "@/seguranca/grao";
+import { escopoDaSessao, ForaDoEscopo } from "@/seguranca/identidade";
 
 /**
  * Os KPIs de uma tela, já restringidos ao perfil de quem pediu.
@@ -80,4 +82,46 @@ export async function lerPainel(
     dimensoesProvisorias(),
   );
   return fronteira.lerPainel({ painel, consulta, breakdown });
+}
+
+/**
+ * Um painel já traduzido para um dos seis estados da seção 6.4 (T-168).
+ *
+ * ## Por que a tradução mora aqui, e não na tela
+ *
+ * `lerPainel` **lança** quando o recorte está fora do perfil: é o que a
+ * fronteira de T-137 precisa fazer para que a linha seguinte nunca execute. Mas
+ * a seção 6.6 diz que colar a URL de um recorte para alguém de perfil menor
+ * abre a tela "sem permissão", e não uma página de erro — então alguém precisa
+ * transformar a exceção em estado.
+ *
+ * Esse alguém não pode ser a tela. Treze telas com o próprio `try` dariam treze
+ * respostas, e a primeira que esquecesse de distinguir `ForaDoEscopo` de uma
+ * falha de fonte mostraria "erro ao ler" para quem só não tem acesso — ou, pior,
+ * mostraria "sem permissão" quando o banco caiu, e ninguém iria olhar o banco.
+ *
+ * ## O que cada exceção vira
+ *
+ * | Exceção | Estado | Por quê |
+ * |---|---|---|
+ * | `ForaDoEscopo` | `sem_permissao` | O recorte não cabe no perfil (seção 11) |
+ * | `GraoProibido` | `sem_permissao` | O grão pedido é mais fino que o permitido |
+ * | qualquer outra | `erro_de_fonte` | Adaptador, rede, painel inexistente |
+ *
+ * O `ultimoFrescor` sai `null` até `getMeta` existir (T-149): a 6.4 pede o
+ * horário da última leitura bem-sucedida, e inventar um seria pior que admitir
+ * que ainda não se sabe dele.
+ */
+export async function lerPainelParaTela(
+  painel: string,
+  consulta: Query,
+): Promise<EstadoDe<PanelResponse>> {
+  try {
+    return { estado: "com_dado", carga: await lerPainel(painel, consulta) };
+  } catch (erro) {
+    if (erro instanceof ForaDoEscopo || erro instanceof GraoProibido) {
+      return { estado: "sem_permissao" };
+    }
+    return { estado: "erro_de_fonte", ultimoFrescor: null };
+  }
 }

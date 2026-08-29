@@ -111,7 +111,7 @@ test.describe("O shell", () => {
   test("o conteudo rola sem mover o cabecalho", async ({ page }) => {
     await page.goto("/rh/visao");
 
-    const cabecalho = page.locator("header");
+    const cabecalho = page.locator('[data-teste="cabecalho"]');
     const antes = await cabecalho.boundingBox();
 
     // Forca conteudo mais alto que a area visivel, para haver o que rolar.

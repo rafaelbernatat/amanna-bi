@@ -53,8 +53,20 @@ export const ALTURA_DA_FORMA: Readonly<Record<Forma, number>> = {
   /** Uma barra horizontal repartida, com legenda embaixo. */
   divisao: 96,
 
-  /** Três a cinco números grandes em linha, sem eixo. */
-  estatisticas: 120,
+  /**
+   * Três a cinco números grandes, em uma ou duas fileiras.
+   *
+   * Eram 120 px, que valiam para a fileira única de um painel largo. Num painel
+   * de 4 colunas os mesmos três números não cabem lado a lado — a caixa fica
+   * com 93 px e o valor sai cortado, "R$ 0,..." — então ali eles quebram em
+   * duas fileiras, e duas fileiras precisam de altura.
+   *
+   * Quem decide quantas colunas é `DesenhoDePainel`, que conhece o `span`. A
+   * altura é a mesma nos dois arranjos de propósito: uma altura por arranjo
+   * faria a fileira da grade serrilhar entre um painel de estatísticas e o
+   * gráfico ao lado.
+   */
+  estatisticas: 180,
 
   /** A proporção do mapa do Brasil, que é mais alto que largo. */
   "mosaico-geografico": 260,
@@ -62,8 +74,20 @@ export const ALTURA_DA_FORMA: Readonly<Record<Forma, number>> = {
   /** Nuvem de pontos: precisa de área nos dois eixos para não virar linha. */
   dispersao: 216,
 
-  /** Uma faixa com marcas de etapa; o rótulo é o que ocupa altura. */
-  "regua-de-ciclo": 88,
+  /**
+   * Quatro faixas empilhadas mais a linha de marcos.
+   *
+   * Eram 88 px, estimados em T-132 a partir da descricao "uma faixa com marcas
+   * de etapa" — antes de a primitiva existir. Ao desenhar `ct-ciclo` de
+   * verdade, sao **quatro** faixas: PMP, PME, PMR e o ciclo sem caixa, que se
+   * sobrepoem e por isso ocupam uma linha cada. Com 88 px a linha dos marcos
+   * ficava cortada pela metade, e o dia de cada etapa — que e o que a regua
+   * existe para mostrar — sumia.
+   *
+   * O esqueleto le esta mesma linha, entao o CLS continua em zero: a caixa
+   * cresceu nos dois lugares ao mesmo tempo.
+   */
+  "regua-de-ciclo": 116,
 };
 
 /** A altura de uma forma. Existe para o esqueleto e o desenho não divergirem. */
