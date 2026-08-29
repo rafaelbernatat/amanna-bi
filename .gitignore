@@ -45,6 +45,15 @@ Thumbs.db
 # Configuracao local do agente
 .claude/settings.local.json
 
+# Regras de agente geradas pelo Next 16 a cada `next dev` e `next build`.
+#
+# Sao saida da ferramenta, nao fonte: o proprio Next as reescreve, e versiona-las
+# faria toda build sujar a arvore de trabalho. A orientacao do projeto vive em
+# EXECUTE.md e INSTRUCOES.md, que sao escritos por gente. Para deixar de gera-las,
+# `agentRules: false` em next.config.ts.
+/AGENTS.md
+/CLAUDE.md
+
 # Relatorios de execucao da suite de contrato (T-123).
 #
 # Sao saida, nao fonte: o CI os publica como artefato e o repositorio nao os
