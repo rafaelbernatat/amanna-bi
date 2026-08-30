@@ -77,6 +77,20 @@ const ONDE_A_FRACAO_E_DADO = [
    * despercebida aqui.
    */
   "src/semantica/tolerancia.ts",
+  /*
+   * O controle negativo da suíte (T-140).
+   *
+   * Este arquivo **é** o achado 3: ele reproduz o `fctx()` do protótipo de
+   * propósito, com 0,62 e 0,38 escritos, para que a suíte de contrato tenha
+   * contra o que ser medida. Uma suíte que nunca reprovou não prova nada.
+   *
+   * A dispensa não afrouxa a guarda, e o caso logo abaixo é o que garante
+   * isso: ele exige que o controle **contenha** os fatores. Se alguém apagar a
+   * mutação achando que está limpando o repositório, a linha aqui deixa de ter
+   * o que dispensar e o teste acusa — em vez de ficar verde por não haver mais
+   * nada para encontrar.
+   */
+  "src/acesso/contrato/mutacao.ts",
 ];
 
 function todosOsArquivos(pasta: string): readonly string[] {
@@ -176,7 +190,7 @@ describe("os multiplicadores do protótipo não existem", () => {
     }
   });
 
-  it("a lista de onde a fração é dado tem seis arquivos, e todos existem", () => {
+  it("a lista de onde a fração é dado tem sete arquivos, e todos existem", () => {
     /*
      * A guarda contra a lista virar um lugar onde qualquer coisa cabe.
      *
@@ -184,8 +198,14 @@ describe("os multiplicadores do protótipo não existem", () => {
      * justamente o que obrigou a decisão a passar por aqui em vez de a lista
      * crescer sozinha. Cada entrada precisa dizer por que a fração dela é dado,
      * e a da tolerância diz: é limiar declarado, não fator de escala.
+     *
+     * A sétima entrou com T-140: o controle negativo da suíte, que carrega o
+     * `fctx()` do protótipo de propósito. Ela é a única da lista que não é dado
+     * nem limiar — é o defeito, guardado para a suíte ter contra o que ser
+     * medida —, e por isso vem com um caso próprio exigindo que os fatores
+     * estejam mesmo lá.
      */
-    expect(ONDE_A_FRACAO_E_DADO).toHaveLength(6);
+    expect(ONDE_A_FRACAO_E_DADO).toHaveLength(7);
     for (const c of ONDE_A_FRACAO_E_DADO) expect(ARQUIVOS).toContain(c);
   });
 });

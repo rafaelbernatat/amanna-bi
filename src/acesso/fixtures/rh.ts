@@ -75,7 +75,15 @@ import {
   ajustarMargemDeColuna,
   repartir,
   repartirMatriz,
+  repartirMatrizComPerfil,
 } from "@/acesso/fixtures/reparticao";
+import {
+  ADMISSAO_POR_MODALIDADE,
+  FOLHA_POR_AREA,
+  FOLHA_POR_ENTIDADE,
+  FOLHA_POR_MODALIDADE,
+  noMes,
+} from "@/acesso/fixtures/sazonalidade";
 
 /** O ano que esta fixture carrega. 2025 entra com T-152. */
 export const ANO_DA_FIXTURE = "2026";
@@ -205,12 +213,62 @@ const PESO_DE_DESLIGAMENTO = CELULAS.map(
 function porMesECelula(
   totalPorMes: readonly number[],
   pesoPorCelula: readonly number[],
+  /**
+   * A inclinação de cada célula ao longo dos meses (T-140.2).
+   *
+   * Ausente, a repartição é a proporcional de sempre: a fatia de cada célula é
+   * a mesma nos doze meses. É o que basta para medida cujo perfil não muda ao
+   * longo do ano — admissão e desligamento já variam sozinhos, porque são
+   * contagens pequenas repartidas mês a mês.
+   *
+   * Presente, o interior segue a curva **sem** mexer nas margens: o total do
+   * mês e o total da célula no ano continuam exatos.
+   */
+  inclinacao?: (mes: number, celula: Celula) => number,
 ): readonly (readonly number[])[] {
   const total = totalPorMes.reduce((a, b) => a + b, 0);
-  return repartirMatriz(totalPorMes, repartir(total, pesoPorCelula));
+  const colunas = repartir(total, pesoPorCelula);
+  if (inclinacao === undefined) return repartirMatriz(totalPorMes, colunas);
+
+  const perfil = totalPorMes.map((_t, m) =>
+    CELULAS.map((celula, c) => (pesoPorCelula[c] ?? 0) * inclinacao(m, celula)),
+  );
+  return repartirMatrizComPerfil(totalPorMes, colunas, perfil);
 }
 
-const ADMISSOES = porMesECelula(ADMISSOES_MENSAL, PESO_DE_ADMISSAO);
+/**
+ * A inclinação da admissão: só a modalidade (T-140.2).
+ *
+ * É o que faz a composição do quadro andar ao longo do ano. Entidade e área
+ * ficam de fora porque a contratação delas já varia sozinha — são contagens de
+ * uma a duas dezenas por mês, e a repartição inteira delas oscila por conta
+ * própria. A modalidade não oscilava: era a mesma fatia nos doze meses.
+ */
+function inclinacaoDaAdmissao(mes: number, celula: Celula): number {
+  return noMes(ADMISSAO_POR_MODALIDADE, celula.modalidade, mes);
+}
+
+/**
+ * A inclinação da folha: entidade, área e modalidade compostas (T-140.2).
+ *
+ * As três se multiplicam porque as três agem ao mesmo tempo sobre a mesma
+ * célula — o décimo terceiro concentra na Unidade SP, a revisão de julho
+ * concentra em Tecnologia, e o remoto cresce o ano inteiro. Uma célula de
+ * Tecnologia remota em SP carrega as três.
+ */
+function inclinacaoDaFolha(mes: number, celula: Celula): number {
+  return (
+    noMes(FOLHA_POR_ENTIDADE, celula.entidade, mes) *
+    noMes(FOLHA_POR_AREA, celula.area, mes) *
+    noMes(FOLHA_POR_MODALIDADE, celula.modalidade, mes)
+  );
+}
+
+const ADMISSOES = porMesECelula(
+  ADMISSOES_MENSAL,
+  PESO_DE_ADMISSAO,
+  inclinacaoDaAdmissao,
+);
 const DESLIGAMENTOS = porMesECelula(DESLIGAMENTOS_MENSAL, PESO_DE_DESLIGAMENTO);
 
 /**
@@ -297,6 +355,7 @@ const COMPONENTES_DA_FOLHA = COMPOSICAO_DA_FOLHA.map((_, k) =>
   porMesECelula(
     MESES.map((_mes, m) => FOLHA_MES_POR_PARCELA[m]?.[k] ?? 0),
     PESO_DE_FOLHA,
+    inclinacaoDaFolha,
   ),
 );
 

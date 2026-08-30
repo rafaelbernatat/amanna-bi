@@ -108,9 +108,28 @@ export function repartirMatriz(
     return linhas.map(() => colunas.map(() => 0));
   }
 
-  const matriz = linhas.map((li) =>
-    colunas.map((cj) => Math.floor((li * cj) / totalLinhas)),
+  const exato = linhas.map((li) =>
+    colunas.map((cj) => (li * cj) / totalLinhas),
   );
+  return arredondarComMargens(exato, linhas, colunas);
+}
+
+/**
+ * Arredonda uma matriz de reais para inteiros que fecham as duas margens.
+ *
+ * Extraída em T-140.2 para que a repartição proporcional e a com perfil usem
+ * **o mesmo** arredondamento. Duas cópias divergiriam no desempate, e o
+ * desempate é o que faz a fixture ser reproduzível byte a byte — requisito da
+ * regra 5 (idempotência), não detalhe de implementação.
+ *
+ * Maior resto, com empate resolvido pelo índice.
+ */
+function arredondarComMargens(
+  exato: readonly (readonly number[])[],
+  linhas: readonly number[],
+  colunas: readonly number[],
+): readonly (readonly number[])[] {
+  const matriz = exato.map((linha) => linha.map((v) => Math.floor(v)));
 
   const faltaLinha = linhas.map(
     (li, i) => li - (matriz[i] ?? []).reduce((a, b) => a + b, 0),
@@ -120,10 +139,10 @@ export function repartirMatriz(
   );
 
   const candidatas = linhas
-    .flatMap((li, i) =>
-      colunas.map((cj, j) => {
-        const exato = (li * cj) / totalLinhas;
-        return { i, j, resto: exato - Math.floor(exato) };
+    .flatMap((_li, i) =>
+      colunas.map((_cj, j) => {
+        const v = exato[i]?.[j] ?? 0;
+        return { i, j, resto: v - Math.floor(v) };
       }),
     )
     .sort((a, b) => b.resto - a.resto || a.i - b.i || a.j - b.j);
@@ -202,4 +221,107 @@ export function ajustarMargemDeColuna(
     }
   }
   return saida;
+}
+
+/**
+ * Quantas passadas de ajuste o encaixe faz (T-140.2).
+ *
+ * Numero fixo, e nao "ate convergir por tolerancia": a fixture precisa sair
+ * byte a byte igual em toda execucao (regra 5), e um criterio de parada por
+ * tolerancia depende de ponto flutuante numa ordem que pode mudar entre
+ * plataformas. Quarenta passadas sobre uma matriz de 12 x 42 custa
+ * microssegundos e chega muito alem do que o arredondamento consegue
+ * distinguir.
+ */
+const PASSADAS_DE_AJUSTE = 40;
+
+/** Quanto as margens podem divergir depois do ajuste, antes de virar erro. */
+const FOLGA_DO_AJUSTE = 1e-6;
+
+/**
+ * Reparte respeitando as duas margens **e** um perfil declarado (T-140.2).
+ *
+ * ## O que `repartirMatriz` nao consegue fazer
+ *
+ * Ela distribui o interior por independencia: `celula = linha x coluna / total`.
+ * E a solucao proporcional, e proporcional e exatamente o que **nao** distingue
+ * recortar de escalar. Com ela, a fatia da Unidade SP na folha e 0,6800 nos
+ * doze meses; somar seis meses de um recorte e escalar o consolidado por 0,68
+ * dao o mesmo numero, e a suite de contrato nao tem como notar a diferenca.
+ *
+ * O achado 3 do Anexo D e sobre isso, e o achado 4 e a consequencia: a
+ * reconciliacao parecia correta porque KPI e painel escalavam pelo mesmo fator.
+ * Um dataset onde toda dimensao se reparte por constante e um dataset onde o
+ * defeito do prototipo passa despercebido.
+ *
+ * ## O que esta faz
+ *
+ * Recebe um `perfil` — um peso por celula e por mes — e encontra a matriz mais
+ * proxima dele que ainda fecha as duas margens. As margens continuam exatas: o
+ * total de cada mes e o total de cada celula no ano sao os mesmos de antes. O
+ * que muda e **como** cada mes se reparte por dentro.
+ *
+ * O metodo e ajuste proporcional iterativo: escala as linhas para fecharem,
+ * depois as colunas, e repete. Cada passada aproxima as duas margens ao mesmo
+ * tempo, e o perfil sobrevive como a forma relativa do interior.
+ *
+ * ## Peso zero e margem zero
+ *
+ * Peso zero mantem a celula em zero para sempre — e o jeito de dizer "esta
+ * combinacao nao existe". Se isso tornar uma margem inalcancavel, a funcao
+ * **lanca**: uma margem que nao fecha em silencio e uma fixture que nao soma, e
+ * a regra 1 acusaria isso muito depois, num painel, sem dizer de onde veio.
+ */
+export function repartirMatrizComPerfil(
+  linhas: readonly number[],
+  colunas: readonly number[],
+  perfil: readonly (readonly number[])[],
+): readonly (readonly number[])[] {
+  const totalLinhas = linhas.reduce((a, b) => a + b, 0);
+  const totalColunas = colunas.reduce((a, b) => a + b, 0);
+  if (totalLinhas !== totalColunas) {
+    throw new ReparticaoImpossivel(
+      `as margens não fecham: linhas somam ${totalLinhas} e colunas somam ${totalColunas}`,
+    );
+  }
+  if (totalLinhas === 0) {
+    return linhas.map(() => colunas.map(() => 0));
+  }
+
+  const x = linhas.map((_li, i) =>
+    colunas.map((_cj, j) => Math.abs(perfil[i]?.[j] ?? 0)),
+  );
+
+  for (let passada = 0; passada < PASSADAS_DE_AJUSTE; passada += 1) {
+    for (let i = 0; i < linhas.length; i += 1) {
+      const linha = x[i];
+      if (linha === undefined) continue;
+      const soma = linha.reduce((a, b) => a + b, 0);
+      // Soma zero: não há como escalar, e forçar dividiria por zero. A margem
+      // que ficar devendo aparece na conferência abaixo, com nome.
+      if (soma === 0) continue;
+      const fator = (linhas[i] ?? 0) / soma;
+      for (let j = 0; j < linha.length; j += 1)
+        linha[j] = (linha[j] ?? 0) * fator;
+    }
+    for (let j = 0; j < colunas.length; j += 1) {
+      const soma = x.reduce((a, linha) => a + (linha[j] ?? 0), 0);
+      if (soma === 0) continue;
+      const fator = (colunas[j] ?? 0) / soma;
+      for (const linha of x) linha[j] = (linha[j] ?? 0) * fator;
+    }
+  }
+
+  for (let i = 0; i < linhas.length; i += 1) {
+    const soma = (x[i] ?? []).reduce((a, b) => a + b, 0);
+    if (Math.abs(soma - (linhas[i] ?? 0)) > FOLGA_DO_AJUSTE * totalLinhas) {
+      throw new ReparticaoImpossivel(
+        `o perfil não permite fechar a linha ${String(i)}: ela pede ` +
+          `${String(linhas[i])} e o ajuste chegou a ${String(soma)}. ` +
+          "Peso zero em toda a linha é o caso mais comum.",
+      );
+    }
+  }
+
+  return arredondarComMargens(x, linhas, colunas);
 }
