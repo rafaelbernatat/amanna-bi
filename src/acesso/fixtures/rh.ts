@@ -59,6 +59,7 @@ import {
   HORAS_TREINAMENTO_MENSAL,
   MODALIDADES_DE_TREINAMENTO,
   PARTICIPACAO_TREINAMENTO_MENSAL,
+  CUSTO_POR_CABECA_DA_MODALIDADE,
   PERFIL_POR_AREA,
   TRILHAS,
   VAGAS_CANCELADAS,
@@ -309,6 +310,32 @@ const HEADCOUNT: readonly (readonly number[])[] = (() => {
  * ------------------------------------------------------------------ */
 
 /**
+ * O custo por cabeça da modalidade, normalizado dentro da área (T-140.3).
+ *
+ * A média ponderada pelo quadro da área é 1 por construção, e isso e não outra
+ * coisa é o que mantém os invariantes: a folha anual de cada área continua a
+ * declarada em `PERFIL_POR_AREA`, e a fatia de entidade continua 0,68, porque o
+ * fator multiplica igual as três modalidades de uma mesma entidade.
+ *
+ * Sem a normalização, dar 1,22 ao remoto inflaria a folha da área inteira — e o
+ * painel de folha por área passaria a discordar do número aprovado, por um
+ * motivo que ninguém pediu.
+ */
+function custoRelativoNaArea(area: string, modalidade: string): number {
+  const custo = (m: string) => CUSTO_POR_CABECA_DA_MODALIDADE[m] ?? 0;
+  const quadro = MODALIDADES_ARMAZENADAS.reduce(
+    (a, m) => a + quadroDoPar(area, m),
+    0,
+  );
+  const ponderado = MODALIDADES_ARMAZENADAS.reduce(
+    (a, m) => a + quadroDoPar(area, m) * custo(m),
+    0,
+  );
+  if (ponderado === 0) return 1;
+  return (custo(modalidade) * quadro) / ponderado;
+}
+
+/**
  * Pesos de folha — deliberadamente diferentes dos de quadro.
  *
  * Tecnologia tem 13,5% do quadro e 22% da folha. Um adaptador que multiplique
@@ -325,6 +352,7 @@ const PESO_DE_FOLHA = CELULAS.map(
   (c) =>
     perfilDe(c.area).folhaReais *
     (quadroDoPar(c.area, c.modalidade) / perfilDe(c.area).headcount) *
+    custoRelativoNaArea(c.area, c.modalidade) *
     fatiaDaEntidade(c.entidade, "folha"),
 );
 

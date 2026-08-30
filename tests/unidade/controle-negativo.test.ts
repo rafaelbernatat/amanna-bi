@@ -159,6 +159,24 @@ describe("as fatias diferem entre medidas", () => {
       valor: "tecnologia",
       medidas: ["headcountFte", "desligamentos"],
     },
+    /*
+     * As duas da modalidade entraram com T-140.3. Antes dela, a modalidade
+     * entrava na folha só pela proporção do quadro, então a folha seguia o
+     * quadro por construção e a fatia era a mesma nas duas medidas — uma
+     * dimensão que um fator fixo reproduzia.
+     */
+    {
+      nome: "modalidade · Remoto no quadro e na folha",
+      dimensao: "modalidade",
+      valor: "remoto",
+      medidas: ["headcountFte", "salarios"],
+    },
+    {
+      nome: "modalidade · Presencial no quadro e na folha",
+      dimensao: "modalidade",
+      valor: "presencial",
+      medidas: ["headcountFte", "salarios"],
+    },
   ] as const;
 
   it.each(CASOS)("$nome", ({ dimensao, valor, medidas }) => {
@@ -250,24 +268,23 @@ describe("as fatias diferem entre meses", () => {
 
 describe("o que a repartição de hoje ainda deixa plano", () => {
   /*
-   * `repartirMatriz` respeita as duas margens distribuindo o interior por
-   * independência: `célula = linha × coluna / total`. É a solução proporcional,
-   * e proporcional é justamente o que não distingue recortar de escalar. Dar
-   * perfil sazonal ao interior é T-140.2.
+   * O que sobrou depois de T-140.2 e T-140.3: o módulo Financeiro. Ele reparte
+   * por entidade com `repartirMatriz`, que distribui o interior por
+   * independência — `célula = linha × coluna / total` —, e essa é a solução
+   * proporcional.
    */
 
-  it("a modalidade se reparte igual em toda medida — T-140.2", () => {
-    const fatias = ["headcountFte", "salarios", "desligamentos", "admissoes"]
-      .map((m) => fatiaAnual(RH, "modalidade", "remoto", m))
-      .filter((v) => !Number.isNaN(v));
-
-    expect(
-      amplitude(fatias),
-      "a modalidade deixou de ser proporcional: aperte este caso e mova-o para o bloco de cima",
-    ).toBeLessThan(DIVERGENCIA_MINIMA);
-  });
-
-  it("a receita também — T-140.2", () => {
+  it("a receita ainda se reparte por constante entre meses — T-140", () => {
+    /*
+     * O rótulo era T-140.2 e estava errado: aquela tarefa nomeava a folha e o
+     * quadro, e não a receita. O Financeiro reparte por entidade com
+     * `repartirMatriz` e continua proporcional.
+     *
+     * Não segura o controle negativo — as quatro dimensões que ele cobre já são
+     * cobertas pelo RH. Fica como item em aberto da mãe: enquanto a Unidade SP
+     * tiver exatamente 42% da receita em todos os meses, essa leitura do
+     * Financeiro é reproduzível por um fator fixo.
+     */
     const serie = fatiaPorMes(FIN, "entidade", "unidade-sp", "receitaLiquida");
     expect(
       amplitude(serie),

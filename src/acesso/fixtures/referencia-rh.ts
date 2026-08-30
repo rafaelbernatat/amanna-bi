@@ -261,6 +261,49 @@ export const HEADCOUNT_POR_MODALIDADE: readonly {
   { codigo: "remoto", headcount: 164 },
 ];
 
+/**
+ * Custo por cabeça de cada modalidade, em milésimos da média da área (T-140.3).
+ *
+ * ## Por que existe
+ *
+ * Sem isto, a modalidade entrava na folha **só** pela proporção do quadro:
+ * `PESO_DE_FOLHA` multiplicava a folha da área pela fatia do par área ×
+ * modalidade. A consequência é que a folha seguia o quadro por construção, e a
+ * fatia anual do remoto era a mesma nos dois — 0,131 em quadro e 0,131 em
+ * folha, 0,6 ponto de divergência contra os 5,3 da entidade e os 8,8 da área.
+ *
+ * Uma dimensão que se reparte igual em toda medida é uma dimensão que um fator
+ * fixo reproduz. É o achado 3 do Anexo D sobrevivendo numa dimensão, e o que
+ * T-140 pede é que nenhuma sobreviva.
+ *
+ * ## A leitura de negócio
+ *
+ * O remoto custa mais por cabeça porque concentra cargos que pagam mais: é onde
+ * estão os papéis de tecnologia e os mais seniores, que são os que a empresa
+ * consegue contratar fora do raio do escritório. O presencial custa menos pela
+ * razão espelhada — concentra operação e logística, que são presenciais por
+ * natureza do trabalho.
+ *
+ * ## Como é aplicado
+ *
+ * Como peso **relativo dentro de cada área**, renormalizado para que a média
+ * ponderada pelo quadro da área seja 1. Assim a folha anual de cada área
+ * continua exatamente a declarada em `PERFIL_POR_AREA`, e a fatia de entidade
+ * continua exatamente 0,68 — o fator multiplica igual as três modalidades de
+ * uma mesma entidade. O que muda é só a repartição entre modalidades.
+ *
+ * Em milésimos, e não em fração, pela mesma razão de `sazonalidade.ts`: a
+ * camada de dados proíbe fração literal, e a proibição existe porque fator de
+ * escala é, por natureza, uma fração. Estes são pesos relativos — dobrar os
+ * três não muda uma célula da saída.
+ */
+export const CUSTO_POR_CABECA_DA_MODALIDADE: Readonly<Record<string, number>> =
+  {
+    remoto: 1220,
+    hibrido: 1030,
+    presencial: 900,
+  };
+
 /* ------------------------------------------------------------------ *
  * Recrutamento e treinamento
  * ------------------------------------------------------------------ */
