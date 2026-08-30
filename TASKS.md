@@ -274,7 +274,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [~] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP   ⏸ aguardando H-46
   · **Aceite:** O boot valida todas as variáveis por esquema e aborta em menos de 2 segundos nomeando as ausentes ou inválidas, sem ler credencial de arquivo versionado ou da imagem; um scanner de segredo no CI reprova um segredo plantado de propósito; e as respostas trazem CSP sem unsafe-inline, HSTS, X-Content-Type-Options, Referrer-Policy e frame-ancestors restrito.
   · **PRD:** seção 11, seção 15, seção 8.3, seção 13 · **Depende de:** T-001, T-006
-- [ ] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação
+- [~] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação   ⏳ 2026-08-29 23:04 · sessao-0f42
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
   · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total), D-P8 · **Depende de:** T-002, T-004
 - [X] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
