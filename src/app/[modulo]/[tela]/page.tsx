@@ -6,6 +6,7 @@ import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
 import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
 import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
+import { PainelDeChat } from "@/apresentacao/chat/PainelDeChat";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
@@ -14,6 +15,7 @@ import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { COLUNAS_DA_GRADE, paineisDaTela } from "@/semantica/paineis";
+import { perguntar, type Resposta } from "@/chat/perguntar";
 import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
 
 /**
@@ -78,7 +80,10 @@ const CHAVES_CONHECIDAS: ReadonlySet<string> = new Set([
  *
  * - **houve aviso.** Redirecionar apagaria o parametro invalido junto com a
  *   explicacao, e a pessoa leria "12 meses" achando que o link dela funcionou.
- * - **ha chave desconhecida.** Ver `CHAVES_CONHECIDAS`.
+ * - **ha chave desconhecida.** Ver `CHAVES_CONHECIDAS`. `pergunta` e uma delas
+ *   de proposito: canonizar apagaria a pergunta da URL, e a resposta sumiria
+ *   junto. Foi o primeiro sintoma quando o chat entrou — a tela redirecionava
+ *   para si mesma sem a pergunta, e nada acontecia.
  */
 function canonizar(
   rota: string,
@@ -156,6 +161,37 @@ export default async function Pagina({
   );
   if (canonica !== null) redirect(canonica);
 
+  /*
+   * O chat (seção 7).
+   *
+   * A pergunta vem da URL, como os filtros — o mesmo mecanismo de T-127, e pela
+   * mesma razão: a seção 6.6 promete que colar a URL reproduz a tela, e uma
+   * conversa que só existe na memória do navegador não se cola em lugar nenhum.
+   *
+   * Quando a resposta cita uma tela que não é esta, a página **navega** até ela
+   * levando o recorte da resposta e o painel a destacar. É o RF-13 literal: "o
+   * painel citado fica visível sem rolagem manual, com o rótulo de referência".
+   */
+  const pergunta = busca.get("pergunta") ?? "";
+  const resposta: Resposta | null =
+    pergunta.trim() === "" ? null : await perguntar(pergunta, query);
+
+  if (
+    resposta !== null &&
+    resposta.tipo === "resposta" &&
+    resposta.resolucao.acoes.tela !== null &&
+    resposta.resolucao.acoes.tela !== rota.slice(1)
+  ) {
+    const destino = rotaCom(
+      `/${resposta.resolucao.acoes.tela}`,
+      resposta.resolucao.acoes.filtros,
+      resposta.resolucao.acoes.painel ?? undefined,
+    );
+    redirect(
+      `${destino}${destino.includes("?") ? "&" : "?"}pergunta=${encodeURIComponent(pergunta)}`,
+    );
+  }
+
   return (
     <div
       style={{
@@ -210,6 +246,13 @@ export default async function Pagina({
             data-painel={painelDestacado ?? ""}
             data-avisos={String(avisos.length)}
             style={{ display: "none" }}
+          />
+
+          <PainelDeChat
+            pergunta={pergunta}
+            resposta={resposta}
+            rota={rota}
+            query={query}
           />
 
           <BannerDeRecorte

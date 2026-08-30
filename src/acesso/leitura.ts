@@ -29,7 +29,12 @@ import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
 import { getSession } from "@/acesso/sessao";
-import type { Kpi, PanelResponse, Query } from "@/semantica/contrato";
+import type {
+  Kpi,
+  MetricValue,
+  PanelResponse,
+  Query,
+} from "@/semantica/contrato";
 import type { EstadoDe } from "@/semantica/estado";
 import { GraoProibido } from "@/seguranca/grao";
 import { escopoDaSessao, ForaDoEscopo } from "@/seguranca/identidade";
@@ -126,4 +131,29 @@ export async function lerPainelParaTela(
     }
     return { estado: "erro_de_fonte", ultimoFrescor: ultimoFrescorConhecido() };
   }
+}
+
+/**
+ * Uma métrica, já restringida ao perfil de quem pediu (T-149, chat da seção 7).
+ *
+ * Mesmo caminho de `lerKpisDaTela` e `lerPainel`, e pelo mesmo motivo: o
+ * recorte por perfil é aplicado no servidor, antes de qualquer leitura. É por
+ * aqui que o estágio 2 do chat lê — *"a consulta herda o perfil de quem
+ * perguntou; o modelo nunca vê dado fora do escopo dessa pessoa"* (seção 7.5).
+ */
+export async function lerMetrica(
+  metrica: string,
+  consulta: Query,
+  breakdown = "none",
+): Promise<MetricValue> {
+  const [sessao, fonte] = await Promise.all([
+    getSession(),
+    obterFonteDeDados(),
+  ]);
+  const fronteira = criarFronteira(
+    fonte,
+    escopoDaSessao(sessao),
+    dimensoesProvisorias(),
+  );
+  return fronteira.lerMetrica(metrica, consulta, breakdown);
 }

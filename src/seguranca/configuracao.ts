@@ -115,6 +115,28 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     segredo: true,
     conferir: comprimentoMinimo(20),
   },
+  {
+    /*
+     * A chave do OpenRouter.
+     *
+     * A seção 8.2 do PRD fixa o SDK da Anthropic; a decisão de usar o
+     * OpenRouter como porta é de Produto, de 2026-08-30, e está registrada em
+     * `docs/decisoes/D-CHAT-openrouter.md`. O gateway fala o protocolo da
+     * OpenAI e roteia para o modelo escolhido, então o que muda é o cliente —
+     * a arquitetura de três estágios da seção 7 continua idêntica.
+     */
+    nome: "OPENROUTER_API_KEY",
+    proposito: "chave do gateway que atende o chat (seção 7, D-CHAT)",
+    obrigatoria: false,
+    segredo: true,
+    conferir: comprimentoMinimo(20),
+  },
+  {
+    nome: "OPENROUTER_MODEL",
+    proposito: "qual modelo o chat usa nos estágios 1 e 3 (seção 7.3)",
+    obrigatoria: false,
+    segredo: false,
+  },
 ];
 
 /**

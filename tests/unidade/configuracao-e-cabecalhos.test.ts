@@ -169,9 +169,16 @@ describe("a mensagem de erro nunca carrega o valor do segredo", () => {
   });
 
   it("as variáveis marcadas como segredo são as da seção 11", () => {
+    /*
+     * A terceira entrou com a decisão D-CHAT (2026-08-30): o chat passa a falar
+     * com o modelo pelo OpenRouter, e a chave dele é segredo como as outras
+     * duas. A contagem escrita é o que obriga uma chave nova a passar por aqui
+     * — uma variável que vira segredo sem revisão é uma que pode acabar num log.
+     */
     expect([...NOMES_DE_SEGREDO].sort()).toEqual([
       "ANTHROPIC_API_KEY",
       "DATABASE_URL",
+      "OPENROUTER_API_KEY",
     ]);
     // E toda regra de segredo tem uma conferência: uma variável marcada como
     // segredo mas sem validação passaria qualquer texto adiante.
