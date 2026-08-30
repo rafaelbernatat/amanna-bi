@@ -9,6 +9,7 @@ import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import { QUERY_PADRAO } from "@/semantica/contrato";
+import { LIMITE_PADRAO_DE_DEFASAGEM_HORAS } from "@/semantica/frescor";
 import type { Frescor, Kpi, PanelResponse } from "@/semantica/contrato";
 import { type EstadoDe, ESTADOS } from "@/semantica/estado";
 import { FORMAS, type Forma } from "@/semantica/painel";
@@ -47,14 +48,16 @@ const RECORTE_DE_EXEMPLO = { ...QUERY_PADRAO, area: "tecnologia" } as const;
 
 const FRESCOR_EM_DIA: Frescor = {
   asOf: "2026-12-31",
-  sincronizadoEm: "2026-08-26T06:15",
-  defasado: false,
+  sincronizadoEm: "2026-08-26T06:15:00-03:00",
+  limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
+  status: "ok",
 };
 
 const FRESCOR_DEFASADO: Frescor = {
   asOf: "2026-11-30",
-  sincronizadoEm: "2026-08-19T23:40",
-  defasado: true,
+  sincronizadoEm: "2026-08-19T23:40:00-03:00",
+  limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
+  status: "defasado",
 };
 
 /**

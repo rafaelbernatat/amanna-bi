@@ -92,7 +92,16 @@ export function Cabecalho({
         painelDestacado={painelDestacado}
       />
 
-      <div
+      {/*
+        `nav`, e nao `div`.
+ 
+        O `aria-label` estava num `div`, que nao tem papel implicito — um rotulo
+        pendurado em nada, que leitor de tela nao anuncia como regiao. Virou
+        `nav` quando o chat entrou e um atalho dele passou a colidir com a aba
+        de mesmo nome: o teste precisava dizer "a aba, dentro da tira", e a tira
+        precisava ser algo que se possa nomear.
+      */}
+      <nav
         aria-label={`Telas de ${modulo.nomeCompleto}`}
         style={{
           display: "flex",
@@ -128,7 +137,7 @@ export function Cabecalho({
             </Link>
           );
         })}
-      </div>
+      </nav>
     </header>
   );
 }

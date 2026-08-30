@@ -146,20 +146,55 @@ export type Sentido = "maior_melhor" | "menor_melhor" | "neutro";
  * As quatro portas de leitura (seção 9.1)
  * ------------------------------------------------------------------ */
 
-/** Frescor do dado: o selo da seção 10.2, que a tela sempre mostra. */
+/**
+ * Como o frescor pode estar (T-149).
+ *
+ * Enum fechado de dois valores, e não um booleano `defasado`. A diferença
+ * aparece no dia em que a seção 10.2 ganhar um terceiro estado — sync em curso,
+ * ou nunca sincronizado: com booleano, ele viraria um segundo campo e as duas
+ * verdades poderiam discordar.
+ */
+export const ESTADOS_DE_FRESCOR = ["ok", "defasado"] as const;
+export type EstadoDeFrescor = (typeof ESTADOS_DE_FRESCOR)[number];
+
+/**
+ * Frescor do dado: o selo da seção 10.2, que a tela sempre mostra.
+ *
+ * O limite viaja **junto** com o estado, e isso é decisão de contrato. Um selo
+ * que diz só "defasado" manda quem lê perguntar "defasado a partir de quando?",
+ * e a resposta está em configuração de um ambiente que essa pessoa não vê. Com
+ * o limite no envelope, a tela pode escrever "sync de 31h, acima do limite de
+ * 26h" — que é a diferença entre um aviso e um aviso acionável.
+ */
 export type Frescor = {
   /** Data do último fechamento carregado, em ISO. */
   readonly asOf: string;
-  /** Instante do último sync bem-sucedido, em ISO. */
+  /** Instante do último sync bem-sucedido, em ISO com fuso. */
   readonly sincronizadoEm: string;
+  /** A partir de quantas horas sem sync o selo vira aviso (D-P5). */
+  readonly limiteDefasagemHoras: number;
   /** Passou do limite acordado e o selo vira aviso (RF-10). */
-  readonly defasado: boolean;
+  readonly status: EstadoDeFrescor;
 };
 
 /** O que `getMeta()` devolve: dimensões, catálogo e frescor. */
 export type Meta = {
   /** As dimensões disponíveis — inclusive quais anos existem (D-P8). */
   readonly dimensoes: Dimensoes;
+  /**
+   * Qual catálogo produziu estes números.
+   *
+   * Sem isto, "o número mudou" e "a definição mudou" são indistinguíveis: o
+   * painel de turnover cai dois pontos e ninguém sabe se a empresa melhorou ou
+   * se transferência interna deixou de contar como desligamento. A seção 9.4
+   * existe para que essa pergunta tenha resposta, e a resposta precisa viajar
+   * com o dado.
+   *
+   * T-155 troca isto por versão semântica com changelog; até lá é a identidade
+   * do conteúdo do catálogo, que é o que não deixa duas definições diferentes
+   * se passarem pela mesma.
+   */
+  readonly versaoDoCatalogo: string;
   /** Ids das métricas do catálogo disponíveis nesta instalação. */
   readonly metricas: readonly string[];
   readonly frescor: Frescor;
