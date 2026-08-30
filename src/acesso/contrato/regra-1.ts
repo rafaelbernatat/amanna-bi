@@ -18,8 +18,6 @@
  * pequeno e um arredondamento vira meio ponto.
  */
 
-import { calcularKpis } from "@/acesso/fixtures/kpis";
-import { calcularPainel } from "@/acesso/fixtures/paineis";
 import {
   reconciliacaoDe,
   valorDoPainel,
@@ -31,6 +29,7 @@ import {
   type Regra,
 } from "@/acesso/contrato/suite";
 import { AGREGADO_DE_AREA } from "@/acesso/fixtures/eixos";
+import type { PanelResponse } from "@/semantica/contrato";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import { ORIGEM_DOS_PAINEIS } from "@/semantica/origem-de-painel";
 
@@ -75,7 +74,7 @@ const PARES = paresComparaveis();
  * zero afirma "esta área não tem quadro", quando o que se sabe é "esta área não
  * está no recorte".
  */
-export function conferirQuebraPorArea(
+export async function conferirQuebraPorArea(
   ctx: Contexto,
   /*
    * O leitor de painel entra por parâmetro para que esta metade da regra tenha
@@ -86,17 +85,23 @@ export function conferirQuebraPorArea(
    * conferiam a propriedade nos painéis, e não que a regra a cobrava. Com o
    * leitor injetável dá para forjar um painel que ignora o filtro e exigir que
    * a regra o acuse.
+   *
+   * O padrão passou a ser `ctx.fonte` em T-140.1. Era `calcularPainel`, e o
+   * padrão é que decide na prática: `rodarSuite` recebia uma fonte, o percurso
+   * a usava, e a regra lia as fixtures de qualquer jeito. Quem descobriu foi o
+   * controle negativo de T-140, que não conseguia reprovar um adaptador
+   * deliberadamente errado — porque a regra nunca falava com ele.
    */
-  ler: (
-    id: string,
-    q: Contexto["consulta"],
-  ) => ReturnType<typeof calcularPainel> = calcularPainel,
-): readonly Falha[] {
+  ler: (id: string, q: Contexto["consulta"]) => Promise<PanelResponse> = (
+    id,
+    q,
+  ) => ctx.fonte.getPanel(id, q),
+): Promise<readonly Falha[]> {
   if (ctx.consulta.area === AGREGADO_DE_AREA) return [];
 
   const falhas: Falha[] = [];
   for (const painel of paineisQuebradosPorArea()) {
-    const envelope = ler(painel, ctx.consulta);
+    const envelope = await ler(painel, ctx.consulta);
     if (!("categories" in envelope)) continue;
 
     if (envelope.categories.length !== 1) {
@@ -168,7 +173,7 @@ export const REGRA_1: Regra = {
   cobre: () => [
     ...new Set([...PARES.map((p) => p.painel), ...paineisQuebradosPorArea()]),
   ],
-  rodar: (ctx) => {
+  rodar: async (ctx) => {
     const falhas: Falha[] = [];
 
     /*
@@ -177,7 +182,12 @@ export const REGRA_1: Regra = {
      * bastam, e a suíte roda isso 768 vezes.
      */
     const porTela = new Map(
-      TELAS.map((tela) => [tela, calcularKpis(tela, ctx.consulta)]),
+      await Promise.all(
+        TELAS.map(
+          async (tela) =>
+            [tela, await ctx.fonte.getKpis(tela, ctx.consulta)] as const,
+        ),
+      ),
     );
 
     for (const par of PARES) {
@@ -195,7 +205,7 @@ export const REGRA_1: Regra = {
         continue;
       }
 
-      const envelope = calcularPainel(par.painel, ctx.consulta);
+      const envelope = await ctx.fonte.getPanel(par.painel, ctx.consulta);
       const doPainel = valorDoPainel(envelope, declarado.forma, kpi.unit);
 
       if (doPainel === undefined) {
@@ -223,8 +233,8 @@ export const REGRA_1: Regra = {
       );
     }
 
-    falhas.push(...conferirQuebraPorArea(ctx));
-    return Promise.resolve(falhas);
+    falhas.push(...(await conferirQuebraPorArea(ctx)));
+    return falhas;
   },
 };
 

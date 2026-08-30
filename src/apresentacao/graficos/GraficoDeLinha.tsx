@@ -2,6 +2,7 @@
 
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ReferenceLine,
@@ -29,20 +30,67 @@ export type PontoDeSerie = {
   readonly rotulo: string;
 };
 
+/**
+ * Uma serie desenhada junto da principal (T-164).
+ *
+ * Tres paineis do Anexo A comparam medidas na mesma escala e no mesmo eixo de
+ * tempo — margem bruta, EBITDA e liquida em `fin-margens`, orcado e realizado
+ * acumulados em `orc-acum`. Desenhar so a primeira delas deixaria o painel
+ * afirmando menos do que o envelope traz, e a comparacao e o painel inteiro.
+ *
+ * Os valores acompanham a ordem de `pontos`: a categoria e a mesma, e repetir
+ * o eixo por serie abriria a porta para duas series com meses diferentes no
+ * mesmo desenho.
+ */
+export type SerieDeLinhaAdicional = {
+  readonly nome: string;
+  readonly cor: string;
+  /** `null` e "sem dado nesta categoria", e nao zero (PR-4). */
+  readonly valores: readonly (number | null)[];
+};
+
 export function GraficoDeLinha({
   pontos,
   eixo,
   referencia,
+  nome,
+  linhas,
 }: {
   readonly pontos: readonly PontoDeSerie[];
   readonly eixo: ConfiguracaoDeEixo;
   /** Traço de meta, quando a métrica tem meta declarada no catálogo. */
   readonly referencia?: { readonly valor: number; readonly rotulo: string };
+  /** O nome da serie principal. Aparece na legenda, quando ha legenda. */
+  readonly nome?: string;
+  /** Series desenhadas junto, alinhadas as categorias de `pontos`. */
+  readonly linhas?: readonly SerieDeLinhaAdicional[];
 }) {
+  const adicionais = linhas ?? [];
+  const nomeDaPrincipal = nome ?? "valor";
+
+  /*
+   * Uma linha por serie no mesmo registro, indexada pelo nome dela.
+   *
+   * `valor` continua sendo a chave da serie principal quando nao ha nome, para
+   * o caminho de uma serie so seguir identico ao que T-130 entregou.
+   */
+  const dados = pontos.map((ponto, i) => {
+    const linha: Record<string, number | string> = {
+      categoria: ponto.categoria,
+      [nomeDaPrincipal]: ponto.valor,
+    };
+    for (const serie of adicionais) {
+      // Ausente fica ausente: recharts desenha lacuna, que e o que PR-4 pede.
+      const v = serie.valores[i];
+      if (v !== undefined && v !== null) linha[serie.nome] = v;
+    }
+    return linha;
+  });
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart
-        data={[...pontos]}
+        data={dados}
         margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
       >
         <CartesianGrid
@@ -90,14 +138,38 @@ export function GraficoDeLinha({
             }}
           />
         ) : null}
+        {adicionais.length === 0 ? null : (
+          <Legend
+            verticalAlign="top"
+            align="left"
+            height={22}
+            iconType="plainline"
+            iconSize={10}
+            wrapperStyle={{
+              font: `500 9.5px ${TIPOGRAFIA.mono}`,
+              color: PALETA.textoTerciario,
+            }}
+          />
+        )}
         <Line
           type="monotone"
-          dataKey="valor"
+          dataKey={nomeDaPrincipal}
           stroke={PALETA.marca}
           strokeWidth={2}
           dot={false}
           isAnimationActive={false}
         />
+        {adicionais.map((serie) => (
+          <Line
+            key={serie.nome}
+            type="monotone"
+            dataKey={serie.nome}
+            stroke={serie.cor}
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+          />
+        ))}
       </LineChart>
     </ResponsiveContainer>
   );

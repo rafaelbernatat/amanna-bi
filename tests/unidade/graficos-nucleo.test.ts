@@ -207,3 +207,35 @@ describe("rotulos longos", () => {
     expect(rotulosVisiveis([], 2)).toEqual([]);
   });
 });
+
+/**
+ * Faixa pequena: o eixo de `sal-medio` e de qualquer painel em `BRL_mi`.
+ *
+ * Salario medio por area vai de 0,0059 a 0,0126 milhoes. Com duas casas fixas,
+ * os cinco cortes viravam `0,01` cinco vezes: o eixo mostrava o mesmo numero em
+ * todas as linhas de grade, e o recharts avisava no console que havia chave
+ * repetida. O caso 12 ja afirmava "sem repetir", mas so sobre uma serie de
+ * faixa grande — a propriedade valia por acidente da grandeza dos valores.
+ */
+describe("Faixa pequena mantem os cortes distintos", () => {
+  it("28. serie em milhoes de reais nao colapsa os cortes", () => {
+    const e = configuracaoDeEixo({
+      valores: [0.005988, 0.007972, 0.012246, 0.006431],
+    });
+    expect(new Set(e.cortes).size).toBe(e.cortes.length);
+    expect(e.cortes).toEqual([...e.cortes].sort((a, b) => a - b));
+  });
+
+  it("29. a faixa grande continua com duas casas", () => {
+    const e = configuracaoDeEixo({ valores: [12, 110] });
+    for (const corte of e.cortes) {
+      expect(Math.round(corte * 100) / 100).toBe(corte);
+    }
+  });
+
+  it("30. faixa minuscula ainda produz cortes finitos e distintos", () => {
+    const e = configuracaoDeEixo({ valores: [0.0000012, 0.0000019] });
+    expect(e.cortes.every((c) => Number.isFinite(c))).toBe(true);
+    expect(new Set(e.cortes).size).toBe(e.cortes.length);
+  });
+});

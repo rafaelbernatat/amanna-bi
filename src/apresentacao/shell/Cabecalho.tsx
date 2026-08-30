@@ -40,6 +40,16 @@ export function Cabecalho({
 }) {
   return (
     <header
+      /*
+       * O cabecalho da tela tem nome proprio desde T-168.
+       *
+       * Ate os paineis entrarem, `page.locator("header")` so podia dar neste —
+       * era o unico `<header>` da pagina. Com os paineis montados sao oito, um
+       * por moldura, e o seletor solto passou a resolver para varios elementos.
+       * O nome resolve para o e2e o que a estrutura ja dizia: este e o
+       * cabecalho **da tela**, e os outros sao de painel.
+       */
+      data-teste="cabecalho"
       style={{
         background: PALETA.fundo,
         borderBottom: `1px solid ${PALETA.bordaForte}`,

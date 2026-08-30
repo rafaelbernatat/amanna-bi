@@ -60,7 +60,9 @@ test.describe("colar a URL numa sessão limpa", () => {
     // A prova de que o recorte atravessou até a interface. Antes de T-127 o
     // cabeçalho trazia "2026" escrito no código.
     await page.goto("/rh/visao?ano=2025");
-    await expect(page.locator("header")).toContainText("2025");
+    await expect(page.locator('[data-teste="cabecalho"]')).toContainText(
+      "2025",
+    );
   });
 
   test("ano que não foi carregado cai no mais recente, avisando", async ({

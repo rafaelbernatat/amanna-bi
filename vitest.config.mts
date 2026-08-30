@@ -27,9 +27,19 @@ export default defineConfig({
      * exatamente o que ensina a ignorar vermelho.
      *
      * Isto nao afrouxa aceite nenhum: nenhuma assercao muda, so o tempo que
-     * elas tem para terminar. Um caso que passe de 30 s e outra conversa e
-     * merece investigacao, nao mais folga.
+     * elas tem para terminar.
+     *
+     * Subiu de 30 s para 60 s em T-140.1, e a razao e a mesma. A regra 1 passou
+     * a ler pelos metodos da fonte em vez de importar as fixtures, e o caso que
+     * percorre os 768 recortes foi de ~19 s para 25-27 s medidos. Contra um
+     * teto de 30 s isso e margem nenhuma: na suite inteira, disputando CPU, ele
+     * estourou uma vez em tres.
+     *
+     * A alternativa seria amostrar os recortes, e H-05 exige os 768 por escrito
+     * -- trocar cobertura por tempo seria enfraquecer o aceite pela via
+     * tecnica. Um caso que passe de 60 s e outra conversa e merece
+     * investigacao, nao mais folga.
      */
-    testTimeout: 30_000,
+    testTimeout: 60_000,
   },
 });

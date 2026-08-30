@@ -2,13 +2,18 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
-import { lerKpisDaTela } from "@/acesso/leitura";
+import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
 import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
+import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
+import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
+import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
 import { BarraLateral } from "@/apresentacao/shell/BarraLateral";
 import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type { Query } from "@/semantica/contrato";
+import { COLUNAS_DA_GRADE, paineisDaTela } from "@/semantica/paineis";
 import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
 
 /**
@@ -247,20 +252,90 @@ export default async function Pagina({
             </p>
           ) : null}
 
-          <p
-            style={{
-              margin: 0,
-              font: `400 11.5px/1.6 ${TIPOGRAFIA.texto}`,
-              color: PALETA.textoSecundario,
-              maxWidth: "68ch",
-            }}
-          >
-            Os painéis desta tela entram com T-117 a T-119. O shell, as 13
-            rotas, o recorte na URL e os cinco filtros são o contrato que eles
-            vão preencher.
-          </p>
+          {/*
+            Os painéis da tela, na ordem do Anexo A e na grade de 12 colunas da
+            seção 5. Quem diz quais painéis e com que largura é o registro de
+            T-107 — acrescentar um painel ao Anexo A e ao registro o coloca na
+            tela, sem editar arquivo de tela nenhum.
+          */}
+          <PaineisDaTela
+            tela={rota.slice(1)}
+            query={query}
+            painelDestacado={painelDestacado}
+          />
         </main>
       </div>
+    </div>
+  );
+}
+
+/**
+ * A grade de painéis de uma tela (T-168 e T-169).
+ *
+ * ## Por que as leituras são disparadas juntas
+ *
+ * `Promise.all` sobre os painéis da tela, e não um `await` por painel dentro do
+ * laço. Com sete painéis, esperar um de cada vez somaria sete idas à fonte em
+ * série — e no modo warehouse cada ida é uma consulta ao banco. A tela leva o
+ * tempo do painel mais lento, e não a soma de todos.
+ *
+ * O streaming por painel, que faz cada caixa aparecer assim que a resposta dela
+ * chega, é de T-171. Aqui a tela ainda espera todas — o que já é correto, e
+ * será mais rápido sem mudar nenhuma destas linhas.
+ *
+ * ## Por que o subtítulo é resolvido aqui
+ *
+ * `subtituloSobRecorte` precisa da `Query`, e `PainelEmEstado` não a conhece de
+ * propósito (T-133): dar-lhe a `Query` faria dele um segundo lugar que decide o
+ * que o recorte significa. Este componente é quem tem as duas coisas na mão.
+ */
+async function PaineisDaTela({
+  tela,
+  query,
+  painelDestacado,
+}: {
+  readonly tela: string;
+  readonly query: Query;
+  readonly painelDestacado: string | null;
+}) {
+  const registro = paineisDaTela(tela);
+  if (registro.length === 0) return null;
+
+  const estados = await Promise.all(
+    registro.map((p) => lerPainelParaTela(p.id, query)),
+  );
+
+  return (
+    <div
+      data-teste="grade-de-paineis"
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${String(COLUNAS_DA_GRADE)}, minmax(0, 1fr))`,
+        gap: 14,
+        alignItems: "start",
+      }}
+    >
+      {registro.map((p, i) => (
+        <div
+          key={p.id}
+          style={{ gridColumn: `span ${String(p.span)}`, minWidth: 0 }}
+        >
+          <PainelEmEstado
+            identidade={{
+              id: p.id,
+              titulo: p.titulo,
+              ...(p.unidade === null ? {} : { unidade: p.unidade }),
+            }}
+            forma={p.forma}
+            estado={estados[i] ?? { estado: "carregando" }}
+            destacado={painelDestacado === p.id}
+            subtitulo={subtituloSobRecorte(query)}
+            desenhar={(carga) => (
+              <DesenhoDePainel painel={carga} span={p.span} />
+            )}
+          />
+        </div>
+      ))}
     </div>
   );
 }

@@ -28,17 +28,26 @@ import {
   valorDoPainel,
 } from "@/acesso/contrato/reconciliacao";
 import { consultaDe, type Falha } from "@/acesso/contrato/suite";
+import { criarFonteDeFixtures } from "@/acesso/fixtures/adaptador";
 import { calcularPainel } from "@/acesso/fixtures/paineis";
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { podeSomar } from "@/semantica/agregacao";
-import type { DataSource } from "@/semantica/contrato";
+import type { DataSource, PanelResponse } from "@/semantica/contrato";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import { origemDoPainel } from "@/semantica/origem-de-painel";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import { matrizDeRecortes, type Recorte } from "@/semantica/recortes";
 
 /** A regra não usa a fonte: lê pelas funções da fixture, como o produto. */
-const FONTE = {} as unknown as DataSource;
+/*
+ * A fonte de verdade, e não um objeto vazio.
+ *
+ * Era `{} as unknown as DataSource`, e passava: até T-140.1 a regra importava
+ * `calcularKpis` e `calcularPainel` das fixtures e nunca tocava em `ctx.fonte`.
+ * O molde vazio era a evidência disso à vista de todos — só que ninguém tinha
+ * por que olhar, porque nada reprovava.
+ */
+const FONTE: DataSource = criarFonteDeFixtures();
 
 const MATRIZ = matrizDeRecortes(dimensoesProvisorias());
 const ANO = dimensoesProvisorias().ano?.[0] ?? "2026";
@@ -237,7 +246,7 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
     },
   );
 
-  it("a regra ACUSA um painel que ignora o filtro de área", () => {
+  it("a regra ACUSA um painel que ignora o filtro de área", async () => {
     /*
      * A guarda que faltava, e o defeito que ela pegou.
      *
@@ -269,7 +278,7 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
           "rh",
         ],
         series: [],
-      }) as unknown as ReturnType<typeof calcularPainel>;
+      }) as unknown as Promise<PanelResponse>;
 
     const recorte = {
       periodo: "12-meses",
@@ -278,7 +287,7 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
       area: "tecnologia",
       modalidade: "todas",
     };
-    const falhas = conferirQuebraPorArea(
+    const falhas = await conferirQuebraPorArea(
       { fonte: FONTE, recorte, consulta: consultaDe(recorte, ANO) },
       forjado,
     );
@@ -307,7 +316,7 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
     expect(corpoDoRodar).toContain("conferirQuebraPorArea(ctx)");
   });
 
-  it("e não acusa nada no consolidado, onde as sete são o certo", () => {
+  it("e não acusa nada no consolidado, onde as sete são o certo", async () => {
     const recorte = {
       periodo: "12-meses",
       ano: "2026",
@@ -316,7 +325,7 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
       modalidade: "todas",
     };
     expect(
-      conferirQuebraPorArea({
+      await conferirQuebraPorArea({
         fonte: FONTE,
         recorte,
         consulta: consultaDe(recorte, ANO),
@@ -410,5 +419,77 @@ describe("carga vazia é ausência de dado, não forma errada", () => {
       "pct",
     );
     expect(valor).toBeUndefined();
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * T-140.1 · a regra lê pela fonte injetada
+ * ------------------------------------------------------------------ */
+
+describe("a regra consulta a fonte que recebeu, e não as fixtures", () => {
+  const RECORTE: Recorte = {
+    periodo: "12-meses",
+    ano: "2026",
+    entidade: "consolidado",
+    area: "todas",
+    modalidade: "todas",
+  };
+
+  async function rodarCom(fonte: DataSource): Promise<readonly Falha[]> {
+    return REGRA_1.rodar({
+      fonte,
+      recorte: RECORTE,
+      consulta: consultaDe(RECORTE, ANO),
+    });
+  }
+
+  it("com a fonte de verdade, o consolidado fecha", async () => {
+    // O controle positivo. Sem ele, os dois casos abaixo poderiam estar
+    // reprovando por qualquer outro motivo.
+    expect(await rodarCom(FONTE)).toEqual([]);
+  });
+
+  it("mexer só no KPI da fonte faz a regra 1 reprovar", async () => {
+    const DOBRO = 2;
+    const adulterada: DataSource = {
+      ...FONTE,
+      async getKpis(tela, q) {
+        const kpis = await FONTE.getKpis(tela, q);
+        return kpis.map((k) => ({
+          ...k,
+          value: k.value === null ? null : k.value * DOBRO,
+        }));
+      },
+    };
+
+    const falhas = await rodarCom(adulterada);
+    expect(
+      falhas.length,
+      "a regra não notou o KPI adulterado — está lendo as fixtures, e não a fonte",
+    ).toBeGreaterThan(0);
+    expect(falhas.every((f) => f.regra === 1)).toBe(true);
+  });
+
+  it("mexer só no painel da fonte também faz a regra 1 reprovar", async () => {
+    const adulterada: DataSource = {
+      ...FONTE,
+      async getPanel(id, q) {
+        const envelope = await FONTE.getPanel(id, q);
+        if (!("series" in envelope)) return envelope;
+        return {
+          ...envelope,
+          series: envelope.series.map((serie) => ({
+            ...serie,
+            values: serie.values.map(() => null),
+          })),
+        };
+      },
+    };
+
+    const falhas = await rodarCom(adulterada);
+    expect(
+      falhas.length,
+      "a regra não notou o painel esvaziado — está lendo as fixtures",
+    ).toBeGreaterThan(0);
   });
 });
