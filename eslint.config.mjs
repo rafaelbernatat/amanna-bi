@@ -5,7 +5,9 @@ import prettierRecomendado from "eslint-plugin-prettier/recommended";
 
 import pluginLiteral from "./ferramentas/eslint/sem-literal-numerico.mjs";
 import regraNumeroMagico from "./ferramentas/eslint/sem-numero-magico.mjs";
+import pluginDerivacao from "./ferramentas/eslint/sem-derivacao-exibida.mjs";
 import { LISTA_BRANCA } from "./ferramentas/eslint/lista-branca-numero-magico.mjs";
+import { DERIVACOES } from "./ferramentas/eslint/lista-de-derivacoes.mjs";
 
 /**
  * O plugin local, com as duas regras de RF-07.
@@ -18,6 +20,7 @@ import { LISTA_BRANCA } from "./ferramentas/eslint/lista-branca-numero-magico.mj
 const painel = {
   rules: {
     ...pluginLiteral.rules,
+    ...pluginDerivacao.rules,
     "sem-numero-magico": regraNumeroMagico,
   },
 };
@@ -99,6 +102,39 @@ export default tseslint.config(
     plugins: { painel },
     rules: {
       "painel/sem-numero-magico": ["error", { allowlist: LISTA_BRANCA }],
+    },
+  },
+
+  // T-134: a tela nao deriva o numero que exibe.
+  //
+  // Achado 3 do Anexo D: no prototipo `fctx()` devolve multiplicadores e a tela
+  // multiplica o valor lido por eles antes de mostrar -- filtrar virou escalar.
+  // O adaptador de T-114 ja recorta escolhendo linhas; esta regra impede o
+  // fator de voltar pela camada de cima.
+  //
+  // Vale na apresentacao e nas rotas, que e onde mora "codigo de tela". Fora
+  // dali a aritmetica e o trabalho: a camada de acesso calcula, e e para isso
+  // que ela existe.
+  //
+  // T-141 declara no proprio cabecalho que nao desce por aritmetica -- para ela
+  // `formatarValor(lido * 100)` nao tem literal chegando ao formatador. As duas
+  // se completam: aquela pega o numero digitado, esta pega o calculado.
+  {
+    files: [
+      "src/apresentacao/**/*.ts",
+      "src/apresentacao/**/*.tsx",
+      "src/app/**/*.ts",
+      "src/app/**/*.tsx",
+    ],
+    plugins: { painel },
+    rules: {
+      "painel/sem-derivacao-exibida": [
+        "error",
+        {
+          formatadores: ["formatarValor", "formatarMesAno"],
+          derivacoes: DERIVACOES,
+        },
+      ],
     },
   },
 

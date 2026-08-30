@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 231 tarefas: 185 pendentes e 46 já concluídas (5 no protótipo) |
+| **Total** | 235 tarefas: 174 pendentes e 61 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 49 de 98 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 98 | 57 | 37 | 4 | 50 de 98 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **235** | **120** | **92** | **18** | **60 de 235** |
+| **Total** | **235** | **120** | **92** | **18** | **61 de 235** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -256,7 +256,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte
   · **Aceite:** Para cada um dos 71 painéis, sob recorte fora do padrão a nota vem nula ou escrita para aquele recorte e o subtítulo passa a 'No recorte ativo · <area>'; um detector de valor absoluto roda sobre todas as notas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
   · **PRD:** RF-09, seção 6.3, PR-4, seção 9.3 · **Depende de:** T-117, T-118, T-119, T-131
-- [~] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação   ⏳ 2026-08-29 22:28 · sessao-0f42
+- [X] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação
   · **Aceite:** Grep no código de tela não encontra nenhum multiplicador do tipo fctx (ent 0.62/0.38, hc, money, rev, trein) nem aritmética sobre valores de negócio, e um adaptador de teste que devolve valores arbitrários por área prova que a tela não deriva nem escala número algum.
   · **PRD:** Anexo D achado 3, Anexo D achado 4, PR-1, RF-07 · **Depende de:** T-107, T-114
 - [X] **T-135** `P0` `S` `seguranca` Definir os contratos de identidade, perfil e escopo em TypeScript estrito

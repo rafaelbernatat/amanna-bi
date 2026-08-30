@@ -654,7 +654,7 @@ export function DesenhoDePainel({
             rotulo: faixa.rotulo,
             inicio: faixa.de / limite,
             fim: faixa.ate / limite,
-            texto: formatarValor(faixa.ate - faixa.de, painel.unit),
+            texto: duracaoDaFaixa(faixa.de, faixa.ate, painel.unit),
             cor: COR_DO_SENTIDO[faixa.sentido],
           }))}
           marcos={painel.marcos.map((marco) => ({
@@ -670,6 +670,21 @@ export function DesenhoDePainel({
 
 /** Um mês fechado, como o envelope escreve a categoria temporal. */
 const MES = /^\d{4}-\d{2}$/;
+
+/**
+ * A duração de uma faixa da régua de ciclo, em texto.
+ *
+ * `ate - de`, e a subtração mora numa função com nome porque é derivação: o
+ * envelope declara os dois marcos, e não a distância entre eles. Guardar a
+ * distância como terceira coluna deixaria três números onde dois bastam, e um
+ * deles poderia discordar dos outros dois.
+ *
+ * A regra `painel/sem-derivacao-exibida` de T-134 reprova conta em argumento de
+ * formatador; esta função está na lista de derivações, com o motivo escrito.
+ */
+function duracaoDaFaixa(de: number, ate: number, unidade: Unidade): string {
+  return formatarValor(ate - de, unidade);
+}
 
 /**
  * A conversão de um passo do funil contra o anterior, em texto.
