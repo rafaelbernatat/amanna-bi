@@ -24,6 +24,7 @@
  */
 
 import { obterFonteDeDados } from "@/acesso/fabrica";
+import { ultimoFrescorConhecido } from "@/acesso/meta";
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
@@ -108,9 +109,10 @@ export async function lerPainel(
  * | `GraoProibido` | `sem_permissao` | O grão pedido é mais fino que o permitido |
  * | qualquer outra | `erro_de_fonte` | Adaptador, rede, painel inexistente |
  *
- * O `ultimoFrescor` sai `null` até `getMeta` existir (T-149): a 6.4 pede o
- * horário da última leitura bem-sucedida, e inventar um seria pior que admitir
- * que ainda não se sabe dele.
+ * O `ultimoFrescor` vem da memória de `getMeta` (T-149). A 6.4 pede o horário
+ * da última leitura bem-sucedida, e agora existe quem o guarde — `null`
+ * continua sendo resposta possível, e é a honesta para "nunca li com sucesso
+ * nesta sessão".
  */
 export async function lerPainelParaTela(
   painel: string,
@@ -122,6 +124,6 @@ export async function lerPainelParaTela(
     if (erro instanceof ForaDoEscopo || erro instanceof GraoProibido) {
       return { estado: "sem_permissao" };
     }
-    return { estado: "erro_de_fonte", ultimoFrescor: null };
+    return { estado: "erro_de_fonte", ultimoFrescor: ultimoFrescorConhecido() };
   }
 }

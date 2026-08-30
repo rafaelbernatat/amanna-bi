@@ -38,6 +38,7 @@
  */
 
 import type { Frescor } from "@/semantica/contrato";
+import { estaDefasado } from "@/semantica/frescor";
 import type { MotivoDeVazio, Talvez } from "@/semantica/vazio";
 
 /** Os seis da tabela 6.4. Enum fechado: um sétimo estado é decisão de Produto. */
@@ -131,7 +132,7 @@ export function estadoDe<T>(
   frescor: Frescor | null,
 ): EstadoDe<T> {
   if (!t.vazio) {
-    if (frescor !== null && frescor.defasado) {
+    if (frescor !== null && estaDefasado(frescor)) {
       return { estado: "defasado", carga: t.valor, frescor };
     }
     return { estado: "com_dado", carga: t.valor };

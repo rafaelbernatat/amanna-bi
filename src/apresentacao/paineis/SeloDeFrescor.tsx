@@ -4,6 +4,7 @@ import {
 } from "@/apresentacao/formato/formato";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Frescor } from "@/semantica/contrato";
+import { estaDefasado } from "@/semantica/frescor";
 
 /**
  * O selo de frescor (T-132, PRD seção 6.4 e 10.2).
@@ -27,10 +28,12 @@ import type { Frescor } from "@/semantica/contrato";
  * lê o texto, e quem usa leitor de tela ouve o `role="status"`.
  */
 export function SeloDeFrescor({ frescor }: { readonly frescor: Frescor }) {
+  const defasado = estaDefasado(frescor);
+
   return (
     <span
       data-teste="selo-de-frescor"
-      data-defasado={frescor.defasado ? "1" : "0"}
+      data-defasado={defasado ? "1" : "0"}
       role="status"
       style={{
         display: "inline-flex",
@@ -39,20 +42,20 @@ export function SeloDeFrescor({ frescor }: { readonly frescor: Frescor }) {
         font: `500 8.5px/1.2 ${TIPOGRAFIA.mono}`,
         textTransform: "uppercase",
         letterSpacing: ".1em",
-        color: frescor.defasado ? PALETA.negativo : PALETA.textoFraco,
-        border: frescor.defasado ? `1px solid ${PALETA.negativo}` : "none",
+        color: defasado ? PALETA.negativo : PALETA.textoFraco,
+        border: defasado ? `1px solid ${PALETA.negativo}` : "none",
         borderRadius: 6,
-        padding: frescor.defasado ? "3px 7px" : "0",
-        background: frescor.defasado ? PALETA.superficieSuave : "transparent",
+        padding: defasado ? "3px 7px" : "0",
+        background: defasado ? PALETA.superficieSuave : "transparent",
       }}
     >
-      {frescor.defasado ? (
+      {defasado ? (
         <span aria-hidden="true" style={{ fontSize: "1.1em" }}>
           ⚠
         </span>
       ) : null}
       <span>
-        {frescor.defasado ? "Dado defasado · " : ""}
+        {defasado ? "Dado defasado · " : ""}
         {formatarMesAno(frescor.asOf)}
       </span>
       <span
