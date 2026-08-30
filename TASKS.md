@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 236 tarefas: 174 pendentes e 62 já concluídas (5 no protótipo) |
+| **Total** | 237 tarefas: 175 pendentes e 62 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 99 | 58 | 37 | 4 | 51 de 99 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 100 | 59 | 37 | 4 | 51 de 100 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **236** | **121** | **92** | **18** | **62 de 236** |
+| **Total** | **237** | **122** | **92** | **18** | **62 de 237** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -280,6 +280,9 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [~] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação   ⏳ 2026-08-29 23:04 · sessao-0f42
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
   · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total), D-P8 · **Depende de:** T-002, T-004
+- [ ] **T-140.2** `P0` `M` `dados` Repartir com perfil sazonal para a fatia de uma dimensão variar entre meses
+  · **Aceite:** `repartirMatriz` ganha uma variante que respeita as duas margens e aceita um perfil por célula e mês, e as fixtures a usam de modo que a fatia de entidade na folha, de área na folha e de modalidade no quadro deixem de ser constantes nos 12 meses; os totais mensais e os totais anuais por área e por entidade continuam idênticos aos de hoje, e o controle negativo de T-140 passa a reprovar também no recorte de período.
+  · **PRD:** Anexo D achados 3 e 4, seção 9.2 regra 1, seção 10.4 · **Depende de:** T-110, T-111, T-140.1
 - [X] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
   · **Aceite:** qualquer literal numérico que alcance o módulo de formatação (pc, rs, n, sg) ou os campos value/delta/rodape de um Kpi reprova o CI; os cinco casos reais do protótipo (74, 54.3, 4.1, 40.0, -0.7) são apontados pelo teste num arquivo de exemplo; exceção só por allowlist nomeada (metas vindas do catálogo).
   · **PRD:** Anexo D achado 5 - cobertura da pesquisa 74%, concentração top 10 54,3%, inadimplência 4,1%
