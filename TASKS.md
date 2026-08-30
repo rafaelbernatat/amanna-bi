@@ -280,7 +280,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [~] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação   ⏳ 2026-08-29 23:04 · sessao-0f42
   · **Aceite:** os shares de entidade, área e modalidade diferem entre medidas e entre meses (ex.: Unidade SP com 62% do headcount, 41% da folha e ranking de áreas distinto por medida); um adaptador de mutação que reproduz fctx (consolidado x share fixo) REPROVA a suíte de contrato em pelo menos um recorte de cada uma das cinco dimensões, e a suíte só é considerada válida se esse controle negativo falhar.
   · **PRD:** Anexo D achados 3 e 4 (fctx: entidade 0.62/0.38; área pela participação no total), D-P8 · **Depende de:** T-002, T-004
-- [ ] **T-140.2** `P0` `M` `dados` Repartir com perfil sazonal para a fatia de uma dimensão variar entre meses
+- [~] **T-140.2** `P0` `M` `dados` Repartir com perfil sazonal para a fatia de uma dimensão variar entre meses   ⏳ 2026-08-30 00:09 · sessao-0f42
   · **Aceite:** `repartirMatriz` ganha uma variante que respeita as duas margens e aceita um perfil por célula e mês, e as fixtures a usam de modo que a fatia de entidade na folha, de área na folha e de modalidade no quadro deixem de ser constantes nos 12 meses; os totais mensais e os totais anuais por área e por entidade continuam idênticos aos de hoje, e o controle negativo de T-140 passa a reprovar também no recorte de período.
   · **PRD:** Anexo D achados 3 e 4, seção 9.2 regra 1, seção 10.4 · **Depende de:** T-110, T-111, T-140.1
 - [X] **T-141** `P0` `M` `auditoria` Regra de AST contra literal numérico em argumento de formatador
