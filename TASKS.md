@@ -256,7 +256,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-133** `P0` `M` `paineis` Declarar o escopo da nota e suprimir narrativa incompatível com o recorte
   · **Aceite:** Para cada um dos 71 painéis, sob recorte fora do padrão a nota vem nula ou escrita para aquele recorte e o subtítulo passa a 'No recorte ativo · <area>'; um detector de valor absoluto roda sobre todas as notas nos 768 recortes e falha se um número válido apenas no consolidado aparecer sob outro recorte.
   · **PRD:** RF-09, seção 6.3, PR-4, seção 9.3 · **Depende de:** T-117, T-118, T-119, T-131
-- [ ] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação
+- [~] **T-134** `P0` `L` `paineis` Eliminar os fatores de escala do protótipo da camada de apresentação   ⏳ 2026-08-29 22:28 · sessao-0f42
   · **Aceite:** Grep no código de tela não encontra nenhum multiplicador do tipo fctx (ent 0.62/0.38, hc, money, rev, trein) nem aritmética sobre valores de negócio, e um adaptador de teste que devolve valores arbitrários por área prova que a tela não deriva nem escala número algum.
   · **PRD:** Anexo D achado 3, Anexo D achado 4, PR-1, RF-07 · **Depende de:** T-107, T-114
 - [X] **T-135** `P0` `S` `seguranca` Definir os contratos de identidade, perfil e escopo em TypeScript estrito
