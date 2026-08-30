@@ -310,7 +310,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto
   · **Aceite:** As 15 métricas do achado 5 (idade média, tempo de casa, tempo de fechamento, custo por contratação, encargos, mediana salarial, participação e conclusão de treinamento, cobertura da pesquisa, ticket médio, concentração top 10, PMR, PME, PMP e inadimplência) existem no catálogo com fórmula, unidade e agg, e cada uma tem medida correspondente nas fixtures.
   · **PRD:** Anexo D achado 5, RF-07, seção 9.4 · **Depende de:** T-112, T-147
-- [ ] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha
+- [~] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha   ⏳ 2026-08-30 08:04 · sessao-0f42
   · **Aceite:** getMeta devolve dimensões com os valores exatos da seção 6.2, versão do catálogo e frescor { asOf, ultimoSyncEm, limiteDefasagemHoras, status }; testes em limite-1, limite e limite+1 devolvem ok, ok e defasado, e falha de fonte devolve erro tipado com o horário da última leitura bem-sucedida, nunca dado parcial.
   · **PRD:** seção 9.1, RF-10, RF-22, seção 10.2, seção 6.4, D-P5 · **Depende de:** T-101, T-147
 - [ ] **T-150** `P0` `M` `dados` Substituir todos os KPIs literais por leitura do catálogo e bloquear novos literais
