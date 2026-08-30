@@ -160,7 +160,17 @@ test.describe("trocar de tela preserva o recorte", () => {
      * mantém a URL compartilhável legível (T-127, seção 6.6).
      */
     await page.goto("/rh/visao");
-    const aba = page.getByRole("link", { name: "Turnover" });
+    /*
+     * Dentro da tira de abas, e nao em qualquer link da pagina.
+     *
+     * Ate o chat entrar, `getByRole("link", { name: "Turnover" })` so podia dar
+     * na aba. Agora a caixa de perguntas oferece "como esta o turnover" como
+     * atalho, que tambem e um link com esse nome — e o seletor solto passou a
+     * resolver para dois. A tira tem `aria-label` proprio desde T-126; usa-lo
+     * diz o que o caso sempre quis dizer.
+     */
+    const tira = page.getByRole("navigation", { name: /Telas de/ });
+    const aba = tira.getByRole("link", { name: "Turnover" });
     expect(await aba.getAttribute("href")).toBe("/rh/turnover");
   });
 });
