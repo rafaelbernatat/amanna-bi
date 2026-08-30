@@ -1275,3 +1275,12 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
 
 /** Quantas métricas o catálogo tem. Contado, nunca escrito. */
 export const QUANTIDADE_DE_METRICAS = 68;
+
+/**
+ * Qual catálogo produziu um número (T-149).
+ *
+ * Viaja em `getMeta().versaoDoCatalogo`, para que "o número mudou" e "a
+ * definição mudou" deixem de ser indistinguíveis. T-155 troca isto por versão
+ * semântica com changelog; até lá é a identidade do conteúdo.
+ */
+export const VERSAO_DO_CATALOGO = "a2db05b17e13";

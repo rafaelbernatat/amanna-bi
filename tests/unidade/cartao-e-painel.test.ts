@@ -17,6 +17,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { LIMITE_PADRAO_DE_DEFASAGEM_HORAS } from "@/semantica/frescor";
+
 import {
   CartaoDeKpi,
   FaixaDeKpis,
@@ -187,8 +189,9 @@ describe("a fórmula do painel não tem como não aparecer", () => {
           altura: 216,
           frescor: {
             asOf: "2026-12-31",
-            sincronizadoEm: "2026-08-26T06:15",
-            defasado,
+            sincronizadoEm: "2026-08-26T06:15:00-03:00",
+            limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
+            status: defasado ? "defasado" : "ok",
           },
         }),
       );
