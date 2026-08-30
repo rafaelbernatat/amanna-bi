@@ -23,7 +23,7 @@
  *    13,2% do quadro e 22,0% da folha;
  * 2. a fonte real passa a suíte nos recortes escolhidos — o controle positivo,
  *    sem o qual "o mutante reprova" não significa nada;
- * 3. o mutante **reprova** em entidade, área e modalidade;
+ * 3. o mutante **reprova** em entidade, área, modalidade e período;
  * 4. e o que **ainda não** é verdade está escrito como caso que passa hoje e
  *    vai reprovar quando for tratado.
  *
@@ -219,6 +219,23 @@ describe("as fatias diferem entre meses", () => {
       v: "tecnologia",
       m: "desligamentos",
     },
+    /*
+     * As três da folha entraram com T-140.2, e são as que fazem o período ser
+     * distinguível: enquanto a fatia era constante, meio ano era metade do ano.
+     */
+    {
+      nome: "entidade na folha",
+      d: "entidade",
+      v: "unidade-sp",
+      m: "salarios",
+    },
+    { nome: "área na folha", d: "area", v: "tecnologia", m: "salarios" },
+    {
+      nome: "modalidade na folha",
+      d: "modalidade",
+      v: "remoto",
+      m: "salarios",
+    },
   ] as const;
 
   it.each(CASOS)("$nome varia ao longo do ano", ({ d, v, m }) => {
@@ -248,14 +265,6 @@ describe("o que a repartição de hoje ainda deixa plano", () => {
       amplitude(fatias),
       "a modalidade deixou de ser proporcional: aperte este caso e mova-o para o bloco de cima",
     ).toBeLessThan(DIVERGENCIA_MINIMA);
-  });
-
-  it("a folha reparte-se por constante nos doze meses — T-140.2", () => {
-    const serie = fatiaPorMes(RH, "entidade", "unidade-sp", "salarios");
-    expect(
-      amplitude(serie),
-      "a folha passou a variar entre meses: aperte este caso",
-    ).toBeLessThan(VARIACAO_MINIMA_ENTRE_MESES);
   });
 
   it("a receita também — T-140.2", () => {
@@ -294,6 +303,13 @@ const VISTAS: readonly {
   { dimensao: "entidade", recorte: { ...PADRAO, entidade: "unidade-sp" } },
   { dimensao: "area", recorte: { ...PADRAO, area: "tecnologia" } },
   { dimensao: "modalidade", recorte: { ...PADRAO, modalidade: "remoto" } },
+  /*
+   * O período entrou com T-140.2. Antes dela, a fatia de cada dimensão era
+   * constante nos doze meses, e meio ano era exatamente metade do ano — então
+   * ler a janela cheia e multiplicar por 6/12 dava o número certo por acidente.
+   * Com a folha seguindo curva, deixa de dar.
+   */
+  { dimensao: "periodo", recorte: { ...PADRAO, periodo: "6-meses" } },
 ];
 
 const CEGAS: readonly {
@@ -301,11 +317,6 @@ const CEGAS: readonly {
   readonly recorte: Recorte;
   readonly quemTrata: string;
 }[] = [
-  {
-    dimensao: "periodo",
-    recorte: { ...PADRAO, periodo: "6-meses" },
-    quemTrata: "T-140.2",
-  },
   { dimensao: "ano", recorte: { ...PADRAO, ano: "2025" }, quemTrata: "T-152" },
 ];
 
@@ -373,10 +384,10 @@ describe("as dimensões em que a suíte ainda não distingue recorte de escala",
     },
   );
 
-  it("três das cinco dimensões já estão cobertas", () => {
+  it("quatro das cinco dimensões já estão cobertas", () => {
     // A contagem escrita é o que obriga a decisão a passar por aqui quando a
-    // quarta entrar, em vez de a lista crescer sozinha e ninguém notar.
-    expect(VISTAS).toHaveLength(3);
-    expect(CEGAS).toHaveLength(2);
+    // quinta entrar, em vez de a lista crescer sozinha e ninguém notar.
+    expect(VISTAS).toHaveLength(4);
+    expect(CEGAS).toHaveLength(1);
   });
 });

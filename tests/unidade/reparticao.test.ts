@@ -17,6 +17,7 @@ import {
   ajustarMargemDeColuna,
   repartir,
   repartirMatriz,
+  repartirMatrizComPerfil,
   ReparticaoImpossivel,
 } from "@/acesso/fixtures/reparticao";
 
@@ -142,5 +143,114 @@ describe("ajustarMargemDeColuna", () => {
     ];
     const ajustada = ajustarMargemDeColuna(original, [8, 6]);
     expect(somaMatriz(ajustada)).toBe(somaMatriz(original));
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * T-140.2 · repartir com perfil declarado
+ * ------------------------------------------------------------------ */
+
+describe("repartirMatrizComPerfil respeita as duas margens", () => {
+  const LINHAS = [100, 120, 90, 110];
+  const COLUNAS = [180, 150, 90];
+
+  /** Um perfil que puxa a primeira coluna para o fim do período. */
+  const SAZONAL = LINHAS.map((_l, i) =>
+    COLUNAS.map((_c, j) => (j === 0 ? 1 + i * 0.3 : 1)),
+  );
+
+  const uniforme = (): readonly (readonly number[])[] =>
+    LINHAS.map(() => COLUNAS.map(() => 1));
+
+  it("1. a soma de cada linha bate com a margem", () => {
+    const m = repartirMatrizComPerfil(LINHAS, COLUNAS, SAZONAL);
+    expect(m.map((l) => l.reduce((a, b) => a + b, 0))).toEqual(LINHAS);
+  });
+
+  it("2. a soma de cada coluna bate com a margem", () => {
+    const m = repartirMatrizComPerfil(LINHAS, COLUNAS, SAZONAL);
+    const porColuna = COLUNAS.map((_c, j) =>
+      m.reduce((a, l) => a + (l[j] ?? 0), 0),
+    );
+    expect(porColuna).toEqual(COLUNAS);
+  });
+
+  it("3. todas as células são inteiras e não negativas", () => {
+    const m = repartirMatrizComPerfil(LINHAS, COLUNAS, SAZONAL);
+    for (const linha of m) {
+      for (const v of linha) {
+        expect(Number.isInteger(v)).toBe(true);
+        expect(v).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("4. perfil uniforme devolve exatamente a repartição proporcional", () => {
+    /*
+     * O contraexemplo que impede a função nova de ser uma coisa diferente
+     * disfarçada: sem perfil, ela precisa concordar com `repartirMatriz` célula
+     * a célula. Se divergisse, trocar uma pela outra mudaria a fixture sem
+     * ninguém pedir.
+     */
+    expect(repartirMatrizComPerfil(LINHAS, COLUNAS, uniforme())).toEqual(
+      repartirMatriz(LINHAS, COLUNAS),
+    );
+  });
+
+  it("5. o perfil muda a fatia de uma coluna ao longo das linhas", () => {
+    /*
+     * A razão de a função existir. Com `repartirMatriz`, a fatia da coluna 0 é
+     * a mesma em toda linha — e é isso que faz um fator fixo reproduzir o
+     * recorte. Com perfil, ela varia.
+     */
+    const fatia = (m: readonly (readonly number[])[]) =>
+      m.map((l) => (l[0] ?? 0) / l.reduce((a, b) => a + b, 0));
+
+    const semPerfil = fatia(repartirMatriz(LINHAS, COLUNAS));
+    const comPerfil = fatia(repartirMatrizComPerfil(LINHAS, COLUNAS, SAZONAL));
+
+    const amplitude = (xs: readonly number[]) =>
+      Math.max(...xs) - Math.min(...xs);
+
+    expect(amplitude(semPerfil)).toBeLessThan(0.02);
+    expect(amplitude(comPerfil)).toBeGreaterThan(0.1);
+  });
+
+  it("6. a mesma entrada devolve a mesma saída", () => {
+    // Regra 5 do contrato: a fixture precisa ser reproduzível byte a byte.
+    const uma = repartirMatrizComPerfil(LINHAS, COLUNAS, SAZONAL);
+    const outra = repartirMatrizComPerfil(LINHAS, COLUNAS, SAZONAL);
+    expect(uma).toEqual(outra);
+  });
+
+  it("7. margens que não fecham são recusadas", () => {
+    expect(() => repartirMatrizComPerfil([10, 10], [30], [[1], [1]])).toThrow(
+      ReparticaoImpossivel,
+    );
+  });
+
+  it("8. perfil que zera uma linha inteira é recusado, e não silenciado", () => {
+    /*
+     * Peso zero é o jeito de dizer "esta combinação não existe". Se isso
+     * impedir uma margem de fechar, a fixture deixaria de somar — e a regra 1
+     * acusaria muito depois, num painel, sem dizer de onde veio.
+     */
+    expect(() =>
+      repartirMatrizComPerfil(
+        [10, 10],
+        [10, 10],
+        [
+          [1, 1],
+          [0, 0],
+        ],
+      ),
+    ).toThrow(ReparticaoImpossivel);
+  });
+
+  it("9. margem zero devolve matriz de zeros", () => {
+    expect(repartirMatrizComPerfil([0, 0], [0], [[1], [1]])).toEqual([
+      [0],
+      [0],
+    ]);
   });
 });

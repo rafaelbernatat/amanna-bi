@@ -50,6 +50,7 @@ import {
   AGREGADO_DE_ENTIDADE,
   AGREGADO_DE_MODALIDADE,
 } from "@/acesso/fixtures/eixos";
+import { MESES_DO_PERIODO } from "@/acesso/fixtures/recorte";
 
 /**
  * O fator de entidade do protótipo, copiado de `fctx()`.
@@ -93,6 +94,9 @@ const FATOR_DE_MODALIDADE: Readonly<Record<string, number>> = {
 /** Recorte no padrão não escala: o consolidado é o próprio dado lido. */
 const SEM_ESCALA = 1;
 
+/** A janela cheia, contra a qual o período é escalado. */
+const JANELA_CHEIA = "12-meses";
+
 /**
  * O fator do recorte, como o protótipo o calculava.
  *
@@ -101,10 +105,22 @@ const SEM_ESCALA = 1;
  * tem a mesma repartição de áreas que as demais unidades, e é essa suposição
  * que a suíte precisa saber reprovar.
  *
- * O período fica de fora de propósito. No protótipo ele recorta a série por
- * índice (`S(a, F, k)` fatia de `i` a `j`), que é seleção e não escala — e
- * copiar aqui um erro que o protótipo não comete tornaria o controle negativo
- * mais fácil de reprovar do que ele deve ser.
+ * ## O período entrou depois, e a razão importa
+ *
+ * A primeira versão deixava o período de fora, porque no protótipo ele recorta
+ * a série por índice (`S(a, F, k)` fatia de `i` a `j`), que é seleção e não
+ * escala. Fiel ao protótipo — e por isso o controle negativo não media nada na
+ * dimensão de período: com todas as outras no agregado, o fator dava 1 e o
+ * mutante devolvia exatamente a fonte real.
+ *
+ * Um controle de mutação não existe para ser fiel; existe para **medir a
+ * sensibilidade da suíte**, uma dimensão de cada vez. Um defeito que ninguém
+ * injeta é uma dimensão sobre a qual não se sabe nada. Então o período entra
+ * com o erro da mesma família: ler a janela cheia e multiplicar pela fração de
+ * meses, como se seis meses valessem metade do ano.
+ *
+ * É um erro plausível, e é o que a sazonalidade de T-140.2 torna detectável:
+ * com a fatia variando ao longo do ano, meio ano nunca é metade do ano.
  */
 export function fatorDoRecorte(q: Query): number {
   const entidade =
@@ -120,13 +136,25 @@ export function fatorDoRecorte(q: Query): number {
       ? SEM_ESCALA
       : (FATOR_DE_MODALIDADE[q.modalidade] ?? SEM_ESCALA);
 
-  return entidade * area * modalidade;
+  const meses = MESES_DO_PERIODO[q.periodo] ?? 0;
+  const cheia = MESES_DO_PERIODO[JANELA_CHEIA] ?? 0;
+  const periodo =
+    q.periodo === JANELA_CHEIA || cheia === 0 ? SEM_ESCALA : meses / cheia;
+
+  return entidade * area * modalidade * periodo;
 }
 
-/** A consulta que o protótipo de fato executava: sempre o consolidado. */
+/**
+ * A consulta que o protótipo de fato executava: sempre o consolidado, sempre o
+ * ano inteiro.
+ *
+ * O período entra aqui junto com as três dimensões pela mesma razão: o mutante
+ * lê **uma** coisa — o total — e deriva todo o resto por multiplicação.
+ */
 function consolidada(q: Query): Query {
   return {
     ...q,
+    periodo: JANELA_CHEIA,
     entidade: AGREGADO_DE_ENTIDADE,
     area: AGREGADO_DE_AREA,
     modalidade: AGREGADO_DE_MODALIDADE,
