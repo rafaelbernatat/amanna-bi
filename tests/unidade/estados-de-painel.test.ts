@@ -18,6 +18,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { LIMITE_PADRAO_DE_DEFASAGEM_HORAS } from "@/semantica/frescor";
+
 import { alturaDaForma, ALTURA_DA_FORMA } from "@/apresentacao/graficos/altura";
 import { Esqueleto } from "@/apresentacao/graficos/Esqueleto";
 import { CartaoEmEstado } from "@/apresentacao/paineis/CartaoEmEstado";
@@ -75,13 +77,15 @@ const CARTAO = {
 const EM_DIA: Frescor = {
   asOf: "2026-12-31",
   sincronizadoEm: "2026-08-26T06:15",
-  defasado: false,
+  limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
+  status: "ok",
 };
 
 const DEFASADO: Frescor = {
   asOf: "2026-11-30",
   sincronizadoEm: "2026-08-19T23:40",
-  defasado: true,
+  limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
+  status: "defasado",
 };
 
 const ESTADOS_DE_PAINEL: Readonly<Record<string, EstadoDe<PanelResponse>>> = {

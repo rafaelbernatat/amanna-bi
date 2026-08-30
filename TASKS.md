@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 238 tarefas: 174 pendentes e 64 já concluídas (5 no protótipo) |
+| **Total** | 238 tarefas: 173 pendentes e 65 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 53 de 101 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **238** | **123** | **92** | **18** | **64 de 238** |
+| **Total** | **238** | **123** | **92** | **18** | **65 de 238** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -310,7 +310,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [X] **T-148** `P0` `M` `dados` Catalogar as métricas que hoje são KPI com valor fixo em texto
   · **Aceite:** As 15 métricas do achado 5 (idade média, tempo de casa, tempo de fechamento, custo por contratação, encargos, mediana salarial, participação e conclusão de treinamento, cobertura da pesquisa, ticket médio, concentração top 10, PMR, PME, PMP e inadimplência) existem no catálogo com fórmula, unidade e agg, e cada uma tem medida correspondente nas fixtures.
   · **PRD:** Anexo D achado 5, RF-07, seção 9.4 · **Depende de:** T-112, T-147
-- [~] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha   ⏳ 2026-08-30 08:04 · sessao-0f42
+- [X] **T-149** `P0` `M` `dados` Definir o contrato de Meta com frescor, implementar getMeta e o modo de falha
   · **Aceite:** getMeta devolve dimensões com os valores exatos da seção 6.2, versão do catálogo e frescor { asOf, ultimoSyncEm, limiteDefasagemHoras, status }; testes em limite-1, limite e limite+1 devolvem ok, ok e defasado, e falha de fonte devolve erro tipado com o horário da última leitura bem-sucedida, nunca dado parcial.
   · **PRD:** seção 9.1, RF-10, RF-22, seção 10.2, seção 6.4, D-P5 · **Depende de:** T-101, T-147
 - [ ] **T-150** `P0` `M` `dados` Substituir todos os KPIs literais por leitura do catálogo e bloquear novos literais

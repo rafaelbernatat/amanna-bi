@@ -11,6 +11,8 @@
 
 import { describe, expect, it } from "vitest";
 
+import { LIMITE_PADRAO_DE_DEFASAGEM_HORAS } from "@/semantica/frescor";
+
 import { applyScope, criarFronteira, type Fronteira } from "@/acesso/fronteira";
 import {
   getSession,
@@ -201,11 +203,13 @@ const DIMENSOES = {
 
 const META: Meta = {
   dimensoes: DIMENSOES,
+  versaoDoCatalogo: "teste",
   metricas: ["turnover_12m"],
   frescor: {
     asOf: "2026-12-31",
     sincronizadoEm: "2027-01-02T03:00:00Z",
-    defasado: false,
+    limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
+    status: "ok",
   },
 };
 

@@ -31,6 +31,7 @@ import type {
 } from "@/semantica/contrato";
 import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
 import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
+import { calcularMeta } from "@/acesso/fixtures/meta";
 import { calcularMetrica } from "@/acesso/fixtures/metricas";
 import { calcularPainel } from "@/acesso/fixtures/paineis";
 import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
@@ -121,8 +122,15 @@ export function linhasDe<N extends NomeDeView>(
  */
 export function criarFonteDeFixtures(): DataSource {
   return {
+    /**
+     * O que a fixture sabe sobre si mesma (T-149).
+     *
+     * O instante entra como `new Date()` **aqui**, e não dentro de
+     * `calcularMeta`: a fronteira do adaptador é onde o mundo externo começa, e
+     * o relógio é mundo externo. Assim o cálculo continua puro e testável.
+     */
     getMeta(): Promise<Meta> {
-      throw new AindaNaoImplementado("getMeta", "T-149");
+      return Promise.resolve(calcularMeta(new Date()));
     },
     /** As 13 telas, com todo numero saindo do catalogo (T-115 e T-116). */
     getKpis(tela: string, q: Query): Promise<readonly Kpi[]> {

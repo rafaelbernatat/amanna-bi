@@ -29,6 +29,7 @@
  * produto continuar servindo a definição antiga.
  */
 
+import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,10 +119,34 @@ for (const id of ordenadas) {
   };
 }
 
+/**
+ * A identidade do catálogo que gerou este arquivo (T-149).
+ *
+ * Digest do conteúdo normalizado — as mesmas 68 métricas com os mesmos campos
+ * dão sempre a mesma versão, e mudar uma fórmula muda a versão.
+ *
+ * Do conteúdo, e não do texto do YAML: comentário reescrito e linha em branco
+ * a mais não são mudança de definição, e uma versão que mudasse com eles
+ * ensinaria a ignorar a mudança de versão.
+ */
+const VERSAO = createHash("sha256")
+  .update(JSON.stringify(corpo))
+  .digest("hex")
+  .slice(0, 12);
+
 const bruto = `${CABECALHO} ${JSON.stringify(corpo, null, 2)};
 
 /** Quantas métricas o catálogo tem. Contado, nunca escrito. */
 export const QUANTIDADE_DE_METRICAS = ${String(ordenadas.length)};
+
+/**
+ * Qual catálogo produziu um número (T-149).
+ *
+ * Viaja em \`getMeta().versaoDoCatalogo\`, para que "o número mudou" e "a
+ * definição mudou" deixem de ser indistinguíveis. T-155 troca isto por versão
+ * semântica com changelog; até lá é a identidade do conteúdo.
+ */
+export const VERSAO_DO_CATALOGO = "${VERSAO}";
 `;
 
 const config = await resolveConfig(DESTINO);
