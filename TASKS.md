@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 236 tarefas: 175 pendentes e 61 já concluídas (5 no protótipo) |
+| **Total** | 236 tarefas: 174 pendentes e 62 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 99 | 58 | 37 | 4 | 50 de 99 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 99 | 58 | 37 | 4 | 51 de 99 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **236** | **121** | **92** | **18** | **61 de 236** |
+| **Total** | **236** | **121** | **92** | **18** | **62 de 236** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -274,7 +274,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 - [~] **T-139** `P0` `M` `seguranca` Validar segredos e configuração no boot, varrer segredo em CI e fixar cabeçalhos HTTP   ⏸ aguardando H-46
   · **Aceite:** O boot valida todas as variáveis por esquema e aborta em menos de 2 segundos nomeando as ausentes ou inválidas, sem ler credencial de arquivo versionado ou da imagem; um scanner de segredo no CI reprova um segredo plantado de propósito; e as respostas trazem CSP sem unsafe-inline, HSTS, X-Content-Type-Options, Referrer-Policy e frame-ancestors restrito.
   · **PRD:** seção 11, seção 15, seção 8.3, seção 13 · **Depende de:** T-001, T-006
-- [~] **T-140.1** `P0` `M` `dados` Fazer a regra 1 ler pela fonte injetada em vez de importar as fixtures   ⏳ 2026-08-29 23:11 · sessao-0f42
+- [X] **T-140.1** `P0` `M` `dados` Fazer a regra 1 ler pela fonte injetada em vez de importar as fixtures
   · **Aceite:** `REGRA_1` obtem KPI e painel por `ctx.fonte`, e nenhum arquivo de `src/acesso/contrato/` importa `@/acesso/fixtures/kpis` nem `@/acesso/fixtures/paineis`; rodar a suite com uma fonte que devolve valores diferentes das fixtures produz falhas de regra 1, provando que a fonte injetada e de fato consultada.
   · **PRD:** RF-21, secao 10.4, secao 8.3, PR-1 · **Depende de:** T-121, T-122
 - [~] **T-140** `P0` `M` `auditoria` Fixtures com perfis não proporcionais e controle negativo de mutação   ⏳ 2026-08-29 23:04 · sessao-0f42

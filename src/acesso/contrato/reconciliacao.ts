@@ -36,8 +36,7 @@
  * que valem mais que a lista — estão no comentário de `NAO_RECONCILIA`.
  */
 
-import type { PainelDesenhado } from "@/acesso/fixtures/paineis";
-import type { Unidade } from "@/semantica/contrato";
+import type { PanelResponse, Unidade } from "@/semantica/contrato";
 import { podeSomar } from "@/semantica/agregacao";
 
 /* ------------------------------------------------------------------ *
@@ -482,7 +481,7 @@ function ultimoConhecido(valores: readonly (number | null)[]): number | null {
 
 /** A série pedida, ou `null` quando o painel não a tem. */
 function serie(
-  envelope: PainelDesenhado,
+  envelope: PanelResponse,
   nome: string,
 ): readonly (number | null)[] | null {
   if (!("series" in envelope)) return null;
@@ -491,7 +490,7 @@ function serie(
 
 /** Os valores das categorias pedidas de um painel cartesiano. */
 function categorias(
-  envelope: PainelDesenhado,
+  envelope: PanelResponse,
   quais: readonly string[],
 ): readonly (number | null)[] | null {
   if (!("categories" in envelope) || !("series" in envelope)) return null;
@@ -521,7 +520,7 @@ function categorias(
  * régua com o nome trocado, é uma régua sem nada para medir.
  */
 export function valorDoPainel(
-  envelope: PainelDesenhado,
+  envelope: PanelResponse,
   forma: FormaDeReconciliacao,
   unidade: Unidade,
 ): number | null | undefined {
