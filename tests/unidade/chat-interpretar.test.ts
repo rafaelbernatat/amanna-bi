@@ -45,7 +45,10 @@ vi.mock("@/chat/openrouter", () => ({
 
 /** Igual ao do interpretador: sem acento e em minúsculas. */
 function normalizar(texto: string): string {
-  return texto.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
 }
 
 /* ------------------------------------------------------------------ *

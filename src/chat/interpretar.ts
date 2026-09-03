@@ -65,9 +65,20 @@ export const CONFIANCA_MINIMA = 0.45;
  */
 export const PONTUACAO_MINIMA = 3;
 
-/** Texto sem acento e em minúsculas, para o casamento não depender de digitação. */
+/**
+ * Texto sem acento e em minúsculas, para o casamento não depender de digitação.
+ *
+ * A faixa dos diacríticos vai escrita com escapes, e não com os caracteres
+ * combinantes literais: a forma literal passou nos testes locais e falhou no
+ * build de produção — "equilíbrio" não virava "equilibrio", e o ponto de
+ * equilíbrio virava desambiguação na Vercel. Escape não depende de como o
+ * arquivo é lido.
+ */
 function normalizar(texto: string): string {
-  return texto.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
 }
 
 /**
