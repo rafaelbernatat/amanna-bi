@@ -32,6 +32,7 @@
 import { formatarValor } from "@/apresentacao/formato/formato";
 import {
   CONFIANCA_MINIMA,
+  filtrosDaPergunta,
   interpretarLocalmente,
   type Intencao,
 } from "@/chat/interpretar";
@@ -199,6 +200,9 @@ function sugestoesApos(r: Resolucao): readonly string[] {
   return sugestoes;
 }
 
+/** A confiança de uma recusa do modelo: nenhuma, por definição. */
+const SEM_CONFIANCA = 0;
+
 /** O estágio 1, com o gateway quando há chave e com o catálogo quando não há. */
 async function interpretar(
   pergunta: string,
@@ -213,13 +217,34 @@ async function interpretar(
     rotulo: m.rotulo,
   }));
   const doModelo = await interpretarComGateway(pergunta, metricas);
-  if (doModelo === null || doModelo.metrica === "") return local;
+
+  // Gateway fora, chave recusada ou JSON malformado: o caminho local vale.
+  if (doModelo === null) return local;
+
+  // Os filtros continuam saindo do nosso código: o modelo escolhe a métrica,
+  // e o recorte é vocabulário fechado que ele não precisa adivinhar. Saem da
+  // pergunta, e não do palpite local — que é `null` sempre que nada casa, e
+  // "nos últimos 12 meses" não pode sumir junto com ele.
+  const filtros = filtrosDaPergunta(pergunta, atuais);
+
+  /*
+   * O modelo recusou: é o que o prompt pede quando nada casa, e a recusa vai
+   * para a tela como recusa útil (seção 7.5). Antes ela era descartada e o
+   * chat caía no casamento de sinônimo — "qual é o ROE?" virava eNPS, e a
+   * recusa certa do modelo nunca chegava a ninguém.
+   */
+  if (doModelo.metrica === "") {
+    return {
+      metrica: "",
+      filtros,
+      confianca: SEM_CONFIANCA,
+      alternativas: doModelo.alternativas,
+    };
+  }
 
   return {
     metrica: doModelo.metrica,
-    // Os filtros continuam saindo do nosso código: o modelo escolhe a métrica,
-    // e o recorte é vocabulário fechado que ele não precisa adivinhar.
-    filtros: local?.filtros ?? atuais,
+    filtros,
     confianca: doModelo.confianca,
     alternativas: doModelo.alternativas,
   };
@@ -239,8 +264,15 @@ export async function perguntar(
   const intencao = await interpretar(pergunta, atuais);
 
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
-    const alternativas = (intencao?.alternativas ?? [])
-      .concat(intencao === null ? [] : [intencao.metrica])
+    // Nada casou (local) ou o modelo recusou: não há métrica para oferecer.
+    const recusou = intencao === null || intencao.metrica === "";
+    const propria: readonly string[] =
+      intencao !== null && intencao.metrica !== "" ? [intencao.metrica] : [];
+    // A melhor candidata vem primeiro: é o palpite mais próximo, não o último.
+    const alternativas = propria
+      .concat(intencao?.alternativas ?? [])
+      // Os ids vêm do modelo: só o que existe no catálogo vira atalho na tela.
+      .filter((id) => CATALOGO_GERADO[id] !== undefined)
       .slice(0, 3)
       .map((id) => ({ id, rotulo: rotuloDaMetrica(id) }));
 
@@ -249,7 +281,9 @@ export async function perguntar(
       texto:
         alternativas.length === 0
           ? "Não tenho métrica no catálogo que responda a isso."
-          : "Não tenho certeza do que você quer saber. Estas são as métricas mais próximas:",
+          : recusou
+            ? "Não tenho essa métrica no catálogo. Estas são as mais próximas:"
+            : "Não tenho certeza do que você quer saber. Estas são as métricas mais próximas:",
       alternativas,
     };
   }
