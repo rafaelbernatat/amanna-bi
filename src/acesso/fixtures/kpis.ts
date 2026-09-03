@@ -332,6 +332,94 @@ function prazo(saldo: number | null, fluxo: number | null): number | null {
   return fracao === null ? null : fracao * DIAS_DO_ANO;
 }
 
+/* ------------------------------------------------------------------ *
+ * Balanço e dívida (perguntas de CFO, 2026-09-03)
+ * ------------------------------------------------------------------ */
+
+const MESES_NO_ANO = 12;
+const DIAS_NO_MES = 30;
+/** IR e CSLL do lucro real, em %: o benefício fiscal da dívida. */
+const ALIQUOTA_DE_IR_E_CSLL = 34;
+
+/** O lucro líquido do recorte em reais, o último degrau da ponte. */
+function lucroLiquidoEmReais(r: Recorte): number | null {
+  const operacional = ebitdaEmReais(r);
+  if (operacional === null) return null;
+  return (
+    operacional -
+    (soma("vw_fato_fin_mes", r, (l) => l.depreciacaoEAmortizacao) ?? 0) -
+    (soma("vw_fato_fin_mes", r, (l) => l.resultadoFinanceiro) ?? 0) -
+    (soma("vw_fato_fin_mes", r, (l) => l.naoOperacional) ?? 0)
+  );
+}
+
+/** O EBIT do recorte em reais: EBITDA menos depreciação. */
+function ebitEmReais(r: Recorte): number | null {
+  const operacional = ebitdaEmReais(r);
+  if (operacional === null) return null;
+  return (
+    operacional -
+    (soma("vw_fato_fin_mes", r, (l) => l.depreciacaoEAmortizacao) ?? 0)
+  );
+}
+
+/** Um fluxo do recorte projetado para doze meses, para múltiplos sob um mês. */
+function anualizado(fluxo: number | null, r: Recorte): number | null {
+  if (fluxo === null || r.meses.length === 0) return null;
+  return (fluxo * MESES_NO_ANO) / r.meses.length;
+}
+
+/** A média dos saldos de fim de mês de uma medida do balanço, no recorte. */
+function mediaDoBalanco(
+  r: Recorte,
+  medida: (l: (typeof VIEWS)["vw_fato_balanco_mes"][number]) => number,
+): number | null {
+  const total = soma("vw_fato_balanco_mes", r, medida);
+  if (total === null || r.meses.length === 0) return null;
+  return total / r.meses.length;
+}
+
+function dividaBrutaEmReais(r: Recorte): number | null {
+  return noFim(
+    "vw_fato_balanco_mes",
+    r,
+    (l) => l.dividaCurtoPrazo + l.dividaLongoPrazo,
+  );
+}
+
+function saldoDeCaixaEmReais(r: Recorte): number | null {
+  return noFim("vw_fato_fin_mes", r, (l) => l.saldoDeCaixa);
+}
+
+/** Juros do recorte, anualizados, sobre a dívida média: a taxa efetiva. */
+function custoMedioDaDividaEmFracao(r: Recorte): number | null {
+  return razao(
+    anualizado(
+      soma("vw_fato_balanco_mes", r, (l) => l.jurosPagos),
+      r,
+    ),
+    mediaDoBalanco(r, (l) => l.dividaCurtoPrazo + l.dividaLongoPrazo),
+  );
+}
+
+function ncgEmReais(r: Recorte): number | null {
+  const aReceber = noFim("vw_fato_contas", r, (l) => l.aReceber);
+  const estoque = noFim("vw_fato_fin_mes", r, (l) => l.estoque);
+  const aPagar = noFim("vw_fato_contas", r, (l) => l.aPagar);
+  if (aReceber === null || estoque === null || aPagar === null) return null;
+  return aReceber + estoque - aPagar;
+}
+
+/** Custo mensal de carregar um saldo ao custo médio da dívida. */
+function custoMensalDeCarregar(
+  saldo: number | null,
+  r: Recorte,
+): number | null {
+  const custo = custoMedioDaDividaEmFracao(r);
+  if (saldo === null || custo === null) return null;
+  return emMilhoes((saldo * custo) / MESES_NO_ANO);
+}
+
 type Calculo = (r: Recorte) => number | null;
 
 /**
@@ -831,6 +919,228 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
       razao(
         soma("vw_fato_faturamento_cliente", r, (l) => l.receita),
         soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
+      ),
+    ),
+
+  /* ---------------- Balanço e dívida (perguntas de CFO) ---------------- */
+
+  patrimonio_liquido: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.patrimonioLiquido)),
+  ativo_total: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.ativoTotal)),
+  ativo_circulante: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.ativoCirculante)),
+  passivo_circulante: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.passivoCirculante)),
+  imobilizado: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.imobilizado)),
+  aplicacoes_financeiras: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.aplicacoesFinanceiras)),
+  divida_curto_prazo: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.dividaCurtoPrazo)),
+  divida_longo_prazo: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.dividaLongoPrazo)),
+  divida_bruta: (r) => emMilhoes(dividaBrutaEmReais(r)),
+  divida_liquida: (r) => {
+    const bruta = dividaBrutaEmReais(r);
+    const caixa = saldoDeCaixaEmReais(r);
+    return bruta === null || caixa === null ? null : emMilhoes(bruta - caixa);
+  },
+  capital_investido: (r) =>
+    emMilhoes(
+      noFim(
+        "vw_fato_balanco_mes",
+        r,
+        (l) =>
+          l.patrimonioLiquido +
+          l.dividaCurtoPrazo +
+          l.dividaLongoPrazo -
+          l.aplicacoesFinanceiras,
+      ),
+    ),
+  estoque_sem_giro: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.estoqueSemGiro)),
+  a_receber_vencido: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.aReceberVencido)),
+  a_pagar_vencido: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.aPagarVencido)),
+  contas_a_receber: (r) =>
+    emMilhoes(noFim("vw_fato_contas", r, (l) => l.aReceber)),
+  contas_a_pagar: (r) => emMilhoes(noFim("vw_fato_contas", r, (l) => l.aPagar)),
+  juros_pagos: (r) =>
+    emMilhoes(soma("vw_fato_balanco_mes", r, (l) => l.jurosPagos)),
+  impostos_sobre_lucro: (r) =>
+    emMilhoes(soma("vw_fato_balanco_mes", r, (l) => l.impostosSobreLucro)),
+  amortizacao_de_divida: (r) =>
+    emMilhoes(soma("vw_fato_balanco_mes", r, (l) => l.amortizacaoDeDivida)),
+  distribuicao_a_socios: (r) =>
+    emMilhoes(soma("vw_fato_balanco_mes", r, (l) => l.distribuicaoASocios)),
+
+  roe: (r) =>
+    emPorcento(
+      razao(
+        lucroLiquidoEmReais(r),
+        noFim("vw_fato_balanco_mes", r, (l) => l.patrimonioLiquido),
+      ),
+    ),
+  roa: (r) =>
+    emPorcento(
+      razao(
+        lucroLiquidoEmReais(r),
+        noFim("vw_fato_balanco_mes", r, (l) => l.ativoTotal),
+      ),
+    ),
+  resultado_operacional_liquido: (r) => {
+    const ebit = ebitEmReais(r);
+    if (ebit === null) return null;
+    return emMilhoes(
+      ebit - (soma("vw_fato_balanco_mes", r, (l) => l.impostosSobreLucro) ?? 0),
+    );
+  },
+  roic: (r) => {
+    const ebit = ebitEmReais(r);
+    if (ebit === null) return null;
+    return emPorcento(
+      razao(
+        ebit -
+          (soma("vw_fato_balanco_mes", r, (l) => l.impostosSobreLucro) ?? 0),
+        noFim(
+          "vw_fato_balanco_mes",
+          r,
+          (l) =>
+            l.patrimonioLiquido +
+            l.dividaCurtoPrazo +
+            l.dividaLongoPrazo -
+            l.aplicacoesFinanceiras,
+        ),
+      ),
+    );
+  },
+  giro_do_ativo: (r) =>
+    razao(
+      receita(r),
+      noFim("vw_fato_balanco_mes", r, (l) => l.ativoTotal),
+    ),
+  multiplicador_de_capital: (r) =>
+    razao(
+      noFim("vw_fato_balanco_mes", r, (l) => l.ativoTotal),
+      noFim("vw_fato_balanco_mes", r, (l) => l.patrimonioLiquido),
+    ),
+
+  liquidez_corrente: (r) =>
+    razao(
+      noFim("vw_fato_balanco_mes", r, (l) => l.ativoCirculante),
+      noFim("vw_fato_balanco_mes", r, (l) => l.passivoCirculante),
+    ),
+  liquidez_seca: (r) => {
+    const circulante = noFim(
+      "vw_fato_balanco_mes",
+      r,
+      (l) => l.ativoCirculante,
+    );
+    const estoque = noFim("vw_fato_fin_mes", r, (l) => l.estoque);
+    if (circulante === null || estoque === null) return null;
+    return razao(
+      circulante - estoque,
+      noFim("vw_fato_balanco_mes", r, (l) => l.passivoCirculante),
+    );
+  },
+  liquidez_imediata: (r) =>
+    razao(
+      saldoDeCaixaEmReais(r),
+      noFim("vw_fato_balanco_mes", r, (l) => l.passivoCirculante),
+    ),
+  dias_de_caixa: (r) => {
+    const saidas = soma("vw_fato_fin_mes", r, (l) => l.saidasDeCaixa);
+    if (saidas === null || r.meses.length === 0) return null;
+    const porDia = saidas / (r.meses.length * DIAS_NO_MES);
+    return razao(saldoDeCaixaEmReais(r), porDia);
+  },
+  ncg: (r) => emMilhoes(ncgEmReais(r)),
+  saldo_de_tesouraria: (r) => {
+    const caixa = saldoDeCaixaEmReais(r);
+    const curto = noFim("vw_fato_balanco_mes", r, (l) => l.dividaCurtoPrazo);
+    return caixa === null || curto === null ? null : emMilhoes(caixa - curto);
+  },
+  caixa_excedente: (r) => {
+    const caixa = saldoDeCaixaEmReais(r);
+    const ncg = ncgEmReais(r);
+    return caixa === null || ncg === null ? null : emMilhoes(caixa - ncg);
+  },
+
+  divida_liquida_sobre_ebitda: (r) => {
+    const bruta = dividaBrutaEmReais(r);
+    const caixa = saldoDeCaixaEmReais(r);
+    if (bruta === null || caixa === null) return null;
+    return razao(bruta - caixa, anualizado(ebitdaEmReais(r), r));
+  },
+  divida_sobre_pl: (r) =>
+    razao(
+      dividaBrutaEmReais(r),
+      noFim("vw_fato_balanco_mes", r, (l) => l.patrimonioLiquido),
+    ),
+  cobertura_de_juros: (r) =>
+    razao(
+      ebitEmReais(r),
+      soma("vw_fato_balanco_mes", r, (l) => l.jurosPagos),
+    ),
+  cobertura_do_servico_da_divida: (r) =>
+    razao(
+      ebitEmReais(r),
+      soma(
+        "vw_fato_balanco_mes",
+        r,
+        (l) => l.jurosPagos + l.amortizacaoDeDivida,
+      ),
+    ),
+  custo_medio_da_divida: (r) => emPorcento(custoMedioDaDividaEmFracao(r)),
+  custo_liquido_da_divida: (r) => {
+    const custo = custoMedioDaDividaEmFracao(r);
+    if (custo === null) return null;
+    return emPorcento((custo * (CEM - ALIQUOTA_DE_IR_E_CSLL)) / CEM);
+  },
+  custo_do_prazo_de_recebimento: (r) =>
+    custoMensalDeCarregar(
+      noFim("vw_fato_contas", r, (l) => l.aReceber),
+      r,
+    ),
+  custo_de_carregar_estoque: (r) =>
+    custoMensalDeCarregar(
+      noFim("vw_fato_fin_mes", r, (l) => l.estoque),
+      r,
+    ),
+  fluxo_de_caixa_livre: (r) => {
+    const fco = soma("vw_fato_fin_mes", r, (l) => l.fco);
+    if (fco === null) return null;
+    return emMilhoes(fco - (soma("vw_fato_fin_mes", r, (l) => l.capex) ?? 0));
+  },
+  variacao_de_capital_de_giro: (r) => {
+    const operacional = ebitdaEmReais(r);
+    if (operacional === null) return null;
+    return emMilhoes(
+      operacional -
+        (soma("vw_fato_balanco_mes", r, (l) => l.jurosPagos) ?? 0) -
+        (soma("vw_fato_balanco_mes", r, (l) => l.impostosSobreLucro) ?? 0) -
+        (soma("vw_fato_fin_mes", r, (l) => l.fco) ?? 0),
+    );
+  },
+
+  divida_capital_de_giro: (r) =>
+    emMilhoes(
+      noFim("vw_fato_divida_mes", r, (l) =>
+        l.linha === "capital-de-giro" ? l.saldo : 0,
+      ),
+    ),
+  divida_financiamento_longo_prazo: (r) =>
+    emMilhoes(
+      noFim("vw_fato_divida_mes", r, (l) =>
+        l.linha === "financiamento-longo-prazo" ? l.saldo : 0,
+      ),
+    ),
+  divida_antecipacao_de_recebiveis: (r) =>
+    emMilhoes(
+      noFim("vw_fato_divida_mes", r, (l) =>
+        l.linha === "antecipacao-de-recebiveis" ? l.saldo : 0,
       ),
     ),
 

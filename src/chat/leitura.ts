@@ -73,14 +73,25 @@ export function familiaDe(
  * confere que cada uma é respondível pelo interpretador: a oferta é clicável.
  */
 export const PROXIMO_PASSO: Readonly<Record<string, string>> = {
+  roe: "Quer ver o ROA, o retorno sobre o ativo, para separar o efeito da alavancagem?",
+  roa: "Quer ver o ROIC, o retorno sobre o capital investido?",
+  roic: "Quer ver o custo médio da dívida, para comparar com esse retorno?",
+  liquidez_corrente: "Quer ver a liquidez seca, sem contar com o estoque?",
+  liquidez_seca: "Quer ver o ciclo financeiro?",
+  ncg: "Quer ver o ciclo financeiro?",
+  divida_liquida_sobre_ebitda: "Quer ver a cobertura de juros?",
+  cobertura_de_juros: "Quer ver o custo médio da dívida?",
+  custo_medio_da_divida:
+    "Quer ver o ROIC, para saber se a dívida está a favor?",
   pmr: "Quer ver em quantos dias pagamos os fornecedores?",
   pmp: "Quer ver o ciclo financeiro?",
   pme: "Quer ver o ciclo financeiro?",
-  ciclo_financeiro: "Quer ver o prazo médio de recebimento?",
+  ciclo_financeiro: "Quer ver a necessidade de capital de giro?",
   ebitda: "Quer ver a conversão de caixa?",
-  lucro_liquido: "Quer ver a margem líquida?",
+  lucro_liquido: "Quer ver o ROE, o retorno sobre o patrimônio dos sócios?",
   margem_liquida: "Quer ver a margem bruta?",
   margem_bruta: "Quer ver o EBITDA?",
+  fluxo_de_caixa_livre: "Quer ver o prazo médio de recebimento?",
 };
 
 /* ------------------------------------------------------------------ *

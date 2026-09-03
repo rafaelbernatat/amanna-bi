@@ -15,6 +15,44 @@
 import type { Metrica } from "@/semantica/catalogo";
 
 export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
+  a_pagar_vencido: {
+    id: "a_pagar_vencido",
+    rotulo: "A pagar vencido",
+    fonte: "vw_fato_contas",
+    formula: "soma(a_pagar nas faixas vencidas, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "a pagar vencido",
+      "fornecedores vencidos",
+      "fornecedores com vencimento passado",
+      "atraso com fornecedor",
+    ],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). Tudo fora de "a vencer". E o numero que separa negociacao de atraso na pergunta de PMP do documento de CFO.',
+  },
+  a_receber_vencido: {
+    id: "a_receber_vencido",
+    rotulo: "A receber vencido",
+    fonte: "vw_fato_contas",
+    formula: "soma(a_receber nas faixas vencidas, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "a receber vencido",
+      "recebiveis vencidos",
+      "carteira vencida",
+      "vencido a receber",
+    ],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). Tudo fora de "a vencer", desde 1 dia -- diferente da inadimplencia, que conta so acima de 90 dias.',
+  },
   absenteismo: {
     id: "absenteismo",
     rotulo: "Absenteísmo",
@@ -28,6 +66,67 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: ["absenteismo", "faltas", "ausencia", "afastamento", "atestado"],
     decisao:
       'PROVISORIO (D-H03, 2026-08-24). O que entra em "horas ausentes" -- ferias, licenca medica, falta injustificada -- muda o numero e nao esta definido. Precisa de RH em H-08.',
+  },
+  amortizacao_de_divida: {
+    id: "amortizacao_de_divida",
+    rotulo: "Amortização de dívida",
+    fonte: "vw_fato_balanco_mes",
+    formula: "soma(amortizacao_de_divida)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "amortizacao",
+      "amortizacao de divida",
+      "parcelas da divida",
+      "principal pago",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Principal pago no periodo, 130 no ano em doze parcelas. Com a distribuicao e a captacao fecha o FCF de 80.",
+  },
+  aplicacoes_financeiras: {
+    id: "aplicacoes_financeiras",
+    rotulo: "Aplicações financeiras",
+    fonte: "vw_fato_balanco_mes",
+    formula: "aplicacoes_financeiras(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["aplicacoes financeiras", "caixa aplicado", "aplicacoes"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A parte do caixa que esta aplicada e sai do capital investido. Na fixture e uma fracao fixa do saldo de caixa.",
+  },
+  ativo_circulante: {
+    id: "ativo_circulante",
+    rotulo: "Ativo circulante",
+    fonte: "vw_fato_balanco_mes",
+    formula: "ativo_circulante(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["ativo circulante", "o que a empresa tem de curto prazo"],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). Caixa e aplicacoes, a receber, estoque e outros circulantes. O que entra em "outros" e pergunta de H-08.',
+  },
+  ativo_total: {
+    id: "ativo_total",
+    rotulo: "Ativo total",
+    fonte: "vw_fato_balanco_mes",
+    formula: "ativo_total(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["ativo total", "bens e direitos", "total de ativos"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). E a identidade contabil: passivo circulante mais divida de longo prazo mais patrimonio. Precisa de Controladoria em H-08.",
   },
   beneficios: {
     id: "beneficios",
@@ -43,6 +142,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Parcela da folha, e nao despesa a parte. Somar a folha com os beneficios contaria os beneficios duas vezes.",
   },
+  caixa_excedente: {
+    id: "caixa_excedente",
+    rotulo: "Caixa excedente",
+    fonte: "vw_fato_fin_mes, vw_fato_contas",
+    formula: "saldo_de_caixa - ncg (fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "caixa excedente",
+      "caixa que excede",
+      "sobra de caixa",
+      "quanto do caixa e excedente",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O que pode ficar aplicado sem faltar para a operacao. Negativo e caixa insuficiente para o giro.",
+  },
   capex: {
     id: "capex",
     rotulo: "Investimento (FCI)",
@@ -53,15 +171,28 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "neutro",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: [
-      "capex",
-      "investimento",
-      "fci",
-      "imobilizado",
-      "manutencao e expansao",
-    ],
+    sinonimos: ["capex", "investimento", "fci", "manutencao e expansao"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Positivo e SAIDA de caixa. Sentido neutro porque investir mais nao e bom nem ruim sozinho -- depende do retorno, que esta fora do escopo da v1.",
+  },
+  capital_investido: {
+    id: "capital_investido",
+    rotulo: "Capital investido",
+    fonte: "vw_fato_balanco_mes",
+    formula:
+      "patrimonio_liquido + divida_bruta - aplicacoes_financeiras (fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "capital investido",
+      "capital que trabalha na operacao",
+      "dinheiro dos socios e dos bancos",
+    ],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). "Todo o dinheiro que esta de fato trabalhando dentro da empresa, tirando o caixa que so esta aplicado", como o documento de CFO define. Precisa de Controladoria em H-08.',
   },
   ciclo_financeiro: {
     id: "ciclo_financeiro",
@@ -74,7 +205,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "menor_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: ["ciclo", "ciclo financeiro", "capital de giro"],
+    sinonimos: ["ciclo", "ciclo financeiro", "ciclo de conversao de caixa"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Usa 365 dias e o CMV como denominador de PME e PMP. Compras do periodo seria o denominador mais correto para o PMP, e a fixture nao tem essa medida. Precisa de Controladoria em H-08.",
   },
@@ -96,6 +227,44 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). E o numero que qualifica todos os outros de clima: eNPS e engajamento falam pelos 74% que responderam.",
+  },
+  cobertura_de_juros: {
+    id: "cobertura_de_juros",
+    rotulo: "Cobertura de juros",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula: "(ebitda - depreciacao_e_amortizacao) / juros_pagos (recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "cobertura de juros",
+      "consegue pagar os juros",
+      "pagar os juros",
+      "quantas vezes os juros",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). EBIT sobre juros. Da 1,0 vez no ano: os juros consomem todo o EBIT, como o cartao de lucro liquido ja dizia.",
+  },
+  cobertura_do_servico_da_divida: {
+    id: "cobertura_do_servico_da_divida",
+    rotulo: "Cobertura do serviço da dívida",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula:
+      "(ebitda - depreciacao_e_amortizacao) / (juros_pagos + amortizacao_de_divida) (recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "cobertura do servico da divida",
+      "servico da divida",
+      "juros mais amortizacao",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). E o numero que diz se vai apertar: com as amortizacoes, cai abaixo de 1.",
   },
   concentracao_top_10: {
     id: "concentracao_top_10",
@@ -135,6 +304,44 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Trilha iniciada num mes e concluida no seguinte fecha no mes da conclusao. Sob recorte mensal isso pode passar de 100% -- e a razao de a metrica existir com grao mensal e ser lida em 12m.",
+  },
+  contas_a_pagar: {
+    id: "contas_a_pagar",
+    rotulo: "Contas a pagar",
+    fonte: "vw_fato_contas",
+    formula: "soma(a_pagar, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "contas a pagar",
+      "a pagar",
+      "fornecedores a pagar",
+      "saldo a pagar",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Saldo total com fornecedores, todas as faixas de aging. Fecha em 101 em dezembro.",
+  },
+  contas_a_receber: {
+    id: "contas_a_receber",
+    rotulo: "Contas a receber",
+    fonte: "vw_fato_contas",
+    formula: "soma(a_receber, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "contas a receber",
+      "a receber",
+      "clientes a receber",
+      "saldo a receber",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Saldo total da carteira, todas as faixas de aging. Fecha em 171 em dezembro.",
   },
   conversao_de_caixa: {
     id: "conversao_de_caixa",
@@ -177,6 +384,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Comparacao contra o mesmo periodo do ano anterior, nao contra o periodo imediatamente anterior. Nao aprovado por Controladoria: a sessao e H-08.",
   },
+  custo_de_carregar_estoque: {
+    id: "custo_de_carregar_estoque",
+    rotulo: "Custo de carregar o estoque",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula: "estoque(fim) * custo_medio_da_divida / 12",
+    unidade: "BRL_mi",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "custo de carregar estoque",
+      "custo do estoque parado",
+      "financiar o estoque",
+      "quanto custa o estoque",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Por mes, ao custo medio da divida. Nao aparece na DRE como tal.",
+  },
   custo_de_reposicao: {
     id: "custo_de_reposicao",
     rotulo: "Custo de reposição",
@@ -196,6 +422,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). E a parcela do custo do turnover que nao aparece em nota fiscal nenhuma: ramp-up e produtividade perdida. Justamente por isso e a que gera discussao.",
   },
+  custo_do_prazo_de_recebimento: {
+    id: "custo_do_prazo_de_recebimento",
+    rotulo: "Custo do prazo de recebimento",
+    fonte: "vw_fato_contas, vw_fato_balanco_mes",
+    formula: "contas_a_receber(fim) * custo_medio_da_divida / 12",
+    unidade: "BRL_mi",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "custo do prazo de recebimento",
+      "custo de financiar o cliente",
+      "cada dia de prazo custa",
+      "quanto custa o prazo",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Por mes: o que custa financiar a carteira ao custo medio da divida. E leitura, nao lancamento.",
+  },
   custo_do_turnover: {
     id: "custo_do_turnover",
     rotulo: "Custo do turnover",
@@ -213,6 +458,46 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Soma rescisao, ramp-up, produtividade perdida e recrutamento de reposicao. A parcela de recrutamento vale R$ 1,9 mi e o KPI de custo por contratacao vale R$ 0,83 mi no ano -- dois custos de recrutamento com o mesmo nome curto e despesas diferentes.",
+  },
+  custo_liquido_da_divida: {
+    id: "custo_liquido_da_divida",
+    rotulo: "Custo líquido da dívida",
+    fonte: "vw_fato_balanco_mes",
+    formula: "custo_medio_da_divida * (1 - 34%)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "custo liquido da divida",
+      "custo da divida depois do beneficio fiscal",
+      "custo da divida liquido de imposto",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Beneficio fiscal a 34% (IR e CSLL do lucro real), que e a aliquota nominal e nao a efetiva de uma empresa com prejuizo. Precisa de Controladoria em H-08.",
+  },
+  custo_medio_da_divida: {
+    id: "custo_medio_da_divida",
+    rotulo: "Custo médio da dívida",
+    fonte: "vw_fato_balanco_mes",
+    formula:
+      "juros_pagos(recorte, anualizado) / media(divida_bruta no recorte)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "custo medio da divida",
+      "custo da divida",
+      "taxa media da divida",
+      "quanto estamos pagando de juros",
+      "juros estao caros",
+      "isso esta caro",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Taxa efetiva, todas as linhas juntas: da 15,6% no ano. O chat a le como spread sobre o CDI.",
   },
   custo_por_contratacao: {
     id: "custo_por_contratacao",
@@ -302,6 +587,40 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Positivo e estouro. O sentido `menor_melhor` trata gastar menos que o orcado como melhor, o que nem sempre e verdade -- economia por projeto nao executado tambem aparece assim. E uma das definicoes que precisam de Controladoria em H-08.",
   },
+  dias_de_caixa: {
+    id: "dias_de_caixa",
+    rotulo: "Dias de caixa",
+    fonte: "vw_fato_fin_mes",
+    formula:
+      "saldo_de_caixa(fim) / (saidas_de_caixa(recorte) / dias do recorte)",
+    unidade: "dias",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["dias de caixa", "cobre quantos dias", "caixa cobre"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Quantos dias de desembolso medio o caixa atual cobre. Usa 30 dias por mes.",
+  },
+  distribuicao_a_socios: {
+    id: "distribuicao_a_socios",
+    rotulo: "Distribuição aos sócios",
+    fonte: "vw_fato_balanco_mes",
+    formula: "soma(distribuicao_a_socios)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "distribuicao aos socios",
+      "dividendos",
+      "retirada dos socios",
+      "distribuicao de lucros",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Dez no ano, de uma vez em abril. Sai do patrimonio e do caixa.",
+  },
   distribuicao_etaria: {
     id: "distribuicao_etaria",
     rotulo: "Distribuição por faixa etária",
@@ -342,6 +661,156 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). A view de dimensao ainda nao existe -- e T-147.",
+  },
+  divida_antecipacao_de_recebiveis: {
+    id: "divida_antecipacao_de_recebiveis",
+    rotulo: "Antecipação de recebíveis",
+    fonte: "vw_fato_divida_mes",
+    formula: "saldo(linha = antecipacao-de-recebiveis, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["antecipacao de recebiveis", "antecipacao", "linha mais cara"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Curto prazo, a 24% ao ano na fixture: a linha mais cara, e a primeira a trocar.",
+  },
+  divida_bruta: {
+    id: "divida_bruta",
+    rotulo: "Dívida bruta",
+    fonte: "vw_fato_balanco_mes",
+    formula: "divida_curto_prazo + divida_longo_prazo (fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "divida bruta",
+      "divida total",
+      "emprestimos e financiamentos",
+      "quanto devemos ao banco",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Soma das linhas de credito. Fecha em 900 em dezembro, 300 de curto e 600 de longo prazo.",
+  },
+  divida_capital_de_giro: {
+    id: "divida_capital_de_giro",
+    rotulo: "Linha de capital de giro",
+    fonte: "vw_fato_divida_mes",
+    formula: "saldo(linha = capital-de-giro, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "linha de capital de giro",
+      "saldo de capital de giro",
+      "emprestimo de capital de giro",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Curto prazo, a 18% ao ano na fixture.",
+  },
+  divida_curto_prazo: {
+    id: "divida_curto_prazo",
+    rotulo: "Dívida de curto prazo",
+    fonte: "vw_fato_balanco_mes",
+    formula: "divida_curto_prazo(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "divida de curto prazo",
+      "vence em ate 12 meses",
+      "divida que vence este ano",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Capital de giro e antecipacao de recebiveis. Vencimento em ate 12 meses, como o documento de CFO le.",
+  },
+  divida_financiamento_longo_prazo: {
+    id: "divida_financiamento_longo_prazo",
+    rotulo: "Financiamento de longo prazo",
+    fonte: "vw_fato_divida_mes",
+    formula: "saldo(linha = financiamento-longo-prazo, fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["financiamento de longo prazo", "linha de longo prazo"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Longo prazo, a 13,3% ao ano na fixture: a linha mais barata.",
+  },
+  divida_liquida: {
+    id: "divida_liquida",
+    rotulo: "Dívida líquida",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula: "divida_bruta - saldo_de_caixa (fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["divida liquida", "divida descontado o caixa"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Desconta caixa E aplicacoes, que e o saldo de caixa da ponte. Precisa de Controladoria em H-08.",
+  },
+  divida_liquida_sobre_ebitda: {
+    id: "divida_liquida_sobre_ebitda",
+    rotulo: "Dívida líquida sobre EBITDA",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula: "divida_liquida(fim do recorte) / ebitda(recorte, anualizado)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "divida liquida sobre ebitda",
+      "alavancagem",
+      "endividamento",
+      "endividamento esta alto",
+      "vezes o ebitda",
+      "anos para quitar",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O EBITDA do recorte e anualizado para o multiplo fazer sentido sob um mes. As faixas de leitura (ate 2, 2 a 3, acima de 3) sao do documento de CFO e ficam com o modelo, nao com o dado.",
+  },
+  divida_longo_prazo: {
+    id: "divida_longo_prazo",
+    rotulo: "Dívida de longo prazo",
+    fonte: "vw_fato_balanco_mes",
+    formula: "divida_longo_prazo(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["divida de longo prazo", "vence depois de 12 meses"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O financiamento de longo prazo. Precisa de Controladoria em H-08.",
+  },
+  divida_sobre_pl: {
+    id: "divida_sobre_pl",
+    rotulo: "Dívida sobre patrimônio",
+    fonte: "vw_fato_balanco_mes",
+    formula: "divida_bruta / patrimonio_liquido (fim do recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "divida sobre patrimonio",
+      "divida sobre pl",
+      "relacao divida patrimonio",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A alavancagem que amplifica o ROE: da 2,6 vezes em dezembro.",
   },
   ebitda: {
     id: "ebitda",
@@ -506,6 +975,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Conta estado com QUALQUER pessoa, sem piso. A secao 11 exige suprimir grupo com menos de 5 pessoas na EXIBICAO da faixa; a contagem de estados nao expoe o grupo, so a existencia dele.",
   },
+  estoque_sem_giro: {
+    id: "estoque_sem_giro",
+    rotulo: "Estoque sem giro",
+    fonte: "vw_fato_balanco_mes",
+    formula: "estoque_sem_giro(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "estoque sem giro",
+      "itens sem movimentacao",
+      "estoque encalhado",
+      "sem movimentacao ha mais de 90 dias",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Itens sem movimentacao ha mais de 90 dias. Na fixture e uma fracao fixa do estoque; o corte de dias e pergunta de H-08.",
+  },
   fco: {
     id: "fco",
     rotulo: "Geração operacional",
@@ -535,9 +1023,29 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "neutro",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: ["fcf", "financiamento", "amortizacao", "captacao"],
+    sinonimos: ["fcf", "financiamento", "captacao", "financiamento liquido"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Positivo e SAIDA liquida -- amortizacao e juros menos captacao. A fixture nao separa as tres, e separa-las e uma das perguntas de H-08.",
+  },
+  fluxo_de_caixa_livre: {
+    id: "fluxo_de_caixa_livre",
+    rotulo: "Fluxo de caixa livre",
+    fonte: "vw_fato_fin_mes",
+    formula: "soma(fco) - soma(capex)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "fluxo de caixa livre",
+      "caixa livre",
+      "por que o caixa nao melhora",
+      "ebitda esta bom",
+      "sobra de caixa depois do investimento",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O que sobra da operacao depois de investir: 185 - 140 = 45 no ano.",
   },
   folha_sobre_receita: {
     id: "folha_sobre_receita",
@@ -576,6 +1084,20 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). A base de competencia da rescisao esta indefinida -- e a decisao P3, item H-07. A escolha muda a folha de todo mes com desligamento, e com ela folha sobre receita e custo por colaborador.",
+  },
+  giro_do_ativo: {
+    id: "giro_do_ativo",
+    rotulo: "Giro do ativo",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula: "receita_liquida(recorte) / ativo_total(fim do recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["giro do ativo", "giro", "quanto vende por real investido"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A segunda peca do DuPont. Sob recorte mensal nao anualiza.",
   },
   headcount_fte: {
     id: "headcount_fte",
@@ -652,6 +1174,39 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Media do quadro no fechamento do recorte, e nao do quadro medio do periodo. Sentido neutro: quadro mais velho nao e bom nem ruim sozinho.",
   },
+  imobilizado: {
+    id: "imobilizado",
+    rotulo: "Imobilizado",
+    fonte: "vw_fato_balanco_mes",
+    formula: "imobilizado(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["imobilizado", "maquinas e sistemas", "ativo fixo"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Abre em 760 e anda com capex menos depreciacao, fechando em 840. Intangivel esta dentro por simplificacao.",
+  },
+  impostos_sobre_lucro: {
+    id: "impostos_sobre_lucro",
+    rotulo: "Impostos sobre o lucro",
+    fonte: "vw_fato_balanco_mes",
+    formula: "soma(impostos_sobre_lucro)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "impostos sobre o lucro",
+      "imposto de renda",
+      "ir e csll",
+      "quanto pagamos de imposto",
+    ],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). E o degrau "nao operacional" da ponte da DRE, que o Anexo C chama de IR. Precisa de Controladoria em H-08.',
+  },
   inadimplencia: {
     id: "inadimplencia",
     rotulo: "Inadimplência",
@@ -692,6 +1247,72 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Sentido `maior_melhor` trata gastar mais como melhor, o que ignora a conclusao -- 21.400 horas com 64% de conclusao. Precisa de RH em H-08.",
   },
+  juros_pagos: {
+    id: "juros_pagos",
+    rotulo: "Juros pagos",
+    fonte: "vw_fato_balanco_mes",
+    formula: "soma(juros_pagos)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "juros pagos",
+      "juros",
+      "despesa financeira",
+      "despesa com juros",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). E o resultado financeiro da ponte da DRE, por competencia -- a questao H-56 (caixa ou competencia) continua aberta.",
+  },
+  liquidez_corrente: {
+    id: "liquidez_corrente",
+    rotulo: "Liquidez corrente",
+    fonte: "vw_fato_balanco_mes",
+    formula: "ativo_circulante / passivo_circulante (fim do recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["liquidez corrente", "liquidez"],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). Le-se como "para cada R$ 1,00 devido em 12 meses, R$ x disponivel". Da 0,98 em dezembro.',
+  },
+  liquidez_imediata: {
+    id: "liquidez_imediata",
+    rotulo: "Liquidez imediata",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula: "saldo_de_caixa / passivo_circulante (fim do recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["liquidez imediata", "so o dinheiro na conta", "so o caixa"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). So caixa e aplicacoes sobre o passivo circulante. Precisa de Controladoria em H-08.",
+  },
+  liquidez_seca: {
+    id: "liquidez_seca",
+    rotulo: "Liquidez seca",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula:
+      "(ativo_circulante - estoque) / passivo_circulante (fim do recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "liquidez seca",
+      "sem contar com o estoque",
+      "nao puder contar com o estoque",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Tira o estoque do circulante. Precisa de Controladoria em H-08.",
+  },
   lucro_liquido: {
     id: "lucro_liquido",
     rotulo: "Lucro líquido",
@@ -705,6 +1326,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     grao_minimo: ["entidade", "mes"],
     sinonimos: [
       "lucro liquido",
+      "lucro",
       "resultado do exercicio",
       "bottom line",
       "deu lucro",
@@ -782,6 +1404,46 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). NAO E KPI: e texto de nota do painel sal-faixas, e o aceite de T-148 a lista entre os 15 por engano -- registrado em H-48. Entra assim mesmo, porque nota com numero tambem declara formula (PR-3, RF-09). A interpolacao sobre faixas da cerca de R$ 6,0 mil contra os R$ 6.240 do prototipo; com dado real a mediana sai do salario individual e nao da faixa, e a aproximacao some.",
   },
+  multiplicador_de_capital: {
+    id: "multiplicador_de_capital",
+    rotulo: "Multiplicador do patrimônio",
+    fonte: "vw_fato_balanco_mes",
+    formula: "ativo_total / patrimonio_liquido (fim do recorte)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "multiplicador do patrimonio",
+      "multiplicador de capital",
+      "alavancagem patrimonial",
+      "ativo sobre patrimonio",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A terceira peca do DuPont: quanto de ativo cada real dos socios sustenta.",
+  },
+  ncg: {
+    id: "ncg",
+    rotulo: "Necessidade de capital de giro",
+    fonte: "vw_fato_contas, vw_fato_fin_mes",
+    formula: "contas_a_receber + estoque - contas_a_pagar (fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "ncg",
+      "necessidade de capital de giro",
+      "capital de giro",
+      "dinheiro parado na operacao",
+      "precisa ter parado",
+      "quanto precisa ter parado",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Pelos saldos, e nao pelo ciclo vezes a receita diaria -- as duas contas dao numeros diferentes, e esta e a que reconcilia com o balanco. Precisa de Controladoria em H-08.",
+  },
   orcado: {
     id: "orcado",
     rotulo: "Orçado",
@@ -814,6 +1476,43 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Denominador e o quadro ELEGIVEL, nao o quadro inteiro. Na fixture os dois coincidem; a formula nomeia o certo para que nada mude quando o dado real distinguir. Lida no ULTIMO MES da janela, e nao somada nela: pessoa nao soma ao longo do tempo, e somar dava 108,9% de participacao -- mais gente treinando do que gente.",
+  },
+  passivo_circulante: {
+    id: "passivo_circulante",
+    rotulo: "Passivo circulante",
+    fonte: "vw_fato_balanco_mes",
+    formula: "passivo_circulante(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "passivo circulante",
+      "obrigacoes de curto prazo",
+      "o que deve em 12 meses",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A pagar, divida de curto prazo e acrescimos (salarios, encargos e impostos a pagar). Precisa de Controladoria em H-08.",
+  },
+  patrimonio_liquido: {
+    id: "patrimonio_liquido",
+    rotulo: "Patrimônio líquido",
+    fonte: "vw_fato_balanco_mes",
+    formula: "patrimonio_liquido(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "patrimonio liquido",
+      "pl",
+      "capital dos socios",
+      "capital proprio",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Abre em 368 e anda com o lucro do mes menos a distribuicao aos socios, fechando em 350. Nao ha balanco de 2025: a comparacao com o ano anterior espera T-152.",
   },
   perfil_quadro: {
     id: "perfil_quadro",
@@ -997,6 +1696,24 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Junta bonus e horas extras, que tem origens opostas -- um premia resultado, o outro sinaliza falta de gente. Separa-los e uma das perguntas de H-08.",
   },
+  resultado_operacional_liquido: {
+    id: "resultado_operacional_liquido",
+    rotulo: "Resultado operacional líquido",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula: "ebitda - depreciacao_e_amortizacao - impostos_sobre_lucro",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "resultado operacional liquido",
+      "nopat",
+      "ebit depois de impostos",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O numerador do ROIC: o que a operacao rende depois do imposto e antes dos juros.",
+  },
   retencao_12m: {
     id: "retencao_12m",
     rotulo: "Retenção 12 meses",
@@ -1010,6 +1727,71 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: ["retencao", "permanencia", "quem fica", "quem permanece"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). E o complemento exato do turnover, entao herda a indefinicao de P2 (H-06). Se transferencia interna passar a contar como desligamento, os dois numeros mudam juntos.",
+  },
+  roa: {
+    id: "roa",
+    rotulo: "ROA",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula: "lucro_liquido(recorte) / ativo_total(fim do recorte)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "roa",
+      "retorno sobre o ativo",
+      "retorno sobre os ativos",
+      "que o roe nao diz",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O menos manipulavel dos dois retornos: nao depende de como a empresa se financiou.",
+  },
+  roe: {
+    id: "roe",
+    rotulo: "ROE",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula: "lucro_liquido(recorte) / patrimonio_liquido(fim do recorte)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "roe",
+      "retorno sobre o patrimonio",
+      "retorno dos socios",
+      "rentabilidade do patrimonio",
+      "retorno sobre o capital proprio",
+      "por que o roe caiu",
+      "margem, giro ou divida",
+      "dupont",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Lucro do recorte sobre o patrimonio do fim -- sob recorte mensal nao anualiza. O documento de CFO le o ROE contra o CDI e descontado do IPCA; o chat faz as duas leituras.",
+  },
+  roic: {
+    id: "roic",
+    rotulo: "ROIC",
+    fonte: "vw_fato_balanco_mes, vw_fato_fin_mes",
+    formula:
+      "resultado_operacional_liquido(recorte) / capital_investido(fim do recorte)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "roic",
+      "retorno sobre o capital investido",
+      "cria ou destroi valor",
+      "aplicar no cdi",
+      "deixar o dinheiro na empresa",
+      "divida esta trabalhando a nosso favor",
+      "divida a favor",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O retorno de todo o capital que trabalha na operacao. O chat o le contra o CDI liquido de IR, que e o que a aplicacao entrega de fato. O custo de capital dos socios nao esta modelado.",
   },
   salario_medio: {
     id: "salario_medio",
@@ -1046,6 +1828,20 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: ["caixa", "saldo", "disponibilidade", "quanto tem em caixa"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Estoque: agrega por `last`, nunca por soma ao longo do periodo. Somar saldos de doze meses da um numero que nao existe.",
+  },
+  saldo_de_tesouraria: {
+    id: "saldo_de_tesouraria",
+    rotulo: "Saldo de tesouraria",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula: "saldo_de_caixa - divida_curto_prazo (fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["saldo de tesouraria", "tesouraria", "tesouraria negativa"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Negativo quer dizer capital de giro financiado por divida de curto prazo. Da -200 em dezembro.",
   },
   tempo_ate_a_saida: {
     id: "tempo_ate_a_saida",
@@ -1243,10 +2039,29 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Unidade `contagem`, que entrou no enum em 2026-08-24 (D-H45): vaga nao e pessoa, entao `FTE` afirmaria algo falso.",
   },
+  variacao_de_capital_de_giro: {
+    id: "variacao_de_capital_de_giro",
+    rotulo: "Variação de capital de giro",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula: "ebitda - juros_pagos - impostos_sobre_lucro - fco (recorte)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "variacao de capital de giro",
+      "capital de giro consumiu",
+      "giro consumiu",
+      "o que o giro consumiu",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Obtida por diferenca na ponte EBITDA -> caixa: positivo e caixa consumido pelo giro. E declaracao, nao coluna.",
+  },
 };
 
 /** Quantas métricas o catálogo tem. Contado, nunca escrito. */
-export const QUANTIDADE_DE_METRICAS = 68;
+export const QUANTIDADE_DE_METRICAS = 114;
 
 /**
  * Qual catálogo produziu um número (T-149).
@@ -1255,4 +2070,4 @@ export const QUANTIDADE_DE_METRICAS = 68;
  * definição mudou" deixem de ser indistinguíveis. T-155 troca isto por versão
  * semântica com changelog; até lá é a identidade do conteúdo.
  */
-export const VERSAO_DO_CATALOGO = "a882558b57a2";
+export const VERSAO_DO_CATALOGO = "646c10f9e95b";
