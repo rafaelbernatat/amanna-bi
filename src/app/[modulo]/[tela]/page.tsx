@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
@@ -15,7 +16,11 @@ import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { COLUNAS_DA_GRADE, paineisDaTela } from "@/semantica/paineis";
-import { perguntar, type Resposta } from "@/chat/perguntar";
+import {
+  redigirResposta,
+  resolverPergunta,
+  type Resposta,
+} from "@/chat/perguntar";
 import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
 
 /**
@@ -44,6 +49,74 @@ type Busca = Record<string, string | string[] | undefined>;
  * a primeira faria a mesma URL render recortes diferentes conforme quem a
  * interpretou.
  */
+/**
+ * A pergunta da URL, respondida nesta tela — ou levada à tela que ela cita.
+ *
+ * O redirecionamento acontece **depois do estágio 2 e antes do 3**: a métrica
+ * e o número já estão resolvidos, e só a tela de destino redige. Redigir aqui
+ * também dobrava a espera de quem perguntou — a redação da origem era jogada
+ * fora e refeita no destino, 40 segundos com a tela parada.
+ */
+async function responderNaTela(
+  pergunta: string,
+  query: Query,
+  rota: string,
+): Promise<Resposta | null> {
+  if (pergunta.trim() === "") return null;
+
+  const resolvida = await resolverPergunta(pergunta, query);
+  if (resolvida.tipo === "recusa") return resolvida;
+
+  const { acoes } = resolvida.resolucao;
+  if (acoes.tela !== null && acoes.tela !== rota.slice(1)) {
+    const destino = rotaCom(
+      `/${acoes.tela}`,
+      acoes.filtros,
+      acoes.painel ?? undefined,
+    );
+    redirect(
+      `${destino}${destino.includes("?") ? "&" : "?"}pergunta=${encodeURIComponent(pergunta)}`,
+    );
+  }
+
+  return redigirResposta(pergunta, resolvida.resolucao);
+}
+
+/**
+ * O chat, em streaming: a tela chega inteira e a resposta chega depois.
+ *
+ * Os dois estágios do modelo levam de 15 a 30 segundos. Sem isto, a página
+ * inteira esperava por eles com o navegador parado na tela anterior — e quem
+ * testou concluiu que o chat não respondia. Dentro de um `Suspense`, o Next
+ * envia a tela com o aviso de "consultando" na hora e troca pela resposta
+ * quando ela existe. Quando a resposta cita outra tela, o `redirect` dentro do
+ * streaming vira uma `<meta>` de navegação, que é o que a documentação desta
+ * versão descreve; a tela de destino faz o mesmo caminho.
+ *
+ * É a primeira metade de T-339 (resposta em duas fases), sem JavaScript
+ * nosso: o que troca o aviso pela resposta é o runtime do Next, que a tela já
+ * carrega para os gráficos.
+ */
+async function ChatRespondido({
+  pergunta,
+  query,
+  rota,
+}: {
+  readonly pergunta: string;
+  readonly query: Query;
+  readonly rota: string;
+}) {
+  const resposta = await responderNaTela(pergunta, query, rota);
+  return (
+    <PainelDeChat
+      pergunta={pergunta}
+      resposta={resposta}
+      rota={rota}
+      query={query}
+    />
+  );
+}
+
 function comoBusca(busca: Busca): URLSearchParams {
   const p = new URLSearchParams();
   for (const [chave, valor] of Object.entries(busca)) {
@@ -171,26 +244,11 @@ export default async function Pagina({
    * Quando a resposta cita uma tela que não é esta, a página **navega** até ela
    * levando o recorte da resposta e o painel a destacar. É o RF-13 literal: "o
    * painel citado fica visível sem rolagem manual, com o rótulo de referência".
+   *
+   * A resposta em si é resolvida em `ChatRespondido`, dentro de um `Suspense`,
+   * para a tela não esperar pelo modelo.
    */
   const pergunta = busca.get("pergunta") ?? "";
-  const resposta: Resposta | null =
-    pergunta.trim() === "" ? null : await perguntar(pergunta, query);
-
-  if (
-    resposta !== null &&
-    resposta.tipo === "resposta" &&
-    resposta.resolucao.acoes.tela !== null &&
-    resposta.resolucao.acoes.tela !== rota.slice(1)
-  ) {
-    const destino = rotaCom(
-      `/${resposta.resolucao.acoes.tela}`,
-      resposta.resolucao.acoes.filtros,
-      resposta.resolucao.acoes.painel ?? undefined,
-    );
-    redirect(
-      `${destino}${destino.includes("?") ? "&" : "?"}pergunta=${encodeURIComponent(pergunta)}`,
-    );
-  }
 
   return (
     <div
@@ -248,12 +306,19 @@ export default async function Pagina({
             style={{ display: "none" }}
           />
 
-          <PainelDeChat
-            pergunta={pergunta}
-            resposta={resposta}
-            rota={rota}
-            query={query}
-          />
+          <Suspense
+            fallback={
+              <PainelDeChat
+                pergunta={pergunta}
+                resposta={null}
+                pendente={pergunta.trim() !== ""}
+                rota={rota}
+                query={query}
+              />
+            }
+          >
+            <ChatRespondido pergunta={pergunta} query={query} rota={rota} />
+          </Suspense>
 
           <BannerDeRecorte
             rota={rota}

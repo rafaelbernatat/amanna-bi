@@ -19,6 +19,13 @@ import { rotaCom } from "@/semantica/url";
  * link que se manda por e-mail, e quem abre vê o mesmo número com o mesmo
  * recorte — desde que tenha o mesmo perfil de acesso.
  *
+ * ## Enquanto o modelo trabalha
+ *
+ * Os dois estágios do modelo levam de 15 a 30 segundos. A tela chega antes,
+ * em streaming, com este painel em estado `pendente`: o botão diz que está
+ * consultando, a caixa fica travada e um aviso explica a espera. É a página
+ * quem decide (Suspense, em `[modulo]/[tela]`); aqui só se desenha o estado.
+ *
  * ## O que a caixa mostra, e por que nessa ordem
  *
  * O número primeiro, porque é o que foi perguntado. Depois **o que entrou na
@@ -30,11 +37,14 @@ import { rotaCom } from "@/semantica/url";
 export function PainelDeChat({
   pergunta,
   resposta,
+  pendente = false,
   rota,
   query,
 }: {
   readonly pergunta: string;
   readonly resposta: Resposta | null;
+  /** A pergunta foi feita e o modelo ainda não respondeu. */
+  readonly pendente?: boolean;
   readonly rota: string;
   readonly query: Query;
 }) {
@@ -42,6 +52,7 @@ export function PainelDeChat({
     <section
       data-teste="chat"
       aria-label="Perguntar aos dados"
+      aria-busy={pendente}
       style={{
         background: PALETA.superficie,
         border: `1px solid ${PALETA.borda}`,
@@ -53,8 +64,15 @@ export function PainelDeChat({
         gap: 12,
       }}
     >
-      <Formulario pergunta={pergunta} rota={rota} query={query} />
-      {resposta === null ? (
+      <Formulario
+        pergunta={pergunta}
+        pendente={pendente}
+        rota={rota}
+        query={query}
+      />
+      {pendente ? (
+        <Consultando />
+      ) : resposta === null ? (
         <Sugestoes rota={rota} query={query} />
       ) : (
         <Corpo resposta={resposta} rota={rota} query={query} />
@@ -69,10 +87,12 @@ export function PainelDeChat({
 
 function Formulario({
   pergunta,
+  pendente,
   rota,
   query,
 }: {
   readonly pergunta: string;
+  readonly pendente: boolean;
   readonly rota: string;
   readonly query: Query;
 }) {
@@ -97,13 +117,14 @@ function Formulario({
         type="text"
         name="pergunta"
         defaultValue={pergunta}
+        readOnly={pendente}
         placeholder="Pergunte aos dados — ex.: qual o lucro apurado do ano"
         aria-label="Sua pergunta"
         style={{
           flex: "1 1 auto",
           minWidth: 0,
           font: `400 12.5px/1.4 ${TIPOGRAFIA.texto}`,
-          color: PALETA.texto,
+          color: pendente ? PALETA.textoTerciario : PALETA.texto,
           background: PALETA.superficieSuave,
           border: `1px solid ${PALETA.bordaForte}`,
           borderRadius: 10,
@@ -112,20 +133,39 @@ function Formulario({
       />
       <button
         type="submit"
+        disabled={pendente}
         style={{
           flex: "none",
           font: `500 11.5px/1 ${TIPOGRAFIA.texto}`,
           color: PALETA.textoEmBarra,
-          background: PALETA.marca,
+          background: pendente ? PALETA.destaque : PALETA.marca,
           border: "none",
           borderRadius: 10,
           padding: "10px 16px",
-          cursor: "pointer",
+          cursor: pendente ? "progress" : "pointer",
         }}
       >
-        Perguntar
+        {pendente ? "Consultando…" : "Perguntar"}
       </button>
     </form>
+  );
+}
+
+/** O aviso enquanto o modelo lê e redige. Texto fixo: não há número aqui. */
+function Consultando() {
+  return (
+    <p
+      role="status"
+      data-teste="chat-pendente"
+      style={{
+        margin: 0,
+        font: `400 12px/1.6 ${TIPOGRAFIA.texto}`,
+        color: PALETA.textoTerciario,
+      }}
+    >
+      Lendo os dados e redigindo a resposta. Leva alguns segundos; se a pergunta
+      for de outra tela, o painel abre lá.
+    </p>
   );
 }
 
