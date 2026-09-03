@@ -139,8 +139,9 @@ function pareceLinhaIndividual(candidato: string): boolean {
   const normalizado = candidato
     .toLowerCase()
     .normalize("NFD")
-    // Escape de propriedade, e não a faixa com caracteres combinantes
-    // literais: a literal falhou no build de produção do chat (2026-09-03).
+    // Escape de propriedade, como url.ts e dimensoes.ts, e não a faixa com
+    // caracteres combinantes literais no fonte: as duas funcionam, e esta não
+    // depende de como o arquivo é lido.
     .replace(/\p{Diacritic}/gu, "");
   return TERMOS_DE_PESSOA.some((t) => normalizado.includes(t));
 }
