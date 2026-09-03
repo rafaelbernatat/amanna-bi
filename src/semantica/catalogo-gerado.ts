@@ -74,15 +74,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "menor_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: [
-      "ciclo",
-      "ciclo financeiro",
-      "pmr",
-      "pme",
-      "pmp",
-      "capital de giro",
-      "conversao de caixa",
-    ],
+    sinonimos: ["ciclo", "ciclo financeiro", "capital de giro"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Usa 365 dias e o CMV como denominador de PME e PMP. Compras do periodo seria o denominador mais correto para o PMP, e a fixture nao tem essa medida. Precisa de Controladoria em H-08.",
   },
@@ -178,6 +170,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
       "crescimento",
       "yoy",
       "ano contra ano",
+      "ano anterior",
       "evolucao da receita",
       "cresceu",
     ],
@@ -305,14 +298,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "menor_melhor",
     meta: null,
     grao_minimo: ["centro_custo", "mes"],
-    sinonimos: [
-      "desvio",
-      "orcamento",
-      "orcado",
-      "realizado",
-      "estouro",
-      "centro de custo",
-    ],
+    sinonimos: ["desvio", "orcamento", "estouro", "centro de custo"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Positivo e estouro. O sentido `menor_melhor` trata gastar menos que o orcado como melhor, o que nem sempre e verdade -- economia por projeto nao executado tambem aparece assim. E uma das definicoes que precisam de Controladoria em H-08.",
   },
@@ -367,12 +353,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "maior_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: [
-      "ebitda",
-      "geracao operacional",
-      "lajida",
-      "resultado antes de juros",
-    ],
+    sinonimos: ["ebitda", "lajida", "resultado antes de juros"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Obtido por diferenca, e nao por soma de contas. Nao existe coluna de EBITDA: se existisse, seria possivel ela discordar das tres parcelas que a formam.",
   },
@@ -480,13 +461,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "maior_melhor",
     meta: null,
     grao_minimo: ["area", "mes"],
-    sinonimos: [
-      "enps",
-      "nps interno",
-      "promotores",
-      "detratores",
-      "recomendaria a empresa",
-    ],
+    sinonimos: ["enps", "nps interno", "detratores", "recomendaria a empresa"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Unidade `pontos`, que entrou no enum em 2026-08-24 (D-H45): o eNPS vai de -100 a +100 e e a diferenca entre duas proporcoes, entao `pct` afirmaria que ele e uma proporcao. Nao se soma ao longo do periodo.",
   },
@@ -560,7 +535,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "neutro",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: ["fcf", "financiamento", "divida", "amortizacao", "captacao"],
+    sinonimos: ["fcf", "financiamento", "amortizacao", "captacao"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Positivo e SAIDA liquida -- amortizacao e juros menos captacao. A fixture nao separa as tres, e separa-las e uma das perguntas de H-08.",
   },
@@ -596,7 +571,6 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: [
       "folha",
       "custo de pessoal",
-      "encargos",
       "salarios",
       "quanto custa a equipe",
     ],
@@ -734,6 +708,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
       "resultado do exercicio",
       "bottom line",
       "deu lucro",
+      "demos lucro",
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). O ultimo degrau da ponte da DRE, derivado dos outros seis. Da -R$ 8 mi no ano: a operacao gera resultado e a estrutura de capital o anula.",
@@ -768,13 +743,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "maior_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: [
-      "ebitda",
-      "margem",
-      "margem ebitda",
-      "resultado operacional",
-      "lucro operacional",
-    ],
+    sinonimos: ["margem ebitda", "resultado operacional", "lucro operacional"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). EBITDA obtido por diferenca, e nao por soma de contas de resultado. Nao aprovado por Controladoria: a sessao e H-08.",
   },
@@ -789,12 +758,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "maior_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: [
-      "margem liquida",
-      "lucro liquido",
-      "resultado final",
-      "bottom line",
-    ],
+    sinonimos: ["margem liquida", "resultado final", "bottom line"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Derivada dos degraus da ponte da DRE, e nao de uma coluna de lucro. A serie mensal de margem liquida do prototipo nao fecha com a ponte -- da -4,3 contra -8 -- e por isso nao foi transcrita.",
   },
@@ -883,7 +847,15 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "menor_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: ["pme", "prazo medio de estocagem", "giro de estoque", "dio"],
+    sinonimos: [
+      "pme",
+      "prazo medio de estocagem",
+      "giro de estoque",
+      "estoque parado",
+      "dias de estoque",
+      "quanto tempo o estoque fica",
+      "dio",
+    ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). O estoque nao existia no prototipo e foi DERIVADO do proprio PME declarado: 75 x 720 / 365 = 148. Quando o dado real chegar, o estoque vem da contabilidade e o PME passa a sair dele.",
   },
@@ -900,6 +872,9 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: [
       "pmp",
       "prazo medio de pagamento",
+      "prazo de pagamento",
+      "dias para pagar",
+      "pagamos os fornecedores",
       "quanto demora a pagar",
       "dpo",
     ],
@@ -919,6 +894,9 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: [
       "pmr",
       "prazo medio de recebimento",
+      "prazo de recebimento",
+      "dias para receber",
+      "recebemos dos clientes",
       "quanto demora a receber",
       "dso",
     ],
@@ -1065,13 +1043,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sentido: "maior_melhor",
     meta: null,
     grao_minimo: ["entidade", "mes"],
-    sinonimos: [
-      "caixa",
-      "saldo",
-      "liquidez",
-      "disponibilidade",
-      "quanto tem em caixa",
-    ],
+    sinonimos: ["caixa", "saldo", "disponibilidade", "quanto tem em caixa"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Estoque: agrega por `last`, nunca por soma ao longo do periodo. Somar saldos de doze meses da um numero que nao existe.",
   },
@@ -1283,4 +1255,4 @@ export const QUANTIDADE_DE_METRICAS = 68;
  * definição mudou" deixem de ser indistinguíveis. T-155 troca isto por versão
  * semântica com changelog; até lá é a identidade do conteúdo.
  */
-export const VERSAO_DO_CATALOGO = "a2db05b17e13";
+export const VERSAO_DO_CATALOGO = "a882558b57a2";
