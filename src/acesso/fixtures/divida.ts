@@ -12,7 +12,7 @@
  * ## A narrativa
  *
  * Dívida bruta de R$ 900 mi em dezembro (curto prazo 300, longo 600) contra
- * EBITDA de 200 e caixa de 100: dívida líquida de 3,7 vezes o EBITDA, e juros
+ * EBITDA de 200 e caixa de 100: dívida líquida de 4,0 vezes o EBITDA, e juros
  * iguais ao EBIT — cobertura de 1,0 vez, que é o que o cartão de lucro líquido
  * já dizia ("juros consomem todo o EBIT"). A empresa cresce a crédito e paga
  * por isso; é a tensão que o Anexo C conta.
@@ -30,7 +30,6 @@ import { repartir } from "@/acesso/fixtures/reparticao";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
-const POR_MIL = 1000;
 
 export type LinhaDeCredito =
   "capital-de-giro" | "financiamento-longo-prazo" | "antecipacao-de-recebiveis";
@@ -103,18 +102,6 @@ export type FluxoDaDivida = {
   readonly captacao: number;
 };
 
-/** Um valor repartido por milésimos, com a última parte levando o resto. */
-function porMilesimos(
-  total: number,
-  milesimos: readonly number[],
-): readonly number[] {
-  const partes = milesimos
-    .slice(0, -1)
-    .map((m) => Math.round((total * m) / POR_MIL));
-  const somaDasPartes = partes.reduce((a, b) => a + b, 0);
-  return [...partes, total - somaDasPartes];
-}
-
 /** O resultado financeiro de um mês numa entidade, em reais, lido da DRE. */
 function jurosDoMes(mes: string, entidade: string): number {
   return VW_FATO_FIN_MES.filter(
@@ -145,17 +132,21 @@ const SALDO_TOTAL_MENSAL: readonly number[] = (() => {
   });
 })();
 
-const FATIA_DAS_LINHAS = LINHAS_DE_CREDITO.map((l) =>
-  Math.round((l.saldoDezembro * POR_MIL) / SALDO_DEZEMBRO),
-);
-const FATIA_DOS_JUROS = LINHAS_DE_CREDITO.map((l) => l.jurosPorMil);
+/*
+ * As formas das repartições: o saldo de cada linha na proporção de dezembro, e
+ * os juros na fatia declarada. `repartir` é exato — a soma das partes é o
+ * total, sem sobra de arredondamento — e por isso dezembro fecha em 200, 600
+ * e 100, e não em 199,9.
+ */
+const FORMA_DOS_SALDOS = LINHAS_DE_CREDITO.map((l) => l.saldoDezembro);
+const FORMA_DOS_JUROS = LINHAS_DE_CREDITO.map((l) => l.jurosPorMil);
 
 export const VW_FATO_DIVIDA_MES: readonly LinhaDividaMes[] = MESES.flatMap(
   (mes, m) => {
     const saldoPorEntidade = porEntidade(SALDO_TOTAL_MENSAL[m] ?? 0, "divida");
     return ENTIDADES_ARMAZENADAS.flatMap((entidade, e) => {
-      const saldos = porMilesimos(saldoPorEntidade[e] ?? 0, FATIA_DAS_LINHAS);
-      const juros = porMilesimos(jurosDoMes(mes, entidade), FATIA_DOS_JUROS);
+      const saldos = repartir(saldoPorEntidade[e] ?? 0, FORMA_DOS_SALDOS);
+      const juros = repartir(jurosDoMes(mes, entidade), FORMA_DOS_JUROS);
       return LINHAS_DE_CREDITO.map((linha, i) => ({
         mes,
         entidade,

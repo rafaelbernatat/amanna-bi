@@ -29,7 +29,7 @@
  * acréscimos 60); imobilizado 840 e outros ativos não circulantes 121, que
  * fecham o ativo total em 1.411; patrimônio 350; dívida bruta 900;
  * aplicações 60 dentro do caixa. Daí liquidez corrente de 0,98, dívida
- * líquida de 3,7 vezes o EBITDA e ROE de −2,3%: a empresa que cresce em
+ * líquida de 4,0 vezes o EBITDA e ROE de −2,3%: a empresa que cresce em
  * receita e perde no resultado, com pressão de capital — a narrativa do
  * Anexo C, agora com balanço.
  *

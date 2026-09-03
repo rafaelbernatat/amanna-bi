@@ -51,8 +51,17 @@ import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO, type Query, type Unidade } from "@/semantica/contrato";
 import { rotuloDe } from "@/semantica/dimensoes";
 
-/** Como o texto foi produzido. A tela mostra, para não haver dúvida. */
-export type Autoria = "modelo" | "montado" | "modelo-recusado";
+/**
+ * Como o texto foi produzido. A tela mostra, para não haver dúvida.
+ *
+ * `gateway-indisponivel` e `modelo-recusado` são coisas diferentes e precisam
+ * aparecer diferentes: no primeiro o modelo nem escreveu (rede, chave, crédito
+ * esgotado); no segundo escreveu um número que não existe no envelope e foi
+ * barrado. Um dia inteiro de "recusada pelo verificador" que era, na verdade,
+ * HTTP 402 do gateway ensinou a distinção.
+ */
+export type Autoria =
+  "modelo" | "montado" | "modelo-recusado" | "gateway-indisponivel";
 
 /** O que a tela recebe (seção 7.2). */
 export type Resposta =
@@ -422,16 +431,20 @@ export async function redigirResposta(
     : null;
 
   let texto = montado;
-  let autoria: Autoria = gatewayConfigurado() ? "modelo-recusado" : "montado";
+  let autoria: Autoria = gatewayConfigurado()
+    ? "gateway-indisponivel"
+    : "montado";
 
   if (doModelo !== null) {
     const erradas = divergencias(doModelo, resolucao);
     if (erradas.length === 0) {
       texto = doModelo;
       autoria = "modelo";
+    } else {
+      // Divergiu: fica o texto montado, e a autoria diz que a redação foi
+      // recusada. RF-15 pede bloqueio, não correção.
+      autoria = "modelo-recusado";
     }
-    // Divergiu: fica o texto montado, e a autoria diz que a redação foi
-    // recusada. RF-15 pede bloqueio, não correção.
   }
 
   return {
@@ -449,7 +462,7 @@ export async function redigirResposta(
  * Números **já formatados** junto dos brutos, para o modelo copiar em vez de
  * reescrever — é assim que "substituição de campo" da seção 7.1 vira prática.
  */
-function paraOModelo(r: Resolucao): unknown {
+export function paraOModelo(r: Resolucao): unknown {
   const formatado = (valor: number | null, unidade: Unidade) =>
     valor === null ? null : formatarValor(valor, unidade);
 
