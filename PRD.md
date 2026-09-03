@@ -405,6 +405,8 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 | `vw_fato_turnover_custo` | mês, entidade, área, **componente** · valor | Folha / ATS / Controladoria |
 | `vw_fato_balanco_mes` | mês, entidade · patrimônio líquido, ativo total, ativo e passivo circulantes, imobilizado, aplicações financeiras, dívida de curto e de longo prazo, estoque sem giro, a receber e a pagar vencidos, mútuo com sócios, juros pagos, impostos sobre o lucro, amortização, captação, distribuição aos sócios | Contábil |
 | `vw_fato_divida_mes` | mês, entidade, **linha de crédito** · saldo, juros pagos | ERP / tesouraria |
+| `vw_fato_natureza_mes` | mês, entidade · custos fixos, custos variáveis | Contábil / Controladoria |
+| `vw_fato_qualidade_mes` | mês, entidade · lançamentos e, dos testes de exceção, contagens e valores: fora do padrão, em conta parada, estornos, competência anterior, duplicados, contas recorrentes sem lançamento, sem centro de custo, em conta genérica, sem natureza, classificação inconsistente, partes relacionadas | Razão, agregado pelos testes de exceção |
 | `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, **gênero**, **cargo**, mês | Cadastros |
 
 > **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
@@ -525,10 +527,19 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 > com o lucro menos a distribuição. Os números de abertura (patrimônio 368,
 > imobilizado 760, dívida 970) são valor de protótipo sob D-H03.
 >
+> **`vw_fato_natureza_mes`** e **`vw_fato_qualidade_mes`** entram na segunda
+> etapa, para os blocos B e D5–D8. A natureza (fixo ou variável) é a
+> classificação de cada conta que só Controladoria decide; na fixture, fixos
+> mais variáveis são exatamente CMV mais despesas. A qualidade é o **agregado
+> dos testes de exceção** que rodariam sobre o razão — quantos lançamentos
+> fugiram do padrão, quanto valem, quanto está sem centro de custo — e nunca
+> a linha: o grão mínimo continua área × mês (seção 7.5).
+>
 > **O que fica aberto para H-08:** o que entra no capital investido, a alíquota
-> do benefício fiscal da dívida, o corte de dias para estoque sem giro, e se os
-> juros entram por caixa ou por competência (que já era H-56). A decisão de
-> escopo está em `docs/decisoes/D-CHAT-perguntas-cfo.md`.
+> do benefício fiscal da dívida, o corte de dias para estoque sem giro, se os
+> juros entram por caixa ou por competência (que já era H-56), a
+> classificação fixo ou variável de cada conta, e as regras dos testes de
+> exceção. A decisão de escopo está em `docs/decisoes/D-CHAT-perguntas-cfo.md`.
 
 ### 10.2 · Sincronização
 

@@ -103,6 +103,65 @@ export const APOIO: Readonly<Record<string, readonly string[]>> = {
   ],
   custo_liquido_da_divida: ["custo_medio_da_divida", "roic"],
   divida_sobre_pl: ["divida_bruta", "patrimonio_liquido", "roe", "roa"],
+
+  // Margens e operação (etapa 2)
+  margem_de_contribuicao: [
+    "custos_fixos",
+    "custos_variaveis",
+    "margem_bruta",
+    "margem_de_contribuicao_valor",
+  ],
+  contas_com_classificacao_inconsistente: [
+    "valor_em_classificacao_inconsistente",
+    "margem_bruta",
+    "margem_de_contribuicao",
+  ],
+  ponto_de_equilibrio: [
+    "ponto_de_equilibrio_caixa",
+    "ponto_de_equilibrio_economico",
+    "margem_de_contribuicao",
+    "custos_fixos",
+  ],
+  margem_de_seguranca: [
+    "ponto_de_equilibrio",
+    "receita_liquida",
+    "concentracao_top_10",
+  ],
+  gao: [
+    "custos_fixos",
+    "margem_de_contribuicao_valor",
+    "resultado_com_receita_10_menor",
+  ],
+  receita_dos_principais_clientes: [
+    "concentracao_top_10",
+    "receita_liquida",
+    "ticket_medio",
+  ],
+
+  // Qualidade do razão (etapa 2)
+  lancamentos_para_revisao: [
+    "valor_para_revisao",
+    "lancamentos_fora_do_padrao",
+    "pares_de_estorno",
+    "lancamentos_de_competencia_anterior",
+  ],
+  completude_da_base: [
+    "valor_sem_centro_de_custo",
+    "valor_em_conta_generica",
+    "valor_sem_natureza",
+    "lancamentos_do_mes",
+  ],
+  indicios_de_competencia: [
+    "contas_recorrentes_sem_lancamento",
+    "lancamentos_duplicados",
+    "lancamentos_de_competencia_anterior",
+    "efeito_no_resultado_da_competencia",
+  ],
+  movimentacao_com_partes_relacionadas: [
+    "mutuo_com_socios",
+    "roe",
+    "roe_sem_partes_relacionadas",
+  ],
 };
 
 export function apoioDe(metrica: string): readonly string[] {

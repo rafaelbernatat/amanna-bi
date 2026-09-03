@@ -1925,3 +1925,508 @@ divida_antecipacao_de_recebiveis:
   decisao: >-
     PROVISORIO (D-H03, 2026-09-03). Curto prazo, a 24% ao ano na fixture: a
     linha mais cara, e a primeira a trocar.
+
+# ===========================================================================
+# As métricas das perguntas de CFO, etapa 2: natureza das contas e qualidade
+# do razão (Dreamy, 2026-09-03)
+# ===========================================================================
+#
+# Blocos B e D5-D8 do documento. A natureza (fixo ou variável) sai de
+# `vw_fato_natureza_mes`; os testes de exceção do razão, agregados por mês,
+# saem de `vw_fato_qualidade_mes`. Nenhum lançamento individual atravessa: o
+# grão mínimo continua área x mês (seção 7.5).
+#
+# Todas provisórias, pela mesma regra das anteriores. A classificação fixo ou
+# variável de cada conta e as regras dos testes de exceção são de Controladoria
+# (H-08).
+
+custos_fixos:
+  rotulo: Custos fixos
+  fonte: vw_fato_natureza_mes
+  formula: soma(custos_fixos)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [custos fixos, custo fixo, estrutura fixa, despesas fixas]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). A estrutura: o que continua existindo sem
+    venda. Sem a depreciacao, que fica fora como fica fora do EBITDA. Da 360
+    no ano.
+
+custos_variaveis:
+  rotulo: Custos variáveis
+  fonte: vw_fato_natureza_mes
+  formula: soma(custos_variaveis)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos: [custos variaveis, custo variavel, despesas variaveis]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). O que varia com a venda: CMV variavel,
+    comissao, frete, taxa de cartao. Da 640 no ano. Fixos mais variaveis e
+    CMV mais despesas, em todo mes.
+
+margem_de_contribuicao:
+  rotulo: Margem de contribuição
+  fonte: vw_fato_fin_mes, vw_fato_natureza_mes
+  formula: (soma(receita_liquida) - soma(custos_variaveis)) / soma(receita_liquida)
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [margem de contribuicao, mc, contribuicao]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). De cada R$ 100 vendidos, o que sobra para
+    pagar a estrutura e formar o lucro. Da 46,7% no ano.
+
+margem_de_contribuicao_valor:
+  rotulo: Margem de contribuição em reais
+  fonte: vw_fato_fin_mes, vw_fato_natureza_mes
+  formula: soma(receita_liquida) - soma(custos_variaveis)
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [margem de contribuicao em reais, contribuicao em reais]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). O numerador do GAO e o que paga os custos
+    fixos: 560 no ano.
+
+ponto_de_equilibrio:
+  rotulo: Ponto de equilíbrio
+  fonte: vw_fato_natureza_mes, vw_fato_fin_mes
+  formula: (custos_fixos + depreciacao) / margem_de_contribuicao, por mes do recorte
+  unidade: BRL_mi
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      ponto de equilibrio,
+      break even,
+      breakeven,
+      quanto preciso faturar,
+      nao dar prejuizo,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). O contabil: cobre a estrutura e a
+    depreciacao. Por mes, para comparar com a receita mensal.
+
+ponto_de_equilibrio_caixa:
+  rotulo: Ponto de equilíbrio de caixa
+  fonte: vw_fato_natureza_mes, vw_fato_fin_mes
+  formula: custos_fixos / margem_de_contribuicao, por mes do recorte
+  unidade: BRL_mi
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [ponto de equilibrio de caixa, equilibrio de caixa]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Menor que o contabil porque a depreciacao
+    nao sai do caixa.
+
+ponto_de_equilibrio_economico:
+  rotulo: Ponto de equilíbrio econômico
+  fonte: vw_fato_natureza_mes, vw_fato_fin_mes, vw_fato_balanco_mes
+  formula: (custos_fixos + depreciacao + capital_investido x 12% a.a.) / margem_de_contribuicao, por mes
+  unidade: BRL_mi
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      ponto de equilibrio economico,
+      equilibrio economico,
+      retorno minimo dos socios,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Maior que o contabil porque considera o
+    retorno minimo sobre o capital investido, a 12% ao ano -- taxa declarada
+    como constante, e nao o CDI do dia, porque referencia externa nao entra
+    em calculo de metrica. Precisa de Controladoria em H-08.
+
+margem_de_seguranca:
+  rotulo: Margem de segurança
+  fonte: vw_fato_fin_mes, vw_fato_natureza_mes
+  formula: (receita mensal media - ponto_de_equilibrio) / receita mensal media
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      margem de seguranca,
+      quanto a receita pode cair,
+      folga operacional,
+      antes de dar prejuizo,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Quanto a receita pode cair antes de a
+    empresa parar de dar lucro contabil.
+
+gao:
+  rotulo: Grau de alavancagem operacional
+  fonte: vw_fato_fin_mes, vw_fato_natureza_mes
+  formula: margem_de_contribuicao_valor / (ebitda - depreciacao)
+  unidade: vezes
+  agg: ratio
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      gao,
+      grau de alavancagem operacional,
+      alavancagem operacional,
+      se a receita cair,
+      receita cair,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Cada 1% de receita mexe GAO% no
+    resultado operacional. Sentido menor_melhor: quanto maior, mais o
+    resultado depende de manter volume.
+
+resultado_com_receita_10_menor:
+  rotulo: Resultado com receita 10% menor
+  fonte: vw_fato_fin_mes, vw_fato_natureza_mes
+  formula: (ebitda - depreciacao) - 10% x margem_de_contribuicao_valor
+  unidade: BRL_mi
+  agg: sum
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      resultado com receita 10% menor,
+      queda de 10% na receita,
+      simulacao de queda,
+      resultado simulado,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). A simulacao do documento de CFO, feita
+    aqui e nao pelo modelo: a queda de 10% e uma constante declarada.
+
+lancamentos_do_mes:
+  rotulo: Lançamentos
+  fonte: vw_fato_qualidade_mes
+  formula: soma(lancamentos)
+  unidade: contagem
+  agg: sum
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos: [lancamentos do mes, quantos lancamentos, lancamentos]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Na fixture, o movimento do mes dividido
+    por um valor medio de lancamento de R$ 45 mil.
+
+lancamentos_para_revisao:
+  rotulo: Lançamentos para revisão
+  fonte: vw_fato_qualidade_mes
+  formula: soma(fora_do_padrao + em_conta_parada + pares_de_estorno + competencia_anterior)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      lancamentos para revisao,
+      lancamento estranho,
+      lancamentos estranhos,
+      testes de excecao,
+      merecem revisao,
+      algo estranho no razao,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Os quatro testes de excecao do documento
+    de CFO, somados. A lista de lancamentos fica no ERP: o produto expoe o
+    agregado, nunca a linha (secao 7.5).
+
+valor_para_revisao:
+  rotulo: Valor para revisão
+  fonte: vw_fato_qualidade_mes
+  formula: soma(valor_fora_do_padrao + valor_de_estornos + valor_de_competencia_anterior)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [valor para revisao, quanto vale a revisao, valor dos lancamentos estranhos]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). O que os lancamentos para revisao somam.
+
+lancamentos_fora_do_padrao:
+  rotulo: Lançamentos fora do padrão
+  fonte: vw_fato_qualidade_mes
+  formula: soma(lancamentos_fora_do_padrao)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [lancamentos fora do padrao, fora do padrao, valor muito acima do padrao]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Valor muito acima da media historica da
+    conta. O corte e regra de Controladoria (H-08).
+
+lancamentos_em_conta_parada:
+  rotulo: Lançamentos em conta parada
+  fonte: vw_fato_qualidade_mes
+  formula: soma(lancamentos_em_conta_parada)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [lancamentos em conta parada, conta parada, contas paradas]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Conta sem movimento ha mais de seis
+    meses que recebeu lancamento: geralmente classificacao equivocada.
+
+pares_de_estorno:
+  rotulo: Pares de estorno
+  fonte: vw_fato_qualidade_mes
+  formula: soma(pares_de_estorno)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [pares de estorno, estornos, estorno e relancamento]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Estorno e relancamento no mesmo mes:
+    correcao normal ou retrabalho de fechamento.
+
+lancamentos_de_competencia_anterior:
+  rotulo: Lançamentos de competência anterior
+  fonte: vw_fato_qualidade_mes
+  formula: soma(lancamentos_de_competencia_anterior)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [lancamentos de competencia anterior, competencia anterior, deslocamentos]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Registrados agora com competencia do mes
+    anterior: mudam indicadores de meses ja reportados.
+
+completude_da_base:
+  rotulo: Completude da base
+  fonte: vw_fato_qualidade_mes
+  formula: 1 - (valor_sem_centro_de_custo + valor_em_conta_generica + valor_sem_natureza) / valor_total
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      completude da base,
+      confiar nesses numeros,
+      da para confiar,
+      base classificada corretamente,
+      dimensoes preenchidas,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Ponderada por valor, como o documento de
+    CFO pede. As tres lacunas sao tratadas como disjuntas na fixture.
+
+valor_sem_centro_de_custo:
+  rotulo: Sem centro de custo
+  fonte: vw_fato_qualidade_mes
+  formula: soma(valor_sem_centro_de_custo)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [sem centro de custo, valor sem centro de custo]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Sem centro de custo nao ha analise por
+    unidade.
+
+valor_em_conta_generica:
+  rotulo: Em conta genérica
+  fonte: vw_fato_qualidade_mes
+  formula: soma(valor_em_conta_generica)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [em conta generica, contas genericas, diversos ou outros]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). "Diversos" e "outros" com valor relevante
+    inviabilizam explicar variacao.
+
+valor_sem_natureza:
+  rotulo: Sem natureza fixa ou variável
+  fonte: vw_fato_qualidade_mes
+  formula: soma(valor_sem_natureza)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [sem natureza, sem classificacao de natureza, sem fixo ou variavel]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Sem natureza nao ha margem de
+    contribuicao nem ponto de equilibrio confiaveis.
+
+indicios_de_competencia:
+  rotulo: Indícios de deslocamento de competência
+  fonte: vw_fato_qualidade_mes
+  formula: soma(contas_recorrentes_sem_lancamento + lancamentos_duplicados + lancamentos_de_competencia_anterior)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      indicios de competencia,
+      por competencia,
+      lancado no mes errado,
+      coisa lancada no mes errado,
+      deslocamento de competencia,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Ausencias, duplicidades e deslocamentos,
+    como o documento de CFO separa.
+
+efeito_no_resultado_da_competencia:
+  rotulo: Efeito da competência no resultado
+  fonte: vw_fato_qualidade_mes
+  formula: soma(valor_de_competencia_anterior + valor_duplicado)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      efeito da competencia no resultado,
+      efeito no resultado,
+      resultado ajustado,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). O que o resultado do mes mudaria se as
+    apropriacoes fossem ajustadas. Estimativa, e declarada como tal.
+
+contas_recorrentes_sem_lancamento:
+  rotulo: Contas recorrentes sem lançamento
+  fonte: vw_fato_qualidade_mes
+  formula: soma(contas_recorrentes_sem_lancamento)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [contas recorrentes sem lancamento, ausencias, despesa a apropriar]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Conta que todo mes tem lancamento e neste
+    nao teve: provavel despesa a apropriar.
+
+lancamentos_duplicados:
+  rotulo: Lançamentos duplicados
+  fonte: vw_fato_qualidade_mes
+  formula: soma(lancamentos_duplicados)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [lancamentos duplicados, duplicidades, em duplicidade]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Dois lancamentos de valor equivalente ao
+    padrao mensal da conta.
+
+contas_com_classificacao_inconsistente:
+  rotulo: Contas com classificação inconsistente
+  fonte: vw_fato_qualidade_mes
+  formula: soma(contas_com_classificacao_inconsistente)
+  unidade: contagem
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      classificacao inconsistente,
+      custo e despesa,
+      diferenca entre custo e despesa,
+      classificacao esta correta,
+      contas mal classificadas,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Conta classificada como despesa que
+    variou com a receita, ou como custo que nao variou. Reclassificar nao
+    muda o resultado; muda a leitura de onde o dinheiro se perde.
+
+valor_em_classificacao_inconsistente:
+  rotulo: Valor em classificação inconsistente
+  fonte: vw_fato_qualidade_mes
+  formula: soma(valor_em_classificacao_inconsistente)
+  unidade: BRL_mi
+  agg: sum
+  sentido: menor_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [valor em classificacao inconsistente, impacto de reclassificar]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). O que mudaria de lugar entre margem bruta
+    e margem de contribuicao ao reclassificar.
+
+movimentacao_com_partes_relacionadas:
+  rotulo: Movimentação com partes relacionadas
+  fonte: vw_fato_qualidade_mes
+  formula: soma(movimentacao_com_partes_relacionadas)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      movimentacao com partes relacionadas,
+      partes relacionadas,
+      movimentacao com socios,
+      empresas do grupo,
+      entre empresas do grupo,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Valores que nao vem do mercado e podem
+    entrar e sair sem relacao com a operacao. O tratamento (mutuo como divida
+    ou patrimonio, rateio entre empresas) e decisao de H-08.
+
+roe_sem_partes_relacionadas:
+  rotulo: ROE sem partes relacionadas
+  fonte: vw_fato_fin_mes, vw_fato_balanco_mes
+  formula: lucro_liquido(recorte) / (patrimonio_liquido - mutuo_com_socios)(fim do recorte)
+  unidade: pct
+  agg: ratio
+  sentido: maior_melhor
+  grao_minimo: [entidade, mes]
+  sinonimos: [roe sem partes relacionadas, roe excluindo socios, roe sem socios]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Trata o mutuo com socios como divida, e
+    nao como patrimonio: a "segunda coluna" que o documento de CFO pede.
+
+mutuo_com_socios:
+  rotulo: Mútuo com sócios
+  fonte: vw_fato_balanco_mes
+  formula: mutuo_com_socios(fim do recorte)
+  unidade: BRL_mi
+  agg: last
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos: [mutuo com socios, mutuo, emprestimo dos socios]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). Saldo constante de 25 na fixture.
+
+receita_dos_principais_clientes:
+  rotulo: Receita dos principais clientes
+  fonte: vw_fato_faturamento_cliente
+  formula: soma(receita)
+  unidade: BRL_mi
+  agg: sum
+  sentido: neutro
+  grao_minimo: [entidade, mes]
+  sinonimos:
+    [
+      receita dos principais clientes,
+      mix de receita,
+      composicao da receita,
+      carteira por segmento,
+    ]
+  decisao: >-
+    PROVISORIO (D-H03, 2026-09-03). A carteira que a view de faturamento por
+    cliente cobre: os dez maiores. Margem de contribuicao por segmento nao
+    esta modelada, entao o efeito mix do documento de CFO fica em aberto.

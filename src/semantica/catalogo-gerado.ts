@@ -266,6 +266,27 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-09-03). E o numero que diz se vai apertar: com as amortizacoes, cai abaixo de 1.",
   },
+  completude_da_base: {
+    id: "completude_da_base",
+    rotulo: "Completude da base",
+    fonte: "vw_fato_qualidade_mes",
+    formula:
+      "1 - (valor_sem_centro_de_custo + valor_em_conta_generica + valor_sem_natureza) / valor_total",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "completude da base",
+      "confiar nesses numeros",
+      "da para confiar",
+      "base classificada corretamente",
+      "dimensoes preenchidas",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Ponderada por valor, como o documento de CFO pede. As tres lacunas sao tratadas como disjuntas na fixture.",
+  },
   concentracao_top_10: {
     id: "concentracao_top_10",
     rotulo: "Concentração top 10",
@@ -342,6 +363,44 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-09-03). Saldo total da carteira, todas as faixas de aging. Fecha em 171 em dezembro.",
+  },
+  contas_com_classificacao_inconsistente: {
+    id: "contas_com_classificacao_inconsistente",
+    rotulo: "Contas com classificação inconsistente",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(contas_com_classificacao_inconsistente)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "classificacao inconsistente",
+      "custo e despesa",
+      "diferenca entre custo e despesa",
+      "classificacao esta correta",
+      "contas mal classificadas",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Conta classificada como despesa que variou com a receita, ou como custo que nao variou. Reclassificar nao muda o resultado; muda a leitura de onde o dinheiro se perde.",
+  },
+  contas_recorrentes_sem_lancamento: {
+    id: "contas_recorrentes_sem_lancamento",
+    rotulo: "Contas recorrentes sem lançamento",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(contas_recorrentes_sem_lancamento)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "contas recorrentes sem lancamento",
+      "ausencias",
+      "despesa a apropriar",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Conta que todo mes tem lancamento e neste nao teve: provavel despesa a apropriar.",
   },
   conversao_de_caixa: {
     id: "conversao_de_caixa",
@@ -552,6 +611,39 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Sentido `menor_melhor` trata hora barata como melhor, e hora barata costuma ser hora online -- que o proprio dataset mostra concluindo 58% contra 86% do presencial.",
+  },
+  custos_fixos: {
+    id: "custos_fixos",
+    rotulo: "Custos fixos",
+    fonte: "vw_fato_natureza_mes",
+    formula: "soma(custos_fixos)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "custos fixos",
+      "custo fixo",
+      "estrutura fixa",
+      "despesas fixas",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A estrutura: o que continua existindo sem venda. Sem a depreciacao, que fica fora como fica fora do EBITDA. Da 360 no ano.",
+  },
+  custos_variaveis: {
+    id: "custos_variaveis",
+    rotulo: "Custos variáveis",
+    fonte: "vw_fato_natureza_mes",
+    formula: "soma(custos_variaveis)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["custos variaveis", "custo variavel", "despesas variaveis"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O que varia com a venda: CMV variavel, comissao, frete, taxa de cartao. Da 640 no ano. Fixos mais variaveis e CMV mais despesas, em todo mes.",
   },
   desligamentos: {
     id: "desligamentos",
@@ -861,6 +953,24 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Conta SO os centros que gastaram menos, ignorando os que estouraram -- por isso nao e o desvio com sinal trocado. Sentido `maior_melhor` trata economizar como bom, e economia por projeto nao executado aparece igual. E uma das definicoes que precisam de Controladoria em H-08.",
   },
+  efeito_no_resultado_da_competencia: {
+    id: "efeito_no_resultado_da_competencia",
+    rotulo: "Efeito da competência no resultado",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(valor_de_competencia_anterior + valor_duplicado)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "efeito da competencia no resultado",
+      "efeito no resultado",
+      "resultado ajustado",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O que o resultado do mes mudaria se as apropriacoes fossem ajustadas. Estimativa, e declarada como tal.",
+  },
   encargos_sobre_salarios: {
     id: "encargos_sobre_salarios",
     rotulo: "Encargos",
@@ -1085,6 +1195,26 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). A base de competencia da rescisao esta indefinida -- e a decisao P3, item H-07. A escolha muda a folha de todo mes com desligamento, e com ela folha sobre receita e custo por colaborador.",
   },
+  gao: {
+    id: "gao",
+    rotulo: "Grau de alavancagem operacional",
+    fonte: "vw_fato_fin_mes, vw_fato_natureza_mes",
+    formula: "margem_de_contribuicao_valor / (ebitda - depreciacao)",
+    unidade: "vezes",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "gao",
+      "grau de alavancagem operacional",
+      "alavancagem operacional",
+      "se a receita cair",
+      "receita cair",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Cada 1% de receita mexe GAO% no resultado operacional. Sentido menor_melhor: quanto maior, mais o resultado depende de manter volume.",
+  },
   giro_do_ativo: {
     id: "giro_do_ativo",
     rotulo: "Giro do ativo",
@@ -1229,6 +1359,27 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       'PROVISORIO (D-H03, 2026-08-24). Conta so a faixa ACIMA DE 90 DIAS, que e o que o rodape do cartao no prototipo declara: "R$ 7 mi sobre R$ 171 mi". Contar tudo fora de "a vencer" -- inclusive 1 a 30 dias -- levaria a taxa de 4,1% para 31%, e parte das empresas conta assim. E uma das definicoes que precisam de Controladoria em H-08.',
   },
+  indicios_de_competencia: {
+    id: "indicios_de_competencia",
+    rotulo: "Indícios de deslocamento de competência",
+    fonte: "vw_fato_qualidade_mes",
+    formula:
+      "soma(contas_recorrentes_sem_lancamento + lancamentos_duplicados + lancamentos_de_competencia_anterior)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "indicios de competencia",
+      "por competencia",
+      "lancado no mes errado",
+      "coisa lancada no mes errado",
+      "deslocamento de competencia",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Ausencias, duplicidades e deslocamentos, como o documento de CFO separa.",
+  },
   investimento_treinamento: {
     id: "investimento_treinamento",
     rotulo: "Investimento em treinamento",
@@ -1265,6 +1416,110 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-09-03). E o resultado financeiro da ponte da DRE, por competencia -- a questao H-56 (caixa ou competencia) continua aberta.",
+  },
+  lancamentos_de_competencia_anterior: {
+    id: "lancamentos_de_competencia_anterior",
+    rotulo: "Lançamentos de competência anterior",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(lancamentos_de_competencia_anterior)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "lancamentos de competencia anterior",
+      "competencia anterior",
+      "deslocamentos",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Registrados agora com competencia do mes anterior: mudam indicadores de meses ja reportados.",
+  },
+  lancamentos_do_mes: {
+    id: "lancamentos_do_mes",
+    rotulo: "Lançamentos",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(lancamentos)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["lancamentos do mes", "quantos lancamentos", "lancamentos"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Na fixture, o movimento do mes dividido por um valor medio de lancamento de R$ 45 mil.",
+  },
+  lancamentos_duplicados: {
+    id: "lancamentos_duplicados",
+    rotulo: "Lançamentos duplicados",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(lancamentos_duplicados)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["lancamentos duplicados", "duplicidades", "em duplicidade"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Dois lancamentos de valor equivalente ao padrao mensal da conta.",
+  },
+  lancamentos_em_conta_parada: {
+    id: "lancamentos_em_conta_parada",
+    rotulo: "Lançamentos em conta parada",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(lancamentos_em_conta_parada)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "lancamentos em conta parada",
+      "conta parada",
+      "contas paradas",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Conta sem movimento ha mais de seis meses que recebeu lancamento: geralmente classificacao equivocada.",
+  },
+  lancamentos_fora_do_padrao: {
+    id: "lancamentos_fora_do_padrao",
+    rotulo: "Lançamentos fora do padrão",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(lancamentos_fora_do_padrao)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "lancamentos fora do padrao",
+      "fora do padrao",
+      "valor muito acima do padrao",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Valor muito acima da media historica da conta. O corte e regra de Controladoria (H-08).",
+  },
+  lancamentos_para_revisao: {
+    id: "lancamentos_para_revisao",
+    rotulo: "Lançamentos para revisão",
+    fonte: "vw_fato_qualidade_mes",
+    formula:
+      "soma(fora_do_padrao + em_conta_parada + pares_de_estorno + competencia_anterior)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "lancamentos para revisao",
+      "lancamento estranho",
+      "lancamentos estranhos",
+      "testes de excecao",
+      "merecem revisao",
+      "algo estranho no razao",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Os quatro testes de excecao do documento de CFO, somados. A lista de lancamentos fica no ERP: o produto expoe o agregado, nunca a linha (secao 7.5).",
   },
   liquidez_corrente: {
     id: "liquidez_corrente",
@@ -1354,6 +1609,55 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). O que entra no CMV -- frete, perda, depreciacao de fabrica -- muda o numero e nao esta definido. Precisa de Controladoria em H-08.",
   },
+  margem_de_contribuicao: {
+    id: "margem_de_contribuicao",
+    rotulo: "Margem de contribuição",
+    fonte: "vw_fato_fin_mes, vw_fato_natureza_mes",
+    formula:
+      "(soma(receita_liquida) - soma(custos_variaveis)) / soma(receita_liquida)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["margem de contribuicao", "mc", "contribuicao"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). De cada R$ 100 vendidos, o que sobra para pagar a estrutura e formar o lucro. Da 46,7% no ano.",
+  },
+  margem_de_contribuicao_valor: {
+    id: "margem_de_contribuicao_valor",
+    rotulo: "Margem de contribuição em reais",
+    fonte: "vw_fato_fin_mes, vw_fato_natureza_mes",
+    formula: "soma(receita_liquida) - soma(custos_variaveis)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["margem de contribuicao em reais", "contribuicao em reais"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O numerador do GAO e o que paga os custos fixos: 560 no ano.",
+  },
+  margem_de_seguranca: {
+    id: "margem_de_seguranca",
+    rotulo: "Margem de segurança",
+    fonte: "vw_fato_fin_mes, vw_fato_natureza_mes",
+    formula:
+      "(receita mensal media - ponto_de_equilibrio) / receita mensal media",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "margem de seguranca",
+      "quanto a receita pode cair",
+      "folga operacional",
+      "antes de dar prejuizo",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Quanto a receita pode cair antes de a empresa parar de dar lucro contabil.",
+  },
   margem_ebitda: {
     id: "margem_ebitda",
     rotulo: "Margem EBITDA",
@@ -1404,6 +1708,26 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). NAO E KPI: e texto de nota do painel sal-faixas, e o aceite de T-148 a lista entre os 15 por engano -- registrado em H-48. Entra assim mesmo, porque nota com numero tambem declara formula (PR-3, RF-09). A interpolacao sobre faixas da cerca de R$ 6,0 mil contra os R$ 6.240 do prototipo; com dado real a mediana sai do salario individual e nao da faixa, e a aproximacao some.",
   },
+  movimentacao_com_partes_relacionadas: {
+    id: "movimentacao_com_partes_relacionadas",
+    rotulo: "Movimentação com partes relacionadas",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(movimentacao_com_partes_relacionadas)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "movimentacao com partes relacionadas",
+      "partes relacionadas",
+      "movimentacao com socios",
+      "empresas do grupo",
+      "entre empresas do grupo",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Valores que nao vem do mercado e podem entrar e sair sem relacao com a operacao. O tratamento (mutuo como divida ou patrimonio, rateio entre empresas) e decisao de H-08.",
+  },
   multiplicador_de_capital: {
     id: "multiplicador_de_capital",
     rotulo: "Multiplicador do patrimônio",
@@ -1422,6 +1746,20 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-09-03). A terceira peca do DuPont: quanto de ativo cada real dos socios sustenta.",
+  },
+  mutuo_com_socios: {
+    id: "mutuo_com_socios",
+    rotulo: "Mútuo com sócios",
+    fonte: "vw_fato_balanco_mes",
+    formula: "mutuo_com_socios(fim do recorte)",
+    unidade: "BRL_mi",
+    agg: "last",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["mutuo com socios", "mutuo", "emprestimo dos socios"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Saldo constante de 25 na fixture.",
   },
   ncg: {
     id: "ncg",
@@ -1457,6 +1795,20 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: ["orcado", "orcamento", "planejado", "budget", "previsto"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Orcamento aprovado do periodo. Revisao de orcamento no meio do ano nao esta modelada: a fixture tem uma versao so.",
+  },
+  pares_de_estorno: {
+    id: "pares_de_estorno",
+    rotulo: "Pares de estorno",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(pares_de_estorno)",
+    unidade: "contagem",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["pares de estorno", "estornos", "estorno e relancamento"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Estorno e relancamento no mesmo mes: correcao normal ou retrabalho de fechamento.",
   },
   participacao_treinamento: {
     id: "participacao_treinamento",
@@ -1602,6 +1954,60 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Usa 365 dias e a receita do periodo. Com recorte mensal o prazo fica anualizado sobre um mes so, o que exagera a sazonalidade. Precisa de Controladoria em H-08.",
   },
+  ponto_de_equilibrio: {
+    id: "ponto_de_equilibrio",
+    rotulo: "Ponto de equilíbrio",
+    fonte: "vw_fato_natureza_mes, vw_fato_fin_mes",
+    formula:
+      "(custos_fixos + depreciacao) / margem_de_contribuicao, por mes do recorte",
+    unidade: "BRL_mi",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "ponto de equilibrio",
+      "break even",
+      "breakeven",
+      "quanto preciso faturar",
+      "nao dar prejuizo",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O contabil: cobre a estrutura e a depreciacao. Por mes, para comparar com a receita mensal.",
+  },
+  ponto_de_equilibrio_caixa: {
+    id: "ponto_de_equilibrio_caixa",
+    rotulo: "Ponto de equilíbrio de caixa",
+    fonte: "vw_fato_natureza_mes, vw_fato_fin_mes",
+    formula: "custos_fixos / margem_de_contribuicao, por mes do recorte",
+    unidade: "BRL_mi",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["ponto de equilibrio de caixa", "equilibrio de caixa"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Menor que o contabil porque a depreciacao nao sai do caixa.",
+  },
+  ponto_de_equilibrio_economico: {
+    id: "ponto_de_equilibrio_economico",
+    rotulo: "Ponto de equilíbrio econômico",
+    fonte: "vw_fato_natureza_mes, vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula:
+      "(custos_fixos + depreciacao + capital_investido x 12% a.a.) / margem_de_contribuicao, por mes",
+    unidade: "BRL_mi",
+    agg: "ratio",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "ponto de equilibrio economico",
+      "equilibrio economico",
+      "retorno minimo dos socios",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Maior que o contabil porque considera o retorno minimo sobre o capital investido, a 12% ao ano -- taxa declarada como constante, e nao o CDI do dia, porque referencia externa nao entra em calculo de metrica. Precisa de Controladoria em H-08.",
+  },
   promotores: {
     id: "promotores",
     rotulo: "Promotores",
@@ -1649,6 +2055,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       'PROVISORIO (D-H03, 2026-08-24). E a receita ANTES das deducoes. O rodape do cartao diz "deducoes de 15%", e a conta e 212 sobre 1.412 -- que da 15,0%.',
   },
+  receita_dos_principais_clientes: {
+    id: "receita_dos_principais_clientes",
+    rotulo: "Receita dos principais clientes",
+    fonte: "vw_fato_faturamento_cliente",
+    formula: "soma(receita)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "neutro",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "receita dos principais clientes",
+      "mix de receita",
+      "composicao da receita",
+      "carteira por segmento",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A carteira que a view de faturamento por cliente cobre: os dez maiores. Margem de contribuicao por segmento nao esta modelada, entao o efeito mix do documento de CFO fica em aberto.",
+  },
   receita_liquida: {
     id: "receita_liquida",
     rotulo: "Receita líquida",
@@ -1695,6 +2120,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     sinonimos: ["variavel", "bonus", "comissao", "horas extras", "premiacao"],
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Junta bonus e horas extras, que tem origens opostas -- um premia resultado, o outro sinaliza falta de gente. Separa-los e uma das perguntas de H-08.",
+  },
+  resultado_com_receita_10_menor: {
+    id: "resultado_com_receita_10_menor",
+    rotulo: "Resultado com receita 10% menor",
+    fonte: "vw_fato_fin_mes, vw_fato_natureza_mes",
+    formula: "(ebitda - depreciacao) - 10% x margem_de_contribuicao_valor",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "resultado com receita 10% menor",
+      "queda de 10% na receita",
+      "simulacao de queda",
+      "resultado simulado",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). A simulacao do documento de CFO, feita aqui e nao pelo modelo: a queda de 10% e uma constante declarada.",
   },
   resultado_operacional_liquido: {
     id: "resultado_operacional_liquido",
@@ -1769,6 +2213,25 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     ],
     decisao:
       "PROVISORIO (D-H03, 2026-09-03). Lucro do recorte sobre o patrimonio do fim -- sob recorte mensal nao anualiza. O documento de CFO le o ROE contra o CDI e descontado do IPCA; o chat faz as duas leituras.",
+  },
+  roe_sem_partes_relacionadas: {
+    id: "roe_sem_partes_relacionadas",
+    rotulo: "ROE sem partes relacionadas",
+    fonte: "vw_fato_fin_mes, vw_fato_balanco_mes",
+    formula:
+      "lucro_liquido(recorte) / (patrimonio_liquido - mutuo_com_socios)(fim do recorte)",
+    unidade: "pct",
+    agg: "ratio",
+    sentido: "maior_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "roe sem partes relacionadas",
+      "roe excluindo socios",
+      "roe sem socios",
+    ],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). Trata o mutuo com socios como divida, e nao como patrimonio: a "segunda coluna" que o documento de CFO pede.',
   },
   roic: {
     id: "roic",
@@ -2039,6 +2502,88 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
     decisao:
       "PROVISORIO (D-H03, 2026-08-24). Unidade `contagem`, que entrou no enum em 2026-08-24 (D-H45): vaga nao e pessoa, entao `FTE` afirmaria algo falso.",
   },
+  valor_em_classificacao_inconsistente: {
+    id: "valor_em_classificacao_inconsistente",
+    rotulo: "Valor em classificação inconsistente",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(valor_em_classificacao_inconsistente)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "valor em classificacao inconsistente",
+      "impacto de reclassificar",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O que mudaria de lugar entre margem bruta e margem de contribuicao ao reclassificar.",
+  },
+  valor_em_conta_generica: {
+    id: "valor_em_conta_generica",
+    rotulo: "Em conta genérica",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(valor_em_conta_generica)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["em conta generica", "contas genericas", "diversos ou outros"],
+    decisao:
+      'PROVISORIO (D-H03, 2026-09-03). "Diversos" e "outros" com valor relevante inviabilizam explicar variacao.',
+  },
+  valor_para_revisao: {
+    id: "valor_para_revisao",
+    rotulo: "Valor para revisão",
+    fonte: "vw_fato_qualidade_mes",
+    formula:
+      "soma(valor_fora_do_padrao + valor_de_estornos + valor_de_competencia_anterior)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "valor para revisao",
+      "quanto vale a revisao",
+      "valor dos lancamentos estranhos",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). O que os lancamentos para revisao somam.",
+  },
+  valor_sem_centro_de_custo: {
+    id: "valor_sem_centro_de_custo",
+    rotulo: "Sem centro de custo",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(valor_sem_centro_de_custo)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: ["sem centro de custo", "valor sem centro de custo"],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Sem centro de custo nao ha analise por unidade.",
+  },
+  valor_sem_natureza: {
+    id: "valor_sem_natureza",
+    rotulo: "Sem natureza fixa ou variável",
+    fonte: "vw_fato_qualidade_mes",
+    formula: "soma(valor_sem_natureza)",
+    unidade: "BRL_mi",
+    agg: "sum",
+    sentido: "menor_melhor",
+    meta: null,
+    grao_minimo: ["entidade", "mes"],
+    sinonimos: [
+      "sem natureza",
+      "sem classificacao de natureza",
+      "sem fixo ou variavel",
+    ],
+    decisao:
+      "PROVISORIO (D-H03, 2026-09-03). Sem natureza nao ha margem de contribuicao nem ponto de equilibrio confiaveis.",
+  },
   variacao_de_capital_de_giro: {
     id: "variacao_de_capital_de_giro",
     rotulo: "Variação de capital de giro",
@@ -2061,7 +2606,7 @@ export const CATALOGO_GERADO: Readonly<Record<string, Metrica>> = {
 };
 
 /** Quantas métricas o catálogo tem. Contado, nunca escrito. */
-export const QUANTIDADE_DE_METRICAS = 114;
+export const QUANTIDADE_DE_METRICAS = 145;
 
 /**
  * Qual catálogo produziu um número (T-149).
@@ -2070,4 +2615,4 @@ export const QUANTIDADE_DE_METRICAS = 114;
  * definição mudou" deixem de ser indistinguíveis. T-155 troca isto por versão
  * semântica com changelog; até lá é a identidade do conteúdo.
  */
-export const VERSAO_DO_CATALOGO = "646c10f9e95b";
+export const VERSAO_DO_CATALOGO = "295c4587b4ff";
