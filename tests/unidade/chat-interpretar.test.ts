@@ -286,8 +286,8 @@ describe("perguntar, com o gateway respondendo", () => {
     expect(resposta.texto).toMatch(/não tenho essa métrica/i);
   });
 
-  it("a recusa do modelo vence o palpite local", async () => {
-    // Localmente "qual o turnover" responde; o modelo disse que não há métrica.
+  it("o sinônimo do catálogo casado com confiança vence a recusa do modelo", async () => {
+    // "turnover" é sinônimo declarado; o modelo disse que não há métrica.
     vi.mocked(interpretarComGateway).mockResolvedValueOnce({
       metrica: "",
       confianca: 0,
@@ -295,7 +295,27 @@ describe("perguntar, com o gateway respondendo", () => {
     });
 
     const resposta = await perguntar("qual o turnover");
+    expect(resposta.tipo).toBe("resposta");
+    if (resposta.tipo !== "resposta") return;
+    expect(resposta.resolucao.metrica).toBe("turnover_12m");
+  });
+
+  it("a recusa do modelo vence o palpite local fraco", async () => {
+    // "Como está a margem?" empata margens no local (confiança 0): sem
+    // sinônimo casado com confiança, a recusa do modelo é a resposta.
+    vi.mocked(interpretarComGateway).mockResolvedValueOnce({
+      metrica: "",
+      confianca: 0,
+      alternativas: ["margem_bruta", "margem_liquida"],
+    });
+
+    const resposta = await perguntar("Como está a margem?");
     expect(resposta.tipo).toBe("recusa");
+    if (resposta.tipo !== "recusa") return;
+    expect(resposta.alternativas.map((a) => a.id)).toEqual([
+      "margem_bruta",
+      "margem_liquida",
+    ]);
   });
 
   it("sem resposta do gateway, o caminho local continua valendo", async () => {
@@ -305,6 +325,20 @@ describe("perguntar, com o gateway respondendo", () => {
     expect(resposta.tipo).toBe("resposta");
     if (resposta.tipo !== "resposta") return;
     expect(resposta.resolucao.metrica).toBe("turnover_12m");
+  });
+
+  it("o modelo recebe os sinônimos do catálogo, não só o rótulo", async () => {
+    // Sem eles, "tem custo classificado errado?" virava recusa: o vocabulário
+    // do documento de CFO está nos sinônimos, e o modelo precisa vê-lo.
+    vi.mocked(interpretarComGateway).mockResolvedValueOnce(null);
+
+    await perguntar("Tem custo classificado errado?");
+
+    const [, metricas] = vi.mocked(interpretarComGateway).mock.calls[0]!;
+    const roe = metricas.find((m) => m.id === "roe");
+    expect(roe?.rotulo).toBe("ROE");
+    expect(roe?.sinonimos).toEqual(CATALOGO_GERADO["roe"]?.sinonimos);
+    expect(metricas).toHaveLength(Object.keys(CATALOGO_GERADO).length);
   });
 
   it("o recorte da pergunta chega às ações mesmo quando o local não casa", async () => {

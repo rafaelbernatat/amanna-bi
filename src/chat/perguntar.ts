@@ -104,9 +104,21 @@ const BASES_DA_TRADUCAO: readonly string[] = ["R$ 100", "R$ 1,00"];
 
 /**
  * O mesmo número dito em reais por base: 8,3% vira "R$ 8,3" a cada R$ 100;
- * liquidez de 1,5 vezes vira "R$ 1,5" para cada R$ 1,00. É o único ponto em
- * que o verificador aceita uma reescrita, e ela é determinística — vale só
- * para o valor principal.
+ * liquidez de 1,5 vezes vira "R$ 1,5" para cada R$ 1,00. Vale para qualquer
+ * porcentagem ou múltiplo do envelope — o valor principal, o apoio ("margem
+ * EBITDA de 16,7%" vira "R$ 16,7 a cada R$ 100 de receita"), as taxas.
+ *
+ * ## As três reescritas que o verificador aceita
+ *
+ * RF-15 barra número que ninguém calculou. Três formas de dizer um número que
+ * **está** no envelope não são invenção, e o verificador as reconhece de forma
+ * determinística: (1) esta, em reais por base; (2) o sinal negativo dito em
+ * palavra — "perda de R$ 2,3", "5,6 p.p. abaixo do CDI" — desde que a palavra
+ * esteja na mesma frase, e o sinal positivo omitido ("2,7 p.p." por
+ * "+2,7 p.p."); (3) número que veio no material que o modelo recebeu — a
+ * pergunta ("se a receita cair 10%"), o rótulo, a definição ("mais de 90
+ * dias"). Tudo o mais continua barrado, inclusive aritmética sobre números
+ * permitidos.
  */
 function emReaisPorBase(valor: number, unidade: Unidade): string | null {
   if (unidade !== "pct" && unidade !== "vezes") return null;
@@ -117,20 +129,61 @@ function emReaisPorBase(valor: number, unidade: Unidade): string | null {
   return corpo.startsWith("-") ? `-R$ ${corpo.slice(1)}` : `R$ ${corpo}`;
 }
 
+/**
+ * O sinal negativo dito em palavra, sem acento e em minúsculas.
+ *
+ * Lista curta e explícita: o que um CFO escreve ao lado de um número que caiu.
+ * Não é defesa — a defesa é o conjunto de permitidos; isto só reconhece a forma
+ * de dizer o sinal.
+ */
+const SINAL_NEGATIVO_EM_PALAVRA =
+  /\b(?:perdas?|prejuizos?|negativ[ao]s?|quedas?|recuos?|retracao|reducao|abaixo|inferior|menos|desfavoravel|consum(?:iu|e|indo|o)|consome|deficit|destru\w*|corroeu|corroendo|piorou|piora|caiu|cair|cairam|perdeu)\b/;
+
+/** Até onde, em caracteres, a palavra de sinal pode estar do número. */
+const RAIO_DA_FRASE = 60;
+
+function sinalNegativoPorPerto(
+  texto: string,
+  inicio: number,
+  fim: number,
+): boolean {
+  const trecho = texto
+    .slice(Math.max(0, inicio - RAIO_DA_FRASE), fim + RAIO_DA_FRASE)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+  return SINAL_NEGATIVO_EM_PALAVRA.test(trecho);
+}
+
 /** Tudo que o texto pode citar sem inventar. */
-function numerosPermitidos(r: Resolucao): ReadonlySet<string> {
+function numerosPermitidos(
+  r: Resolucao,
+  pergunta: string,
+): ReadonlySet<string> {
   const permitidos = new Set<string>(BASES_DA_TRADUCAO);
   const guardar = (valor: number | null, unidade: Unidade) => {
-    if (valor !== null) permitidos.add(formatarValor(valor, unidade));
+    if (valor !== null) {
+      permitidos.add(formatarValor(valor, unidade));
+      const emReais = emReaisPorBase(valor, unidade);
+      if (emReais !== null) permitidos.add(emReais);
+    }
   };
 
   guardar(r.valor, r.unidade);
-  if (r.valor !== null) {
-    const emReais = emReaisPorBase(r.valor, r.unidade);
-    if (emReais !== null) permitidos.add(emReais);
-  }
   for (const c of r.consideracoes) guardar(c.valor, c.unidade);
   for (const t of r.referencias) guardar(t.valor, "pct");
+
+  // O que veio escrito no material: repetir não é inventar.
+  const material = [
+    pergunta,
+    r.rotulo,
+    r.formula,
+    r.decisao ?? "",
+    ...r.consideracoes.map((c) => c.rotulo),
+  ].join("\n");
+  for (const m of material.match(COM_UNIDADE) ?? []) {
+    permitidos.add(m.replace(/\s+/g, " ").trim());
+  }
   if (r.comparacao !== null) {
     for (const l of r.comparacao.leituras) {
       guardar(l.valor, l.unidade);
@@ -149,12 +202,40 @@ function numerosPermitidos(r: Resolucao): ReadonlySet<string> {
  * Vazio quer dizer que a redação pode ir para a tela. Qualquer item quer dizer
  * que o modelo escreveu um número que ninguém calculou.
  */
-export function divergencias(texto: string, r: Resolucao): readonly string[] {
-  const permitidos = numerosPermitidos(r);
-  const citados = texto.match(COM_UNIDADE) ?? [];
-  return citados
-    .map((c) => c.replace(/\s+/g, " ").trim())
-    .filter((c) => !permitidos.has(c));
+export function divergencias(
+  texto: string,
+  r: Resolucao,
+  pergunta = "",
+): readonly string[] {
+  const permitidos = numerosPermitidos(r, pergunta);
+  const erradas: string[] = [];
+
+  for (const casamento of texto.matchAll(COM_UNIDADE)) {
+    const citado = casamento[0].replace(/\s+/g, " ").trim();
+    if (permitidos.has(citado)) continue;
+
+    // Com sinal e fora do envelope: não há reescrita que salve.
+    if (citado.startsWith("-") || citado.startsWith("+")) {
+      erradas.push(citado);
+      continue;
+    }
+
+    // "+2,7 p.p." dito como "2,7 p.p.": o mesmo número.
+    if (permitidos.has(`+${citado}`)) continue;
+
+    // "-R$ 2,3" dito como "perda de R$ 2,3": o mesmo número, se a palavra
+    // que carrega o sinal estiver por perto.
+    const inicio = casamento.index ?? 0;
+    if (
+      permitidos.has(`-${citado}`) &&
+      sinalNegativoPorPerto(texto, inicio, inicio + casamento[0].length)
+    ) {
+      continue;
+    }
+
+    erradas.push(citado);
+  }
+  return erradas;
 }
 
 /* ------------------------------------------------------------------ *
@@ -299,6 +380,7 @@ async function interpretar(
   const metricas = Object.entries(CATALOGO_GERADO).map(([id, m]) => ({
     id,
     rotulo: m.rotulo,
+    sinonimos: m.sinonimos,
   }));
   const doModelo = await interpretarComGateway(pergunta, metricas);
 
@@ -316,8 +398,18 @@ async function interpretar(
    * para a tela como recusa útil (seção 7.5). Antes ela era descartada e o
    * chat caía no casamento de sinônimo — "qual é o ROE?" virava eNPS, e a
    * recusa certa do modelo nunca chegava a ninguém.
+   *
+   * Uma exceção, de propósito: quando o catálogo casa a pergunta por sinônimo
+   * com confiança, o sinônimo vence a recusa. Sinônimo é vocabulário que
+   * Produto declarou para aquela métrica — "centro de custo" leva ao desvio
+   * orçamentário porque é o painel que existe por centro de custo, e não por
+   * o modelo achar que é a métrica certa. Um modelo mais barato recusou
+   * "quais centros de custo dão mais retorno?" (2026-09-03); o interpretador
+   * local, que sabe os sinônimos, respondia. O caso do eNPS não volta: ele
+   * era casamento por palavra solta, que hoje não passa do limiar.
    */
   if (doModelo.metrica === "") {
+    if (local !== null && local.confianca >= CONFIANCA_MINIMA) return local;
     return {
       metrica: "",
       filtros,
@@ -436,7 +528,7 @@ export async function redigirResposta(
     : "montado";
 
   if (doModelo !== null) {
-    const erradas = divergencias(doModelo, resolucao);
+    const erradas = divergencias(doModelo, resolucao, pergunta);
     if (erradas.length === 0) {
       texto = doModelo;
       autoria = "modelo";

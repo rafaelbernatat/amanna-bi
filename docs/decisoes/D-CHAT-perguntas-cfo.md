@@ -50,8 +50,33 @@ reafirmou o pedido. A decisão é de escopo, e vem com três escolhas:
 - **Até quatro métricas de apoio** por resposta. O aceite de T-328 diz "até
   três"; a liquidez corrente do documento cita quatro números. O texto da tarefa
   acompanha.
-- **"A cada R$ 100 … devolveu R$ 8,3"**: o verificador aceita a reescrita do
-  valor principal em reais por base, de forma determinística, e só ela.
+- **As três reescritas que o verificador aceita**, todas determinísticas e
+  todas de um número que **está** no envelope: (1) porcentagem ou múltiplo em
+  reais por base — "a cada R$ 100 … devolveu R$ 8,3"; (2) o sinal negativo dito
+  em palavra — "perda de R$ 2,3", "5,6 p.p. abaixo do CDI" — desde que a
+  palavra esteja na mesma frase, e o sinal positivo omitido ("2,7 p.p." por
+  "+2,7 p.p."); (3) número que veio no material entregue ao modelo — a
+  pergunta ("se a receita cair 10%"), o rótulo, a definição ("mais de 90
+  dias"). Aritmética sobre números permitidos continua barrada. As duas
+  últimas entraram em 2026-09-03, quando um modelo mais barato escreveu certo
+  seis textos que o verificador barrou por forma, não por conteúdo.
+- **O modelo vê os sinônimos no estágio 1.** A lista enviada ao gateway leva
+  id, rótulo e sinônimos do catálogo. Só com id e rótulo, o `openai/gpt-4o`
+  recusou 4 e trocou 11 das 33 perguntas; com os sinônimos, escreveu 32 textos
+  aprovados pelo verificador. O vocabulário do documento de CFO está nos
+  sinônimos, e o interpretador local, que os usa, acerta as 33.
+- **Sinônimo casado com confiança vence a recusa do modelo.** A recusa do
+  modelo continua valendo contra palpite local fraco (empate, palavra solta);
+  quando o catálogo casa a pergunta por sinônimo acima do limiar, o sinônimo
+  responde — é vocabulário que Produto declarou de propósito ("centro de
+  custo" leva ao painel por centro de custo que existe). Foi a única pergunta
+  (A7) que o `gpt-4o` recusou mesmo vendo os sinônimos.
+- **O modelo é configuração.** Produto trocou `OPENROUTER_MODEL` de
+  `anthropic/claude-opus-4.1` para `openai/gpt-4o` em 2026-09-03 ("mais barato
+  para o que precisamos"); o padrão no código não muda, porque a decisão
+  D-CHAT-openrouter põe a escolha do modelo na configuração. A medida acima é
+  a linha de base desse modelo; o conjunto de avaliação de 7.7 repete quando o
+  modelo mudar.
 - **CDI líquido de IR a 15%** para o ROIC (renda fixa acima de 720 dias) e
   **benefício fiscal da dívida a 34%** (IR e CSLL do lucro real): alíquotas
   nominais, escritas como constantes. Precisam de Controladoria em H-08.

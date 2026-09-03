@@ -147,6 +147,119 @@ describe("o que o texto pode citar", () => {
   });
 });
 
+/*
+ * As três reescritas determinísticas. Cada uma nasceu de um texto real que o
+ * modelo escreveu certo e o verificador barrou (2026-09-03, com o gpt-4o).
+ */
+describe("o sinal dito em palavra", () => {
+  const negativo = roe({ valor: -2.3 });
+
+  it.each([
+    "A cada R$ 100 de patrimônio, a empresa destruiu R$ 2,3 em valor.",
+    "A cada R$ 100 faturados, o prejuízo foi de R$ 2,3.",
+    "Houve uma perda de R$ 2,3 para cada R$ 100 investidos.",
+    "O retorno fica 5,6 p.p. abaixo do CDI de 13,9% ao ano.",
+    "Rende 5,6 p.p. a menos que o CDI, um resultado negativo.",
+    "O ROE foi -2,3%, e a cada R$ 100 devolveu -R$ 2,3.",
+  ])("aceita '%s'", (texto) => {
+    expect(divergencias(texto, negativo)).toEqual([]);
+  });
+
+  it.each([
+    ["R$ 2,3", "A cada R$ 100 de patrimônio, a empresa devolveu R$ 2,3."],
+    ["R$ 2,3", "Houve um ganho de R$ 2,3 para cada R$ 100 investidos."],
+    ["5,6 p.p.", "O retorno fica 5,6 p.p. acima do CDI de 13,9% ao ano."],
+    ["+2,3%", "O ROE foi +2,3% no período."],
+  ])("recusa %s sem a palavra do sinal (%s)", (esperado, texto) => {
+    expect(divergencias(texto, negativo)).toEqual([esperado]);
+  });
+
+  it("o sinal positivo pode ficar implícito", () => {
+    const acima = roe({
+      comparacao: {
+        familia: "retorno",
+        leituras: [
+          {
+            rotulo: "Diferença para o CDI",
+            valor: 2.7,
+            unidade: "pp",
+            formula: "ROE − CDI",
+            referencia: CDI,
+          },
+        ],
+        base: null,
+      },
+    });
+    expect(
+      divergencias("Uma diferença de 2,7 p.p. sobre o CDI de 13,9%.", acima),
+    ).toEqual([]);
+    expect(
+      divergencias("Uma diferença de +2,7 p.p. sobre o CDI de 13,9%.", acima),
+    ).toEqual([]);
+  });
+});
+
+describe("o número que veio no material", () => {
+  it("repetir a pergunta não é inventar", () => {
+    const pergunta = "Se a receita cair 10%, o que acontece com o lucro?";
+    const texto = "Com a receita 10% menor, o ROE foi de 8,3%.";
+    expect(divergencias(texto, roe(), pergunta)).toEqual([]);
+    expect(divergencias(texto, roe())).toEqual(["10%"]);
+  });
+
+  it("o rótulo e a definição da métrica também contam", () => {
+    const simulado = roe({ rotulo: "Resultado com receita 10% menor" });
+    expect(
+      divergencias("A queda de 10% na receita leva o ROE a 8,3%.", simulado),
+    ).toEqual([]);
+
+    const parado = roe({
+      decisao:
+        "PROVISORIO (D-H03, 2026-09-03). Itens sem movimentação há mais de 90 dias.",
+    });
+    expect(
+      divergencias("São os itens parados por mais de 90 dias.", parado),
+    ).toEqual([]);
+    expect(
+      divergencias("São os itens parados por mais de 60 dias.", parado),
+    ).toEqual(["60 dias"]);
+  });
+
+  it("aritmética sobre números permitidos continua barrada", () => {
+    // 8,3% − 5,6 p.p. = 2,7%: número que ninguém calculou.
+    expect(
+      divergencias("Descontado o CDI, sobram 2,7% de retorno.", roe()),
+    ).toEqual(["2,7%"]);
+  });
+});
+
+describe("o apoio em porcentagem também se traduz em reais", () => {
+  it("R$ 16,7 a cada R$ 100 é a margem EBITDA de 16,7%", () => {
+    const ebitda = roe({
+      metrica: "ebitda",
+      rotulo: "EBITDA",
+      valor: 200,
+      unidade: "BRL_mi",
+      consideracoes: [
+        {
+          rotulo: "Margem EBITDA",
+          valor: 16.7,
+          unidade: "pct",
+          origem: "apoio",
+          metrica: "margem_ebitda",
+        },
+      ],
+      comparacao: null,
+    });
+    expect(
+      divergencias(
+        "EBITDA foi R$ 200,0 mi: a cada R$ 100 de receita, R$ 16,7 ficaram.",
+        ebitda,
+      ),
+    ).toEqual([]);
+  });
+});
+
 describe("o texto montado nunca diverge do próprio envelope", () => {
   it.each([
     ["retorno", roe()],
