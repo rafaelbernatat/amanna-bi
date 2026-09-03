@@ -33,6 +33,8 @@ import { VW_FATO_BALANCO_MES } from "@/acesso/fixtures/balanco";
 import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
 import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
 import { VW_FATO_DIVIDA_MES } from "@/acesso/fixtures/divida";
+import { VW_FATO_NATUREZA_MES } from "@/acesso/fixtures/natureza";
+import { VW_FATO_QUALIDADE_MES } from "@/acesso/fixtures/qualidade";
 import { calcularMeta } from "@/acesso/fixtures/meta";
 import { calcularMetrica } from "@/acesso/fixtures/metricas";
 import { calcularPainel } from "@/acesso/fixtures/paineis";
@@ -76,6 +78,8 @@ export const VIEWS = {
   vw_fato_saida_categoria: VW_FATO_SAIDA_CATEGORIA,
   vw_fato_balanco_mes: VW_FATO_BALANCO_MES,
   vw_fato_divida_mes: VW_FATO_DIVIDA_MES,
+  vw_fato_natureza_mes: VW_FATO_NATUREZA_MES,
+  vw_fato_qualidade_mes: VW_FATO_QUALIDADE_MES,
 } as const;
 
 export type NomeDeView = keyof typeof VIEWS;
