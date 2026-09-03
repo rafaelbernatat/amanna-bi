@@ -29,8 +29,10 @@ import type {
   PanelResponse,
   Query,
 } from "@/semantica/contrato";
+import { VW_FATO_BALANCO_MES } from "@/acesso/fixtures/balanco";
 import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
 import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
+import { VW_FATO_DIVIDA_MES } from "@/acesso/fixtures/divida";
 import { calcularMeta } from "@/acesso/fixtures/meta";
 import { calcularMetrica } from "@/acesso/fixtures/metricas";
 import { calcularPainel } from "@/acesso/fixtures/paineis";
@@ -52,7 +54,12 @@ import {
 import { calcularKpis } from "@/acesso/fixtures/kpis";
 import { linhasDoRecorte, recortar, somar } from "@/acesso/fixtures/recorte";
 
-/** As seis views da seção 10.1 que a fixture publica, por nome. */
+/**
+ * As views da seção 10.1 que a fixture publica, por nome.
+ *
+ * Eram seis em T-111; as de balanço e dívida entraram em 2026-09-03 para as
+ * perguntas de CFO, derivadas das que já existiam.
+ */
 export const VIEWS = {
   vw_fato_rh_mes: VW_FATO_RH_MES,
   vw_fato_rh_perfil: VW_FATO_RH_PERFIL,
@@ -67,6 +74,8 @@ export const VIEWS = {
   vw_fato_turnover_custo: VW_FATO_TURNOVER_CUSTO,
   vw_fato_rh_desligamento: VW_FATO_RH_DESLIGAMENTO,
   vw_fato_saida_categoria: VW_FATO_SAIDA_CATEGORIA,
+  vw_fato_balanco_mes: VW_FATO_BALANCO_MES,
+  vw_fato_divida_mes: VW_FATO_DIVIDA_MES,
 } as const;
 
 export type NomeDeView = keyof typeof VIEWS;

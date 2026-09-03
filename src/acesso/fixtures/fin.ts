@@ -71,7 +71,7 @@ const UM_MILHAO = 1_000_000;
 const CEM_PORCENTO = 100;
 
 /** R$ mi da referência para reais inteiros. */
-function emReais(milhoes: number): number {
+export function emReais(milhoes: number): number {
   return Math.round(milhoes * UM_MILHAO);
 }
 
@@ -81,8 +81,11 @@ function emReais(milhoes: number): number {
  * A primeira leva o arredondamento da fatia; a segunda leva o resto. Assim a
  * soma das duas é **exatamente** o valor de entrada, e não a soma de dois
  * arredondamentos independentes.
+ *
+ * Exportada para as views derivadas — balanço e dívida — repartirem do mesmo
+ * jeito, e não de um jeito parecido.
  */
-function porEntidade(valor: number, medida: string): readonly number[] {
+export function porEntidade(valor: number, medida: string): readonly number[] {
   const primeira = ENTIDADES_ARMAZENADAS[0] ?? "";
   const naPrimeira = Math.round(valor * fatiaDaEntidade(primeira, medida));
   return [naPrimeira, valor - naPrimeira];
@@ -338,7 +341,7 @@ export const VW_FATO_ORCAMENTO: readonly LinhaOrcamento[] = MESES.flatMap(
  * variação o PMR seria o mesmo em todos os meses, e o painel de ciclo mostraria
  * uma reta que não existe em empresa nenhuma.
  */
-function saldoDoMes(
+export function saldoDoMes(
   totalDeDezembro: number,
   serie: readonly number[],
   m: number,
