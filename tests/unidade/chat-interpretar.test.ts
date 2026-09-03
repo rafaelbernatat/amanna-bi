@@ -18,8 +18,10 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { apoioDe } from "@/chat/apoio";
 import { CONFIANCA_MINIMA, interpretarLocalmente } from "@/chat/interpretar";
 import { interpretarComGateway, redigirComGateway } from "@/chat/openrouter";
+import { SO_NO_CHAT } from "@/chat/so-no-chat";
 import { perguntar, redigirResposta, resolverPergunta } from "@/chat/perguntar";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO } from "@/semantica/contrato";
@@ -56,14 +58,53 @@ function normalizar(texto: string): string {
  * sugestão fixa que toda resposta oferece.
  */
 const RESPONDEM: readonly (readonly [string, string])[] = [
+  // Bloco A — rentabilidade e retorno
+  ["Qual é o ROE da empresa?", "roe"],
+  ["Qual o ROE da empresa?", "roe"],
+  ["O ROE da empresa está bom ou está ruim?", "roe"],
+  ["Por que o ROE caiu? Foi margem, foi giro ou foi dívida?", "roe"],
+  ["Qual é o ROA e o que ele me diz que o ROE não diz?", "roa"],
+  [
+    "Qual é o retorno sobre o capital investido (ROIC)? A empresa cria ou destrói valor?",
+    "roic",
+  ],
   ["Qual é a margem líquida e por que ela mudou?", "margem_liquida"],
+  [
+    "Quais unidades, centros de custo ou linhas de negócio dão mais retorno?",
+    "desvio_orcamentario",
+  ],
+  ["Compensa mais deixar o dinheiro na empresa ou aplicar no CDI?", "roic"],
+  // Bloco B — o que já existe
   ["Qual é a margem bruta e o que explica a variação?", "margem_bruta"],
   ["Qual é o nosso EBITDA?", "ebitda"],
+  [
+    "Se o EBITDA está bom, por que o caixa não melhora?",
+    "fluxo_de_caixa_livre",
+  ],
+  // Bloco C — liquidez e capital de giro
+  ["Qual é a nossa liquidez corrente?", "liquidez_corrente"],
+  [
+    "E se eu não puder contar com o estoque? Qual é a liquidez seca e a imediata?",
+    "liquidez_seca",
+  ],
   ["Em quantos dias recebemos dos clientes?", "pmr"],
   ["Em quantos dias pagamos os fornecedores?", "pmp"],
   ["Quanto tempo o estoque fica parado?", "pme"],
   ["Qual é o nosso ciclo financeiro?", "ciclo_financeiro"],
+  [
+    "Quanto de dinheiro a operação precisa ter parado? E o caixa que temos é suficiente?",
+    "ncg",
+  ],
   ["Demos lucro no mês e o caixa caiu. Como isso é possível?", "lucro_liquido"],
+  // Bloco D — endividamento
+  ["Nosso endividamento está alto?", "divida_liquida_sobre_ebitda"],
+  ["A operação consegue pagar os juros?", "cobertura_de_juros"],
+  [
+    "Quanto estamos pagando de juros e isso está caro?",
+    "custo_medio_da_divida",
+  ],
+  ["A dívida está trabalhando a nosso favor?", "roic"],
+  // Os exemplos do painel de chat e as ofertas de próximo passo
   ["qual o lucro apurado do ano", "lucro_liquido"],
   ["como está o turnover", "turnover_12m"],
   ["quanto é a folha total", "folha_total"],
@@ -71,24 +112,32 @@ const RESPONDEM: readonly (readonly [string, string])[] = [
   ["Qual o PMR?", "pmr"],
   ["Qual o DSO?", "pmr"],
   ["Como isso se compara com o ano anterior?", "crescimento_yoy"],
+  ["Quanto pagamos de imposto?", "impostos_sobre_lucro"],
+  ["Qual a dívida líquida?", "divida_liquida"],
+  ["Qual o patrimônio líquido?", "patrimonio_liquido"],
+  ["Qual o ativo circulante?", "ativo_circulante"],
+  ["Qual o passivo circulante?", "passivo_circulante"],
+  ["Quanto temos em aplicações financeiras?", "aplicacoes_financeiras"],
+  ["Qual o custo líquido da dívida?", "custo_liquido_da_divida"],
+  ["Qual a relação dívida sobre patrimônio?", "divida_sobre_pl"],
 ];
 
 /* ------------------------------------------------------------------ *
  * As que recusam
  * ------------------------------------------------------------------ */
 
-/** Perguntas de CFO sem métrica no catálogo. Recusa obrigatória (7.7). */
+/**
+ * Perguntas de CFO sem métrica no catálogo. Recusa obrigatória (7.7).
+ *
+ * As de ponto de equilíbrio e de qualidade do razão entram na etapa 2 das
+ * perguntas de CFO, com as views de natureza e de qualidade.
+ */
 const RECUSAM: readonly string[] = [
-  "Qual é o ROE da empresa?",
-  "Qual é a nossa liquidez corrente?",
-  "E se eu não puder contar com o estoque? Qual é a liquidez seca e a imediata?",
   "Qual é o nosso ponto de equilíbrio? Quanto preciso faturar para não dar prejuízo?",
-  "Nosso endividamento está alto?",
-  "A dívida está trabalhando a nosso favor?",
   "Tem algum lançamento estranho no razão neste mês?",
-  "Qual é o retorno sobre o capital investido (ROIC)?",
-  "Compensa mais deixar o dinheiro na empresa ou aplicar no CDI?",
-  "Quanto pagamos de imposto?",
+  "Os números do mês estão por competência ou tem coisa lançada no mês errado?",
+  "Qual o valuation da empresa?",
+  "Quanto vale a empresa?",
 ];
 
 /**
@@ -98,7 +147,6 @@ const RECUSAM: readonly string[] = [
 const DESAMBIGUAM: readonly string[] = [
   // "margem" está no nome de três métricas, e em nenhuma inteira.
   "Qual é a margem de contribuição?",
-  "Por que o ROE caiu? Foi margem, foi giro ou foi dívida?",
   // "despesa" é palavra do nome de uma; "custo", de várias.
   "Qual é a diferença entre custo e despesa nos nossos números?",
 ];
@@ -120,6 +168,21 @@ describe("o interpretador local", () => {
     expect(intencao).not.toBeNull();
     expect(intencao?.confianca).toBeLessThan(CONFIANCA_MINIMA);
     expect(intencao?.alternativas.length).toBeGreaterThan(0);
+  });
+
+  it("toda métrica que só o chat alcança é alvo de pelo menos uma pergunta", () => {
+    /*
+     * O outro lado da regra "nenhuma órfã" do catálogo: uma métrica sem cartão
+     * só se justifica se alguma pergunta chega nela — direto, como principal,
+     * ou como apoio de uma principal.
+     */
+    const alvos = new Set(RESPONDEM.map(([, metrica]) => metrica));
+    const alcancadas = new Set([
+      ...alvos,
+      ...[...alvos].flatMap((id) => apoioDe(id)),
+    ]);
+    const semPergunta = SO_NO_CHAT.filter((id) => !alcancadas.has(id));
+    expect(semPergunta).toEqual([]);
   });
 
   it("extrai o recorte da pergunta mesmo quando a métrica vem de fora", () => {

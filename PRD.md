@@ -403,6 +403,8 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 | `vw_fato_faturamento_cliente` | mês, entidade, cliente, **faixa de rating**, **segmento** · receita, margem de contribuição | ERP / comercial |
 | `vw_fato_saida_categoria` | mês, entidade, **categoria** · valor | ERP / contábil |
 | `vw_fato_turnover_custo` | mês, entidade, área, **componente** · valor | Folha / ATS / Controladoria |
+| `vw_fato_balanco_mes` | mês, entidade · patrimônio líquido, ativo total, ativo e passivo circulantes, imobilizado, aplicações financeiras, dívida de curto e de longo prazo, estoque sem giro, a receber e a pagar vencidos, mútuo com sócios, juros pagos, impostos sobre o lucro, amortização, captação, distribuição aos sócios | Contábil |
+| `vw_fato_divida_mes` | mês, entidade, **linha de crédito** · saldo, juros pagos | ERP / tesouraria |
 | `vw_dim_*` | entidade, área, centro de custo, modalidade, UF, faixa etária, faixa de tempo de casa, escolaridade, faixa salarial, **gênero**, **cargo**, mês | Cadastros |
 
 > **Revisão de 2026-08-24 (T-143).** A tabela acima foi corrigida onde a v2.0
@@ -506,6 +508,27 @@ O adaptador espera um modelo estrela simples, de grão mensal — com **uma exce
 > contas das naturezas de saída (**H-56**) e a segmentação comercial de cliente
 > (**H-57**). As colunas declaradas dizem **que** o dado é necessário; quanto
 > ele vale continua pergunta aberta, e na fixture é valor de protótipo.
+
+> **Revisão de 2026-09-03 (perguntas de CFO).** Trinta e três perguntas de CFO
+> com resposta-modelo chegaram da Dreamy
+> (`docs/Dreamy_Perguntas_Respostas_CFO.docx`), e vinte e seis não tinham de
+> onde sair: ROE, ROA, ROIC, liquidez, necessidade de capital de giro, dívida
+> líquida, cobertura de juros e custo da dívida pedem **balanço**, e a abertura
+> "por linha" do custo da dívida pede a **dívida por linha de crédito**.
+>
+> **`vw_fato_balanco_mes`** entra com grão mês × entidade, só saldos e fluxos —
+> nenhuma razão guardada. **`vw_fato_divida_mes`** entra com grão de linha de
+> crédito, porque a pergunta que ela responde ("qual linha é a mais cara?")
+> some no total. Na fixture as duas são **derivadas** da DRE, do caixa e das
+> contas, e reconciliam por construção: os juros por linha somam o resultado
+> financeiro, o imobilizado anda com capex menos depreciação, o patrimônio anda
+> com o lucro menos a distribuição. Os números de abertura (patrimônio 368,
+> imobilizado 760, dívida 970) são valor de protótipo sob D-H03.
+>
+> **O que fica aberto para H-08:** o que entra no capital investido, a alíquota
+> do benefício fiscal da dívida, o corte de dias para estoque sem giro, e se os
+> juros entram por caixa ou por competência (que já era H-56). A decisão de
+> escopo está em `docs/decisoes/D-CHAT-perguntas-cfo.md`.
 
 ### 10.2 · Sincronização
 

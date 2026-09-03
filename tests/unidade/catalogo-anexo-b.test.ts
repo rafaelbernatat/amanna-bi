@@ -26,6 +26,7 @@ import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 
 import { MODULOS } from "@/apresentacao/navegacao/telas";
+import { SO_NO_CHAT } from "@/chat/so-no-chat";
 import { podeSomar } from "@/semantica/agregacao";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import { carregarCatalogo, type Metrica } from "@/semantica/catalogo";
@@ -135,18 +136,23 @@ describe("catálogo × Anexo B", () => {
     const deCartao = new Set(ORIGEM_DOS_KPIS.map((o) => o.metrica));
 
     /*
-     * Uma terceira categoria, com um membro só e nomeado.
+     * Uma terceira categoria: alcançável só pelo chat.
      *
      * `mediana_salarial` não abre KPI nenhum — é texto de **nota** do painel
      * `sal-faixas`, e por isso não está no registro de origens, que é de KPI.
      * Nota com número declara fórmula do mesmo jeito (PR-3, RF-09), então ela
-     * pertence ao catálogo. Nomear a exceção em vez de abrir uma classe faz a
-     * segunda aparecer no diff.
+     * pertence ao catálogo.
+     *
+     * As demais são as métricas das perguntas de CFO da Dreamy (2026-09-03):
+     * respondem no chat, sem cartão ainda. `chat-interpretar.test.ts` confere
+     * que cada uma é alvo de pelo menos uma pergunta — é isso que as tira da
+     * condição de órfã. Entram no Anexo B na próxima revisão do PRD. Nomear
+     * cada uma em vez de abrir uma classe faz a próxima aparecer no diff.
      */
-    const DE_NOTA = new Set(["mediana_salarial"]);
+    const SEM_CARTAO = new Set(["mediana_salarial", ...SO_NO_CHAT]);
 
     const orfas = CATALOGO.filter(
-      (m) => !doAnexo.has(m.id) && !deCartao.has(m.id) && !DE_NOTA.has(m.id),
+      (m) => !doAnexo.has(m.id) && !deCartao.has(m.id) && !SEM_CARTAO.has(m.id),
     ).map((m) => m.id);
     expect(orfas).toEqual([]);
   });
