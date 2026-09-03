@@ -29,6 +29,7 @@ import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 
 import { VIEWS, type NomeDeView } from "@/acesso/fixtures/adaptador";
+import { podeSomar } from "@/semantica/agregacao";
 import { carregarCatalogo, type Metrica } from "@/semantica/catalogo";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import { ORIGEM_DOS_KPIS_CONSTANTES } from "@/semantica/origem-de-kpi";
@@ -120,9 +121,9 @@ describe("as métricas do achado 5 estão no catálogo", () => {
   it("nenhuma taxa está declarada como somável", () => {
     // A regra 4 da seção 9.2. Das 21 novas, quase todas são `ratio` — é a
     // natureza de um KPI do achado 5: quase todos são uma divisão.
-    const NAO_SOMAVEIS = ["pct", "pp", "pontos", "anos"];
+    // `podeSomar` é a lista única de não-somáveis (D-H45, D-H60).
     const erradas = METRICAS.filter(
-      (m) => NAO_SOMAVEIS.includes(m.unidade) && m.agg === "sum",
+      (m) => !podeSomar(m.unidade) && m.agg === "sum",
     ).map((m) => m.id);
     expect(erradas).toEqual([]);
   });

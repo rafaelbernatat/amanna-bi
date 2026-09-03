@@ -64,6 +64,7 @@ const CASAS: Readonly<Record<Unidade, number>> = {
   contagem: 0,
   pontos: 0,
   anos: 1,
+  vezes: 1,
 };
 
 /**
@@ -117,6 +118,12 @@ export function formatarValor(valor: number, unidade: Unidade): string {
       return `${sinal}${corpo} h`;
     case "anos":
       return `${sinal}${corpo} ${Math.abs(valor) === 1 ? "ano" : "anos"}`;
+    /*
+     * Multiplo por extenso, e nao "1,8x": o chat le a resposta em voz alta
+     * ("1,8 vezes o EBITDA") e o verificador so aceita a forma canonica.
+     */
+    case "vezes":
+      return `${sinal}${corpo} ${Math.abs(valor) === 1 ? "vez" : "vezes"}`;
     /*
      * `contagem` e `pontos` saem sem sufixo, e saem iguais.
      *

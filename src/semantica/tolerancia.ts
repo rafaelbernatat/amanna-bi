@@ -62,6 +62,8 @@ export const TOLERANCIA: Readonly<Record<Unidade, number>> = {
   pontos: 0.5,
   /** Exibido com uma casa: `3,1 anos`. */
   anos: 0.05,
+  /** Exibido com uma casa: `1,8 vezes`. */
+  vezes: 0.05,
 };
 
 /** Dois valores são o mesmo número, para a suíte de contrato? */

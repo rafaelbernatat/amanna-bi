@@ -62,6 +62,7 @@ const CASAS_EXIBIDAS: Readonly<Record<Unidade, number>> = {
   contagem: 0,
   pontos: 0,
   anos: 1,
+  vezes: 1,
 };
 
 const MATRIZ_YAML = "tests/contrato/matriz-recortes.yaml";
@@ -154,7 +155,7 @@ describe("a matriz versionada enumera as 768", () => {
  * ------------------------------------------------------------------ */
 
 describe("a tolerância por unidade está fixada em código", () => {
-  it("cobre as nove unidades, sem sobra e sem falta", () => {
+  it("cobre as dez unidades, sem sobra e sem falta", () => {
     expect([...unidadesComTolerancia()].sort()).toEqual([...UNIDADES].sort());
     expect(Object.keys(TOLERANCIA).sort()).toEqual([...UNIDADES].sort());
   });

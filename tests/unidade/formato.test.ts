@@ -179,6 +179,16 @@ describe("toda unidade do contrato sabe se formatar", () => {
     // regras sao independentes: casas decimais e concordancia.
     expect(formatarValor(1, "anos")).toBe("1,0 ano");
   });
+
+  it("a unidade de multiplo de D-H60 sai por extenso, nunca como 'x'", () => {
+    // O chat le "1,8 vezes o EBITDA" em voz alta; o verificador de RF-15 so
+    // aceita a forma canonica, entao "1,8x" escrito pelo modelo e barrado.
+    expect(formatarValor(1.8, "vezes")).toBe("1,8 vezes");
+    expect(formatarValor(1, "vezes")).toBe("1,0 vez");
+    expect(formatarValor(0.94, "vezes")).toBe("0,9 vezes");
+    expect(formatarValor(-0.5, "vezes")).toBe("-0,5 vezes");
+    expect(formatarValor(2.16, "vezes")).toBe("2,2 vezes");
+  });
 });
 
 /**

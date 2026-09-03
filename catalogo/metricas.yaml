@@ -33,7 +33,7 @@
 #   rotulo       obrigatório  como aparece na tela
 #   fonte        obrigatório  a view da seção 10.1
 #   formula      obrigatório  como o número é obtido (PR-3)
-#   unidade      obrigatório  BRL_mi | pct | pp | dias | FTE | horas | contagem | pontos | anos
+#   unidade      obrigatório  BRL_mi | pct | pp | dias | FTE | horas | contagem | pontos | anos | vezes
 #   agg          obrigatório  sum | last | ratio
 #   sentido      obrigatório  maior_melhor | menor_melhor | neutro
 #   grao_minimo  obrigatório  nunca mais fino que [area, mes] (seção 11)
