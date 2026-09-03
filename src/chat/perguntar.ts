@@ -261,6 +261,30 @@ export async function perguntar(
   pergunta: string,
   atuais: Query = QUERY_PADRAO,
 ): Promise<Resposta> {
+  const resolvida = await resolverPergunta(pergunta, atuais);
+  if (resolvida.tipo === "recusa") return resolvida;
+  return redigirResposta(pergunta, resolvida.resolucao);
+}
+
+/** O que os estágios 1 e 2 entregam: o número resolvido, ou a recusa. */
+export type Resolvida =
+  | { readonly tipo: "resolvida"; readonly resolucao: Resolucao }
+  | Extract<Resposta, { tipo: "recusa" }>;
+
+/**
+ * Os estágios 1 e 2, sem redação.
+ *
+ * Existe separado de `perguntar` porque a tela precisa decidir **para onde
+ * ir** antes de gastar o estágio 3. Quando a resposta cita outra tela, a
+ * página redireciona levando a pergunta, e a tela de destino é quem redige.
+ * Redigir aqui e lá dobrava a espera: dois estágios 3 do modelo, o primeiro
+ * jogado fora, e 40 segundos sem nada na tela parecem chat quebrado — foi
+ * exatamente o que quem testou relatou.
+ */
+export async function resolverPergunta(
+  pergunta: string,
+  atuais: Query = QUERY_PADRAO,
+): Promise<Resolvida> {
   const intencao = await interpretar(pergunta, atuais);
 
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
@@ -288,9 +312,9 @@ export async function perguntar(
     };
   }
 
-  let resolucao: Resolucao;
   try {
-    resolucao = await resolver(intencao.metrica, intencao.filtros);
+    const resolucao = await resolver(intencao.metrica, intencao.filtros);
+    return { tipo: "resolvida", resolucao };
   } catch (erro) {
     if (erro instanceof MetricaForaDoCatalogo) {
       return {
@@ -305,7 +329,18 @@ export async function perguntar(
     }
     throw erro;
   }
+}
 
+/**
+ * O estágio 3 e o verificador, sobre um número já resolvido.
+ *
+ * O modelo escreve; o verificador confere cada número contra o envelope e,
+ * se algum não existir, fica o texto montado (RF-15).
+ */
+export async function redigirResposta(
+  pergunta: string,
+  resolucao: Resolucao,
+): Promise<Resposta> {
   const montado = montarTexto(resolucao, pergunta);
   const doModelo = gatewayConfigurado()
     ? await redigirComGateway(pergunta, paraOModelo(resolucao))

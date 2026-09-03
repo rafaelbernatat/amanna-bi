@@ -19,8 +19,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CONFIANCA_MINIMA, interpretarLocalmente } from "@/chat/interpretar";
-import { interpretarComGateway } from "@/chat/openrouter";
-import { perguntar } from "@/chat/perguntar";
+import { interpretarComGateway, redigirComGateway } from "@/chat/openrouter";
+import { perguntar, redigirResposta, resolverPergunta } from "@/chat/perguntar";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 
@@ -229,5 +229,53 @@ describe("perguntar, com o gateway respondendo", () => {
     if (resposta.tipo !== "resposta") return;
     expect(resposta.resolucao.metrica).toBe("margem_liquida");
     expect(resposta.resolucao.acoes.filtros.periodo).toBe("12-meses");
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * As duas fases: resolver antes de redigir
+ * ------------------------------------------------------------------ */
+
+describe("resolverPergunta e redigirResposta", () => {
+  it("resolver não redige, e redigir é o que chama o modelo", async () => {
+    /*
+     * A tela decide para onde ir entre as duas fases. Se resolver já
+     * redigisse, uma pergunta que navega para outra tela pagaria o estágio 3
+     * duas vezes — o primeiro texto jogado fora.
+     */
+    vi.mocked(redigirComGateway).mockClear();
+    vi.mocked(interpretarComGateway).mockResolvedValueOnce({
+      metrica: "margem_liquida",
+      confianca: 0.9,
+      alternativas: [],
+    });
+
+    const resolvida = await resolverPergunta("Qual é a margem líquida?");
+    expect(resolvida.tipo).toBe("resolvida");
+    expect(vi.mocked(redigirComGateway)).not.toHaveBeenCalled();
+    if (resolvida.tipo !== "resolvida") return;
+    expect(resolvida.resolucao.metrica).toBe("margem_liquida");
+
+    const resposta = await redigirResposta(
+      "Qual é a margem líquida?",
+      resolvida.resolucao,
+    );
+    expect(vi.mocked(redigirComGateway)).toHaveBeenCalledTimes(1);
+    expect(resposta.tipo).toBe("resposta");
+    if (resposta.tipo !== "resposta") return;
+    expect(resposta.resolucao.metrica).toBe("margem_liquida");
+  });
+
+  it("uma recusa sai de resolver sem chamar o modelo para redigir", async () => {
+    vi.mocked(redigirComGateway).mockClear();
+    vi.mocked(interpretarComGateway).mockResolvedValueOnce({
+      metrica: "",
+      confianca: 0,
+      alternativas: ["pmr"],
+    });
+
+    const resolvida = await resolverPergunta("Qual é o ROE da empresa?");
+    expect(resolvida.tipo).toBe("recusa");
+    expect(vi.mocked(redigirComGateway)).not.toHaveBeenCalled();
   });
 });
