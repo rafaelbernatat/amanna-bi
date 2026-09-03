@@ -420,6 +420,58 @@ function custoMensalDeCarregar(
   return emMilhoes((saldo * custo) / MESES_NO_ANO);
 }
 
+/* ------------------------------------------------------------------ *
+ * Natureza das contas e qualidade do razão (perguntas de CFO, etapa 2)
+ * ------------------------------------------------------------------ */
+
+/** O retorno mínimo dos sócios, em % ao ano, para o ponto de equilíbrio econômico. */
+const TAXA_MINIMA_DOS_SOCIOS = 12;
+/** A queda de receita simulada pelo documento de CFO, em %. */
+const QUEDA_SIMULADA = 10;
+
+/** Receita menos custos variáveis, em reais. */
+function margemDeContribuicaoEmReais(r: Recorte): number | null {
+  const rec = receita(r);
+  const variaveis = soma("vw_fato_natureza_mes", r, (l) => l.custosVariaveis);
+  if (rec === null || variaveis === null) return null;
+  return rec - variaveis;
+}
+
+/**
+ * O ponto de equilíbrio mensal, em reais: o custo a cobrir sobre a fração de
+ * contribuição, dividido pelos meses do recorte para ficar por mês.
+ */
+function pontoDeEquilibrioMensal(
+  custoACobrir: number | null,
+  r: Recorte,
+): number | null {
+  const fracao = razao(margemDeContribuicaoEmReais(r), receita(r));
+  if (custoACobrir === null || fracao === null || fracao === 0) return null;
+  if (r.meses.length === 0) return null;
+  return custoACobrir / fracao / r.meses.length;
+}
+
+function custosFixosEmReais(r: Recorte): number | null {
+  return soma("vw_fato_natureza_mes", r, (l) => l.custosFixos);
+}
+
+function depreciacaoEmReais(r: Recorte): number | null {
+  return soma("vw_fato_fin_mes", r, (l) => l.depreciacaoEAmortizacao);
+}
+
+/** Fixos mais depreciação: o que o ponto de equilíbrio contábil cobre. */
+function custoContabilACobrir(r: Recorte): number | null {
+  const fixos = custosFixosEmReais(r);
+  const depreciacao = depreciacaoEmReais(r);
+  if (fixos === null || depreciacao === null) return null;
+  return fixos + depreciacao;
+}
+
+/** O ponto de equilíbrio contábil, em reais por mês. */
+function pontoDeEquilibrioContabil(r: Recorte): number | null {
+  return pontoDeEquilibrioMensal(custoContabilACobrir(r), r);
+}
+
 type Calculo = (r: Recorte) => number | null;
 
 /**
@@ -1143,6 +1195,164 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
         l.linha === "antecipacao-de-recebiveis" ? l.saldo : 0,
       ),
     ),
+
+  /* ---------------- Natureza das contas (perguntas de CFO, etapa 2) ---------------- */
+
+  custos_fixos: (r) => emMilhoes(custosFixosEmReais(r)),
+  custos_variaveis: (r) =>
+    emMilhoes(soma("vw_fato_natureza_mes", r, (l) => l.custosVariaveis)),
+  margem_de_contribuicao: (r) =>
+    emPorcento(razao(margemDeContribuicaoEmReais(r), receita(r))),
+  margem_de_contribuicao_valor: (r) =>
+    emMilhoes(margemDeContribuicaoEmReais(r)),
+  ponto_de_equilibrio: (r) => emMilhoes(pontoDeEquilibrioContabil(r)),
+  ponto_de_equilibrio_caixa: (r) =>
+    emMilhoes(pontoDeEquilibrioMensal(custosFixosEmReais(r), r)),
+  ponto_de_equilibrio_economico: (r) => {
+    const contabil = custoContabilACobrir(r);
+    const capital = noFim(
+      "vw_fato_balanco_mes",
+      r,
+      (l) =>
+        l.patrimonioLiquido +
+        l.dividaCurtoPrazo +
+        l.dividaLongoPrazo -
+        l.aplicacoesFinanceiras,
+    );
+    if (contabil === null || capital === null) return null;
+    // O retorno mínimo do recorte: a taxa anual, na proporção dos meses.
+    const retornoMinimo =
+      (capital * TAXA_MINIMA_DOS_SOCIOS * r.meses.length) /
+      (CEM * MESES_NO_ANO);
+    return emMilhoes(pontoDeEquilibrioMensal(contabil + retornoMinimo, r));
+  },
+  margem_de_seguranca: (r) => {
+    const rec = receita(r);
+    const equilibrio = pontoDeEquilibrioContabil(r);
+    if (rec === null || equilibrio === null || r.meses.length === 0) {
+      return null;
+    }
+    const receitaMensal = rec / r.meses.length;
+    return emPorcento(razao(receitaMensal - equilibrio, receitaMensal));
+  },
+  gao: (r) => razao(margemDeContribuicaoEmReais(r), ebitEmReais(r)),
+  resultado_com_receita_10_menor: (r) => {
+    const ebit = ebitEmReais(r);
+    const contribuicao = margemDeContribuicaoEmReais(r);
+    if (ebit === null || contribuicao === null) return null;
+    return emMilhoes(ebit - (contribuicao * QUEDA_SIMULADA) / CEM);
+  },
+
+  /* ---------------- Qualidade do razão (perguntas de CFO, etapa 2) ---------------- */
+
+  lancamentos_do_mes: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.lancamentos),
+  lancamentos_para_revisao: (r) =>
+    soma(
+      "vw_fato_qualidade_mes",
+      r,
+      (l) =>
+        l.lancamentosForaDoPadrao +
+        l.lancamentosEmContaParada +
+        l.paresDeEstorno +
+        l.lancamentosDeCompetenciaAnterior,
+    ),
+  valor_para_revisao: (r) =>
+    emMilhoes(
+      soma(
+        "vw_fato_qualidade_mes",
+        r,
+        (l) =>
+          l.valorForaDoPadrao +
+          l.valorDeEstornos +
+          l.valorDeCompetenciaAnterior,
+      ),
+    ),
+  lancamentos_fora_do_padrao: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.lancamentosForaDoPadrao),
+  lancamentos_em_conta_parada: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.lancamentosEmContaParada),
+  pares_de_estorno: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.paresDeEstorno),
+  lancamentos_de_competencia_anterior: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.lancamentosDeCompetenciaAnterior),
+  completude_da_base: (r) => {
+    const lacuna = soma(
+      "vw_fato_qualidade_mes",
+      r,
+      (l) =>
+        l.valorSemCentroDeCusto + l.valorEmContaGenerica + l.valorSemNatureza,
+    );
+    const fracao = razao(
+      lacuna,
+      soma("vw_fato_qualidade_mes", r, (l) => l.valorTotal),
+    );
+    return fracao === null ? null : emPorcento(1 - fracao);
+  },
+  valor_sem_centro_de_custo: (r) =>
+    emMilhoes(soma("vw_fato_qualidade_mes", r, (l) => l.valorSemCentroDeCusto)),
+  valor_em_conta_generica: (r) =>
+    emMilhoes(soma("vw_fato_qualidade_mes", r, (l) => l.valorEmContaGenerica)),
+  valor_sem_natureza: (r) =>
+    emMilhoes(soma("vw_fato_qualidade_mes", r, (l) => l.valorSemNatureza)),
+  indicios_de_competencia: (r) =>
+    soma(
+      "vw_fato_qualidade_mes",
+      r,
+      (l) =>
+        l.contasRecorrentesSemLancamento +
+        l.lancamentosDuplicados +
+        l.lancamentosDeCompetenciaAnterior,
+    ),
+  efeito_no_resultado_da_competencia: (r) =>
+    emMilhoes(
+      soma(
+        "vw_fato_qualidade_mes",
+        r,
+        (l) => l.valorDeCompetenciaAnterior + l.valorDuplicado,
+      ),
+    ),
+  contas_recorrentes_sem_lancamento: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.contasRecorrentesSemLancamento),
+  lancamentos_duplicados: (r) =>
+    soma("vw_fato_qualidade_mes", r, (l) => l.lancamentosDuplicados),
+  contas_com_classificacao_inconsistente: (r) =>
+    soma(
+      "vw_fato_qualidade_mes",
+      r,
+      (l) => l.contasComClassificacaoInconsistente,
+    ),
+  valor_em_classificacao_inconsistente: (r) =>
+    emMilhoes(
+      soma(
+        "vw_fato_qualidade_mes",
+        r,
+        (l) => l.valorEmClassificacaoInconsistente,
+      ),
+    ),
+  movimentacao_com_partes_relacionadas: (r) =>
+    emMilhoes(
+      soma(
+        "vw_fato_qualidade_mes",
+        r,
+        (l) => l.movimentacaoComPartesRelacionadas,
+      ),
+    ),
+  roe_sem_partes_relacionadas: (r) =>
+    emPorcento(
+      razao(
+        lucroLiquidoEmReais(r),
+        noFim(
+          "vw_fato_balanco_mes",
+          r,
+          (l) => l.patrimonioLiquido - l.mutuoComSocios,
+        ),
+      ),
+    ),
+  mutuo_com_socios: (r) =>
+    emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.mutuoComSocios)),
+  receita_dos_principais_clientes: (r) =>
+    emMilhoes(soma("vw_fato_faturamento_cliente", r, (l) => l.receita)),
 
   /* ---------------- Integração (T-116) ---------------- */
 

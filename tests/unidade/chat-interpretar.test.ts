@@ -74,12 +74,30 @@ const RESPONDEM: readonly (readonly [string, string])[] = [
     "desvio_orcamentario",
   ],
   ["Compensa mais deixar o dinheiro na empresa ou aplicar no CDI?", "roic"],
-  // Bloco B — o que já existe
+  // Bloco B — margens e operação
   ["Qual é a margem bruta e o que explica a variação?", "margem_bruta"],
+  ["Qual é a margem de contribuição?", "margem_de_contribuicao"],
+  [
+    "Qual é a diferença entre custo e despesa nos nossos números, e a nossa classificação está correta?",
+    "contas_com_classificacao_inconsistente",
+  ],
+  [
+    "Qual é o nosso ponto de equilíbrio? Quanto preciso faturar para não dar prejuízo?",
+    "ponto_de_equilibrio",
+  ],
+  [
+    "Quanto a receita pode cair antes de a empresa dar prejuízo?",
+    "margem_de_seguranca",
+  ],
   ["Qual é o nosso EBITDA?", "ebitda"],
   [
     "Se o EBITDA está bom, por que o caixa não melhora?",
     "fluxo_de_caixa_livre",
+  ],
+  ["Se a receita cair 10%, o que acontece com o lucro?", "gao"],
+  [
+    "Nosso mix de receita mudou? Isso ajudou ou atrapalhou o resultado?",
+    "receita_dos_principais_clientes",
   ],
   // Bloco C — liquidez e capital de giro
   ["Qual é a nossa liquidez corrente?", "liquidez_corrente"],
@@ -104,6 +122,24 @@ const RESPONDEM: readonly (readonly [string, string])[] = [
     "custo_medio_da_divida",
   ],
   ["A dívida está trabalhando a nosso favor?", "roic"],
+  // Bloco D — qualidade do razão
+  [
+    "Tem algum lançamento estranho no razão neste mês?",
+    "lancamentos_para_revisao",
+  ],
+  [
+    "Dá para confiar nesses números? A base está classificada corretamente?",
+    "completude_da_base",
+  ],
+  [
+    "Os números do mês estão por competência ou tem coisa lançada no mês errado?",
+    "indicios_de_competencia",
+  ],
+  [
+    "Tem movimentação com sócios ou entre empresas do grupo afetando o resultado?",
+    "movimentacao_com_partes_relacionadas",
+  ],
+  ["Quantos lançamentos em conta parada?", "lancamentos_em_conta_parada"],
   // Os exemplos do painel de chat e as ofertas de próximo passo
   ["qual o lucro apurado do ano", "lucro_liquido"],
   ["como está o turnover", "turnover_12m"],
@@ -126,18 +162,11 @@ const RESPONDEM: readonly (readonly [string, string])[] = [
  * As que recusam
  * ------------------------------------------------------------------ */
 
-/**
- * Perguntas de CFO sem métrica no catálogo. Recusa obrigatória (7.7).
- *
- * As de ponto de equilíbrio e de qualidade do razão entram na etapa 2 das
- * perguntas de CFO, com as views de natureza e de qualidade.
- */
+/** Perguntas sem métrica no catálogo. Recusa obrigatória (7.7). */
 const RECUSAM: readonly string[] = [
-  "Qual é o nosso ponto de equilíbrio? Quanto preciso faturar para não dar prejuízo?",
-  "Tem algum lançamento estranho no razão neste mês?",
-  "Os números do mês estão por competência ou tem coisa lançada no mês errado?",
   "Qual o valuation da empresa?",
   "Quanto vale a empresa?",
+  "Qual a taxa Selic esperada para o ano que vem?",
 ];
 
 /**
@@ -145,10 +174,10 @@ const RECUSAM: readonly string[] = [
  * solta do nome casou e outra métrica disputa. O chat pergunta, não chuta.
  */
 const DESAMBIGUAM: readonly string[] = [
-  // "margem" está no nome de três métricas, e em nenhuma inteira.
-  "Qual é a margem de contribuição?",
-  // "despesa" é palavra do nome de uma; "custo", de várias.
-  "Qual é a diferença entre custo e despesa nos nossos números?",
+  // "margem" está no nome de quatro métricas, e em nenhuma inteira.
+  "Como está a margem?",
+  // "dívida" está no nome de sete.
+  "Qual a dívida?",
 ];
 
 describe("o interpretador local", () => {

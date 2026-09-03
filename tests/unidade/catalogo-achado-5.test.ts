@@ -64,7 +64,7 @@ describe("as métricas do achado 5 estão no catálogo", () => {
     // (T-115) e 12 de cartão de Financeiro e Integração (T-116). Seriam 36
     // pela contagem do PRD; a diferença vem da subcontagem do achado 5 (H-48)
     // e de o PRD não listar as métricas que só existem como cartão.
-    expect(METRICAS).toHaveLength(114);
+    expect(METRICAS).toHaveLength(145);
   });
 
   it("os 15 que o aceite nomeia estão todos lá", () => {

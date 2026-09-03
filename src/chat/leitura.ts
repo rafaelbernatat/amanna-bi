@@ -92,6 +92,15 @@ export const PROXIMO_PASSO: Readonly<Record<string, string>> = {
   margem_liquida: "Quer ver a margem bruta?",
   margem_bruta: "Quer ver o EBITDA?",
   fluxo_de_caixa_livre: "Quer ver o prazo médio de recebimento?",
+  margem_de_contribuicao: "Quer ver o ponto de equilíbrio?",
+  ponto_de_equilibrio: "Quer ver a margem de segurança?",
+  margem_de_seguranca: "Quer ver o grau de alavancagem operacional?",
+  gao: "Quer ver os custos fixos?",
+  lancamentos_para_revisao: "Quer ver a completude da base?",
+  completude_da_base: "Quer ver os indícios de competência?",
+  indicios_de_competencia: "Quer ver a movimentação com partes relacionadas?",
+  movimentacao_com_partes_relacionadas:
+    "Quer ver o ROE sem partes relacionadas?",
 };
 
 /* ------------------------------------------------------------------ *

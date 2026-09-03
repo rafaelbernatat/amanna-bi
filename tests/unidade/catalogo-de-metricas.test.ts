@@ -254,7 +254,7 @@ describe("o catálogo versionado do repositório", () => {
      * diferença vem da subcontagem do achado 5 (H-48) e de o PRD não listar as
      * métricas que só existem como cartão.
      */
-    expect(carregarCatalogo(documento).size).toBe(114);
+    expect(carregarCatalogo(documento).size).toBe(145);
   });
 
   it("traz a métrica que a seção 9.4 escreve por extenso", () => {
