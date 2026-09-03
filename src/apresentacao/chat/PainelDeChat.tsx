@@ -272,7 +272,13 @@ function Corpo({
 
       {r.consideracoes.length === 0 ? null : (
         <div data-teste="chat-consideracoes">
-          <Rotulo texto="o que entrou na conta" />
+          <Rotulo
+            texto={
+              r.consideracoes.some((c) => c.origem === "painel")
+                ? "o que entrou na conta"
+                : "o que explica"
+            }
+          />
           <ul
             style={{
               margin: 0,
@@ -285,7 +291,7 @@ function Corpo({
           >
             {r.consideracoes.map((c) => (
               <li
-                key={c.rotulo}
+                key={`${c.origem}-${c.rotulo}`}
                 style={{
                   font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
                   color: PALETA.textoSecundario,
@@ -298,7 +304,11 @@ function Corpo({
                     color: PALETA.texto,
                   }}
                 >
-                  {c.valor === null ? "—" : formatarValor(c.valor, c.unidade)}
+                  {c.valor === null
+                    ? c.origem === "apoio"
+                      ? "sem dado"
+                      : "—"
+                    : formatarValor(c.valor, c.unidade)}
                 </span>
               </li>
             ))}
@@ -317,21 +327,49 @@ function Corpo({
             font: `400 11.5px/1.55 ${TIPOGRAFIA.texto}`,
             color: PALETA.textoSecundario,
             maxWidth: "80ch",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
           }}
         >
           <strong style={{ color: PALETA.texto }}>
-            Contra o custo do dinheiro:
-          </strong>{" "}
-          {formatarValor(r.comparacao.retornoPercentual, "pct")} sobre{" "}
-          {r.comparacao.base.rotulo.toLowerCase()} de{" "}
-          {formatarValor(r.comparacao.base.valor, "BRL_mi")}, contra{" "}
-          {r.comparacao.taxa.nome} de{" "}
-          {formatarValor(r.comparacao.taxa.valor, "pct")} ao ano.{" "}
-          <span style={{ color: PALETA.textoFraco }}>
-            {r.comparacao.taxa.fonte} · vigente desde{" "}
-            {r.comparacao.taxa.vigenteDesde} · {r.comparacao.formula}
-          </span>
+            Contra o custo do dinheiro
+            {r.comparacao.base === null
+              ? ""
+              : `, sobre ${r.comparacao.base.rotulo.toLowerCase()} de ${formatarValor(r.comparacao.base.valor, r.comparacao.base.unidade)}`}
+            :
+          </strong>
+          {r.comparacao.leituras.map((l) => (
+            <span key={l.rotulo} data-teste="chat-leitura">
+              {l.rotulo}: {formatarValor(l.valor, l.unidade)}, contra{" "}
+              {l.referencia.nome} de {formatarValor(l.referencia.valor, "pct")}{" "}
+              {l.referencia.periodicidade}.{" "}
+              <span style={{ color: PALETA.textoFraco }}>
+                {l.referencia.fonte} · vigente desde {l.referencia.vigenteDesde}{" "}
+                · {l.formula}
+              </span>
+            </span>
+          ))}
         </div>
+      )}
+
+      {r.referencias.length === 0 ? null : (
+        <p
+          data-teste="chat-referencias"
+          style={{
+            margin: 0,
+            font: `400 10.5px/1.5 ${TIPOGRAFIA.texto}`,
+            color: PALETA.textoTerciario,
+          }}
+        >
+          Referências:{" "}
+          {r.referencias
+            .map(
+              (t) =>
+                `${t.nome} ${formatarValor(t.valor, "pct")} ${t.periodicidade} (${t.fonte}, ${t.vigenteDesde})`,
+            )
+            .join(" · ")}
+        </p>
       )}
 
       <p

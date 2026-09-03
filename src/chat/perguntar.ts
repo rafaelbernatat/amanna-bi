@@ -29,13 +29,14 @@
  * a seção 7.7 quer medir.
  */
 
-import { formatarValor } from "@/apresentacao/formato/formato";
+import { formatarMesAno, formatarValor } from "@/apresentacao/formato/formato";
 import {
   CONFIANCA_MINIMA,
   filtrosDaPergunta,
   interpretarLocalmente,
   type Intencao,
 } from "@/chat/interpretar";
+import { PROXIMO_PASSO } from "@/chat/leitura";
 import {
   gatewayConfigurado,
   interpretarComGateway,
@@ -47,7 +48,8 @@ import {
   type Resolucao,
 } from "@/chat/resolver";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
-import { QUERY_PADRAO, type Query } from "@/semantica/contrato";
+import { QUERY_PADRAO, type Query, type Unidade } from "@/semantica/contrato";
+import { rotuloDe } from "@/semantica/dimensoes";
 
 /** Como o texto foi produzido. A tela mostra, para não haver dúvida. */
 export type Autoria = "modelo" | "montado" | "modelo-recusado";
@@ -74,26 +76,60 @@ export type Resposta =
  * O verificador
  * ------------------------------------------------------------------ */
 
-/** Valores com unidade: `R$ 1.200,0 mi`, `-0,7%`, `1.240 FTE`, `52 dias`. */
+/**
+ * Valores com unidade, como `formatarValor` os escreve: `R$ 1.200,0 mi`,
+ * `-0,7%`, `+2,1 p.p.`, `1,8 vezes`, `52 dias`. Captura também o que o modelo
+ * escreve **em vez** da forma canônica — `R$ 8 mi`, `1,8x`, `14,00%` — para
+ * que a divergência apareça em vez de passar sem conferência. A fronteira de
+ * palavra no fim impede "12 h" de casar dentro de "12 horas" e "1,8 vez"
+ * dentro de "1,8 vezes".
+ */
 const COM_UNIDADE =
-  /-?R\$\s[\d.]+,?\d*\s(?:mi|mil)|-?[\d.]+,?\d*\s?%|-?[\d.]+,?\d*\s(?:FTE|dias|dia|h|anos|ano|p\.p\.)/g;
+  /[-+]?R\$\s[\d.]+(?:,\d+)?(?:\s(?:mi|mil))?(?![\wÀ-ú])|[-+]?[\d.]+(?:,\d+)?\s?%|[-+]?[\d.]+(?:,\d+)?\s?(?:FTE|dias|dia|h|anos|ano|p\.p\.|vezes|vez|x|×)(?![\wÀ-ú])/g;
+
+/**
+ * As bases fixas do "Traduzindo": "a cada R$ 100 …", "para cada R$ 1,00 …".
+ * Não são dado; são a escala em que o documento de CFO lê uma taxa.
+ */
+const BASES_DA_TRADUCAO: readonly string[] = ["R$ 100", "R$ 1,00"];
+
+/**
+ * O mesmo número dito em reais por base: 8,3% vira "R$ 8,3" a cada R$ 100;
+ * liquidez de 1,5 vezes vira "R$ 1,5" para cada R$ 1,00. É o único ponto em
+ * que o verificador aceita uma reescrita, e ela é determinística — vale só
+ * para o valor principal.
+ */
+function emReaisPorBase(valor: number, unidade: Unidade): string | null {
+  if (unidade !== "pct" && unidade !== "vezes") return null;
+  const corpo = formatarValor(valor, unidade).replace(
+    /\s?(?:%|vezes|vez)$/,
+    "",
+  );
+  return corpo.startsWith("-") ? `-R$ ${corpo.slice(1)}` : `R$ ${corpo}`;
+}
 
 /** Tudo que o texto pode citar sem inventar. */
 function numerosPermitidos(r: Resolucao): ReadonlySet<string> {
-  const permitidos = new Set<string>();
-  const guardar = (
-    valor: number | null,
-    unidade: Parameters<typeof formatarValor>[1],
-  ) => {
+  const permitidos = new Set<string>(BASES_DA_TRADUCAO);
+  const guardar = (valor: number | null, unidade: Unidade) => {
     if (valor !== null) permitidos.add(formatarValor(valor, unidade));
   };
 
   guardar(r.valor, r.unidade);
+  if (r.valor !== null) {
+    const emReais = emReaisPorBase(r.valor, r.unidade);
+    if (emReais !== null) permitidos.add(emReais);
+  }
   for (const c of r.consideracoes) guardar(c.valor, c.unidade);
+  for (const t of r.referencias) guardar(t.valor, "pct");
   if (r.comparacao !== null) {
-    guardar(r.comparacao.retornoPercentual, "pct");
-    guardar(r.comparacao.base.valor, "BRL_mi");
-    guardar(r.comparacao.taxa.valor, "pct");
+    for (const l of r.comparacao.leituras) {
+      guardar(l.valor, l.unidade);
+      guardar(l.referencia.valor, "pct");
+    }
+    if (r.comparacao.base !== null) {
+      guardar(r.comparacao.base.valor, r.comparacao.base.unidade);
+    }
   }
   return permitidos;
 }
@@ -131,7 +167,10 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
 
   const linhas: string[] = [`${r.rotulo}: ${valor}.`];
 
-  if (r.consideracoes.length > 0) {
+  const doPainel = r.consideracoes.filter((c) => c.origem === "painel");
+  const deApoio = r.consideracoes.filter((c) => c.origem === "apoio");
+
+  if (doPainel.length > 0) {
     /*
      * `flatMap` em vez de `filter` seguido de `map`, e não é estilo: com os
      * dois passos separados, o `map` precisava de um `c.valor ?? 0` que o
@@ -139,7 +178,7 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
      * mão a um passo do formatador é o achado 5 do Anexo D. Aqui o valor existe
      * por construção dentro do ramo.
      */
-    const itens = r.consideracoes
+    const itens = doPainel
       .flatMap((c) =>
         c.valor === null
           ? []
@@ -149,19 +188,49 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
     linhas.push(`O que entrou na conta: ${itens}.`);
   }
 
+  if (deApoio.length > 0) {
+    // Apoio sem dado é dito, e não omitido: a pessoa saberia que faltou.
+    const itens = deApoio
+      .map((c) =>
+        c.valor === null
+          ? `${c.rotulo} sem dado`
+          : `${c.rotulo} ${formatarValor(c.valor, c.unidade)}`,
+      )
+      .join("; ");
+    linhas.push(`O que explica: ${itens}.`);
+  }
+
   linhas.push(`Fórmula: ${r.formula}.`);
 
   if (r.comparacao !== null) {
     const c = r.comparacao;
-    linhas.push(
-      `Sobre ${c.base.rotulo.toLowerCase()} de ${formatarValor(c.base.valor, "BRL_mi")}, ` +
-        `isso é ${formatarValor(c.retornoPercentual, "pct")} — contra ${c.taxa.nome} ` +
-        `de ${formatarValor(c.taxa.valor, "pct")} ao ano (${c.taxa.fonte}, desde ${c.taxa.vigenteDesde}). ` +
-        `${c.formula}.`,
-    );
+    if (c.base !== null) {
+      linhas.push(
+        `Sobre ${c.base.rotulo.toLowerCase()} de ${formatarValor(c.base.valor, c.base.unidade)}:`,
+      );
+    }
+    for (const l of c.leituras) {
+      linhas.push(
+        `${l.rotulo}: ${formatarValor(l.valor, l.unidade)} — contra ${l.referencia.nome} ` +
+          `de ${formatarValor(l.referencia.valor, "pct")} ${l.referencia.periodicidade} ` +
+          `(${l.referencia.fonte}, desde ${l.referencia.vigenteDesde}). ${l.formula}.`,
+      );
+    }
   } else if (r.comparacaoIndisponivelPorque !== null) {
     linhas.push(`Sem comparação com juros: ${r.comparacaoIndisponivelPorque}.`);
   }
+
+  if (r.comparacao === null && r.referencias.length > 0) {
+    const taxas = r.referencias
+      .map(
+        (t) => `${t.nome} ${formatarValor(t.valor, "pct")} ${t.periodicidade}`,
+      )
+      .join("; ");
+    linhas.push(`Referências: ${taxas}.`);
+  }
+
+  const proximo = PROXIMO_PASSO[r.metrica];
+  if (proximo !== undefined) linhas.push(proximo);
 
   /*
    * A `decisao` do catálogo NÃO entra no texto.
@@ -190,8 +259,14 @@ function rotuloDaMetrica(id: string): string {
 function sugestoesApos(r: Resolucao): readonly string[] {
   const sugestoes = [`Como isso se compara com o ano anterior?`];
   if (r.consideracoes.length > 0) {
+    // Só o que é comparável com o número principal: degrau do painel, ou apoio
+    // na mesma unidade. Comparar |R$ mi| com |%| não escolhe nada.
     const maior = [...r.consideracoes]
-      .filter((c) => c.valor !== null)
+      .filter(
+        (c) =>
+          c.valor !== null &&
+          (c.origem === "painel" || c.unidade === r.unidade),
+      )
       .sort((a, b) => Math.abs(b.valor ?? 0) - Math.abs(a.valor ?? 0))[0];
     if (maior !== undefined) {
       sugestoes.push(`Por que ${maior.rotulo.toLowerCase()} pesa tanto?`);
@@ -375,34 +450,62 @@ export async function redigirResposta(
  * reescrever — é assim que "substituição de campo" da seção 7.1 vira prática.
  */
 function paraOModelo(r: Resolucao): unknown {
+  const formatado = (valor: number | null, unidade: Unidade) =>
+    valor === null ? null : formatarValor(valor, unidade);
+
   return {
     metrica: r.rotulo,
-    valor: {
-      bruto: r.valor,
-      formatado: r.valor === null ? null : formatarValor(r.valor, r.unidade),
+    valor: { bruto: r.valor, formatado: formatado(r.valor, r.unidade) },
+    periodo: rotuloDe("periodo", r.acoes.filtros.periodo),
+    fechamento: formatarMesAno(r.asOf),
+    leitura: r.familia,
+    traducao: {
+      bases: BASES_DA_TRADUCAO,
+      emReais: r.valor === null ? null : emReaisPorBase(r.valor, r.unidade),
     },
     formula: r.formula,
     definicao: r.decisao,
     dataDoFechamento: r.asOf,
     consideracoes: r.consideracoes.map((c) => ({
       rotulo: c.rotulo,
-      formatado: c.valor === null ? null : formatarValor(c.valor, c.unidade),
+      formatado: formatado(c.valor, c.unidade),
+      origem: c.origem,
+    })),
+    referencias: r.referencias.map((t) => ({
+      nome: t.nome,
+      formatado: formatarValor(t.valor, "pct"),
+      periodicidade: t.periodicidade,
+      fonte: t.fonte,
+      vigenteDesde: t.vigenteDesde,
     })),
     comparacao:
       r.comparacao === null
         ? null
         : {
-            taxa: r.comparacao.taxa,
-            taxaFormatada: formatarValor(r.comparacao.taxa.valor, "pct"),
-            retornoFormatado: formatarValor(
-              r.comparacao.retornoPercentual,
-              "pct",
-            ),
-            base: {
-              rotulo: r.comparacao.base.rotulo,
-              formatado: formatarValor(r.comparacao.base.valor, "BRL_mi"),
-            },
-            formula: r.comparacao.formula,
+            familia: r.comparacao.familia,
+            base:
+              r.comparacao.base === null
+                ? null
+                : {
+                    rotulo: r.comparacao.base.rotulo,
+                    formatado: formatarValor(
+                      r.comparacao.base.valor,
+                      r.comparacao.base.unidade,
+                    ),
+                  },
+            leituras: r.comparacao.leituras.map((l) => ({
+              rotulo: l.rotulo,
+              formatado: formatarValor(l.valor, l.unidade),
+              formula: l.formula,
+              referencia: {
+                nome: l.referencia.nome,
+                formatado: formatarValor(l.referencia.valor, "pct"),
+                periodicidade: l.referencia.periodicidade,
+                fonte: l.referencia.fonte,
+              },
+            })),
           },
+    comparacaoIndisponivelPorque: r.comparacaoIndisponivelPorque,
+    proximoPasso: PROXIMO_PASSO[r.metrica] ?? null,
   };
 }
