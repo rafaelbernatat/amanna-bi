@@ -278,7 +278,8 @@ describe("perguntar, com o gateway respondendo", () => {
       alternativas: ["pmr", "pmp", "metrica_inventada"],
     });
 
-    const resposta = await perguntar("Qual é o ROE da empresa?");
+    // Uma pergunta que o catálogo não casa: a recusa do modelo é a resposta.
+    const resposta = await perguntar("Quanto vale a empresa?");
 
     expect(resposta.tipo).toBe("recusa");
     if (resposta.tipo !== "recusa") return;
@@ -403,7 +404,8 @@ describe("resolverPergunta e redigirResposta", () => {
       alternativas: ["pmr"],
     });
 
-    const resolvida = await resolverPergunta("Qual é o ROE da empresa?");
+    // Uma pergunta que o catálogo não casa: a recusa do modelo prevalece.
+    const resolvida = await resolverPergunta("Quanto vale a empresa?");
     expect(resolvida.tipo).toBe("recusa");
     expect(vi.mocked(redigirComGateway)).not.toHaveBeenCalled();
   });
