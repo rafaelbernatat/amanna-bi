@@ -12,41 +12,52 @@
  *
  * ## O que "explicar tudo o que foi considerado" quer dizer aqui
  *
- * Três coisas, e nenhuma delas é o modelo contando uma história:
+ * Quatro coisas, e nenhuma delas é o modelo contando uma história:
  *
  * 1. **a fórmula**, que vem do catálogo e é a mesma que o painel mostra na tela
  *    (RF-04, princípio P3);
- * 2. **as considerações** — os degraus que compõem o número, lidos do painel
- *    que o detalha. Para o lucro líquido, é a ponte da DRE inteira: receita
- *    líquida, CMV, despesas, EBITDA, D&A, resultado financeiro, não
- *    operacional. Cada um com o seu valor, no mesmo recorte;
- * 3. **a referência externa**, quando ela ajuda a ler o número — hoje a Selic.
+ * 2. **a composição** — os degraus que compõem o número, lidos do painel que o
+ *    detalha. Para o lucro líquido, é a ponte da DRE inteira;
+ * 3. **o apoio** — as métricas que explicam o número, declaradas em
+ *    `apoio.ts` e lidas no mesmo recorte: para o ROE, lucro e patrimônio;
+ * 4. **as leituras contra o custo do dinheiro** — Selic, CDI e IPCA, com a
+ *    conta feita aqui (`leitura.ts`), nunca pelo modelo.
  *
- * Os três saem de dados, não de prosa. O modelo os transforma em frase.
+ * Tudo sai de dados, não de prosa. O modelo transforma em frase.
  */
 
 import { lerMetrica, lerPainel } from "@/acesso/leitura";
-import { lerSelic, type TaxaDeReferencia } from "@/acesso/referencias/selic";
+import type { TaxaDeReferencia } from "@/acesso/referencias/sgs";
+import { lerReferencias } from "@/acesso/referencias/todas";
+import { apoioDe } from "@/chat/apoio";
+import {
+  familiaDe,
+  leiturasDeCusto,
+  leiturasDeResultado,
+  leiturasDeRetorno,
+  type ComparacaoComJuros,
+  type Familia,
+} from "@/chat/leitura";
 import { destinoDaMetrica } from "@/chat/roteamento";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
-import type { PanelResponse, Query, Unidade } from "@/semantica/contrato";
+import type {
+  PanelResponse,
+  Query,
+  Sentido,
+  Unidade,
+} from "@/semantica/contrato";
 
-/** Um número que entrou na conta, com o rótulo que o painel lhe dá. */
+export type { ComparacaoComJuros, Leitura } from "@/chat/leitura";
+
+/** Um número que entrou na conta, com o rótulo que o painel ou o catálogo lhe dá. */
 export type Consideracao = {
   readonly rotulo: string;
   readonly valor: number | null;
   readonly unidade: Unidade;
-};
-
-/** A leitura do resultado contra o custo do dinheiro. */
-export type ComparacaoComJuros = {
-  readonly taxa: TaxaDeReferencia;
-  /** O resultado em % sobre a base, para ficar na mesma unidade da taxa. */
-  readonly retornoPercentual: number;
-  /** Sobre o que a porcentagem foi calculada. */
-  readonly base: { readonly rotulo: string; readonly valor: number };
-  /** Como o número foi obtido. Princípio P3 vale aqui também. */
-  readonly formula: string;
+  /** Degrau do painel que detalha a métrica, ou métrica de apoio lida à parte. */
+  readonly origem: "painel" | "apoio";
+  /** O id da métrica de apoio; `null` para degrau de painel. */
+  readonly metrica: string | null;
 };
 
 /** O que o estágio 2 entrega ao estágio 3. */
@@ -60,6 +71,10 @@ export type Resolucao = {
   readonly decisao: string | null;
   readonly asOf: string;
   readonly consideracoes: readonly Consideracao[];
+  /** A família de leitura da métrica, quando ela tem uma. */
+  readonly familia: Familia | null;
+  /** As taxas que vieram do BCB, mesmo sem comparação — o texto pode citá-las. */
+  readonly referencias: readonly TaxaDeReferencia[];
   readonly comparacao: ComparacaoComJuros | null;
   /** Por que a comparação não veio, quando não veio. */
   readonly comparacaoIndisponivelPorque: string | null;
@@ -122,38 +137,40 @@ function proximasDe(pedida: string): readonly string[] {
  * ruído com aparência de explicação.
  */
 function consideracoesDo(envelope: PanelResponse): readonly Consideracao[] {
+  const doPainel = (
+    rotulo: string,
+    valor: number | null,
+    unidade: Unidade,
+  ): Consideracao => ({
+    rotulo,
+    valor,
+    unidade,
+    origem: "painel",
+    metrica: null,
+  });
+
   switch (envelope.forma) {
     case "cascata":
-      return envelope.passos.map((p) => ({
-        rotulo: p.nome,
-        valor: p.valor,
-        unidade: envelope.unit,
-      }));
+      return envelope.passos.map((p) =>
+        doPainel(p.nome, p.valor, envelope.unit),
+      );
     case "estatisticas":
-      return envelope.estatisticas.map((e) => ({
-        rotulo: e.rotulo,
-        valor: e.valor,
-        unidade: e.unidade,
-      }));
+      return envelope.estatisticas.map((e) =>
+        doPainel(e.rotulo, e.valor, e.unidade),
+      );
     case "rosca":
-      return envelope.fatias.map((f) => ({
-        rotulo: f.nome,
-        valor: f.valor,
-        unidade: envelope.unit,
-      }));
+      return envelope.fatias.map((f) =>
+        doPainel(f.nome, f.valor, envelope.unit),
+      );
     case "funil":
-      return envelope.passos.map((p) => ({
-        rotulo: p.nome,
-        valor: p.valor,
-        unidade: envelope.unit,
-      }));
+      return envelope.passos.map((p) =>
+        doPainel(p.nome, p.valor, envelope.unit),
+      );
     case "divisao":
       return envelope.grupos.flatMap((g) =>
-        g.partes.map((p) => ({
-          rotulo: `${g.nome} · ${p.nome}`,
-          valor: p.valor,
-          unidade: envelope.unit,
-        })),
+        g.partes.map((p) =>
+          doPainel(`${g.nome} · ${p.nome}`, p.valor, envelope.unit),
+        ),
       );
     case "barras":
     case "linha":
@@ -166,25 +183,48 @@ function consideracoesDo(envelope: PanelResponse): readonly Consideracao[] {
   }
 }
 
-/** Fração convertida em porcentagem. */
-const PERCENTUAL = 100;
+/**
+ * As métricas de apoio, lidas em paralelo e no mesmo recorte da principal.
+ *
+ * Sem `try/catch` de propósito: apoio que não lê é defeito nosso — métrica no
+ * catálogo sem cálculo —, e o produto prefere lançar a esconder. O caso
+ * legítimo, recorte sem dado, vem como `null` e a tela escreve "sem dado".
+ *
+ * O mapa é parâmetro para o teste injetar um sobre métricas que existem.
+ */
+export async function lerApoio(
+  metrica: string,
+  consulta: Query,
+  mapa: (id: string) => readonly string[] = apoioDe,
+): Promise<readonly Consideracao[]> {
+  return Promise.all(
+    mapa(metrica).map(async (id) => {
+      const lida = await lerMetrica(id, consulta);
+      return {
+        rotulo: CATALOGO_GERADO[id]?.rotulo ?? id,
+        valor: lida.value,
+        unidade: lida.unit,
+        origem: "apoio" as const,
+        metrica: id,
+      };
+    }),
+  );
+}
 
 /**
- * O resultado lido contra o custo do dinheiro.
- *
- * Um lucro em reais e uma taxa em % ao ano não se comparam direto. O que se
- * compara é o **retorno**: quanto o resultado representa sobre a base que o
- * gerou. Com receita líquida de R$ 1.200 mi e lucro de -R$ 8 mi, o retorno é
- * -0,7% — e a Selic a 14% diz o resto da frase sozinha.
+ * O número lido contra o custo do dinheiro, por família.
  *
  * A conta é da aplicação, e não do modelo (princípio P2), e vem com a fórmula
- * escrita, como todo número do produto (princípio P3).
+ * escrita, como todo número do produto (princípio P3). Ver `leitura.ts`.
  */
 async function compararComJuros(
+  metrica: string,
+  rotulo: string,
   valor: number | null,
   unidade: Unidade,
-  sentido: string,
+  familia: Familia | null,
   consulta: Query,
+  referencias: readonly TaxaDeReferencia[],
 ): Promise<{
   readonly comparacao: ComparacaoComJuros | null;
   readonly porque: string | null;
@@ -192,62 +232,96 @@ async function compararComJuros(
   if (valor === null) {
     return { comparacao: null, porque: "não há resultado no recorte" };
   }
-  if (unidade !== "BRL_mi") {
-    return {
-      comparacao: null,
-      porque: "a comparação com juros vale para resultado em reais",
-    };
-  }
 
-  /*
-   * Só medida de **resultado**, e não qualquer valor em reais.
-   *
-   * Comparar a folha com a Selic escreveria "a folha rendeu 15,5% contra 14%",
-   * uma frase que soa certa e não quer dizer nada: folha é custo, não retorno.
-   * O catálogo já distingue os dois — `sentido` diz se subir é bom —, e é essa
-   * distinção que decide se a comparação faz sentido.
-   */
-  if (sentido !== "maior_melhor") {
-    return {
-      comparacao: null,
-      porque:
-        "a comparação com juros vale para resultado, e esta métrica é de custo",
-    };
-  }
+  switch (familia) {
+    case null:
+      /*
+       * Só medida de **resultado** ou de **retorno**, e não qualquer valor.
+       *
+       * Comparar a folha com a Selic escreveria "a folha rendeu 15,5% contra
+       * 14%", uma frase que soa certa e não quer dizer nada: folha é custo,
+       * não retorno. Margem, crescimento e retenção são taxas de outra coisa.
+       */
+      return {
+        comparacao: null,
+        porque:
+          unidade === "BRL_mi"
+            ? "a comparação com juros vale para resultado, e esta métrica é de custo"
+            : "esta métrica não se lê contra juros",
+      };
 
-  const taxa = await lerSelic();
-  if (taxa === null) {
-    return {
-      comparacao: null,
-      porque: "não foi possível ler a Selic no Banco Central agora",
-    };
-  }
+    case "resultado": {
+      if (referencias.find((r) => r.id === "selic") === undefined) {
+        return {
+          comparacao: null,
+          porque: "não foi possível ler a Selic no Banco Central agora",
+        };
+      }
+      const receita = await lerMetrica("receita_liquida", consulta);
+      if (receita.value === null || receita.value === 0) {
+        return {
+          comparacao: null,
+          porque: "sem receita no recorte, não há base para calcular retorno",
+        };
+      }
+      return {
+        comparacao: {
+          familia,
+          leituras: leiturasDeResultado(valor, receita.value, referencias),
+          base: {
+            rotulo: "Receita líquida",
+            valor: receita.value,
+            unidade: "BRL_mi",
+          },
+        },
+        porque: null,
+      };
+    }
 
-  const receita = await lerMetrica("receita_liquida", consulta);
-  if (receita.value === null || receita.value === 0) {
-    return {
-      comparacao: null,
-      porque: "sem receita no recorte, não há base para calcular retorno",
-    };
-  }
+    case "retorno": {
+      const leituras = leiturasDeRetorno(metrica, rotulo, valor, referencias);
+      if (leituras.length === 0) {
+        return {
+          comparacao: null,
+          porque:
+            "não foi possível ler o CDI nem o IPCA no Banco Central agora",
+        };
+      }
+      return { comparacao: { familia, leituras, base: null }, porque: null };
+    }
 
-  return {
-    comparacao: {
-      taxa,
-      retornoPercentual: (valor / receita.value) * PERCENTUAL,
-      base: { rotulo: "Receita líquida", valor: receita.value },
-      formula: "retorno = resultado ÷ receita líquida do mesmo recorte",
-    },
-    porque: null,
-  };
+    case "custo_de_capital": {
+      const leituras = leiturasDeCusto(rotulo, valor, referencias);
+      if (leituras.length === 0) {
+        return {
+          comparacao: null,
+          porque: "não foi possível ler o CDI no Banco Central agora",
+        };
+      }
+      return { comparacao: { familia, leituras, base: null }, porque: null };
+    }
+
+    case "liquidez":
+    case "alavancagem":
+    case "cobertura":
+    case "qualidade":
+      return {
+        comparacao: null,
+        porque: "esta métrica se lê pelo próprio múltiplo, não contra juros",
+      };
+  }
 }
 
 /**
  * Resolve uma intenção já interpretada.
  *
- * Recebe a métrica e o recorte; devolve o número, o que o compõe, a comparação
- * e para onde a tela deve ir. O modelo não entra aqui — é esta a fronteira que
- * a seção 7.1 desenha.
+ * Recebe a métrica e o recorte; devolve o número, o que o compõe, o apoio, as
+ * leituras e para onde a tela deve ir. O modelo não entra aqui — é esta a
+ * fronteira que a seção 7.1 desenha.
+ *
+ * As quatro leituras correm em paralelo: a pergunta espera pela mais lenta, e
+ * não pela soma. As referências só são buscadas quando a métrica tem família —
+ * o turnover não se lê contra o CDI, e não precisa ir ao BCB para saber disso.
  */
 export async function resolver(
   metrica: string,
@@ -258,22 +332,36 @@ export async function resolver(
     throw new MetricaForaDoCatalogo(metrica, proximasDe(metrica));
   }
 
-  const [valor, destino] = [
-    await lerMetrica(metrica, consulta),
-    destinoDaMetrica(metrica),
-  ];
+  const destino = destinoDaMetrica(metrica);
+  const painelId = destino?.painel ?? null;
+  const familia = familiaDe(
+    metrica,
+    entrada.unidade,
+    entrada.sentido as Sentido,
+  );
 
-  const painel =
-    destino?.painel === undefined || destino.painel === null
-      ? null
-      : await lerPainel(destino.painel, consulta);
+  const [valor, painel, apoio, referencias] = await Promise.all([
+    lerMetrica(metrica, consulta),
+    painelId === null ? Promise.resolve(null) : lerPainel(painelId, consulta),
+    lerApoio(metrica, consulta),
+    familia === null
+      ? Promise.resolve<readonly TaxaDeReferencia[]>([])
+      : lerReferencias(),
+  ]);
 
   const { comparacao, porque } = await compararComJuros(
+    metrica,
+    entrada.rotulo,
     valor.value,
     valor.unit,
-    entrada.sentido,
+    familia,
     consulta,
+    referencias,
   );
+
+  // Apoio cujo rótulo já veio como degrau do painel não entra duas vezes.
+  const doPainel = painel === null ? [] : consideracoesDo(painel);
+  const rotulosDoPainel = new Set(doPainel.map((c) => c.rotulo));
 
   return {
     metrica,
@@ -283,13 +371,18 @@ export async function resolver(
     formula: valor.formula,
     decisao: entrada.decisao,
     asOf: valor.asOf,
-    consideracoes: painel === null ? [] : consideracoesDo(painel),
+    consideracoes: [
+      ...doPainel,
+      ...apoio.filter((a) => !rotulosDoPainel.has(a.rotulo)),
+    ],
+    familia,
+    referencias,
     comparacao,
     comparacaoIndisponivelPorque: porque,
     acoes: {
       filtros: consulta,
       tela: destino?.tela ?? null,
-      painel: destino?.painel ?? null,
+      painel: painelId,
     },
     fontes: [entrada.fonte],
     painel,
