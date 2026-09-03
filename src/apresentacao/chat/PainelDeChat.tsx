@@ -452,6 +452,8 @@ function autoriaEmTexto(autoria: Autoria): string {
       return "redigido pelo modelo, números conferidos contra o envelope";
     case "modelo-recusado":
       return "redação do modelo recusada pelo verificador; texto montado do resultado";
+    case "gateway-indisponivel":
+      return "o gateway do modelo não respondeu; texto montado do resultado";
     default:
       return "texto montado do resultado (sem gateway configurado)";
   }
