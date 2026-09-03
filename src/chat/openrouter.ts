@@ -130,6 +130,19 @@ Regras:
   {"metrica": "", "confianca": 0, "alternativas": [os 3 ids mais próximos]}.
 - "confianca" baixa quando a pergunta couber em mais de uma métrica.`;
 
+/** O que o modelo vê de cada métrica no estágio 1. */
+export type MetricaParaOModelo = {
+  readonly id: string;
+  readonly rotulo: string;
+  /**
+   * Os sinônimos do catálogo. O modelo precisa deles: "tem custo classificado
+   * errado?" só chega a `contas_com_classificacao_inconsistente` por quem
+   * conhece o vocabulário do documento de CFO — sem a lista, um modelo mais
+   * barato recusou 4 e trocou 11 das 33 perguntas (2026-09-03).
+   */
+  readonly sinonimos?: readonly string[];
+};
+
 /**
  * Pede ao modelo que escolha a métrica.
  *
@@ -139,9 +152,15 @@ Regras:
  */
 export async function interpretarComGateway(
   pergunta: string,
-  metricas: readonly { readonly id: string; readonly rotulo: string }[],
+  metricas: readonly MetricaParaOModelo[],
 ): Promise<IntencaoBruta | null> {
-  const lista = metricas.map((m) => `${m.id} — ${m.rotulo}`).join("\n");
+  const lista = metricas
+    .map((m) =>
+      m.sinonimos !== undefined && m.sinonimos.length > 0
+        ? `${m.id} — ${m.rotulo} (também: ${m.sinonimos.join("; ")})`
+        : `${m.id} — ${m.rotulo}`,
+    )
+    .join("\n");
 
   const texto = await conversar(
     [
@@ -194,6 +213,11 @@ Regras que não se negociam:
   "cerca de".
 - Escreva cada número exatamente como está no campo "formatado", com o sinal, a
   vírgula e a unidade: "1,8 vezes" (nunca "1,8x"), "+2,1 p.p.", "R$ 1.200,0 mi".
+- Número negativo leva o sinal: "devolveu -R$ 2,3", "ganho real de -6,4%".
+  Se disser o sinal em palavra ("perda de R$ 2,3", "5,6 p.p. abaixo do CDI"),
+  a palavra fica na mesma frase, colada ao número.
+- Não calcule diferença, variação nem proporção: as que existem já estão em
+  "leituras", com o valor pronto.
 - Sem saudação, sem repetir a pergunta, sem título, sem lista com marcadores.
 
 A estrutura, nesta ordem, num só parágrafo de até oito frases:
