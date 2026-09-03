@@ -26,6 +26,7 @@ import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 
 import { MODULOS } from "@/apresentacao/navegacao/telas";
+import { podeSomar } from "@/semantica/agregacao";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import { carregarCatalogo, type Metrica } from "@/semantica/catalogo";
 import { ORIGEM_DOS_KPIS } from "@/semantica/origem-de-kpi";
@@ -245,9 +246,10 @@ describe("as 21 entradas trazem os nove campos", () => {
   it("nenhuma unidade não-somável está declarada com agg sum", () => {
     // A regra 4 da seção 9.2, do lado do catálogo. O carregador já recusa isto;
     // aqui se confirma que nenhuma das 21 tropeçou nela.
-    const NAO_SOMAVEIS = ["pct", "pp", "pontos", "anos"];
+    // `podeSomar` é a lista única de não-somáveis (D-H45, D-H60), e não uma
+    // cópia escrita aqui que envelheceria a cada unidade nova.
     const erradas = CATALOGO.filter(
-      (m) => NAO_SOMAVEIS.includes(m.unidade) && m.agg === "sum",
+      (m) => !podeSomar(m.unidade) && m.agg === "sum",
     ).map((m) => m.id);
     expect(erradas).toEqual([]);
   });

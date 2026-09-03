@@ -26,12 +26,18 @@ import {
 /**
  * As unidades que somar ao longo do período é sempre errado.
  *
- * `pct` e `pp` desde sempre; `pontos` e `anos` desde D-H45. eNPS de doze meses
- * somados dá um número que não existe, e a mesma coisa vale para idade média:
- * as duas são taxas disfarçadas de contagem, e se agregam por `ratio` ou
- * `last`.
+ * `pct` e `pp` desde sempre; `pontos` e `anos` desde D-H45; `vezes` desde
+ * D-H60. eNPS de doze meses somados dá um número que não existe, e a mesma
+ * coisa vale para idade média e para um múltiplo como liquidez corrente: são
+ * razões disfarçadas de contagem, e se agregam por `ratio` ou `last`.
  */
-const NAO_SOMAVEIS: readonly Unidade[] = ["pct", "pp", "pontos", "anos"];
+const NAO_SOMAVEIS: readonly Unidade[] = [
+  "pct",
+  "pp",
+  "pontos",
+  "anos",
+  "vezes",
+];
 
 export class SomaInvalida extends Error {
   constructor(unidade: Unidade) {

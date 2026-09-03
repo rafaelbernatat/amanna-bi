@@ -112,7 +112,7 @@ describe("T-105 · recorte vazio é estado, nunca zero", () => {
  * ---------------------------------------------------------------- */
 
 describe("T-104 · unidade é enum fechado", () => {
-  it("as nove do PRD, e nenhuma outra", () => {
+  it("as dez do PRD, e nenhuma outra", () => {
     expect([...UNIDADES]).toEqual([
       "BRL_mi",
       "pct",
@@ -123,6 +123,7 @@ describe("T-104 · unidade é enum fechado", () => {
       "contagem",
       "pontos",
       "anos",
+      "vezes",
     ]);
   });
 
@@ -130,9 +131,10 @@ describe("T-104 · unidade é enum fechado", () => {
     /*
      * `pontos` e `anos` entraram como não somáveis em D-H45, e a razão é a
      * mesma de `pct`: são taxas disfarçadas de contagem. Somar o eNPS de doze
-     * meses dá um número que não existe, e somar idade média também.
+     * meses dá um número que não existe, e somar idade média também. `vezes`
+     * (D-H60) é razão por definição: liquidez de doze meses somada não é nada.
      */
-    for (const u of ["pct", "pp", "pontos", "anos"] as const) {
+    for (const u of ["pct", "pp", "pontos", "anos", "vezes"] as const) {
       expect(podeSomar(u), u).toBe(false);
     }
     for (const u of ["BRL_mi", "dias", "FTE", "horas", "contagem"] as const) {

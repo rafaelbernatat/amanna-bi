@@ -140,7 +140,8 @@
         "horas",
         "contagem",
         "pontos",
-        "anos"
+        "anos",
+        "vezes"
       ]
     },
     "Formula": {

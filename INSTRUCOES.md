@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 59 itens (4 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 60 itens (5 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,17 +39,17 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 23 (4 resolvidos) | 7 | 36 |
+| Fase 1 · Contrato | 24 (5 resolvidos) | 8 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **59** | **30** | **122** |
+| **Total** | **60** | **31** | **122** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
-| Produto | 14 |
+| Produto | 15 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
 | Engenharia | 7 |
@@ -77,7 +77,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*23 itens · 3 P0 abertos · 12 P1 abertos · 4 P2 abertos · 4 resolvidos*
+*24 itens · 3 P0 abertos · 12 P1 abertos · 4 P2 abertos · 5 resolvidos*
 
 ### [ ] H-59 · Escrever a narrativa dos painéis, ou decidir que não há
 
@@ -508,6 +508,33 @@ Escolha uma das três saídas, e registre a escolha:
 > `rh-turnover-tempo-ate-a-saida`, em **anos** — a linha de `anos` cita só os
 > dois de `rh/colab`. Os treze estão nomeados em teste.
 
+### [X] H-60 · Decidir a unidade de múltiplo (vezes) para as perguntas de CFO
+
+`P0` · **Responsável:** Produto
+
+**O que fazer**
+
+O documento de perguntas de CFO da Dreamy (`docs/Dreamy_Perguntas_Respostas_CFO.docx`) pede, em seis respostas, um número que é um **múltiplo**: dívida líquida em vezes o EBITDA, cobertura de juros em vezes, liquidez corrente, seca e imediata, grau de alavancagem operacional, giro do ativo e multiplicador do patrimônio. Nenhuma das nove unidades da regra 2 da seção 9.2 os nomeia sem mentir: `pct` diria que liquidez de 1,8 é 1,8%; `pontos` diria que é diferença de proporções; `contagem` diria que se soma ao longo do ano.
+
+Escolha uma das mesmas três saídas de H-45 — estender o enum, reinterpretar dentro dele, ou tirar as perguntas do escopo — e registre a escolha com data e nome.
+
+**Por que não dá para decidir sem uma pessoa:** o enum é fechado de propósito; acrescentar uma unidade reabre uma regra do PRD.
+
+| | |
+|---|---|
+| **Resultado esperado** | Decisão registrada com data e nome do aprovador, e a forma de escrita da unidade |
+| **Onde o resultado vai** | docs/decisoes/, PRD seção 9.2 regra 2, `UNIDADES` em `src/semantica/contrato.ts` |
+| **Destrava** | nada no backlog: as métricas das perguntas de CFO ainda não têm tarefa em TASKS.md |
+
+> **Resolvido em 2026-09-03.** Produto escolheu **estender o enum**, com o
+> critério de D-H45: é a única saída que não muda o que nenhum número
+> significa. `vezes` entrou na regra 2 da seção 9.2, escrita por extenso
+> (`1,8 vezes`, `1,0 vez`, nunca `1,8x`) e nos não-somáveis junto de `pct`,
+> `pp`, `pontos` e `anos`.
+>
+> Artefato conferido: `docs/decisoes/D-H60-unidade-vezes.md`, `UNIDADES` com
+> dez valores em `src/semantica/contrato.ts`, `formatarValor` com o caso novo
+> fixado em teste, e `contratos/painel.schema.json` regerado.
 
 ### [X] H-01 · Decidir P8: o alcance do filtro de ano
 

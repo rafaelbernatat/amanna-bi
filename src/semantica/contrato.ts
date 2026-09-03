@@ -109,10 +109,14 @@ export const QUERY_PADRAO: Query = {
 /**
  * Enum fechado: todo valor volta com unidade declarada (regra 2).
  *
- * Nove valores desde 2026-08-24. As quatro últimas entraram por decisão de
+ * Dez valores desde 2026-09-03. Quatro entraram em 2026-08-24 por decisão de
  * Produto ([D-H45](../../docs/decisoes/D-H45-unidades.md)): cinco painéis e
  * treze KPIs do protótipo medem horas, contagem, pontos de eNPS e anos de tempo
- * de casa, e nenhuma das cinco originais os nomeia sem afirmar algo falso.
+ * de casa, e nenhuma das cinco originais os nomeia sem afirmar algo falso. A
+ * décima, `vezes`, entrou por
+ * [D-H60](../../docs/decisoes/D-H60-unidade-vezes.md): liquidez corrente,
+ * dívida líquida sobre EBITDA e cobertura de juros são múltiplos, e `pct`
+ * diria que 1,8 é 1,8%.
  *
  * Fechado continua sendo o ponto: uma unidade nova entra por decisão
  * registrada, nunca por digitação.
@@ -127,6 +131,7 @@ export const UNIDADES = [
   "contagem",
   "pontos",
   "anos",
+  "vezes",
 ] as const;
 export type Unidade = (typeof UNIDADES)[number];
 

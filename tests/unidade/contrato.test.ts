@@ -118,11 +118,13 @@ describe("O ano ficou fora do tipo, por D-P8", () => {
 });
 
 describe("Unidade e agregação são enums fechados (seção 9.2)", () => {
-  it("as nove unidades e as três agregações do PRD", () => {
-    // Eram cinco até 2026-08-24. As quatro últimas entraram por decisão de
-    // Produto (D-H45): cinco painéis e treze KPIs medem horas, contagem,
-    // pontos de eNPS e anos, e nenhuma das cinco originais os nomeia sem
-    // afirmar algo falso sobre o número.
+  it("as dez unidades e as três agregações do PRD", () => {
+    // Eram cinco até 2026-08-24. Quatro entraram por decisão de Produto
+    // (D-H45): cinco painéis e treze KPIs medem horas, contagem, pontos de
+    // eNPS e anos, e nenhuma das cinco originais os nomeia sem afirmar algo
+    // falso sobre o número. A décima, `vezes`, entrou em 2026-09-03 (D-H60)
+    // para os múltiplos das perguntas de CFO: liquidez, dívida sobre EBITDA,
+    // cobertura de juros.
     expect([...UNIDADES]).toEqual([
       "BRL_mi",
       "pct",
@@ -133,6 +135,7 @@ describe("Unidade e agregação são enums fechados (seção 9.2)", () => {
       "contagem",
       "pontos",
       "anos",
+      "vezes",
     ]);
     expect([...AGREGACOES]).toEqual(["sum", "last", "ratio"]);
   });
