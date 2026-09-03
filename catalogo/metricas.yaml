@@ -53,7 +53,15 @@ crescimento_yoy:
   agg: ratio
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [crescimento, yoy, ano contra ano, evolucao da receita, cresceu]
+  sinonimos:
+    [
+      crescimento,
+      yoy,
+      ano contra ano,
+      ano anterior,
+      evolucao da receita,
+      cresceu,
+    ]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Comparacao contra o mesmo periodo do ano
     anterior, nao contra o periodo imediatamente anterior. Nao aprovado por
@@ -108,8 +116,7 @@ margem_ebitda:
   agg: ratio
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos:
-    [ebitda, margem, margem ebitda, resultado operacional, lucro operacional]
+  sinonimos: [margem ebitda, resultado operacional, lucro operacional]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). EBITDA obtido por diferenca, e nao por soma
     de contas de resultado. Nao aprovado por Controladoria: a sessao e H-08.
@@ -126,7 +133,7 @@ saldo_caixa:
   agg: last
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [caixa, saldo, liquidez, disponibilidade, quanto tem em caixa]
+  sinonimos: [caixa, saldo, disponibilidade, quanto tem em caixa]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Estoque: agrega por `last`, nunca por soma
     ao longo do periodo. Somar saldos de doze meses da um numero que nao existe.
@@ -143,7 +150,7 @@ desvio_orcamentario:
   agg: sum
   sentido: menor_melhor
   grao_minimo: [centro_custo, mes]
-  sinonimos: [desvio, orcamento, orcado, realizado, estouro, centro de custo]
+  sinonimos: [desvio, orcamento, estouro, centro de custo]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Positivo e estouro. O sentido
     `menor_melhor` trata gastar menos que o orcado como melhor, o que nem
@@ -258,16 +265,7 @@ ciclo_financeiro:
   agg: ratio
   sentido: menor_melhor
   grao_minimo: [entidade, mes]
-  sinonimos:
-    [
-      ciclo,
-      ciclo financeiro,
-      pmr,
-      pme,
-      pmp,
-      capital de giro,
-      conversao de caixa,
-    ]
+  sinonimos: [ciclo, ciclo financeiro, capital de giro]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Usa 365 dias e o CMV como denominador de
     PME e PMP. Compras do periodo seria o denominador mais correto para o PMP,
@@ -337,8 +335,7 @@ folha_total:
   agg: sum
   sentido: neutro
   grao_minimo: [area, mes]
-  sinonimos:
-    [folha, custo de pessoal, encargos, salarios, quanto custa a equipe]
+  sinonimos: [folha, custo de pessoal, salarios, quanto custa a equipe]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). A base de competencia da rescisao esta
     indefinida -- e a decisao P3, item H-07. A escolha muda a folha de todo mes
@@ -385,7 +382,7 @@ enps:
   agg: ratio
   sentido: maior_melhor
   grao_minimo: [area, mes]
-  sinonimos: [enps, nps interno, promotores, detratores, recomendaria a empresa]
+  sinonimos: [enps, nps interno, detratores, recomendaria a empresa]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Unidade `pontos`, que entrou no enum em
     2026-08-24 (D-H45): o eNPS vai de -100 a +100 e e a diferenca entre duas
@@ -643,7 +640,7 @@ margem_liquida:
   agg: ratio
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [margem liquida, lucro liquido, resultado final, bottom line]
+  sinonimos: [margem liquida, resultado final, bottom line]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Derivada dos degraus da ponte da DRE, e nao
     de uma coluna de lucro. A serie mensal de margem liquida do prototipo nao
@@ -673,7 +670,16 @@ pmr:
   agg: ratio
   sentido: menor_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [pmr, prazo medio de recebimento, quanto demora a receber, dso]
+  sinonimos:
+    [
+      pmr,
+      prazo medio de recebimento,
+      prazo de recebimento,
+      dias para receber,
+      recebemos dos clientes,
+      quanto demora a receber,
+      dso,
+    ]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Usa 365 dias e a receita do periodo. Com
     recorte mensal o prazo fica anualizado sobre um mes so, o que exagera a
@@ -687,7 +693,16 @@ pme:
   agg: ratio
   sentido: menor_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [pme, prazo medio de estocagem, giro de estoque, dio]
+  sinonimos:
+    [
+      pme,
+      prazo medio de estocagem,
+      giro de estoque,
+      estoque parado,
+      dias de estoque,
+      quanto tempo o estoque fica,
+      dio,
+    ]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). O estoque nao existia no prototipo e foi
     DERIVADO do proprio PME declarado: 75 x 720 / 365 = 148. Quando o dado real
@@ -701,7 +716,16 @@ pmp:
   agg: ratio
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [pmp, prazo medio de pagamento, quanto demora a pagar, dpo]
+  sinonimos:
+    [
+      pmp,
+      prazo medio de pagamento,
+      prazo de pagamento,
+      dias para pagar,
+      pagamos os fornecedores,
+      quanto demora a pagar,
+      dpo,
+    ]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Sentido `maior_melhor` -- pagar depois
     financia o giro. Denominador deveria ser COMPRAS do periodo, e a fixture nao
@@ -988,7 +1012,7 @@ ebitda:
   agg: sum
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [ebitda, geracao operacional, lajida, resultado antes de juros]
+  sinonimos: [ebitda, lajida, resultado antes de juros]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Obtido por diferenca, e nao por soma de
     contas. Nao existe coluna de EBITDA: se existisse, seria possivel ela
@@ -1005,7 +1029,8 @@ lucro_liquido:
   agg: sum
   sentido: maior_melhor
   grao_minimo: [entidade, mes]
-  sinonimos: [lucro liquido, resultado do exercicio, bottom line, deu lucro]
+  sinonimos:
+    [lucro liquido, resultado do exercicio, bottom line, deu lucro, demos lucro]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). O ultimo degrau da ponte da DRE, derivado
     dos outros seis. Da -R$ 8 mi no ano: a operacao gera resultado e a
@@ -1047,7 +1072,7 @@ financiamento:
   agg: sum
   sentido: neutro
   grao_minimo: [entidade, mes]
-  sinonimos: [fcf, financiamento, divida, amortizacao, captacao]
+  sinonimos: [fcf, financiamento, amortizacao, captacao]
   decisao: >-
     PROVISORIO (D-H03, 2026-08-24). Positivo e SAIDA liquida -- amortizacao e
     juros menos captacao. A fixture nao separa as tres, e separa-las e uma das
