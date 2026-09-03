@@ -45,6 +45,10 @@ export const FATIA_DA_UNIDADE_SP: Readonly<Record<string, number>> = {
   caixa: 0.52,
   orcamento: 0.6,
   contas: 0.57,
+  // Balanço e dívida (perguntas de CFO, 2026-09-03). SP carrega mais dívida
+  // que patrimônio: é a unidade que cresceu a crédito.
+  balanco: 0.56,
+  divida: 0.61,
 };
 
 /** Uma medida sem fatia declarada é erro de digitação, não meio a meio. */
