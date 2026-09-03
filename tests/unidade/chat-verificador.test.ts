@@ -10,7 +10,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { TaxaDeReferencia } from "@/acesso/referencias/sgs";
-import { divergencias, montarTexto } from "@/chat/perguntar";
+import { divergencias, montarTexto, paraOModelo } from "@/chat/perguntar";
 import type { Resolucao } from "@/chat/resolver";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 
@@ -280,5 +280,29 @@ describe("o texto montado nunca diverge do próprio envelope", () => {
     expect(montarTexto(roe({ metrica: "ebitda" }), "")).toContain(
       "Quer ver a conversão de caixa?",
     );
+  });
+});
+
+describe("a base da tradução que o modelo recebe", () => {
+  /** O envelope do estágio 3, só na parte que interessa aqui. */
+  type Envelope = { traducao: { base: string | null; emReais: string | null } };
+
+  it("porcentagem lê-se a cada R$ 100, múltiplo para cada R$ 1,00", () => {
+    expect((paraOModelo(roe()) as Envelope).traducao).toEqual({
+      base: "R$ 100",
+      emReais: "R$ 8,3",
+    });
+    expect((paraOModelo(liquidez()) as Envelope).traducao).toEqual({
+      base: "R$ 1,00",
+      emReais: "R$ 1,8",
+    });
+  });
+
+  it("valor em reais não tem base nem tradução", () => {
+    const ebitda = roe({ valor: 200, unidade: "BRL_mi" });
+    expect((paraOModelo(ebitda) as Envelope).traducao).toEqual({
+      base: null,
+      emReais: null,
+    });
   });
 });

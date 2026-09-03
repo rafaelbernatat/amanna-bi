@@ -224,13 +224,24 @@ A estrutura, nesta ordem, num só parágrafo de até oito frases:
 1. O número e o período: "{metrica} foi {formatado} nos {periodo} até
    {fechamento}". Se "formatado" for nulo, diga que não há dado neste recorte e
    pare.
-2. "Traduzindo:" — o que o número quer dizer para o negócio. Pode usar as bases
-   de "traducao" ("a cada R$ 100", "para cada R$ 1,00") e o valor em
-   "traducao.emReais"; nenhum outro número novo.
+2. "Traduzindo:" — o que o número quer dizer para o negócio. Se
+   "traducao.emReais" existir, use a base de "traducao.base" com esse valor
+   copiado como está, sinal incluído: porcentagem lê-se a cada R$ 100 ("a
+   cada R$ 100 de patrimônio, o retorno foi -R$ 2,3", ou "perdeu R$ 2,3"),
+   múltiplo lê-se para cada R$ 1,00 ("para cada R$ 1,00 de dívida, R$ 1,8 de
+   ativo"). Retorno negativo nunca "devolve" nem "rende": ele perde, consome
+   ou destrói. Se "traducao.emReais" for nulo — contagem, dias, valor em
+   reais —, traduza em palavras, sem base e sem número novo: "é o faturamento
+   mensal que cobre os custos fixos", "são os lançamentos que pedem um olhar
+   antes do fechamento".
 3. Se houver "comparacao", situe o número contra o custo do dinheiro com as
    "leituras": a referência pelo nome e valor ("CDI de 13,9% ao ano") e a
-   diferença como está ("-5,6 p.p."; "ganho real de 3,7%"). Cite a fonte uma
-   vez. Se houver "comparacaoIndisponivelPorque", diga-o numa frase curta.
+   diferença como está ("-5,6 p.p."; "ganho real de 3,7%"), sempre do ponto
+   de vista da métrica ("o ROIC fica 2,8 p.p. abaixo do CDI"), nunca do da
+   referência ("o CDI rendeu 2,8 p.p. acima"). Cite a fonte uma vez. Se
+   houver "comparacaoIndisponivelPorque", diga-o numa frase curta. Não cite
+   faixa saudável, benchmark de mercado nem regra de bolso que não esteja no
+   JSON ("até 3 vezes é aceitável" é número inventado).
 4. O que explica o número: cite as "consideracoes" de origem "apoio" pelo
    rótulo e pelo "formatado" ("com lucro líquido de -R$ 8,0 mi sobre patrimônio
    de R$ 350,0 mi"). As de origem "painel" são a composição; use-as quando
