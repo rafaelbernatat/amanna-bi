@@ -304,10 +304,18 @@ async function compararComJuros(
     case "liquidez":
     case "alavancagem":
     case "cobertura":
-    case "qualidade":
       return {
         comparacao: null,
         porque: "esta métrica se lê pelo próprio múltiplo, não contra juros",
+      };
+
+    case "qualidade":
+      // Contagem e completude do razão: dizer "múltiplo" aqui saía no texto
+      // do modelo ("1.385 lançamentos se leem pelo próprio múltiplo").
+      return {
+        comparacao: null,
+        porque:
+          "esta métrica é contagem ou completude do razão, não se lê contra juros",
       };
   }
 }

@@ -99,8 +99,25 @@ const COM_UNIDADE =
 /**
  * As bases fixas do "Traduzindo": "a cada R$ 100 …", "para cada R$ 1,00 …".
  * Não são dado; são a escala em que o documento de CFO lê uma taxa.
+ *
+ * Porcentagem lê-se a cada R$ 100 e múltiplo para cada R$ 1,00. O modelo
+ * recebe **só a base da unidade** do valor principal: com as duas na mão, o
+ * gpt-4o escreveu "para cada R$ 1,00 investido, o retorno foi de R$ 11,1" de
+ * um ROIC de 11,1% — número certo, escala errada, e o verificador não tem
+ * como ver escala (2026-09-03).
  */
-const BASES_DA_TRADUCAO: readonly string[] = ["R$ 100", "R$ 1,00"];
+const BASE_DA_PORCENTAGEM = "R$ 100";
+const BASE_DO_MULTIPLO = "R$ 1,00";
+const BASES_DA_TRADUCAO: readonly string[] = [
+  BASE_DA_PORCENTAGEM,
+  BASE_DO_MULTIPLO,
+];
+
+function baseDaTraducao(unidade: Unidade): string | null {
+  if (unidade === "pct") return BASE_DA_PORCENTAGEM;
+  if (unidade === "vezes") return BASE_DO_MULTIPLO;
+  return null;
+}
 
 /**
  * O mesmo número dito em reais por base: 8,3% vira "R$ 8,3" a cada R$ 100;
@@ -565,7 +582,7 @@ export function paraOModelo(r: Resolucao): unknown {
     fechamento: formatarMesAno(r.asOf),
     leitura: r.familia,
     traducao: {
-      bases: BASES_DA_TRADUCAO,
+      base: baseDaTraducao(r.unidade),
       emReais: r.valor === null ? null : emReaisPorBase(r.valor, r.unidade),
     },
     formula: r.formula,

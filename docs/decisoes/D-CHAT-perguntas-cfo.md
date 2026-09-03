@@ -71,6 +71,14 @@ reafirmou o pedido. A decisão é de escopo, e vem com três escolhas:
   responde — é vocabulário que Produto declarou de propósito ("centro de
   custo" leva ao painel por centro de custo que existe). Foi a única pergunta
   (A7) que o `gpt-4o` recusou mesmo vendo os sinônimos.
+- **O modelo recebe só a base da unidade.** Porcentagem lê-se a cada R$ 100 e
+  múltiplo para cada R$ 1,00; com as duas bases na mão, o `gpt-4o` escreveu
+  "para cada R$ 1,00 investido, o retorno foi de R$ 11,1" de um ROIC de 11,1%
+  — número certo, escala errada, e escala o verificador não vê. O envelope do
+  estágio 3 leva `traducao.base` única, e o prompt pede as leituras do ponto
+  de vista da métrica ("2,8 p.p. abaixo do CDI"), nunca da referência, e
+  proíbe faixa saudável ou regra de bolso que não esteja no JSON — o modelo
+  citou "até 3 vezes" para a alavancagem, e o verificador barrou como deve.
 - **O modelo é configuração.** Produto trocou `OPENROUTER_MODEL` de
   `anthropic/claude-opus-4.1` para `openai/gpt-4o` em 2026-09-03 ("mais barato
   para o que precisamos"); o padrão no código não muda, porque a decisão
