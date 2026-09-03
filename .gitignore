@@ -60,3 +60,5 @@ Thumbs.db
 # versiona. Um relatorio commitado envelhece em silencio e passa a descrever
 # uma rodada que ninguem rodou.
 /relatorios/
+
+.vercel
