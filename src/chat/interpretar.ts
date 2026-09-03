@@ -66,17 +66,52 @@ export const CONFIANCA_MINIMA = 0.45;
 export const PONTUACAO_MINIMA = 3;
 
 /**
- * Texto sem acento e em minúsculas, para o casamento não depender de digitação.
+ * As letras acentuadas do português e a sua forma sem acento.
  *
- * A faixa dos diacríticos vai escrita com escapes, e não com os caracteres
- * combinantes literais: a forma literal passou nos testes locais e falhou no
- * build de produção — "equilíbrio" não virava "equilibrio", e o ponto de
- * equilíbrio virava desambiguação na Vercel. Escape não depende de como o
- * arquivo é lido.
+ * Um mapa explícito na primeira passada, e a decomposição Unicode na segunda,
+ * para o que o mapa não cobre. O mapa entrou numa investigação de 2026-09-03
+ * em que "equilíbrio" parecia não virar "equilibrio" em produção; a causa
+ * real era o cliente de teste, que mandava o acento em Latin-1 na URL
+ * (`%e9`, não `%C3%A9`) — o navegador manda UTF-8 e sempre funcionou. O
+ * mapa ficou porque não custa nada e não depende da biblioteca de Unicode
+ * do runtime. Teste por HTTP com acento: só com a URL já codificada em
+ * UTF-8, ou pelo navegador.
  */
+const SEM_ACENTO: Readonly<Record<string, string>> = {
+  á: "a",
+  à: "a",
+  â: "a",
+  ã: "a",
+  ä: "a",
+  é: "e",
+  è: "e",
+  ê: "e",
+  ë: "e",
+  í: "i",
+  ì: "i",
+  î: "i",
+  ï: "i",
+  ó: "o",
+  ò: "o",
+  ô: "o",
+  õ: "o",
+  ö: "o",
+  ú: "u",
+  ù: "u",
+  û: "u",
+  ü: "u",
+  ç: "c",
+  ñ: "n",
+};
+
+/** Texto sem acento e em minúsculas, para o casamento não depender de digitação. */
 function normalizar(texto: string): string {
   return texto
     .toLowerCase()
+    .replace(
+      /[áàâãäéèêëíìîïóòôõöúùûüçñ]/g,
+      (letra) => SEM_ACENTO[letra] ?? letra,
+    )
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "");
 }
