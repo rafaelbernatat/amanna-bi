@@ -51,8 +51,18 @@ export default defineConfig({
      * existir. Num clone limpo, `npm run e2e` nao subia. Declarar aqui deixa
      * local e pipeline com o mesmo ambiente, que e a unica forma de o verde
      * local significar alguma coisa.
+     *
+     * `OPENROUTER_API_KEY` vazia, de proposito. O `.env.local` de quem
+     * desenvolve pode ter a chave, e o Next a carregaria no `next start`; com
+     * ela o chat do e2e iria ao gateway a cada pergunta -- lento, pago e
+     * dependente de rede. Vazia, o chat responde pelo interpretador local, com
+     * o mesmo numero: o que o e2e prova e a tela, e nao a redacao do modelo.
      */
-    env: { DATA_SOURCE: "fixtures", AUTH_PROVIDER: "fixtures" },
+    env: {
+      DATA_SOURCE: "fixtures",
+      AUTH_PROVIDER: "fixtures",
+      OPENROUTER_API_KEY: "",
+    },
     url: BASE_URL,
     reuseExistingServer: !process.env["CI"],
     timeout: 180_000,

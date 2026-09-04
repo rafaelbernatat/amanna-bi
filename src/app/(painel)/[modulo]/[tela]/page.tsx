@@ -1,26 +1,19 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
+import { Destaque } from "@/apresentacao/chat/Destaque";
 import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
 import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
-import { PainelDeChat } from "@/apresentacao/chat/PainelDeChat";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
-import { BarraLateral } from "@/apresentacao/shell/BarraLateral";
 import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { COLUNAS_DA_GRADE, paineisDaTela } from "@/semantica/paineis";
-import {
-  redigirResposta,
-  resolverPergunta,
-  type Resposta,
-} from "@/chat/perguntar";
 import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
 
 /**
@@ -29,6 +22,9 @@ import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
  * As 13 sao resolvidas no servidor — `generateStaticParams` as enumera a partir
  * do registro de navegacao, entao acrescentar uma tela ao registro cria a rota.
  * Qualquer outro par modulo/tela cai em `notFound()`, que devolve 404.
+ *
+ * Mora no grupo `(painel)`, que nao muda a URL: e o layout do grupo que
+ * envolve a tela com a conversa do chat, preservada entre navegacoes.
  */
 
 type Parametros = { readonly modulo: string; readonly tela: string };
@@ -49,74 +45,6 @@ type Busca = Record<string, string | string[] | undefined>;
  * a primeira faria a mesma URL render recortes diferentes conforme quem a
  * interpretou.
  */
-/**
- * A pergunta da URL, respondida nesta tela — ou levada à tela que ela cita.
- *
- * O redirecionamento acontece **depois do estágio 2 e antes do 3**: a métrica
- * e o número já estão resolvidos, e só a tela de destino redige. Redigir aqui
- * também dobrava a espera de quem perguntou — a redação da origem era jogada
- * fora e refeita no destino, 40 segundos com a tela parada.
- */
-async function responderNaTela(
-  pergunta: string,
-  query: Query,
-  rota: string,
-): Promise<Resposta | null> {
-  if (pergunta.trim() === "") return null;
-
-  const resolvida = await resolverPergunta(pergunta, query);
-  if (resolvida.tipo === "recusa") return resolvida;
-
-  const { acoes } = resolvida.resolucao;
-  if (acoes.tela !== null && acoes.tela !== rota.slice(1)) {
-    const destino = rotaCom(
-      `/${acoes.tela}`,
-      acoes.filtros,
-      acoes.painel ?? undefined,
-    );
-    redirect(
-      `${destino}${destino.includes("?") ? "&" : "?"}pergunta=${encodeURIComponent(pergunta)}`,
-    );
-  }
-
-  return redigirResposta(pergunta, resolvida.resolucao);
-}
-
-/**
- * O chat, em streaming: a tela chega inteira e a resposta chega depois.
- *
- * Os dois estágios do modelo levam de 15 a 30 segundos. Sem isto, a página
- * inteira esperava por eles com o navegador parado na tela anterior — e quem
- * testou concluiu que o chat não respondia. Dentro de um `Suspense`, o Next
- * envia a tela com o aviso de "consultando" na hora e troca pela resposta
- * quando ela existe. Quando a resposta cita outra tela, o `redirect` dentro do
- * streaming vira uma `<meta>` de navegação, que é o que a documentação desta
- * versão descreve; a tela de destino faz o mesmo caminho.
- *
- * É a primeira metade de T-339 (resposta em duas fases), sem JavaScript
- * nosso: o que troca o aviso pela resposta é o runtime do Next, que a tela já
- * carrega para os gráficos.
- */
-async function ChatRespondido({
-  pergunta,
-  query,
-  rota,
-}: {
-  readonly pergunta: string;
-  readonly query: Query;
-  readonly rota: string;
-}) {
-  const resposta = await responderNaTela(pergunta, query, rota);
-  return (
-    <PainelDeChat
-      pergunta={pergunta}
-      resposta={resposta}
-      rota={rota}
-      query={query}
-    />
-  );
-}
-
 function comoBusca(busca: Busca): URLSearchParams {
   const p = new URLSearchParams();
   for (const [chave, valor] of Object.entries(busca)) {
@@ -131,7 +59,8 @@ function comoBusca(busca: Busca): URLSearchParams {
  *
  * Serve so a canonizacao abaixo — uma busca com chave desconhecida e deixada
  * como esta, porque reescreve-la apagaria um parametro que alguem pode estar
- * usando para outra coisa.
+ * usando para outra coisa. `pergunta` e o caso concreto: o chat a le no
+ * navegador para abrir a conversa ja perguntando, e canonizar a apagaria.
  */
 const CHAVES_CONHECIDAS: ReadonlySet<string> = new Set([
   ...PARAMETROS,
@@ -153,10 +82,7 @@ const CHAVES_CONHECIDAS: ReadonlySet<string> = new Set([
  *
  * - **houve aviso.** Redirecionar apagaria o parametro invalido junto com a
  *   explicacao, e a pessoa leria "12 meses" achando que o link dela funcionou.
- * - **ha chave desconhecida.** Ver `CHAVES_CONHECIDAS`. `pergunta` e uma delas
- *   de proposito: canonizar apagaria a pergunta da URL, e a resposta sumiria
- *   junto. Foi o primeiro sintoma quando o chat entrou — a tela redirecionava
- *   para si mesma sem a pergunta, e nada acontecia.
+ * - **ha chave desconhecida.** Ver `CHAVES_CONHECIDAS`.
  */
 function canonizar(
   rota: string,
@@ -208,11 +134,6 @@ export default async function Pagina({
   /*
    * O recorte e resolvido **no servidor** (T-127, secao 6.6).
    *
-   * A lista de anos vem de `getMeta` quando o adaptador existir (F2); ate la
-   * o ano da URL e aceito como veio, que e o comportamento de D-P8 quando
-   * ninguem ainda declarou quais anos foram carregados.
-   */
-  /*
    * As dimensoes disponiveis. Hoje vem da ponte de `dimensoes-provisorias`;
    * com T-149 passam a vir de `getMeta`, ja recortadas pelo perfil (secao 11).
    * A lista de anos e o que faz `?ano=2024` virar aviso em vez de tela vazia.
@@ -235,144 +156,115 @@ export default async function Pagina({
   if (canonica !== null) redirect(canonica);
 
   /*
-   * O chat (seção 7).
-   *
-   * A pergunta vem da URL, como os filtros — o mesmo mecanismo de T-127, e pela
-   * mesma razão: a seção 6.6 promete que colar a URL reproduz a tela, e uma
-   * conversa que só existe na memória do navegador não se cola em lugar nenhum.
-   *
-   * Quando a resposta cita uma tela que não é esta, a página **navega** até ela
-   * levando o recorte da resposta e o painel a destacar. É o RF-13 literal: "o
-   * painel citado fica visível sem rolagem manual, com o rótulo de referência".
-   *
-   * A resposta em si é resolvida em `ChatRespondido`, dentro de um `Suspense`,
-   * para a tela não esperar pelo modelo.
+   * O chat nao esta nesta pagina: mora no layout do grupo `(painel)`, e por
+   * isso a conversa sobrevive quando a resposta navega para outra tela. O que
+   * a resposta escreve na URL — filtros, tela e painel destacado — chega aqui
+   * como em qualquer outra requisicao, e e `Destaque` quem rola ate o painel
+   * marcado (RF-13). A chave muda com a URL para o efeito rodar de novo
+   * quando duas perguntas citam o mesmo painel.
    */
-  const pergunta = busca.get("pergunta") ?? "";
+  const chaveDaUrl = `${rota}?${busca.toString()}`;
 
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "236px minmax(0, 1fr)",
-        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minWidth: 0,
         overflow: "hidden",
-        background: PALETA.fundo,
       }}
     >
-      <BarraLateral ativo={achado.modulo.id} query={query} />
+      <Cabecalho
+        modulo={achado.modulo}
+        tela={achado.tela}
+        query={query}
+        dimensoes={dimensoes}
+        painelDestacado={painelDestacado}
+      />
 
-      <div
+      <main
+        data-teste="conteudo"
         style={{
+          flex: "1 1 auto",
+          minHeight: 0,
           minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
+          overflowY: "auto",
+          overflowX: "hidden",
+          padding: "16px 28px 28px",
         }}
       >
-        <Cabecalho
-          modulo={achado.modulo}
-          tela={achado.tela}
+        {/*
+          O recorte resolvido fica legivel para o teste e para quem depura.
+          Nao e enfeite: e como se prova que colar a URL reproduz o mesmo
+          recorte, antes de existir painel que o consuma.
+        */}
+        <dl
+          data-teste="recorte"
+          data-periodo={query.periodo}
+          data-ano={query.ano}
+          data-entidade={query.entidade}
+          data-area={query.area}
+          data-modalidade={query.modalidade}
+          data-painel={painelDestacado ?? ""}
+          data-avisos={String(avisos.length)}
+          style={{ display: "none" }}
+        />
+
+        <Destaque key={chaveDaUrl} painel={painelDestacado} />
+
+        <BannerDeRecorte
+          rota={rota}
           query={query}
-          dimensoes={dimensoes}
           painelDestacado={painelDestacado}
         />
 
-        <main
-          data-teste="conteudo"
-          style={{
-            flex: "1 1 auto",
-            minHeight: 0,
-            minWidth: 0,
-            overflowY: "auto",
-            overflowX: "hidden",
-            padding: "16px 28px 28px",
-          }}
-        >
-          {/*
-            O recorte resolvido fica legivel para o teste e para quem depura.
-            Nao e enfeite: e como se prova que colar a URL reproduz o mesmo
-            recorte, antes de existir painel que o consuma.
-          */}
-          <dl
-            data-teste="recorte"
-            data-periodo={query.periodo}
-            data-ano={query.ano}
-            data-entidade={query.entidade}
-            data-area={query.area}
-            data-modalidade={query.modalidade}
-            data-painel={painelDestacado ?? ""}
-            data-avisos={String(avisos.length)}
-            style={{ display: "none" }}
-          />
+        {/*
+          Os KPIs da tela, no recorte da URL.
 
-          <Suspense
-            fallback={
-              <PainelDeChat
-                pergunta={pergunta}
-                resposta={null}
-                pendente={pergunta.trim() !== ""}
-                rota={rota}
-                query={query}
-              />
-            }
+          Lidos pela fronteira de seguranca (secao 11), e nao pelo adaptador:
+          o recorte por perfil e aplicado no servidor, antes de qualquer
+          leitura. `lerKpisDaTela` e o unico ponto onde essa cadeia se monta.
+        */}
+        <FaixaDeKpis kpis={await lerKpisDaTela(rota.slice(1), query)} />
+
+        {avisos.length > 0 ? (
+          <p
+            data-teste="aviso-de-recorte"
+            role="status"
+            style={{
+              margin: "0 0 14px",
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: `1px solid ${PALETA.bordaForte}`,
+              background: PALETA.superficieSuave,
+              font: `400 11px/1.5 ${TIPOGRAFIA.texto}`,
+              color: PALETA.textoSecundario,
+              maxWidth: "68ch",
+            }}
           >
-            <ChatRespondido pergunta={pergunta} query={query} rota={rota} />
-          </Suspense>
+            {avisos.length === 1
+              ? "Um filtro do link não existe e foi trocado pelo padrão: "
+              : `${avisos.length} filtros do link não existem e foram trocados pelo padrão: `}
+            {avisos
+              .map((a) => `${a.campo} "${a.pedido}" → "${a.usado}"`)
+              .join("; ")}
+            .
+          </p>
+        ) : null}
 
-          <BannerDeRecorte
-            rota={rota}
-            query={query}
-            painelDestacado={painelDestacado}
-          />
-
-          {/*
-            Os KPIs da tela, no recorte da URL.
-
-            Lidos pela fronteira de seguranca (secao 11), e nao pelo adaptador:
-            o recorte por perfil e aplicado no servidor, antes de qualquer
-            leitura. `lerKpisDaTela` e o unico ponto onde essa cadeia se monta.
-          */}
-          <FaixaDeKpis kpis={await lerKpisDaTela(rota.slice(1), query)} />
-
-          {avisos.length > 0 ? (
-            <p
-              data-teste="aviso-de-recorte"
-              role="status"
-              style={{
-                margin: "0 0 14px",
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: `1px solid ${PALETA.bordaForte}`,
-                background: PALETA.superficieSuave,
-                font: `400 11px/1.5 ${TIPOGRAFIA.texto}`,
-                color: PALETA.textoSecundario,
-                maxWidth: "68ch",
-              }}
-            >
-              {avisos.length === 1
-                ? "Um filtro do link não existe e foi trocado pelo padrão: "
-                : `${avisos.length} filtros do link não existem e foram trocados pelo padrão: `}
-              {avisos
-                .map((a) => `${a.campo} "${a.pedido}" → "${a.usado}"`)
-                .join("; ")}
-              .
-            </p>
-          ) : null}
-
-          {/*
-            Os painéis da tela, na ordem do Anexo A e na grade de 12 colunas da
-            seção 5. Quem diz quais painéis e com que largura é o registro de
-            T-107 — acrescentar um painel ao Anexo A e ao registro o coloca na
-            tela, sem editar arquivo de tela nenhum.
-          */}
-          <PaineisDaTela
-            tela={rota.slice(1)}
-            query={query}
-            painelDestacado={painelDestacado}
-          />
-        </main>
-      </div>
+        {/*
+          Os painéis da tela, na ordem do Anexo A e na grade de 12 colunas da
+          seção 5. Quem diz quais painéis e com que largura é o registro de
+          T-107 — acrescentar um painel ao Anexo A e ao registro o coloca na
+          tela, sem editar arquivo de tela nenhum.
+        */}
+        <PaineisDaTela
+          tela={rota.slice(1)}
+          query={query}
+          painelDestacado={painelDestacado}
+        />
+      </main>
     </div>
   );
 }

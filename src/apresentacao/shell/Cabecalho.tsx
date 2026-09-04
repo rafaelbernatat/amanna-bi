@@ -1,17 +1,27 @@
 import Link from "next/link";
 
 import { BarraDeFiltros } from "@/apresentacao/filtros/BarraDeFiltros";
-import type { Modulo, Tela } from "@/apresentacao/navegacao/telas";
+import {
+  MODULOS,
+  primeiraTelaDe,
+  type Modulo,
+  type Tela,
+} from "@/apresentacao/navegacao/telas";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import type { Dimensoes } from "@/semantica/recortes";
 import { rotaCom } from "@/semantica/url";
 
 /**
- * Cabecalho da tela: breadcrumb, titulo e a tira de abas (T-126, T-127).
+ * Cabecalho da tela: os modulos, o breadcrumb, o titulo, os filtros e a tira
+ * de telas (T-126, T-127; decisao D-CHAT-conversa-flutuante).
  *
- * O breadcrumb e "modulo · ano do recorte" (PRD secao 6.1), e o ano vem da
- * Query lida da URL.
+ * ## Os modulos viraram abas, no centro
+ *
+ * A barra lateral do prototipo saiu. Os tres modulos — Recursos Humanos,
+ * Financeiro e Integracao — sao uma tira de abas centralizada no alto da
+ * tela, e a tira de telas do modulo fica logo abaixo. Trocar de modulo
+ * continua levando a primeira tela dele (secao 6.1), **no mesmo recorte**.
  *
  * ## Por que a aba recebe a Query inteira, e nao so o ano
  *
@@ -53,11 +63,90 @@ export function Cabecalho({
       style={{
         background: PALETA.fundo,
         borderBottom: `1px solid ${PALETA.bordaForte}`,
-        padding: "22px 28px 14px",
+        padding: "14px 28px 14px",
         flex: "none",
         zIndex: 5,
       }}
     >
+      {/*
+        A primeira linha: a marca à esquerda, os módulos no centro.
+
+        Grade de três colunas com as laterais iguais: é o que mantém a tira
+        de módulos no centro da tela, e não no centro do espaço que sobra
+        depois da marca.
+      */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              font: `500 15px/1.1 ${TIPOGRAFIA.titulo}`,
+              color: PALETA.texto,
+              letterSpacing: ".005em",
+            }}
+          >
+            Controladoria
+          </div>
+          <div
+            style={{
+              font: `500 8px/1.2 ${TIPOGRAFIA.mono}`,
+              color: PALETA.textoFraco,
+              textTransform: "uppercase",
+              letterSpacing: ".14em",
+              marginTop: 3,
+            }}
+          >
+            Painel executivo · BI
+          </div>
+        </div>
+
+        <nav
+          aria-label="Módulos"
+          style={{
+            display: "flex",
+            gap: 2,
+            background: PALETA.barraLateral,
+            borderRadius: 999,
+            padding: 4,
+            maxWidth: "100%",
+            overflowX: "auto",
+            overflowY: "hidden",
+          }}
+        >
+          {MODULOS.map((m) => {
+            const ligado = m.id === modulo.id;
+            return (
+              <Link
+                key={m.id}
+                href={rotaCom(primeiraTelaDe(m), query)}
+                aria-current={ligado ? "page" : undefined}
+                data-teste={`modulo-${m.id}`}
+                style={{
+                  whiteSpace: "nowrap",
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  background: ligado ? PALETA.superficie : "transparent",
+                  color: ligado ? PALETA.texto : PALETA.textoEmBarra,
+                  font: `${ligado ? "600" : "500"} 12px/1.2 ${TIPOGRAFIA.texto}`,
+                  textDecoration: "none",
+                }}
+              >
+                {m.nome}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div aria-hidden="true" />
+      </div>
+
       <div
         style={{
           font: `500 9px/1.2 ${TIPOGRAFIA.mono}`,
@@ -94,7 +183,7 @@ export function Cabecalho({
 
       {/*
         `nav`, e nao `div`.
- 
+
         O `aria-label` estava num `div`, que nao tem papel implicito — um rotulo
         pendurado em nada, que leitor de tela nao anuncia como regiao. Virou
         `nav` quando o chat entrou e um atalho dele passou a colidir com a aba

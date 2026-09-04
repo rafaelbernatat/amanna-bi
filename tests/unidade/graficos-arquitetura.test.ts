@@ -8,16 +8,24 @@ import { describe, expect, it } from "vitest";
  * O PRD deixou de proibir biblioteca de graficos, mas nao deixou de exigir que
  * o trabalho pesado fique no servidor. O que estes testes sustentam:
  *
- *   1. so os componentes de grafico sao de cliente — a fronteira `"use client"`
- *      nao vaza para o resto da apresentacao;
+ *   1. so os componentes de grafico e o chat sao de cliente — a fronteira
+ *      `"use client"` nao vaza para o resto da apresentacao;
  *   2. nenhum componente de grafico le dado, calcula ou formata (principio PR-1);
  *   3. nosso codigo nao mede largura por conta propria — quem mede e o
  *      `ResponsiveContainer`, dentro da biblioteca, e a caixa ja esta reservada.
+ *
+ * O chat entrou na fronteira de cliente em 2026-09-03 (decisao
+ * D-CHAT-conversa-flutuante): uma conversa e estado que muda a cada tecla e
+ * sobrevive a navegacao, e nao ha como faze-la no servidor sem virar sessao.
+ * O que continua valendo para ele e o mesmo que vale para os graficos: nao le
+ * dado, nao calcula, nao importa recharts. O numero nasce na rota, no
+ * servidor, e o chat so desenha o que volta.
  */
 
 const RAIZ = process.cwd();
 const APRESENTACAO = join(RAIZ, "src", "apresentacao");
 const GRAFICOS = join("src", "apresentacao", "graficos");
+const CHAT = join("src", "apresentacao", "chat");
 
 function varrer(pasta: string): string[] {
   const achados: string[] = [];
@@ -44,15 +52,20 @@ function codigoSemComentarios(caminho: string): string {
 const ARQUIVOS = varrer(APRESENTACAO).map((c) => relative(RAIZ, c));
 const DE_GRAFICO = ARQUIVOS.filter((c) => c.startsWith(GRAFICOS + sep));
 const FORA_DE_GRAFICO = ARQUIVOS.filter((c) => !c.startsWith(GRAFICOS + sep));
+/** Os dois lugares onde `"use client"` e permitido: graficos e chat. */
+const FORA_DA_FRONTEIRA_DE_CLIENTE = ARQUIVOS.filter(
+  (c) => !c.startsWith(GRAFICOS + sep) && !c.startsWith(CHAT + sep),
+);
 
-describe("A fronteira de cliente fica contida nos graficos", () => {
+describe("A fronteira de cliente fica contida nos graficos e no chat", () => {
   it("existem arquivos de apresentacao para inspecionar", () => {
     expect(ARQUIVOS.length).toBeGreaterThan(5);
     expect(DE_GRAFICO.length).toBeGreaterThan(1);
+    expect(ARQUIVOS.some((c) => c.startsWith(CHAT + sep))).toBe(true);
   });
 
-  it("nenhum arquivo fora de graficos declara 'use client'", () => {
-    const vazando = FORA_DE_GRAFICO.filter((c) =>
+  it("nenhum arquivo fora de graficos e do chat declara 'use client'", () => {
+    const vazando = FORA_DA_FRONTEIRA_DE_CLIENTE.filter((c) =>
       /^\s*["']use client["']/m.test(readFileSync(join(RAIZ, c), "utf8")),
     );
     expect(vazando).toEqual([]);

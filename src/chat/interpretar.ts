@@ -30,7 +30,26 @@
 
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO, type Query } from "@/semantica/contrato";
-import { codigosDe, rotuloDe } from "@/semantica/dimensoes";
+import {
+  DIMENSOES,
+  FILTROS,
+  ROTULO_DO_FILTRO,
+  codigosDe,
+  rotuloDe,
+} from "@/semantica/dimensoes";
+
+/**
+ * Um turno anterior da conversa, como o estágio 1 o vê.
+ *
+ * Só a pergunta e a métrica que a respondeu (`null` quando foi recusa). Nenhum
+ * número: o histórico serve para resolver "e em dezembro?" para a métrica
+ * certa, e não para o modelo reler valores — os valores nascem no estágio 2, a
+ * cada pergunta, e são conferidos um a um (RF-15).
+ */
+export type TurnoAnterior = {
+  readonly pergunta: string;
+  readonly metrica: string | null;
+};
 
 /** O que o estágio 1 devolve, com ou sem modelo (seção 7.2). */
 export type Intencao = {
@@ -262,6 +281,53 @@ export function filtrosDaPergunta(pergunta: string, atuais: Query): Query {
   if (ano?.[1] !== undefined) saida = { ...saida, ano: ano[1] };
 
   return saida;
+}
+
+/**
+ * A pergunta pede um recorte diferente do que está na tela?
+ *
+ * É o que distingue uma continuação de conversa de uma pergunta nova. "E em
+ * dezembro?" não cita métrica nenhuma, e sozinha seria recusada; numa conversa
+ * em que a última resposta foi o ROE, ela pede **o ROE em dezembro**. A regra
+ * de herança (seção 7.7, "perguntas com recorte implícito") vive na
+ * orquestração; aqui só se responde se há recorte novo na pergunta.
+ */
+export function mudaRecorte(pergunta: string, atuais: Query): boolean {
+  const pedidos = filtrosDaPergunta(pergunta, atuais);
+  return FILTROS.some((campo) => pedidos[campo] !== atuais[campo]);
+}
+
+/** Os termos de recorte: os rótulos dos filtros e de todos os seus valores. */
+const TERMOS_DE_RECORTE: readonly string[] = [
+  ...Object.values(ROTULO_DO_FILTRO),
+  ...Object.values(DIMENSOES).flatMap((valores) =>
+    valores.map((v) => v.rotulo),
+  ),
+]
+  .map(normalizar)
+  .sort((a, b) => b.length - a.length);
+
+/**
+ * A pergunta sem o que é só recorte.
+ *
+ * Existe para a regra de herança não engolir uma pergunta nova. "E na área de
+ * tecnologia?" contém "área", que é palavra do nome de duas métricas de
+ * engajamento — o interpretador empata as duas e pede desambiguação, quando a
+ * pessoa só quis o mesmo número em outra área. Tirando os termos de recorte
+ * sobra "e na de?", que não casa métrica nenhuma: é continuação. Já em "e a
+ * margem em dezembro?" sobra "e a margem em?", que casa — a pessoa nomeou uma
+ * métrica, e herdar a anterior seria responder outra coisa em silêncio.
+ */
+export function semRecorte(pergunta: string): string {
+  let texto = normalizar(pergunta).replace(/\b20\d{2}\b/g, " ");
+  for (const termo of TERMOS_DE_RECORTE) {
+    const escapado = termo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    texto = texto.replace(
+      new RegExp(`(^|[^a-z0-9])${escapado}s?(?=$|[^a-z0-9])`, "g"),
+      "$1 ",
+    );
+  }
+  return texto;
 }
 
 /**
