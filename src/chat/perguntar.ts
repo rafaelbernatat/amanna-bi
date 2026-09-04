@@ -34,7 +34,10 @@ import {
   CONFIANCA_MINIMA,
   filtrosDaPergunta,
   interpretarLocalmente,
+  mudaRecorte,
+  semRecorte,
   type Intencao,
+  type TurnoAnterior,
 } from "@/chat/interpretar";
 import { PROXIMO_PASSO } from "@/chat/leitura";
 import {
@@ -50,6 +53,8 @@ import {
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO, type Query, type Unidade } from "@/semantica/contrato";
 import { rotuloDe } from "@/semantica/dimensoes";
+
+export type { TurnoAnterior } from "@/chat/interpretar";
 
 /**
  * Como o texto foi produzido. A tela mostra, para não haver dúvida.
@@ -362,47 +367,144 @@ function rotuloDaMetrica(id: string): string {
   return CATALOGO_GERADO[id]?.rotulo ?? id;
 }
 
-/** As duas perguntas seguintes, escolhidas para levar adiante (seção 7.6). */
-function sugestoesApos(r: Resolucao): readonly string[] {
-  const sugestoes = [`Como isso se compara com o ano anterior?`];
-  if (r.consideracoes.length > 0) {
-    // Só o que é comparável com o número principal: degrau do painel, ou apoio
-    // na mesma unidade. Comparar |R$ mi| com |%| não escolhe nada.
-    const maior = [...r.consideracoes]
-      .filter(
-        (c) =>
-          c.valor !== null &&
-          (c.origem === "painel" || c.unidade === r.unidade),
-      )
-      .sort((a, b) => Math.abs(b.valor ?? 0) - Math.abs(a.valor ?? 0))[0];
-    if (maior !== undefined) {
-      sugestoes.push(`Por que ${maior.rotulo.toLowerCase()} pesa tanto?`);
-    }
-  }
-  return sugestoes;
+/** Quantas perguntas seguintes uma resposta oferece, no máximo. */
+export const MAXIMO_DE_SUGESTOES = 4;
+
+/** Quantas delas vêm do apoio: as outras são de recorte. */
+const SUGESTOES_DE_APOIO = 2;
+
+/** "Lucro líquido" vira "lucro líquido"; "ROE" e "EBITDA" ficam como estão. */
+function minusculaInicial(rotulo: string): string {
+  const segunda = rotulo.charAt(1);
+  if (segunda !== "" && segunda === segunda.toUpperCase()) return rotulo;
+  return rotulo.charAt(0).toLowerCase() + rotulo.slice(1);
+}
+
+/**
+ * As perguntas seguintes, escolhidas para levar adiante (seção 7.6).
+ *
+ * Duas famílias, e as duas **respondíveis por construção**:
+ *
+ * - **o apoio**: as métricas que explicaram o número ("E lucro líquido?"
+ *   depois do ROE). São ids do catálogo, lidos no estágio 2 — e ainda assim
+ *   cada frase passa pelo interpretador local antes de ir para a tela, e só
+ *   entra se cair na métrica que a motivou;
+ * - **o recorte**: o mesmo número noutro período e noutra entidade ("E só em
+ *   dezembro?", "E na Unidade SP?"). Não citam métrica de propósito: é a regra
+ *   de herança de `interpretar` quem as responde, e cada uma passa pelo
+ *   mesmo crivo dela: troca um filtro e, tirado o recorte, não casa métrica
+ *   nenhuma.
+ *
+ * A versão anterior oferecia "Como isso se compara com o ano anterior?" em
+ * toda resposta. A fixture só tem 2026 (D-CHAT-perguntas-cfo), então o atalho
+ * levava sempre a "sem dado" — uma sugestão que não leva a lugar nenhum.
+ */
+export function sugestoesApos(r: Resolucao): readonly string[] {
+  const filtros = r.acoes.filtros;
+
+  const deApoio = r.consideracoes
+    .flatMap((c) =>
+      c.origem === "apoio" && c.metrica !== null && c.metrica !== r.metrica
+        ? [{ pergunta: `E ${minusculaInicial(c.rotulo)}?`, metrica: c.metrica }]
+        : [],
+    )
+    .filter(({ pergunta, metrica }) => {
+      const lida = interpretarLocalmente(pergunta, filtros);
+      return (
+        lida !== null &&
+        lida.metrica === metrica &&
+        lida.confianca >= CONFIANCA_MINIMA
+      );
+    })
+    .map((x) => x.pergunta)
+    .slice(0, SUGESTOES_DE_APOIO);
+
+  const deRecorte = [
+    filtros.periodo === "12-meses"
+      ? `E só em ${rotuloDe("periodo", "dezembro").toLowerCase()}?`
+      : `E nos ${rotuloDe("periodo", "12-meses")}?`,
+    filtros.entidade === "consolidado"
+      ? `E na ${rotuloDe("entidade", "unidade-sp")}?`
+      : `E no ${rotuloDe("entidade", "consolidado").toLowerCase()}?`,
+  ].filter(
+    (p) =>
+      mudaRecorte(p, filtros) &&
+      interpretarLocalmente(semRecorte(p), filtros) === null,
+  );
+
+  return [...new Set([...deApoio, ...deRecorte])].slice(0, MAXIMO_DE_SUGESTOES);
 }
 
 /** A confiança de uma recusa do modelo: nenhuma, por definição. */
 const SEM_CONFIANCA = 0;
 
-/** O estágio 1, com o gateway quando há chave e com o catálogo quando não há. */
+/** A confiança de uma métrica herdada da conversa: é a mesma, por construção. */
+const CONFIANCA_DA_HERANCA = 1;
+
+/**
+ * A regra de herança: continuação de conversa herda a métrica anterior.
+ *
+ * "E em dezembro?" depois de "qual o ROE?" pede o ROE em dezembro. Três
+ * condições, todas determinísticas: houve uma resposta anterior com métrica; a
+ * pergunta troca ao menos um filtro; e, tirado o recorte, o que sobra não
+ * nomeia métrica nenhuma. A terceira é o que impede "e a margem em dezembro?"
+ * de virar ROE — a pessoa nomeou outra métrica, e o chat pergunta qual.
+ *
+ * Devolve `null` quando não é continuação. Quem decide entre isto, o palpite
+ * local e o do modelo é `interpretar`.
+ */
+function herdar(
+  pergunta: string,
+  atuais: Query,
+  historico: readonly TurnoAnterior[],
+): Intencao | null {
+  const anterior = [...historico].reverse().find((t) => t.metrica !== null);
+  if (anterior?.metrica === undefined || anterior.metrica === null) return null;
+  if (!mudaRecorte(pergunta, atuais)) return null;
+  if (interpretarLocalmente(semRecorte(pergunta), atuais) !== null) return null;
+  return {
+    metrica: anterior.metrica,
+    filtros: filtrosDaPergunta(pergunta, atuais),
+    confianca: CONFIANCA_DA_HERANCA,
+    alternativas: [],
+  };
+}
+
+/** O palpite local quando é confiante; senão a herança; senão o que houver. */
+function escolher(
+  local: Intencao | null,
+  herdada: Intencao | null,
+): Intencao | null {
+  if (local !== null && local.confianca >= CONFIANCA_MINIMA) return local;
+  return herdada ?? local;
+}
+
+/**
+ * O estágio 1, com o gateway quando há chave e com o catálogo quando não há.
+ *
+ * A conversa anterior entra pelos dois caminhos: o modelo a recebe junto da
+ * pergunta, e o caminho local aplica a regra de `herdar`. Nos dois, ela só
+ * decide quando a pergunta sozinha não decide.
+ */
 async function interpretar(
   pergunta: string,
   atuais: Query,
+  historico: readonly TurnoAnterior[],
 ): Promise<Intencao | null> {
   const local = interpretarLocalmente(pergunta, atuais);
+  const herdada = herdar(pergunta, atuais, historico);
 
-  if (!gatewayConfigurado()) return local;
+  if (!gatewayConfigurado()) return escolher(local, herdada);
 
   const metricas = Object.entries(CATALOGO_GERADO).map(([id, m]) => ({
     id,
     rotulo: m.rotulo,
     sinonimos: m.sinonimos,
   }));
-  const doModelo = await interpretarComGateway(pergunta, metricas);
+  const doModelo = await interpretarComGateway(pergunta, metricas, historico);
 
   // Gateway fora, chave recusada ou JSON malformado: o caminho local vale.
-  if (doModelo === null) return local;
+  if (doModelo === null) return escolher(local, herdada);
 
   // Os filtros continuam saindo do nosso código: o modelo escolhe a métrica,
   // e o recorte é vocabulário fechado que ele não precisa adivinhar. Saem da
@@ -427,6 +529,7 @@ async function interpretar(
    */
   if (doModelo.metrica === "") {
     if (local !== null && local.confianca >= CONFIANCA_MINIMA) return local;
+    if (herdada !== null) return herdada;
     return {
       metrica: "",
       filtros,
@@ -434,6 +537,10 @@ async function interpretar(
       alternativas: doModelo.alternativas,
     };
   }
+
+  // O modelo escolheu sem convicção e a conversa diz de que métrica se fala:
+  // a continuação vale mais que um palpite abaixo do limiar.
+  if (doModelo.confianca < CONFIANCA_MINIMA && herdada !== null) return herdada;
 
   return {
     metrica: doModelo.metrica,
@@ -448,13 +555,15 @@ async function interpretar(
  *
  * `atuais` é o recorte que já está na tela: uma pergunta sem recorte explícito
  * herda o que a pessoa está vendo, que é o que 6.2 promete quando diz que os
- * filtros valem para tudo na tela ativa.
+ * filtros valem para tudo na tela ativa. `historico` são os turnos anteriores
+ * da conversa, para "e em dezembro?" saber de que métrica se fala.
  */
 export async function perguntar(
   pergunta: string,
   atuais: Query = QUERY_PADRAO,
+  historico: readonly TurnoAnterior[] = [],
 ): Promise<Resposta> {
-  const resolvida = await resolverPergunta(pergunta, atuais);
+  const resolvida = await resolverPergunta(pergunta, atuais, historico);
   if (resolvida.tipo === "recusa") return resolvida;
   return redigirResposta(pergunta, resolvida.resolucao);
 }
@@ -477,8 +586,9 @@ export type Resolvida =
 export async function resolverPergunta(
   pergunta: string,
   atuais: Query = QUERY_PADRAO,
+  historico: readonly TurnoAnterior[] = [],
 ): Promise<Resolvida> {
-  const intencao = await interpretar(pergunta, atuais);
+  const intencao = await interpretar(pergunta, atuais, historico);
 
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
     // Nada casou (local) ou o modelo recusou: não há métrica para oferecer.

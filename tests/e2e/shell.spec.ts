@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * O shell e as 13 rotas (T-126).
+ * O shell e as 13 rotas (T-126; decisao D-CHAT-conversa-flutuante).
  *
  * Roda nos dois tamanhos que o criterio de aceite nomeia — 1440x900 e 1280x720
  * — porque cada projeto do playwright.config.ts fixa um deles.
@@ -71,35 +71,55 @@ test.describe("As 13 rotas resolvem no servidor", () => {
 });
 
 test.describe("O shell", () => {
-  test("a barra lateral lista os tres modulos e fica fixa", async ({
+  test("os tres modulos sao abas no cabecalho, e nao ha barra lateral", async ({
     page,
   }) => {
     await page.goto("/rh/visao");
 
-    const barra = page.getByRole("navigation", { name: "Módulos" });
-    await expect(barra).toBeVisible();
+    const cabecalho = page.locator('[data-teste="cabecalho"]');
+    const tira = cabecalho.getByRole("navigation", { name: "Módulos" });
+    await expect(tira).toBeVisible();
 
-    const itens = barra.getByRole("link");
+    const itens = tira.getByRole("link");
     await expect(itens).toHaveCount(3);
     await expect(itens.nth(0)).toContainText("Recursos Humanos");
     await expect(itens.nth(1)).toContainText("Financeiro");
     await expect(itens.nth(2)).toContainText("Integração");
+    await expect(itens.nth(0)).toHaveAttribute("aria-current", "page");
+
+    // A tira fica no centro da tela, e a tela comeca na borda esquerda: a
+    // barra lateral do prototipo saiu.
+    const caixaDaTira = await tira.boundingBox();
+    const largura = await page.evaluate(() => window.innerWidth);
+    expect(caixaDaTira).not.toBeNull();
+    if (caixaDaTira === null) return;
+    const centro = caixaDaTira.x + caixaDaTira.width / 2;
+    expect(Math.abs(centro - largura / 2)).toBeLessThan(40);
+
+    const conteudo = await page
+      .locator('[data-teste="conteudo"]')
+      .boundingBox();
+    expect(conteudo?.x).toBe(0);
   });
 
   test("clicar num modulo abre a primeira tela dele", async ({ page }) => {
     await page.goto("/rh/turnover");
-    const barra = page.getByRole("navigation", { name: "Módulos" });
+    const tira = page.getByRole("navigation", { name: "Módulos" });
 
-    await barra.getByRole("link").nth(1).click();
+    await tira.getByRole("link").nth(1).click();
     await expect(page).toHaveURL(/\/fin\/visao$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Visão financeira",
     );
+    await expect(tira.getByRole("link").nth(1)).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
 
-    await barra.getByRole("link").nth(2).click();
+    await tira.getByRole("link").nth(2).click();
     await expect(page).toHaveURL(/\/int\/cruz$/);
 
-    await barra.getByRole("link").nth(0).click();
+    await tira.getByRole("link").nth(0).click();
     await expect(page).toHaveURL(/\/rh\/visao$/);
   });
 
@@ -161,5 +181,28 @@ test.describe("O shell", () => {
       });
       expect(vazando, `${rota.url} tem elemento fora da viewport`).toEqual([]);
     }
+  });
+
+  test("com a conversa aberta, a tela continua cabendo", async ({ page }) => {
+    await page.goto("/rh/visao");
+    await page.locator('[data-teste="chat-abrir"]').click();
+    await expect(
+      page.getByRole("complementary", { name: "Conversa com os dados" }),
+    ).toBeVisible();
+
+    const excedeu = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth,
+    );
+    expect(excedeu).toBe(false);
+
+    const vazando = await page.evaluate(() => {
+      const limite = window.innerWidth + 1;
+      return [...document.querySelectorAll<HTMLElement>("body *")].filter(
+        (el) => el.getBoundingClientRect().right > limite,
+      ).length;
+    });
+    expect(vazando).toBe(0);
   });
 });

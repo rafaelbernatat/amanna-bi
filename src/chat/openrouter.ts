@@ -27,6 +27,8 @@
  * configurada" em erro de tela, e isso é configuração, não defeito.
  */
 
+import type { TurnoAnterior } from "@/chat/interpretar";
+
 /** O modelo padrão, quando `OPENROUTER_MODEL` não diz outro. */
 const MODELO_PADRAO = "anthropic/claude-opus-4.1";
 
@@ -128,7 +130,12 @@ Regras:
 - Você NÃO calcula nem estima número nenhum. Sua saída é só a intenção.
 - Se a pergunta não corresponder a nenhuma métrica da lista, devolva
   {"metrica": "", "confianca": 0, "alternativas": [os 3 ids mais próximos]}.
-- "confianca" baixa quando a pergunta couber em mais de uma métrica.`;
+- "confianca" baixa quando a pergunta couber em mais de uma métrica.
+- Quando houver "Conversa até aqui", ela é contexto. Se a pergunta atual for
+  continuação da anterior — só troca o recorte ("e em dezembro?", "e na
+  Unidade SP?", "e no consolidado?", "e na área de tecnologia?") ou pede o
+  mesmo número de outro jeito —, devolva a métrica da última resposta com
+  confiança alta. Se a pergunta nomear outra métrica, escolha essa.`;
 
 /** O que o modelo vê de cada métrica no estágio 1. */
 export type MetricaParaOModelo = {
@@ -144,15 +151,33 @@ export type MetricaParaOModelo = {
 };
 
 /**
+ * A conversa anterior, como o modelo a vê: pergunta e métrica, nada mais.
+ *
+ * Vai na mensagem de `user`, e não no `system`: o `system` é o prefixo estável
+ * do cache de prompt (seção 7.4), e a conversa muda a cada turno.
+ */
+function conversaParaOModelo(historico: readonly TurnoAnterior[]): string {
+  if (historico.length === 0) return "";
+  const linhas = historico.map(
+    (t, i) =>
+      `${String(i + 1)}. "${t.pergunta}" → ${t.metrica ?? "sem métrica"}`,
+  );
+  return `Conversa até aqui:\n${linhas.join("\n")}\n\nPergunta atual: `;
+}
+
+/**
  * Pede ao modelo que escolha a métrica.
  *
  * A lista de métricas vai no `system` e a pergunta no `user` — nessa ordem, que
  * é o que a seção 7.4 pede para o cache de prompt funcionar: o catálogo é
- * prefixo estável e a pergunta é sufixo volátil.
+ * prefixo estável e a pergunta é sufixo volátil. A conversa anterior, quando
+ * há, vai junto da pergunta: é o que faz "e em dezembro?" chegar à métrica da
+ * resposta anterior (seção 7.7, recorte implícito).
  */
 export async function interpretarComGateway(
   pergunta: string,
   metricas: readonly MetricaParaOModelo[],
+  historico: readonly TurnoAnterior[] = [],
 ): Promise<IntencaoBruta | null> {
   const lista = metricas
     .map((m) =>
@@ -168,7 +193,7 @@ export async function interpretarComGateway(
         role: "system",
         content: `${INSTRUCAO_DE_INTERPRETACAO}\n\nMétricas disponíveis:\n${lista}`,
       },
-      { role: "user", content: pergunta },
+      { role: "user", content: `${conversaParaOModelo(historico)}${pergunta}` },
     ],
     TETO_DE_SAIDA_INTERPRETACAO,
   );

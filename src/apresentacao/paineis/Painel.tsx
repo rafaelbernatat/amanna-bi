@@ -142,6 +142,16 @@ export function MolduraDePainel({
         minWidth: 0,
         background: PALETA.superficie,
         border: `1px solid ${destacado ? PALETA.destaque : PALETA.borda}`,
+        /*
+          Contorno, sombra e rótulo (seção 6.5). A sombra é um halo da cor de
+          destaque, para o painel citado se distinguir dos vizinhos mesmo de
+          longe — a borda de um pixel sozinha se perdia numa grade de sete.
+          `scrollMargin` deixa folga quando o navegador rola até aqui.
+        */
+        boxShadow: destacado
+          ? `0 0 0 4px color-mix(in srgb, ${PALETA.destaque} 22%, transparent), 0 18px 40px -16px color-mix(in srgb, ${PALETA.destaque} 60%, transparent)`
+          : undefined,
+        scrollMargin: 16,
         borderRadius: 17,
         padding: "15px 16px 14px",
         display: "flex",

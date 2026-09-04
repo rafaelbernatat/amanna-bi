@@ -108,8 +108,8 @@ test.describe("trocar de tela preserva o recorte", () => {
    * recorte. Isso é o round-trip outra vez — quem carregou o recorte de uma
    * tela para a outra foi o teste, escrevendo `?${BUSCA}` nas duas linhas.
    *
-   * No produto quem troca de tela é a pessoa, clicando na tira de abas ou na
-   * barra lateral. Os dois casos seguintes clicam, que é a única forma de a
+   * No produto quem troca de tela é a pessoa, clicando na tira de telas ou na
+   * tira de módulos. Os dois casos seguintes clicam, que é a única forma de a
    * frase do aceite significar o que ela diz.
    */
   test("as duas telas leem o mesmo recorte da mesma busca", async ({
@@ -136,9 +136,7 @@ test.describe("trocar de tela preserva o recorte", () => {
     expect(depois).toEqual(antes);
   });
 
-  test("clicar num módulo da barra lateral leva o recorte junto", async ({
-    page,
-  }) => {
+  test("clicar num módulo da tira leva o recorte junto", async ({ page }) => {
     await page.goto(`/rh/turnover?${BUSCA}`);
     const antes = await lerRecorte(page);
 
