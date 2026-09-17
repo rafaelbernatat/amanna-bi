@@ -83,6 +83,8 @@ function roe(parcial: Partial<Resolucao> = {}): Resolucao {
     acoes: { filtros: QUERY_PADRAO, tela: null, painel: null },
     fontes: ["vw_fato_balanco_mes"],
     painel: null,
+    leituras: [],
+    caminho: "simples",
     ...parcial,
   };
 }

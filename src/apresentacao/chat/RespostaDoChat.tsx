@@ -1,5 +1,9 @@
 import { formatarValor } from "@/apresentacao/formato/formato";
 import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type {
+  LeituraDeFerramenta,
+  ResultadoDeFerramenta,
+} from "@/chat/ferramentas/resultado";
 import type { Autoria, Resposta } from "@/chat/perguntar";
 
 /**
@@ -50,6 +54,18 @@ export function RespostaDoChat({
       style={{ display: "flex", flexDirection: "column", gap: 10 }}
     >
       <p style={ESTILO_DO_TEXTO}>{resposta.texto}</p>
+
+      {r.leituras.length === 0 ? null : (
+        <div
+          data-teste="chat-leituras"
+          style={{ display: "flex", flexDirection: "column", gap: 8 }}
+        >
+          <Rotulo texto="o que foi lido" />
+          {r.leituras.map((l, i) => (
+            <Leitura key={`${l.ferramenta}-${String(i)}`} resultado={l} />
+          ))}
+        </div>
+      )}
 
       {r.consideracoes.length === 0 ? null : (
         <div data-teste="chat-consideracoes">
@@ -167,6 +183,9 @@ export function RespostaDoChat({
       >
         {r.formula} · fechamento {r.asOf} · fonte {r.fontes.join(", ")} ·{" "}
         {autoriaEmTexto(resposta.autoria)}
+        {r.leituras.length === 0
+          ? ""
+          : ` · leituras: ${r.leituras.map((l) => l.ferramenta).join(", ")}`}
       </p>
 
       {r.decisao === null ? null : (
@@ -210,6 +229,198 @@ const ESTILO_DO_TEXTO = {
   font: `400 12px/1.6 ${TIPOGRAFIA.texto}`,
   color: PALETA.texto,
 } as const;
+
+const ESTILO_DA_LINHA = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 10,
+  font: `400 11px/1.5 ${TIPOGRAFIA.texto}`,
+  color: PALETA.textoSecundario,
+} as const;
+
+const ESTILO_DO_NUMERO = {
+  flex: "none",
+  font: `600 11px/1.5 ${TIPOGRAFIA.mono}`,
+  color: PALETA.texto,
+} as const;
+
+/** Um par rótulo–valor, com o valor já formatado no servidor. */
+function Linha({
+  rotulo,
+  valor,
+}: {
+  readonly rotulo: string;
+  readonly valor: string | null;
+}) {
+  return (
+    <li style={ESTILO_DA_LINHA}>
+      <span style={{ minWidth: 0 }}>{rotulo}</span>
+      <span style={ESTILO_DO_NUMERO}>{valor ?? "sem dado"}</span>
+    </li>
+  );
+}
+
+const ESTILO_DA_LISTA = {
+  margin: 0,
+  padding: 0,
+  listStyle: "none",
+  display: "flex",
+  flexDirection: "column",
+  gap: 3,
+} as const;
+
+/** Como cada leitura do laço se apresenta na tela. */
+const TITULO_DA_LEITURA: Readonly<Record<LeituraDeFerramenta["tipo"], string>> =
+  {
+    metrica: "métrica",
+    serie: "mês a mês",
+    comparacao: "comparação",
+    variacao: "contra o ano anterior",
+    ranking: "ranking",
+    decomposicao: "decomposição",
+    grafico: "o gráfico",
+    catalogo: "métricas próximas",
+  };
+
+/**
+ * Uma leitura do laço de ferramentas, desenhada sem derivar nada.
+ *
+ * Só texto que o servidor já formatou: `formatado`, `rotulo`, os destaques
+ * escolhidos lá. A mini-tabela do ranking, o pico e o vale da série, as três
+ * linhas da variação — tudo é cópia do envelope, como o resto da resposta.
+ */
+function Leitura({ resultado }: { readonly resultado: ResultadoDeFerramenta }) {
+  const l = resultado.leitura;
+  return (
+    <div
+      data-teste="chat-leitura-de-ferramenta"
+      data-ferramenta={resultado.ferramenta}
+      style={{
+        border: `1px solid ${PALETA.borda}`,
+        borderRadius: 10,
+        padding: "7px 10px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}
+    >
+      <span
+        style={{
+          font: `500 9px/1.2 ${TIPOGRAFIA.mono}`,
+          color: PALETA.textoTerciario,
+          textTransform: "uppercase",
+          letterSpacing: ".1em",
+        }}
+      >
+        {TITULO_DA_LEITURA[l.tipo]}
+        {"rotulo" in l ? ` · ${l.rotulo}` : ""}
+        {l.tipo === "grafico" ? ` · ${l.resumo.titulo}` : ""}
+      </span>
+      <ul style={ESTILO_DA_LISTA}>
+        <CorpoDaLeitura leitura={l} />
+      </ul>
+    </div>
+  );
+}
+
+function CorpoDaLeitura({
+  leitura: l,
+}: {
+  readonly leitura: LeituraDeFerramenta;
+}) {
+  switch (l.tipo) {
+    case "metrica":
+      return <Linha rotulo={l.rotulo} valor={l.formatado} />;
+    case "serie":
+      return (
+        <>
+          {l.destaques.map((d) => (
+            <Linha
+              key={d.tipo}
+              rotulo={`${d.tipo === "maior" ? "pico" : d.tipo === "menor" ? "vale" : "último"} · ${d.ponto.rotulo}`}
+              valor={d.ponto.formatado}
+            />
+          ))}
+        </>
+      );
+    case "comparacao":
+      return (
+        <>
+          {l.itens.map((i) => (
+            <Linha key={i.metrica} rotulo={i.rotulo} valor={i.formatado} />
+          ))}
+          {l.diferenca === null ? null : (
+            <Linha
+              rotulo={`diferença (${l.diferenca.formula})`}
+              valor={l.diferenca.formatado}
+            />
+          )}
+        </>
+      );
+    case "variacao":
+      return (
+        <>
+          <Linha rotulo={l.atual.ano} valor={l.atual.formatado} />
+          <Linha rotulo={l.anterior.ano} valor={l.anterior.formatado} />
+          {l.diferenca === null ? null : (
+            <Linha rotulo="diferença" valor={l.diferenca.formatado} />
+          )}
+          {l.variacaoPercentual === null ? null : (
+            <Linha rotulo="variação" valor={l.variacaoPercentual.formatado} />
+          )}
+        </>
+      );
+    case "ranking":
+    case "decomposicao":
+      return l.abre ? (
+        <>
+          {l.itens.map((i) => (
+            <Linha
+              key={i.codigo}
+              rotulo={i.rotulo}
+              valor={
+                i.participacao === null
+                  ? i.formatado
+                  : `${i.formatado ?? "sem dado"} · ${i.participacao.formatado}`
+              }
+            />
+          ))}
+          {l.outros === null ? null : (
+            <Linha rotulo="outros" valor={l.outros.formatado} />
+          )}
+          <Linha rotulo="total" valor={l.total.formatado} />
+        </>
+      ) : (
+        <Linha
+          rotulo={`não abre por ${l.dimensao.replace(/_/g, " ")}`}
+          valor={null}
+        />
+      );
+    case "grafico":
+      return (
+        <>
+          {l.resumo.destaques.map((d) => (
+            <Linha
+              key={d.tipo}
+              rotulo={`${d.tipo} · ${d.ponto.rotulo}`}
+              valor={d.ponto.formatado}
+            />
+          ))}
+          {l.resumo.total === null ? null : (
+            <Linha rotulo="total" valor={l.resumo.total.formatado} />
+          )}
+        </>
+      );
+    case "catalogo":
+      return (
+        <>
+          {l.metricas.map((m) => (
+            <Linha key={m.id} rotulo={m.rotulo} valor={m.unidade} />
+          ))}
+        </>
+      );
+  }
+}
 
 /**
  * Os atalhos de uma resposta: as perguntas seguintes, como botões.

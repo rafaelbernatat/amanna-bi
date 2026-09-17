@@ -46,6 +46,7 @@ describe("lerPedido", () => {
     ).toEqual({
       pergunta: "qual o turnover",
       busca: "periodo=dezembro",
+      tela: null,
       historico: [{ pergunta: "antes", metrica: "roe" }],
     });
   });
@@ -54,6 +55,7 @@ describe("lerPedido", () => {
     expect(lerPedido({ pergunta: "x" })).toEqual({
       pergunta: "x",
       busca: "",
+      tela: null,
       historico: [],
     });
   });

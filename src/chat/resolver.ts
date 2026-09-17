@@ -30,6 +30,7 @@ import { lerMetrica, lerPainel } from "@/acesso/leitura";
 import type { TaxaDeReferencia } from "@/acesso/referencias/sgs";
 import { lerReferencias } from "@/acesso/referencias/todas";
 import { apoioDe } from "@/chat/apoio";
+import type { ResultadoDeFerramenta } from "@/chat/ferramentas/resultado";
 import {
   familiaDe,
   leiturasDeCusto,
@@ -60,6 +61,16 @@ export type Consideracao = {
   readonly metrica: string | null;
 };
 
+/**
+ * Por onde a pergunta foi respondida (D-CHAT-ferramentas).
+ *
+ * `simples` é o caminho de sempre. `composto` é o laço de ferramentas, que
+ * compõe leituras e escreve na mesma conversa. `degradado` é a pergunta
+ * composta que o laço não concluiu: o caminho simples respondeu a métrica
+ * principal, e o texto **diz** que a parte composta ficou sem resposta.
+ */
+export type Caminho = "simples" | "composto" | "degradado";
+
 /** O que o estágio 2 entrega ao estágio 3. */
 export type Resolucao = {
   readonly metrica: string;
@@ -88,6 +99,13 @@ export type Resolucao = {
   readonly fontes: readonly string[];
   /** O envelope do painel citado, que a tela desenha sem reler. */
   readonly painel: PanelResponse | null;
+  /**
+   * As leituras que o laço de ferramentas fez, na ordem. Vazio no caminho
+   * simples. Cada número aqui é permitido ao texto — os de ponto, só junto do
+   * rótulo (RF-15).
+   */
+  readonly leituras: readonly ResultadoDeFerramenta[];
+  readonly caminho: Caminho;
 };
 
 /** A métrica pedida não existe no catálogo. */
@@ -114,7 +132,7 @@ export class MetricaForaDoCatalogo extends Error {
  * *"Pergunta sem métrica correspondente recebe recusa útil — 'não tenho essa
  * métrica; tenho estas três próximas' — nunca uma estimativa."*
  */
-function proximasDe(pedida: string): readonly string[] {
+export function proximasDe(pedida: string): readonly string[] {
   const alvo = pedida.toLowerCase();
   const QUANTAS = 3;
   return Object.keys(CATALOGO_GERADO)
@@ -394,5 +412,7 @@ export async function resolver(
     },
     fontes: [entrada.fonte],
     painel,
+    leituras: [],
+    caminho: "simples",
   };
 }

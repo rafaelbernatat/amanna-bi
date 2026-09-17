@@ -232,6 +232,62 @@ test.describe("a conversa continua", () => {
   });
 });
 
+test.describe("a resposta traz o grafico e as leituras (D-CHAT-ferramentas)", () => {
+  test("uma pergunta simples desenha o painel destacado dentro da conversa", async ({
+    page,
+  }) => {
+    await page.goto("/rh/visao");
+    const chat = await abrirChat(page);
+    await perguntar(page, PERGUNTA);
+    await expect(chat.locator('[data-teste="chat-resposta"]')).toBeVisible({
+      timeout: ESPERA,
+    });
+    // O mesmo envelope que a tela desenha, na bolha: nada e relido.
+    const grafico = chat.locator('[data-teste="chat-grafico"]');
+    await expect(grafico).toBeVisible();
+    await expect(grafico).toHaveAttribute("data-painel", "rh-turnover");
+    // A moldura da tela continua unica: o grafico do chat nao e um painel.
+    await expect(
+      page.locator('[data-teste="painel"][data-painel="rh-turnover"]'),
+    ).toHaveCount(1);
+  });
+
+  test("'o que esse grafico mostra?' explica o painel em foco sem sair da tela", async ({
+    page,
+  }) => {
+    await page.goto("/fin/visao?painel=fin-dre");
+    const chat = await abrirChat(page);
+    await perguntar(page, "O que esse gráfico mostra?");
+
+    const resposta = chat.locator('[data-teste="chat-resposta"]');
+    await expect(resposta).toBeVisible({ timeout: ESPERA });
+    // Sem gateway, o resumo e deterministico: o painel em foco e lido pela
+    // ferramenta explicar_grafico, e a leitura aparece na resposta.
+    const leituras = chat.locator('[data-teste="chat-leitura-de-ferramenta"]');
+    await expect(leituras.first()).toHaveAttribute(
+      "data-ferramenta",
+      "explicar_grafico",
+    );
+    await expect(resposta).toContainText(/ponte da DRE|DRE/i);
+    await expect(page).toHaveURL(/\/fin\/visao\?/);
+    await expect(
+      page.locator('[data-teste="painel"][data-destacado="1"]'),
+    ).toHaveAttribute("data-painel", "fin-dre");
+  });
+
+  test("uma pergunta composta sem gateway recebe a recusa util, sem navegar", async ({
+    page,
+  }) => {
+    await page.goto("/rh/visao");
+    const chat = await abrirChat(page);
+    await perguntar(page, "Compare a margem líquida com o turnover");
+    const recusa = chat.locator('[data-teste="chat-recusa"]');
+    await expect(recusa).toBeVisible({ timeout: ESPERA });
+    await expect(recusa).toContainText(/uma métrica por vez/);
+    await expect(page).toHaveURL(/\/rh\/visao$/);
+  });
+});
+
 test.describe("o que o chat recusa", () => {
   test("pergunta fora do catalogo recebe recusa, sem numero e sem navegar", async ({
     page,

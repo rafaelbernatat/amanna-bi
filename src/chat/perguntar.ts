@@ -4,13 +4,17 @@
  * ```
  *  pergunta
  *     │
+ *     ├─ 0 · classificar   NOSSO CÓDIGO. Simples ou composta, por sinais.
+ *     │                    Composta vai ao laço de `laco.ts`, em que o modelo
+ *     │                    PEDE leituras e nosso código as executa.
  *     ├─ 1 · interpretar   modelo, ou casamento de sinônimo se não houver chave
  *     │                    devolve intenção. Nenhum número.
  *     ├─ 2 · resolver      NOSSO CÓDIGO. Valida no catálogo, lê pela fronteira
  *     │                    de perfil, calcula. É aqui que o número nasce.
  *     ├─ 3 · redigir       modelo, ou texto montado do resultado
  *     │
- *     └─ verificar         todo número do texto tem de existir no envelope
+ *     └─ verificar         todo número do texto tem de existir no envelope;
+ *                          ponto de série, só junto do rótulo (D-CHAT-ferramentas)
  * ```
  *
  * ## O verificador não é enfeite
@@ -30,6 +34,23 @@
  */
 
 import { formatarMesAno, formatarValor } from "@/apresentacao/formato/formato";
+import { classificar } from "@/chat/classificar";
+import {
+  contextoDeQuery,
+  ehContexto,
+  rotularFiltros,
+  type ContextoDaTela,
+} from "@/chat/contexto";
+import { paraOModeloLeitura } from "@/chat/ferramentas/executar";
+import { RAIO_DO_ROTULO } from "@/chat/ferramentas/limites";
+import {
+  fraseDe,
+  numerosDe,
+  numerosDoResumo,
+  type NumeroPermitido,
+} from "@/chat/ferramentas/resultado";
+import { resumirPainel } from "@/chat/grafico";
+import { registrarIncidente } from "@/chat/incidente";
 import {
   CONFIANCA_MINIMA,
   filtrosDaPergunta,
@@ -39,6 +60,7 @@ import {
   type Intencao,
   type TurnoAnterior,
 } from "@/chat/interpretar";
+import { resolverComposta } from "@/chat/laco";
 import { PROXIMO_PASSO } from "@/chat/leitura";
 import {
   gatewayConfigurado,
@@ -177,17 +199,52 @@ function sinalNegativoPorPerto(
   return SINAL_NEGATIVO_EM_PALAVRA.test(trecho);
 }
 
-/** Tudo que o texto pode citar sem inventar. */
+/**
+ * Como um número permitido pode aparecer no texto.
+ *
+ * `livre` é o valor principal, o apoio, uma taxa, um total, uma derivação
+ * nossa: pode ser citado em qualquer frase. `com_rotulo` é um ponto de
+ * série, de gráfico ou de ranking: só passa se um dos rótulos do ponto está
+ * a até `RAIO_DO_ROTULO` caracteres do número — "em mar/2026, 5,2%". Sem o
+ * rótulo, "5,2%" é um valor solto que pode ser de qualquer mês, e o
+ * verificador não tem como saber se o modelo o atribuiu ao mês certo.
+ */
+type Permissao =
+  | { readonly modo: "livre" }
+  | { readonly modo: "com_rotulo"; readonly rotulos: readonly string[] };
+
+const LIVRE: Permissao = { modo: "livre" };
+
+/** Um número livre nunca é rebaixado por uma entrada posterior com rótulo. */
+function permitir(
+  permitidos: Map<string, Permissao>,
+  n: NumeroPermitido,
+): void {
+  const atual = permitidos.get(n.texto);
+  if (atual?.modo === "livre") return;
+  if (n.rotulos === null) {
+    permitidos.set(n.texto, LIVRE);
+    return;
+  }
+  const rotulos = atual?.modo === "com_rotulo" ? atual.rotulos : [];
+  permitidos.set(n.texto, {
+    modo: "com_rotulo",
+    rotulos: [...new Set([...rotulos, ...n.rotulos])],
+  });
+}
+
+/** Tudo que o texto pode citar sem inventar, e em que condição. */
 function numerosPermitidos(
   r: Resolucao,
   pergunta: string,
-): ReadonlySet<string> {
-  const permitidos = new Set<string>(BASES_DA_TRADUCAO);
+): ReadonlyMap<string, Permissao> {
+  const permitidos = new Map<string, Permissao>();
+  for (const base of BASES_DA_TRADUCAO) permitidos.set(base, LIVRE);
   const guardar = (valor: number | null, unidade: Unidade) => {
     if (valor !== null) {
-      permitidos.add(formatarValor(valor, unidade));
+      permitidos.set(formatarValor(valor, unidade), LIVRE);
       const emReais = emReaisPorBase(valor, unidade);
-      if (emReais !== null) permitidos.add(emReais);
+      if (emReais !== null) permitidos.set(emReais, LIVRE);
     }
   };
 
@@ -204,7 +261,7 @@ function numerosPermitidos(
     ...r.consideracoes.map((c) => c.rotulo),
   ].join("\n");
   for (const m of material.match(COM_UNIDADE) ?? []) {
-    permitidos.add(m.replace(/\s+/g, " ").trim());
+    permitidos.set(m.replace(/\s+/g, " ").trim(), LIVRE);
   }
   if (r.comparacao !== null) {
     for (const l of r.comparacao.leituras) {
@@ -215,7 +272,50 @@ function numerosPermitidos(
       guardar(r.comparacao.base.valor, r.comparacao.base.unidade);
     }
   }
+
+  // O gráfico que a resposta destaca: destaques e total livres, ponto só com
+  // o rótulo por perto. E as leituras do laço, cada uma com a própria regra.
+  if (r.painel !== null) {
+    for (const n of numerosDoResumo(resumirPainel(r.painel))) {
+      permitir(permitidos, n);
+    }
+  }
+  for (const { leitura } of r.leituras) {
+    for (const n of numerosDe(leitura)) permitir(permitidos, n);
+  }
   return permitidos;
+}
+
+function semAcento(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}
+
+/** Um dos rótulos está a até `RAIO_DO_ROTULO` caracteres do número? */
+function rotuloPorPerto(
+  texto: string,
+  inicio: number,
+  fim: number,
+  rotulos: readonly string[],
+): boolean {
+  const trecho = semAcento(
+    texto.slice(Math.max(0, inicio - RAIO_DO_ROTULO), fim + RAIO_DO_ROTULO),
+  );
+  return rotulos.some((rotulo) => rotulo !== "" && trecho.includes(rotulo));
+}
+
+/** O número passa: livre, ou com o rótulo por perto. */
+function aceito(
+  permissao: Permissao | undefined,
+  texto: string,
+  inicio: number,
+  fim: number,
+): boolean {
+  if (permissao === undefined) return false;
+  if (permissao.modo === "livre") return true;
+  return rotuloPorPerto(texto, inicio, fim, permissao.rotulos);
 }
 
 /**
@@ -234,7 +334,9 @@ export function divergencias(
 
   for (const casamento of texto.matchAll(COM_UNIDADE)) {
     const citado = casamento[0].replace(/\s+/g, " ").trim();
-    if (permitidos.has(citado)) continue;
+    const inicio = casamento.index ?? 0;
+    const fim = inicio + casamento[0].length;
+    if (aceito(permitidos.get(citado), texto, inicio, fim)) continue;
 
     // Com sinal e fora do envelope: não há reescrita que salve.
     if (citado.startsWith("-") || citado.startsWith("+")) {
@@ -243,14 +345,13 @@ export function divergencias(
     }
 
     // "+2,7 p.p." dito como "2,7 p.p.": o mesmo número.
-    if (permitidos.has(`+${citado}`)) continue;
+    if (aceito(permitidos.get(`+${citado}`), texto, inicio, fim)) continue;
 
     // "-R$ 2,3" dito como "perda de R$ 2,3": o mesmo número, se a palavra
     // que carrega o sinal estiver por perto.
-    const inicio = casamento.index ?? 0;
     if (
-      permitidos.has(`-${citado}`) &&
-      sinalNegativoPorPerto(texto, inicio, inicio + casamento[0].length)
+      aceito(permitidos.get(`-${citado}`), texto, inicio, fim) &&
+      sinalNegativoPorPerto(texto, inicio, fim)
     ) {
       continue;
     }
@@ -271,13 +372,21 @@ export function divergencias(
  * verificador confere. É o piso da qualidade da resposta — o modelo escreve
  * melhor, e nunca escreve mais verdadeiro.
  */
+/** O que o texto diz quando a parte composta da pergunta ficou sem resposta. */
+export const AVISO_DE_DEGRADACAO =
+  "A parte composta da pergunta não pôde ser respondida agora; segue a métrica principal.";
+
 export function montarTexto(r: Resolucao, pergunta: string): string {
   const valor =
     r.valor === null
       ? "sem dado neste recorte"
       : formatarValor(r.valor, r.unidade);
 
-  const linhas: string[] = [`${r.rotulo}: ${valor}.`];
+  const linhas: string[] = [];
+  if (r.caminho === "degradado") linhas.push(AVISO_DE_DEGRADACAO);
+  // As leituras do laço vêm primeiro: são o que a pergunta composta pediu.
+  for (const { leitura } of r.leituras) linhas.push(fraseDe(leitura));
+  linhas.push(`${r.rotulo}: ${valor}.`);
 
   const doPainel = r.consideracoes.filter((c) => c.origem === "painel");
   const deApoio = r.consideracoes.filter((c) => c.origem === "apoio");
@@ -568,9 +677,24 @@ export async function perguntar(
   return redigirResposta(pergunta, resolvida.resolucao);
 }
 
+/**
+ * O texto que o laço de ferramentas já escreveu, quando escreveu.
+ *
+ * A pergunta composta redige na mesma conversa em que lê; o estágio 3 não
+ * chama o modelo de novo, só verifica. `autoria` diz de onde o texto veio.
+ */
+export type Redacao = {
+  readonly texto: string;
+  readonly autoria: Autoria;
+};
+
 /** O que os estágios 1 e 2 entregam: o número resolvido, ou a recusa. */
 export type Resolvida =
-  | { readonly tipo: "resolvida"; readonly resolucao: Resolucao }
+  | {
+      readonly tipo: "resolvida";
+      readonly resolucao: Resolucao;
+      readonly redacao?: Redacao;
+    }
   | Extract<Resposta, { tipo: "recusa" }>;
 
 /**
@@ -585,9 +709,48 @@ export type Resolvida =
  */
 export async function resolverPergunta(
   pergunta: string,
-  atuais: Query = QUERY_PADRAO,
+  atuaisOuContexto: Query | ContextoDaTela = QUERY_PADRAO,
   historico: readonly TurnoAnterior[] = [],
 ): Promise<Resolvida> {
+  const contexto = ehContexto(atuaisOuContexto)
+    ? atuaisOuContexto
+    : contextoDeQuery(atuaisOuContexto);
+  const atuais = contexto.filtros;
+
+  /*
+   * Composta vai ao laço (D-CHAT-ferramentas). A classificação é nossa e
+   * determinística: os sinais da pergunta, descontados os que estão no nome
+   * da métrica que o interpretador local escolheu com confiança.
+   */
+  const { classe } = classificar(
+    pergunta,
+    interpretarLocalmente(pergunta, atuais),
+  );
+  let degradada = false;
+  if (classe === "composta") {
+    const composta = await resolverComposta(pergunta, contexto, historico);
+    if (composta !== null) {
+      if (composta.tipo === "recusa") {
+        return {
+          tipo: "recusa",
+          texto: composta.texto,
+          alternativas: composta.alternativas,
+        };
+      }
+      return composta.texto === null
+        ? { tipo: "resolvida", resolucao: composta.resolucao }
+        : {
+            tipo: "resolvida",
+            resolucao: composta.resolucao,
+            redacao: { texto: composta.texto, autoria: "modelo" },
+          };
+    }
+    // O laço não concluiu: o caminho simples responde a métrica principal,
+    // e o texto dirá que a parte composta ficou sem resposta.
+    degradada = true;
+    registrarIncidente({ tipo: "laco_degradou", detalhe: {} });
+  }
+
   const intencao = await interpretar(pergunta, atuais, historico);
 
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
@@ -617,7 +780,10 @@ export async function resolverPergunta(
 
   try {
     const resolucao = await resolver(intencao.metrica, intencao.filtros);
-    return { tipo: "resolvida", resolucao };
+    return {
+      tipo: "resolvida",
+      resolucao: degradada ? { ...resolucao, caminho: "degradado" } : resolucao,
+    };
   } catch (erro) {
     if (erro instanceof MetricaForaDoCatalogo) {
       return {
@@ -643,27 +809,52 @@ export async function resolverPergunta(
 export async function redigirResposta(
   pergunta: string,
   resolucao: Resolucao,
+  redacao?: Redacao,
+  contexto?: ContextoDaTela,
 ): Promise<Resposta> {
   const montado = montarTexto(resolucao, pergunta);
-  const doModelo = gatewayConfigurado()
-    ? await redigirComGateway(pergunta, paraOModelo(resolucao))
-    : null;
+
+  // O laço já escreveu: não há segunda ida ao modelo, só o verificador. Sem
+  // laço nem gateway, o texto é o montado; com gateway, o modelo redige.
+  const doModelo =
+    redacao !== undefined
+      ? redacao.texto
+      : gatewayConfigurado()
+        ? await redigirComGateway(pergunta, paraOModelo(resolucao, contexto))
+        : null;
 
   let texto = montado;
-  let autoria: Autoria = gatewayConfigurado()
-    ? "gateway-indisponivel"
-    : "montado";
+  let autoria: Autoria =
+    redacao === undefined && !gatewayConfigurado()
+      ? "montado"
+      : "gateway-indisponivel";
 
   if (doModelo !== null) {
     const erradas = divergencias(doModelo, resolucao, pergunta);
     if (erradas.length === 0) {
       texto = doModelo;
-      autoria = "modelo";
+      autoria = redacao?.autoria ?? "modelo";
     } else {
       // Divergiu: fica o texto montado, e a autoria diz que a redação foi
-      // recusada. RF-15 pede bloqueio, não correção.
+      // recusada. RF-15 pede bloqueio, não correção — e registro.
       autoria = "modelo-recusado";
+      registrarIncidente({
+        tipo: "verificador_recusou",
+        detalhe: {
+          metrica: resolucao.metrica,
+          caminho: resolucao.caminho,
+          numerosRecusados: erradas.length,
+        },
+      });
     }
+  }
+
+  // O texto do modelo não sabe que a parte composta falhou; o aviso é nosso.
+  if (
+    resolucao.caminho === "degradado" &&
+    !texto.startsWith(AVISO_DE_DEGRADACAO)
+  ) {
+    texto = `${AVISO_DE_DEGRADACAO} ${texto}`;
   }
 
   return {
@@ -681,11 +872,41 @@ export async function redigirResposta(
  * Números **já formatados** junto dos brutos, para o modelo copiar em vez de
  * reescrever — é assim que "substituição de campo" da seção 7.1 vira prática.
  */
-export function paraOModelo(r: Resolucao): unknown {
+export function paraOModelo(r: Resolucao, contexto?: ContextoDaTela): unknown {
   const formatado = (valor: number | null, unidade: Unidade) =>
     valor === null ? null : formatarValor(valor, unidade);
 
+  const grafico = r.painel === null ? null : resumirPainel(r.painel);
+
   return {
+    tela:
+      contexto === undefined || contexto.tela === null
+        ? null
+        : {
+            rota: contexto.tela,
+            titulo: contexto.tituloDaTela,
+            filtros: rotularFiltros(contexto.filtros),
+          },
+    grafico:
+      grafico === null
+        ? null
+        : {
+            painel: grafico.id,
+            titulo: grafico.titulo,
+            forma: grafico.forma,
+            pontos: grafico.pontos.map((p) => ({
+              rotulo: p.rotulo,
+              valor: p.formatado,
+            })),
+            destaques: grafico.destaques.map((d) => ({
+              tipo: d.tipo,
+              rotulo: d.ponto.rotulo,
+              valor: d.ponto.formatado,
+            })),
+            total: grafico.total?.formatado ?? null,
+            truncado: grafico.truncado,
+          },
+    leituras: r.leituras.map((l) => paraOModeloLeitura(l.leitura)),
     metrica: r.rotulo,
     valor: { bruto: r.valor, formatado: formatado(r.valor, r.unidade) },
     periodo: rotuloDe("periodo", r.acoes.filtros.periodo),

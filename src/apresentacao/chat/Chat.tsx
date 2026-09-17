@@ -28,6 +28,7 @@ import {
   type Turno,
 } from "@/apresentacao/chat/conversa";
 import { rolarAte } from "@/apresentacao/chat/Destaque";
+import { GraficoNoChat } from "@/apresentacao/chat/GraficoNoChat";
 import {
   Atalhos,
   RespostaDoChat,
@@ -146,6 +147,9 @@ function ChatNaTela() {
       const pedido: PedidoDeChat = {
         pergunta: limpa,
         busca: buscaAtual,
+        // A tela aberta vai junto: é o contexto de "esse gráfico" e dos
+        // filtros que a pergunta herda (D-CHAT-ferramentas).
+        tela: rota.slice(1),
         historico: historicoDe(lerConversa().turnos),
       };
 
@@ -716,6 +720,11 @@ function CorpoDoTurno({
               Número conferido. Redigindo a leitura…
             </p>
           </Bolha>
+          {/* O gráfico aparece com o número, antes do texto: é o que a
+              pessoa vê enquanto o modelo escreve. */}
+          {previa?.painel == null ? null : (
+            <GraficoNoChat painel={previa.painel} />
+          )}
           {previa === null ? null : (
             <AcoesAplicadas
               acoes={previa.acoes}
@@ -735,6 +744,10 @@ function CorpoDoTurno({
           <Bolha>
             <RespostaDoChat resposta={resposta} aoPerguntar={aoPerguntar} />
           </Bolha>
+          {resposta.tipo === "resposta" &&
+          resposta.resolucao.painel !== null ? (
+            <GraficoNoChat painel={resposta.resolucao.painel} />
+          ) : null}
           {resposta.tipo === "resposta" ? (
             <AcoesAplicadas
               acoes={resposta.resolucao.acoes}

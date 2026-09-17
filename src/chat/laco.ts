@@ -1,0 +1,400 @@
+/**
+ * O laço de ferramentas: a pergunta composta, respondida por leituras que o
+ * modelo **pede** e o nosso código executa (D-CHAT-ferramentas, T-350).
+ *
+ * ```
+ *  pergunta composta
+ *     │
+ *     ├─ classificar   NOSSO CÓDIGO. Sinais na pergunta. Sem gateway aqui.
+ *     ├─ laço          modelo pede leituras por nome; validador e executor
+ *     │                (nosso código) leem pela fronteira; o modelo escreve.
+ *     ├─ principal     NOSSO CÓDIGO. A métrica principal vira a Resolucao
+ *     │                de sempre — prévia, ações de tela, sugestões.
+ *     └─ verificar     todo número do texto tem de existir nas leituras,
+ *                      e ponto de série só com o rótulo por perto.
+ * ```
+ *
+ * O número continua nascendo no estágio 2: nenhuma ferramenta recebe texto
+ * livre que vire consulta, e o que o modelo devolve passa pelo mesmo
+ * verificador do caminho simples. O que muda é que o modelo escolhe **o que
+ * ler**, e não só o que dizer.
+ *
+ * ## Sem gateway
+ *
+ * Duas perguntas compostas ainda respondem sem modelo, porque são
+ * determinísticas: "o que esse gráfico mostra?" com um painel em foco, e um
+ * ranking cuja métrica e dimensão a própria pergunta nomeia. O resto recebe
+ * uma recusa útil — "sem o modelo, respondo uma métrica por vez" — com as
+ * métricas mais próximas como atalho. Nunca uma estimativa.
+ *
+ * ## Falhou
+ *
+ * Gateway fora, inspetor bloqueou, texto vazio: `null`. Quem chama degrada
+ * ao caminho simples e **diz** no texto que a parte composta não foi feita.
+ */
+
+import { classificar, type Sinal } from "@/chat/classificar";
+import type { ContextoDaTela } from "@/chat/contexto";
+import { rotularFiltros } from "@/chat/contexto";
+import { ferramentas } from "@/chat/ferramentas/catalogo";
+import {
+  criarExecutor,
+  executarPedido,
+  LeituraRecusada,
+  type Portas,
+  PORTAS_DO_PRODUTO,
+} from "@/chat/ferramentas/executar";
+import { inspecionarSaida } from "@/chat/ferramentas/inspetor";
+import {
+  LIMITE_MS_POR_RODADA,
+  MAXIMO_DE_CHAMADAS,
+  MAXIMO_DE_RODADAS,
+  TETO_DE_SAIDA_COMPOSTA,
+  TOP_N_PADRAO,
+} from "@/chat/ferramentas/limites";
+import type { ResultadoDeFerramenta } from "@/chat/ferramentas/resultado";
+import { registrarIncidente } from "@/chat/incidente";
+import {
+  CONFIANCA_MINIMA,
+  interpretarLocalmente,
+  type Intencao,
+  type TurnoAnterior,
+} from "@/chat/interpretar";
+import { REGRAS_DE_NUMERO } from "@/chat/regras";
+import { resolver, type Resolucao } from "@/chat/resolver";
+import { destinoDaMetrica, metricasComDestino } from "@/chat/roteamento";
+import {
+  conversarComFerramentas,
+  gatewayConfigurado,
+  type Mensagem,
+} from "@/gateway/openrouter";
+import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
+import type { DimensaoDeRanking, Query } from "@/semantica/contrato";
+
+/** O que o laço entrega: a resolução principal, com as leituras, e o texto. */
+export type Composta = {
+  readonly tipo: "composta";
+  readonly resolucao: Resolucao;
+  /** O texto que o modelo escreveu no próprio laço; `null` sem modelo. */
+  readonly texto: string | null;
+};
+
+/** A recusa útil de uma pergunta composta sem modelo. */
+export type CompostaRecusada = {
+  readonly tipo: "recusa";
+  readonly texto: string;
+  readonly alternativas: readonly {
+    readonly id: string;
+    readonly rotulo: string;
+  }[];
+};
+
+/* ------------------------------------------------------------------ *
+ * A instrução do laço
+ * ------------------------------------------------------------------ */
+
+export const INSTRUCAO_DO_LACO = `Você responde perguntas sobre um painel de controladoria, em português do Brasil,
+no tom de um CFO explicando um número à diretoria.
+
+Você NÃO calcula nem estima número nenhum. Para saber qualquer número, chame
+uma ferramenta: cada uma lê o dado pela mesma regra do painel e devolve os
+números já formatados. Use SOMENTE os números devolvidos pelas ferramentas.
+
+Como usar as ferramentas:
+- Peça primeiro; escreva só depois de ter os números. No máximo ${String(MAXIMO_DE_CHAMADAS)} leituras
+  por pergunta — escolha as que respondem à pergunta.
+- Se a pergunta fala da tela, de "esse gráfico" ou de "esse painel", use
+  explicar_grafico: o painel em foco vem no contexto.
+- Se não souber o id da métrica, use listar_metricas antes.
+- Um erro devolvido por uma ferramenta é resposta: ajuste o pedido ou diga que
+  não há esse dado. Nunca preencha com estimativa.
+
+Como escrever (regras que não se negociam):
+${REGRAS_DE_NUMERO}
+- Ao citar um ponto de série, de gráfico ou de ranking, escreva o rótulo do
+  ponto na mesma frase, colado ao número: "em mar/2026, 5,2%"; "Cliente Alfa,
+  R$ 12,0 mi". Nunca some pontos, nunca calcule média, diferença nem
+  participação: as que existem já vêm calculadas nos resultados.
+- Cite o recorte (período, entidade, área) quando ele não for o padrão.
+- Um só parágrafo de até oito frases, sem saudação, sem título, sem lista.
+- Feche com uma pergunta curta oferecendo o próximo passo.`;
+
+function contextoParaOModelo(contexto: ContextoDaTela): string {
+  const filtros = Object.entries(rotularFiltros(contexto.filtros))
+    .map(([rotulo, valor]) => `${rotulo}: ${valor}`)
+    .join(" · ");
+  const linhas = [
+    `Tela aberta: ${contexto.tituloDaTela ?? "nenhuma"}`,
+    `Filtros da tela: ${filtros}`,
+    `Painel em foco: ${contexto.painelEmFoco ?? "nenhum"}`,
+    `Anos carregados: ${contexto.anos.length === 0 ? "não informado" : contexto.anos.join(", ")}`,
+  ];
+  return linhas.join("\n");
+}
+
+function conversaParaOModelo(historico: readonly TurnoAnterior[]): string {
+  if (historico.length === 0) return "";
+  const linhas = historico.map(
+    (t, i) =>
+      `${String(i + 1)}. "${t.pergunta}" → ${t.metrica ?? "sem métrica"}`,
+  );
+  return `\n\nConversa até aqui:\n${linhas.join("\n")}`;
+}
+
+/* ------------------------------------------------------------------ *
+ * A métrica principal
+ * ------------------------------------------------------------------ */
+
+/** A métrica cujo painel de destino é o dado, se alguma. */
+export function metricaDoPainel(painel: string): string | null {
+  for (const metrica of metricasComDestino()) {
+    if (destinoDaMetrica(metrica)?.painel === painel) return metrica;
+  }
+  return null;
+}
+
+/**
+ * A métrica que vira a `Resolucao` de sempre — prévia, ações, sugestões.
+ *
+ * A primeira leitura que nomeia uma métrica; o painel explicado, pela métrica
+ * que ele detalha; senão o palpite local, se confiante. `null` quando nada
+ * nomeia métrica alguma.
+ */
+export function metricaPrincipal(
+  leituras: readonly ResultadoDeFerramenta[],
+  palpite: Intencao | null,
+  filtrosDaTela: Query,
+): { readonly metrica: string; readonly filtros: Query } | null {
+  for (const { leitura } of leituras) {
+    switch (leitura.tipo) {
+      case "metrica":
+      case "serie":
+      case "variacao":
+      case "ranking":
+      case "decomposicao":
+        return { metrica: leitura.metrica, filtros: leitura.filtros };
+      case "comparacao": {
+        const primeiro = leitura.itens[0];
+        if (primeiro !== undefined) {
+          return { metrica: primeiro.metrica, filtros: leitura.filtros };
+        }
+        break;
+      }
+      case "grafico": {
+        const metrica = metricaDoPainel(leitura.resumo.id);
+        if (metrica !== null) return { metrica, filtros: leitura.filtros };
+        break;
+      }
+      case "catalogo":
+        break;
+    }
+  }
+  if (
+    palpite !== null &&
+    palpite.metrica !== "" &&
+    palpite.confianca >= CONFIANCA_MINIMA
+  ) {
+    return { metrica: palpite.metrica, filtros: palpite.filtros };
+  }
+  void filtrosDaTela;
+  return null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Sem gateway: o que ainda dá para responder
+ * ------------------------------------------------------------------ */
+
+/** A dimensão de ranking que a pergunta nomeia, quando nomeia uma. */
+export function dimensaoNaPergunta(pergunta: string): DimensaoDeRanking | null {
+  const texto = pergunta
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+  const TABELA: readonly [RegExp, DimensaoDeRanking][] = [
+    [/\bclientes?\b/, "cliente"],
+    [/\bfornecedor(?:es)?\b/, "fornecedor"],
+    [/\bcentros? de custo\b/, "centro_custo"],
+    [/\blinhas? da dre\b/, "linha_dre"],
+    [/\bcontas?\b/, "conta"],
+    [/\bsegmentos?\b/, "segmento"],
+    [/\b(?:ufs?|estados?)\b/, "uf"],
+    [/\bareas?\b/, "area"],
+  ];
+  for (const [padrao, dimensao] of TABELA) {
+    if (padrao.test(texto)) return dimensao;
+  }
+  return null;
+}
+
+const SEM_GATEWAY =
+  "Sem o modelo configurado, respondo uma métrica por vez. Pergunte por uma métrica, ou escolha uma destas:";
+
+function recusaUtil(palpite: Intencao | null): CompostaRecusada {
+  const ids = [
+    ...(palpite === null || palpite.metrica === "" ? [] : [palpite.metrica]),
+    ...(palpite?.alternativas ?? []),
+  ].filter((id) => CATALOGO_GERADO[id] !== undefined);
+  const QUANTAS = 3;
+  return {
+    tipo: "recusa",
+    texto: SEM_GATEWAY,
+    alternativas: [...new Set(ids)].slice(0, QUANTAS).map((id) => ({
+      id,
+      rotulo: CATALOGO_GERADO[id]?.rotulo ?? id,
+    })),
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * O laço
+ * ------------------------------------------------------------------ */
+
+/**
+ * Responde uma pergunta composta.
+ *
+ * `null` é "o laço não concluiu": quem chama degrada ao caminho simples. A
+ * recusa útil é resposta, não falha.
+ */
+export async function resolverComposta(
+  pergunta: string,
+  contexto: ContextoDaTela,
+  historico: readonly TurnoAnterior[],
+  portas: Portas = PORTAS_DO_PRODUTO,
+): Promise<Composta | CompostaRecusada | null> {
+  const palpite = interpretarLocalmente(pergunta, contexto.filtros);
+  const { sinais } = classificar(pergunta, palpite);
+
+  if (!gatewayConfigurado()) {
+    const leituras = await leiturasDeterministicas(
+      pergunta,
+      sinais,
+      palpite,
+      contexto,
+      portas,
+    );
+    if (leituras.length === 0) return recusaUtil(palpite);
+    const principal = metricaPrincipal(leituras, palpite, contexto.filtros);
+    if (principal === null) return recusaUtil(palpite);
+    const resolucao = await resolver(principal.metrica, principal.filtros);
+    return {
+      tipo: "composta",
+      resolucao: { ...resolucao, leituras, caminho: "composto" },
+      texto: null,
+    };
+  }
+
+  const executor = criarExecutor(contexto, portas);
+  const mensagens: readonly Mensagem[] = [
+    { role: "system", content: INSTRUCAO_DO_LACO },
+    {
+      role: "user",
+      content: `${contextoParaOModelo(contexto)}${conversaParaOModelo(historico)}\n\nPergunta: ${pergunta}`,
+    },
+  ];
+
+  const resultado = await conversarComFerramentas(
+    mensagens,
+    ferramentas(contexto),
+    executor.executar,
+    {
+      maximoDeRodadas: MAXIMO_DE_RODADAS,
+      tetoDeSaida: TETO_DE_SAIDA_COMPOSTA,
+      limiteMsPorRodada: LIMITE_MS_POR_RODADA,
+    },
+    {
+      inspetor: (conversa) => {
+        const bloqueio = inspecionarSaida(conversa, INSTRUCAO_DO_LACO);
+        if (bloqueio !== null) {
+          registrarIncidente({
+            tipo: "inspetor_bloqueou",
+            detalhe: { motivo: bloqueio.motivo, mensagem: bloqueio.mensagem },
+          });
+        }
+        return bloqueio;
+      },
+    },
+  );
+
+  if (resultado === null) {
+    registrarIncidente({
+      tipo: "laco_falhou",
+      detalhe: {
+        leituras: executor.leituras().length,
+        recusadas: executor.recusadas(),
+      },
+    });
+    return null;
+  }
+
+  const leituras = executor.leituras();
+  const principal = metricaPrincipal(leituras, palpite, contexto.filtros);
+  if (principal === null) return recusaUtil(palpite);
+
+  const resolucao = await resolver(principal.metrica, principal.filtros);
+  return {
+    tipo: "composta",
+    resolucao: { ...resolucao, leituras, caminho: "composto" },
+    texto: resultado.texto,
+  };
+}
+
+/**
+ * Sem modelo: o gráfico em foco e o ranking nomeado, e nada mais.
+ *
+ * A dimensão sai da pergunta ("por cliente", "quais fornecedores"), e a
+ * métrica do palpite local, quando confiante. Sem os dois, nada é lido.
+ */
+async function leiturasDeterministicas(
+  pergunta: string,
+  sinais: readonly Sinal[],
+  palpite: Intencao | null,
+  contexto: ContextoDaTela,
+  portas: Portas,
+): Promise<readonly ResultadoDeFerramenta[]> {
+  const leituras: ResultadoDeFerramenta[] = [];
+  if (sinais.includes("grafico") && contexto.painelEmFoco !== null) {
+    try {
+      leituras.push({
+        ferramenta: "explicar_grafico",
+        leitura: await executarPedido(
+          {
+            nome: "explicar_grafico",
+            painel: contexto.painelEmFoco,
+            filtros: contexto.filtros,
+          },
+          contexto,
+          portas,
+        ),
+      });
+    } catch (erro) {
+      if (!(erro instanceof LeituraRecusada)) throw erro;
+    }
+  }
+  const confiante =
+    palpite !== null &&
+    palpite.metrica !== "" &&
+    palpite.confianca >= CONFIANCA_MINIMA;
+  const dimensao = dimensaoNaPergunta(pergunta);
+  if (sinais.includes("ranking") && confiante && dimensao !== null) {
+    try {
+      leituras.push({
+        ferramenta: "ranking",
+        leitura: await executarPedido(
+          {
+            nome: "ranking",
+            metrica: palpite.metrica,
+            dimensao,
+            limite: TOP_N_PADRAO,
+            ordem: "maior",
+            filtros: palpite.filtros,
+          },
+          contexto,
+          portas,
+        ),
+      });
+    } catch (erro) {
+      if (!(erro instanceof LeituraRecusada)) throw erro;
+    }
+  }
+  return leituras;
+}

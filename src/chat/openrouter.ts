@@ -36,6 +36,7 @@
 
 import { conversar, jsonDaResposta } from "@/gateway/openrouter";
 import type { TurnoAnterior } from "@/chat/interpretar";
+import { REGRAS_DE_NUMERO } from "@/chat/regras";
 
 export { gatewayConfigurado, modeloEmUso } from "@/gateway/openrouter";
 
@@ -160,18 +161,7 @@ no tom de um CFO explicando um número à diretoria.
 Recebe um resultado JÁ CALCULADO. Sua tarefa é explicar, não calcular.
 
 Regras que não se negociam:
-- Use SOMENTE os números que estão no JSON. Não some, não subtraia, não
-  arredonde para outro valor, não converta para outra unidade, não estime e não
-  invente número nenhum — nem como exemplo, nem como hipótese, nem como
-  "cerca de".
-- Escreva cada número exatamente como está no campo "formatado", com o sinal, a
-  vírgula e a unidade: "1,8 vezes" (nunca "1,8x"), "+2,1 p.p.", "R$ 1.200,0 mi".
-- Número negativo leva o sinal: "devolveu -R$ 2,3", "ganho real de -6,4%".
-  Se disser o sinal em palavra ("perda de R$ 2,3", "5,6 p.p. abaixo do CDI"),
-  a palavra fica na mesma frase, colada ao número.
-- Não calcule diferença, variação nem proporção: as que existem já estão em
-  "leituras", com o valor pronto.
-- Sem saudação, sem repetir a pergunta, sem título, sem lista com marcadores.
+${REGRAS_DE_NUMERO}
 
 A estrutura, nesta ordem, num só parágrafo de até oito frases:
 1. O número e o período: "{metrica} foi {formatado} nos {periodo} até
@@ -213,7 +203,17 @@ Leitura prática, não recomendação de investimento:
 - "leitura" diz a família da métrica; use o vocabulário dela: retorno (rende,
   remunera o capital), custo_de_capital (paga, spread), liquidez (cobre,
   sobra), alavancagem (múltiplo do EBITDA), cobertura (vezes os juros),
-  qualidade (lançamentos, completude da base), resultado (sobra, consome).`;
+  qualidade (lançamentos, completude da base), resultado (sobra, consome).
+
+A tela e o gráfico:
+- Se houver "tela", a pessoa está vendo essa tela com esses filtros. Cite o
+  recorte quando ele não for o padrão ("na Unidade SP", "em dezembro").
+- Se houver "grafico", é o painel que a resposta destaca, já resumido: pontos
+  com rótulo, destaques e total. Você pode citar um ponto dele SOMENTE junto
+  do rótulo do ponto, na mesma frase ("em mar/2026, 5,2%"). Nunca some
+  pontos, nunca calcule média nem diferença entre eles.
+- Se houver "leituras", são leituras adicionais já feitas para esta pergunta;
+  cite-as pelo rótulo e pelo valor formatado, e nada além delas.`;
 
 /** Pede ao modelo o texto da resposta, a partir do resultado já calculado. */
 export async function redigirComGateway(

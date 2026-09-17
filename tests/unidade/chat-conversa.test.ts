@@ -41,6 +41,8 @@ function resolucao(metrica: string): Resolucao {
     acoes: { filtros: QUERY_PADRAO, tela: "rh/visao", painel: "rh-turnover" },
     fontes: ["vw_teste"],
     painel: null,
+    leituras: [],
+    caminho: "simples",
   };
 }
 

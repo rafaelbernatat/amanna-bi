@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 257 tarefas: 174 pendentes e 83 já concluídas (5 no protótipo) |
+| **Total** | 266 tarefas: 176 pendentes e 90 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -38,10 +38,10 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
-| [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 18 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
+| [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 54 | 33 | 18 | 3 | 8 de 54 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **257** | **130** | **100** | **22** | **83 de 257** |
+| **Total** | **266** | **135** | **103** | **23** | **90 de 266** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -57,7 +57,7 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    75 tarefas         45 tarefas
+    75 tarefas         54 tarefas
          |               |
          +-------+-------+
                  |
@@ -693,7 +693,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 
 > **Critério de saída:** O conjunto de 100 perguntas atinge as metas da seção 7.7, com zero número inventado.
 
-*45 tarefas · 28 P0 · 15 P1 · 2 P2*
+*54 tarefas · 33 P0 · 18 P1 · 3 P2*
 
 - [ ] **T-301** `P0` `M` `chat` Definir os contratos Intent e Answer com JSON Schema gerado
   · **Aceite:** Existem os tipos Intent e Answer da seção 7.2 e schemas derivados com additionalProperties false e required completo; o teste rejeita 10 payloads inválidos (métrica ausente, breakdown fora do enum, confidence fora de 0..1, undo sem view) e aceita 5 válidos.
@@ -830,6 +830,33 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [ ] **T-345** `P2` `S` `chat` Criar chave de desligamento do chat de IA com degradação segura
   · **Aceite:** Uma variável de ambiente desliga o chat sem rebuild; desligado, a interface exibe as sugestões contextuais e uma mensagem de indisponibilidade, nenhuma chamada ao provedor é feita e nenhum painel deixa de funcionar, coberto nos dois estados.
   · **PRD:** seção 15, seção 13, RF-20 · **Depende de:** T-320
+- [X] **T-346** `P0` `M` `chat` O contexto da tela e o resumo do grafico entram no envelope do chat
+  · **Aceite:** o pedido leva a tela aberta e a busca, e a rota monta `ContextoDaTela` validado contra o inventario (tela fora vira nula, painel de outra tela vira nulo); `resumirPainel` cobre as doze formas com switch exaustivo, pontos com rotulo e valor formatado, destaques (maior, menor, ultimo) e total, truncando acima de 48 pontos; `paraOModelo` leva tela, filtros por rotulo, grafico e leituras; a previa carrega o envelope do painel.
+  · **PRD:** secao 7.1, secao 7.5, secao 11, RF-13, D-CHAT-ferramentas · **Depende de:** T-320, T-312
+- [X] **T-347** `P0` `M` `chat` O gateway fala o protocolo de ferramentas, com laco de rodadas e teto de saida
+  · **Aceite:** `conversarComFerramentas` manda `tools`, `tool_choice` obrigatorio na primeira rodada e livre depois, `parallel_tool_calls` e `provider.require_parameters`; toda `tool_call` recebe mensagem `tool`, argumentos que nao sao JSON chegam como nulo, esgotadas as rodadas a ultima forca texto com `tool_choice: none`; inspetor que bloqueia devolve nulo sem chamada; `modeloEmUso("ferramentas")` le `OPENROUTER_MODEL_FERRAMENTAS` com recuo em `OPENROUTER_MODEL`; `conversarComUso` devolve tokens.
+  · **PRD:** secao 7.3, secao 8.2, D-CHAT, D-CHAT-ferramentas · **Depende de:** T-302
+- [X] **T-348** `P0` `L` `chat` Oito ferramentas fechadas, com validador que recusa antes de tocar porta e executor pela fronteira
+  · **Aceite:** `ler_metrica`, `serie_da_metrica`, `comparar_metricas`, `variacao`, `ranking`, `decompor`, `explicar_grafico` e `listar_metricas` tem esquema com `additionalProperties: false` e enums do catalogo, dos filtros, das oito dimensoes e dos anos da fonte; o validador recusa ferramenta desconhecida, chave extra, metrica fora do catalogo (com proximas), filtro fora do vocabulario, ano nao carregado, dimensao de pessoa, topN acima de 10 e painel fora do registro; um espiao prova que recusa nao toca porta; o executor le por `lerMetrica`, `lerPainel` e `lerRanking`, acumula as leituras e devolve so o formatado ao modelo; a quinta chamada e recusada por limite.
+  · **PRD:** secao 7.1, secao 7.5, secao 11, RF-12, RF-16, RF-18, D-CHAT-ferramentas · **Depende de:** T-272, T-347
+- [X] **T-349** `P0` `M` `chat` O verificador aceita as leituras do laco e o resumo do grafico, com a regra do rotulo
+  · **Aceite:** `numerosPermitidos` distingue numero livre (metrica, total, destaque, derivacao nossa) de numero com rotulo (ponto de serie, grafico ou ranking), e o segundo so passa com um rotulo do ponto ate 80 caracteres do numero; o item de um ranking passa junto do nome e reprova solto; um numero somado e recusado; as reescritas de sinal continuam valendo; toda leitura tem frase montada cujos numeros sao os dela.
+  · **PRD:** RF-15, secao 7.7, D-CHAT-ferramentas · **Depende de:** T-348
+- [X] **T-350** `P0` `M` `chat` Classificar simples ou composta antes do gateway, e o laco com degradacao que se declara
+  · **Aceite:** `classificar` decide por sinais (ranking, serie, variacao, comparacao, grafico, catalogo; causa nao leva ao laco), descontando o sinal que esta no nome da metrica escolhida com confianca; as 39 sugestoes das telas e as de continuacao sao simples por teste; composta com gateway vai ao laco e volta como `Resolucao` com leituras e `caminho: composto`, com o texto do modelo verificado sem segunda ida ao gateway; laco que falha degrada ao caminho simples com `caminho: degradado` e o texto diz que a parte composta ficou sem resposta; sem gateway, grafico em foco e ranking nomeado respondem de forma deterministica e o resto recebe a recusa util.
+  · **PRD:** secao 7.1, secao 7.5, RF-16, D-CHAT-ferramentas · **Depende de:** T-348, T-349
+- [X] **T-351** `P1` `M` `paineis` O grafico destacado e as leituras aparecem dentro da conversa
+  · **Aceite:** a previa e a resposta desenham o painel destacado na bolha com o mesmo `DesenhoDePainel` da tela, numa caixa `chat-grafico` que nao e moldura de painel (a moldura da tela continua unica); as leituras do laco aparecem como mini-tabela (ranking, decomposicao), pico e vale (serie), tres linhas (variacao) e lista (comparacao), so com texto ja formatado no servidor; a linha de auditoria nomeia as ferramentas usadas; e2e cobre o grafico na resposta simples e a explicacao do painel em foco.
+  · **PRD:** secao 6.5, secao 7.2, RF-13, D-CHAT-ferramentas · **Depende de:** T-346, T-350
+- [X] **T-352** `P1` `S` `seguranca` Inspetor de saida e registro de incidente do chat
+  · **Aceite:** antes de cada ida ao gateway o inspetor confere a instrucao de sistema e recusa resultado de ferramenta com CPF, e-mail ou campo de pessoa; bloqueio derruba o laco sem chamada e registra incidente; verificador recusando, laco falhando e degradando registram incidente como log estruturado sem a pergunta e sem o sujeito; a migracao `010_chat` reserva `amanna.chat_incidente` para T-324.
+  · **PRD:** secao 11, secao 13, D-CHAT-ferramentas · **Depende de:** T-347
+- [ ] **T-353** `P2` `S` `chat` O verificador captura contagem e pontos sem sufixo, junto de rotulo de item
+  · **Aceite:** um numero inteiro sem unidade a ate 80 caracteres de um rotulo de item de ranking ou de ponto de serie e conferido contra o envelope como os demais; "48 vagas" no texto de uma resposta cuja leitura diz 47 e recusado; um teste fixa os dois lados e a taxa de recusa das 33 perguntas de CFO nao sobe.
+  · **PRD:** RF-15, D-CHAT-ferramentas · **Depende de:** T-349
+- [X] **T-354** `P1` `S` `dados` A porta de ranking em fixtures e na fronteira, para o chat testar sem banco
+  · **Aceite:** `lerRanking` responde em fixtures por area, cliente, centro de custo e fornecedor com os mesmos numeros de `calcularRanking`, e as demais dimensoes respondem `abre: false`; a fronteira valida a dimensao antes de tocar a fonte; o executor do chat e testado sobre as fixtures sem banco. (E a mesma entrega de T-272, vista do chat.)
+  · **PRD:** RF-18, RF-21, D-DADOS, D-CHAT-ferramentas · **Depende de:** T-272
 
 ---
 

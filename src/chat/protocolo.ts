@@ -19,7 +19,7 @@
 import type { TurnoAnterior } from "@/chat/interpretar";
 import type { Resposta } from "@/chat/perguntar";
 import type { Resolucao } from "@/chat/resolver";
-import type { Unidade } from "@/semantica/contrato";
+import type { PanelResponse, Unidade } from "@/semantica/contrato";
 
 /** Acima disto a rota recusa a pergunta: é limite de custo, não de conteúdo. */
 export const TAMANHO_MAXIMO_DA_PERGUNTA = 500;
@@ -32,6 +32,14 @@ export type PedidoDeChat = {
   readonly pergunta: string;
   /** A busca da URL da tela, como está: a rota a lê com o mesmo leitor da página. */
   readonly busca: string;
+  /**
+   * A tela aberta, como `modulo/tela`, ou `null` fora de uma tela.
+   *
+   * Com a busca, é o contexto da pergunta (D-CHAT-ferramentas): a rota valida
+   * contra o inventário, e "o que esse gráfico mostra?" só existe porque a
+   * tela e o painel em foco chegam junto.
+   */
+  readonly tela: string | null;
   readonly historico: readonly TurnoAnterior[];
 };
 
@@ -42,6 +50,12 @@ export type Previa = {
   readonly valor: number | null;
   readonly unidade: Unidade;
   readonly acoes: Resolucao["acoes"];
+  /**
+   * O painel que a resposta destaca, para a conversa desenhá-lo antes do
+   * texto (T-351). É o mesmo envelope que a tela desenha; a bolha do chat
+   * não relê nada.
+   */
+  readonly painel: PanelResponse | null;
 };
 
 /**
