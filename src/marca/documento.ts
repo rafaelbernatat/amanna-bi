@@ -18,13 +18,26 @@
  * que custa um terço a mais de tamanho e, com o teto de 256 KiB, mantém o
  * documento abaixo de 400 KiB.
  *
+ * ## Duas origens, um documento
+ *
+ * A marca pode vir do **site** da empresa (extraída em três estágios) ou ser
+ * informada **à mão** (cores, logo enviado e nome). O documento é o mesmo nos
+ * dois casos, e `origem` diz qual foi: é o que a tela usa para dizer "o que
+ * encontramos em dreamy.com.br" ou "o que você informou", e o que a
+ * auditoria lê para saber se alguém digitou uma cor ou o site a declarou.
+ *
+ * A versão 1 só conhecia o site. A leitura ainda a entende — `origem: "site"`,
+ * `nome: null` — e a próxima gravação já escreve a versão 2. Ninguém precisa
+ * migrar nada à mão.
+ *
  * ## O que se guarda de quem aplicou, e o que não se guarda
  *
  * Só o `sujeito` da sessão — o identificador estável do provedor de
- * identidade. Nunca nome, nunca e-mail: seria dado pessoal novo, num
+ * identidade. Nunca nome de pessoa, nunca e-mail: seria dado pessoal novo, num
  * armazenamento novo, sem retenção acordada (seção 11). O par
  * `aplicadaPor`/`aplicadaEm` é a trilha de auditoria desta feature, e é o
- * próprio artefato — não há registro à parte que possa divergir dele.
+ * próprio artefato — não há registro à parte que possa divergir dele. O `nome`
+ * do documento é o da **instalação** ("Dreamy S.A."), não o de quem aplicou.
  */
 
 import {
@@ -35,7 +48,17 @@ import { CHAVES_DE_MARCA, type CoresDaMarca } from "@/apresentacao/tema/tema";
 import { perfilValido, type Perfil } from "@/seguranca/identidade";
 
 /** Sobe quando o formato do documento mudar. Campo novo é migração. */
-export const VERSAO_DA_MARCA = 1;
+export const VERSAO_DA_MARCA = 2;
+
+/** As versões que a leitura ainda entende. A gravação só escreve a atual. */
+export const VERSOES_LIDAS: readonly number[] = [1, VERSAO_DA_MARCA];
+
+/** De onde a marca veio. */
+export const ORIGENS = ["site", "manual"] as const;
+export type OrigemDaMarca = (typeof ORIGENS)[number];
+
+/** O nome da instalação cabe num cabeçalho de uma linha. */
+export const TETO_DO_NOME = 60;
 
 /** Os tipos de imagem que o logo pode ter. */
 export const TIPOS_DE_LOGO = [
@@ -57,12 +80,18 @@ export type LogoDaMarca = {
   readonly impressao: string;
 };
 
-/** Como a escolha das cores foi feita. */
+/**
+ * Como a escolha das cores foi feita.
+ *
+ * `manual` é a pessoa digitando: não houve candidato nem modelo, e o único
+ * estágio que roda é o de contraste.
+ */
 export const AUTORIAS = [
   "modelo",
   "deterministica",
   "modelo-recusado",
   "gateway-indisponivel",
+  "manual",
 ] as const;
 export type AutoriaDaExtracao = (typeof AUTORIAS)[number];
 
@@ -78,8 +107,11 @@ export type RegistroDaExtracao = {
 /** A marca aplicada numa instalação. */
 export type Marca = {
   readonly versao: typeof VERSAO_DA_MARCA;
-  /** A origem informada, já normalizada. */
-  readonly site: string;
+  readonly origem: OrigemDaMarca;
+  /** A origem informada, já normalizada. Só existe quando veio do site. */
+  readonly site: string | null;
+  /** O nome que o cabeçalho mostra no lugar de "Controladoria". */
+  readonly nome: string | null;
   readonly cores: CoresDaMarca;
   readonly logo: LogoDaMarca | null;
   /** ISO 8601 com fuso. */
@@ -90,6 +122,31 @@ export type Marca = {
   };
   readonly extracao: RegistroDaExtracao;
 };
+
+/* ------------------------------------------------------------------ *
+ * O nome
+ * ------------------------------------------------------------------ */
+
+/** Caractere de controle ou de formatação: nada disso é nome. */
+const CONTROLE = /[\p{Cc}\p{Cf}]/u;
+
+/**
+ * O nome como a pessoa o digitou, posto em forma: espaços colapsados, pontas
+ * aparadas. Vazio vira `null`, que é "sem nome", e não "nome vazio".
+ */
+export function normalizarNome(bruto: string): string | null {
+  const limpo = bruto.replace(/\s+/g, " ").trim();
+  return limpo === "" ? null : limpo;
+}
+
+/** O nome cabe no cabeçalho e não carrega caractere invisível? */
+export function nomeDentroDaForma(nome: string): boolean {
+  return (
+    nome.length <= TETO_DO_NOME &&
+    !CONTROLE.test(nome) &&
+    normalizarNome(nome) === nome
+  );
+}
 
 /* ------------------------------------------------------------------ *
  * Leitura defensiva
@@ -148,21 +205,66 @@ function lerExtracao(bruto: unknown): RegistroDaExtracao | null {
 }
 
 /**
+ * O nome guardado. `undefined` quer dizer "fora da forma": o documento inteiro
+ * é recusado, porque o nome vai para o cabeçalho de todas as telas.
+ */
+function lerNome(bruto: unknown): string | null | undefined {
+  if (bruto === null || bruto === undefined) return null;
+  if (typeof bruto !== "string") return undefined;
+  if (bruto === "") return null;
+  return nomeDentroDaForma(bruto) ? bruto : undefined;
+}
+
+/**
+ * A origem e o site, que andam juntos.
+ *
+ * Na versão 1 não havia origem: tudo era do site. Na 2, `site` é obrigatório
+ * quando a origem é o site, e precisa ser nulo quando é manual — um documento
+ * manual com site é contradição, e contradição não se lê.
+ */
+function lerOrigem(
+  bruto: Record<string, unknown>,
+  versao: number,
+): { readonly origem: OrigemDaMarca; readonly site: string | null } | null {
+  const site = bruto["site"];
+  if (versao === 1) {
+    return textoNaoVazio(site) ? { origem: "site", site } : null;
+  }
+  const origem = bruto["origem"];
+  if (!(ORIGENS as readonly unknown[]).includes(origem)) return null;
+  if (origem === "site") {
+    return textoNaoVazio(site) ? { origem, site } : null;
+  }
+  if (site !== null && site !== undefined) return null;
+  return { origem: "manual", site: null };
+}
+
+/**
  * Lê um documento guardado. `null` para qualquer coisa que não seja um.
  *
  * Nunca lança, e a razão é operacional: o arquivo mora num diretório montado
  * que uma pessoa pode abrir e editar. Um JSON quebrado precisa devolver a tela
  * ao tema padrão, não derrubar as treze telas — mesmo espírito de `ler()` no
  * armazém e de `lerPainelParaTela` na camada de acesso.
+ *
+ * Lê a versão 1 e a 2, e devolve sempre a forma atual.
  */
 export function lerMarca(bruto: unknown): Marca | null {
   if (!ehObjeto(bruto)) return null;
-  if (bruto["versao"] !== VERSAO_DA_MARCA) return null;
+  const versao = bruto["versao"];
+  if (typeof versao !== "number" || !VERSOES_LIDAS.includes(versao)) {
+    return null;
+  }
 
-  const site = bruto["site"];
+  const origem = lerOrigem(bruto, versao);
+  if (origem === null) return null;
+
+  const nome = versao === 1 ? null : lerNome(bruto["nome"]);
+  if (nome === undefined) return null;
+
   const aplicadaEm = bruto["aplicadaEm"];
   const aplicadaPor = bruto["aplicadaPor"];
-  if (!textoNaoVazio(site) || !textoNaoVazio(aplicadaEm)) return null;
+  if (!textoNaoVazio(aplicadaEm)) return null;
   if (!ehObjeto(aplicadaPor)) return null;
 
   const sujeito = aplicadaPor["sujeito"];
@@ -178,7 +280,9 @@ export function lerMarca(bruto: unknown): Marca | null {
 
   return {
     versao: VERSAO_DA_MARCA,
-    site,
+    origem: origem.origem,
+    site: origem.site,
+    nome,
     cores,
     logo: bruto["logo"] === null ? null : lerLogo(bruto["logo"]),
     aplicadaEm,
@@ -192,23 +296,32 @@ export function lerMarca(bruto: unknown): Marca | null {
  * ------------------------------------------------------------------ */
 
 /**
- * O que a extração produziu e a tela mostra antes de alguém aplicar.
+ * O que a extração — ou o formulário — produziu, e a tela mostra antes de
+ * alguém aplicar.
  *
- * Guarda **as duas versões das cores**: a que o site declara e a que passou
- * pelo ajuste de contraste. É o que permite a tela mostrar o antes e o depois
- * lado a lado — e é o que impede o ajuste de ser silencioso.
+ * Guarda **as duas versões das cores**: a original (a que o site declara, ou a
+ * que a pessoa digitou) e a que passou pelo ajuste de contraste. É o que
+ * permite a tela mostrar o antes e o depois lado a lado — e é o que impede o
+ * ajuste de ser silencioso.
  */
 export type Proposta = {
-  readonly site: string;
+  readonly origem: OrigemDaMarca;
+  readonly site: string | null;
+  readonly nome: string | null;
   /** As cores já ajustadas: é o que entra se alguém aplicar. */
   readonly cores: CoresDaMarca;
-  /** As cores como o site as declara, antes do ajuste. */
-  readonly coresDoSite: CoresDaMarca;
+  /** As cores antes do ajuste: como o site as declara, ou como foram digitadas. */
+  readonly coresOriginais: CoresDaMarca;
   readonly logo: LogoDaMarca | null;
-  /** Por que o logo do site não serviu, quando não serviu. */
+  /**
+   * Por que o logo não serviu, quando não serviu.
+   *
+   * No caminho manual, `logo` pode continuar preenchido ao lado disto: é o
+   * logo **em uso**, mantido porque o arquivo enviado foi recusado.
+   */
   readonly logoRecusado: string | null;
   readonly extracao: RegistroDaExtracao;
-  /** Quantas cores o site declarava, para a tela dizer o tamanho da escolha. */
+  /** Quantas cores o site declarava. Zero no caminho manual. */
   readonly candidatos: number;
   readonly avisos: readonly string[];
   readonly propostaEm: string;
@@ -227,24 +340,36 @@ export const ESTADO_VAZIO: EstadoDaMarca = {
   proposta: null,
 };
 
-function lerProposta(bruto: unknown): Proposta | null {
+function lerProposta(bruto: unknown, versao: number): Proposta | null {
   if (!ehObjeto(bruto)) return null;
+  const origem = lerOrigem(bruto, versao);
+  if (origem === null) return null;
+
+  const nome = versao === 1 ? null : lerNome(bruto["nome"]);
+  if (nome === undefined) return null;
+
   const cores = lerCores(bruto["cores"]);
-  const coresDoSite = lerCores(bruto["coresDoSite"]);
+  // Na versão 1 o campo chamava `coresDoSite`; só o site as declarava.
+  const coresOriginais = lerCores(
+    versao === 1 ? bruto["coresDoSite"] : bruto["coresOriginais"],
+  );
   const extracao = lerExtracao(bruto["extracao"]);
-  const site = bruto["site"];
   const propostaEm = bruto["propostaEm"];
-  if (cores === null || coresDoSite === null || extracao === null) return null;
-  if (!textoNaoVazio(site) || !textoNaoVazio(propostaEm)) return null;
+  if (cores === null || coresOriginais === null || extracao === null) {
+    return null;
+  }
+  if (!textoNaoVazio(propostaEm)) return null;
 
   const logoRecusado = bruto["logoRecusado"];
   const candidatos = bruto["candidatos"];
   const avisos = bruto["avisos"];
 
   return {
-    site,
+    origem: origem.origem,
+    site: origem.site,
+    nome,
     cores,
-    coresDoSite,
+    coresOriginais,
     logo: bruto["logo"] === null ? null : lerLogo(bruto["logo"]),
     logoRecusado: typeof logoRecusado === "string" ? logoRecusado : null,
     extracao,
@@ -263,15 +388,20 @@ function lerProposta(bruto: unknown): Proposta | null {
  * num diretório montado que uma pessoa pode abrir e editar, e um JSON com um
  * caractere a mais não pode derrubar as treze telas. Mesmo espírito de
  * `lerPainelParaTela` na camada de acesso.
+ *
+ * A versão do estado manda na leitura da proposta, que não carrega versão
+ * própria; a marca aplicada carrega a dela.
  */
 export function lerEstado(bruto: unknown): EstadoDaMarca {
-  if (!ehObjeto(bruto) || bruto["versao"] !== VERSAO_DA_MARCA) {
+  if (!ehObjeto(bruto)) return ESTADO_VAZIO;
+  const versao = bruto["versao"];
+  if (typeof versao !== "number" || !VERSOES_LIDAS.includes(versao)) {
     return ESTADO_VAZIO;
   }
   return {
     versao: VERSAO_DA_MARCA,
     aplicada: lerMarca(bruto["aplicada"]),
-    proposta: lerProposta(bruto["proposta"]),
+    proposta: lerProposta(bruto["proposta"], versao),
   };
 }
 
@@ -283,4 +413,31 @@ export function lerEstadoDeTexto(texto: string | null): EstadoDaMarca {
   } catch {
     return ESTADO_VAZIO;
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * Como a marca se apresenta
+ * ------------------------------------------------------------------ */
+
+/** O domínio, como a pessoa o reconhece. */
+export function hospedeiroDe(site: string): string {
+  try {
+    return new URL(site).hostname.replace(/^www\./, "");
+  } catch {
+    return site;
+  }
+}
+
+/**
+ * De onde a marca veio, em uma expressão que a tela mostra.
+ *
+ * "dreamy.com.br" quando veio do site; "cores informadas à mão" quando não.
+ */
+export function origemLegivel(marca: {
+  readonly origem: OrigemDaMarca;
+  readonly site: string | null;
+}): string {
+  return marca.origem === "site" && marca.site !== null
+    ? hospedeiroDe(marca.site)
+    : "cores informadas à mão";
 }

@@ -49,6 +49,7 @@ export function Cabecalho({
   dimensoes,
   painelDestacado,
   conta,
+  nome,
   logo,
 }: {
   readonly modulo: Modulo;
@@ -58,6 +59,11 @@ export function Cabecalho({
   readonly painelDestacado: string | null;
   /** Quem entrou, e se essa pessoa configura a instalacao (D-MARCA). */
   readonly conta: { readonly perfil: Perfil; readonly podeConfigurar: boolean };
+  /**
+   * O nome da instalacao, escrito quando nao ha logo. Chega resolvido: o da
+   * marca quando ela tem um, ou o padrao do produto.
+   */
+  readonly nome: string;
   /**
    * O logo da empresa, quando ha marca configurada.
    *
@@ -118,13 +124,17 @@ export function Cabecalho({
           {logo === null ? (
             <>
               <div
+                data-teste="nome-da-instalacao"
                 style={{
                   font: `500 15px/1.1 ${TIPOGRAFIA.titulo}`,
                   color: PALETA.texto,
                   letterSpacing: ".005em",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               >
-                Controladoria
+                {nome}
               </div>
               <div
                 style={{

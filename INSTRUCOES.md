@@ -731,13 +731,13 @@ A seção 11 do PRD diz que *"só o catálogo de métricas, a pergunta e os núm
 
 **O que fazer**
 
-A marca precisa de um lugar para ser gravada, e o modo depende de onde a instalação roda (D5). No **Docker no cliente**: um volume montado e a variável `MARCA_DIR` apontando para ele, com caminho absoluto — o boot recusa relativo, porque relativo resolve contra o diretório de trabalho do processo e muda entre `next dev`, `next start` e o contêiner. Na **nuvem dedicada**: a loja de blobs provisionada e a credencial em `MARCA_BLOB_TOKEN`, que é segredo e nunca entra em arquivo versionado. O boot já recusa a combinação perigosa — armazém de arquivo em disco efêmero grava, lê na mesma invocação e perde tudo no próximo início. Confirme que a variável responde de fato antes de dar o item por resolvido: marcar `[X]` sem o artefato é o que a seção 5 do EXECUTE proíbe.
+A marca precisa de um lugar para ser gravada, e o modo depende de onde a instalação roda (D5). No **Docker no cliente**: um volume montado e a variável `MARCA_DIR` apontando para ele, com caminho absoluto — o boot recusa relativo, porque relativo resolve contra o diretório de trabalho do processo e muda entre `next dev`, `next start` e o contêiner. Na **nuvem dedicada**: `MARCA_ARMAZEM=postgres`, que grava no mesmo banco da réplica (a `DATABASE_URL` de H-65, esquema `amanna`, tabela `marca_da_instalacao` com RLS ligada e invisível pela Data API do Supabase) — não há credencial nova, e o logo do cliente passa a morar no banco dele, o que o contrato precisa dizer. O boot já recusa a combinação perigosa — armazém de arquivo em disco efêmero grava, lê na mesma invocação e perde tudo no próximo início. Confirme que a variável responde de fato antes de dar o item por resolvido: marcar `[X]` sem o artefato é o que a seção 5 do EXECUTE proíbe.
 
 | | |
 |---|---|
-| **Resultado esperado** | Volume e `MARCA_DIR` no compose do cliente, ou loja de blobs e `MARCA_BLOB_TOKEN` na nuvem, verificados com uma marca aplicada e relida depois de reiniciar |
+| **Resultado esperado** | Volume e `MARCA_DIR` no compose do cliente, ou `MARCA_ARMAZEM=postgres` sobre a `DATABASE_URL` na nuvem, verificados com uma marca aplicada e relida depois de reiniciar |
 | **Onde o resultado vai** | Pacote de instalação; `.env.local` do ambiente ou o cofre de segredos |
-| **Destrava** | Nada. Sem isto a personalização fica desligada, que é um estado válido |
+| **Destrava** | Nada. Sem isto a personalização fica desligada, que é um estado válido. Na nuvem, depende de H-65 |
 
 ### [ ] H-64 · Decidir o que fazer quando nem o extremo alcança o contraste mínimo
 

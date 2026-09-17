@@ -47,7 +47,9 @@ export async function POST(pedido: Request): Promise<Response> {
     const identidade = await lerIdentidade();
     await aplicarMarca({
       versao: VERSAO_DA_MARCA,
+      origem: proposta.origem,
       site: proposta.site,
+      nome: proposta.nome,
       cores: proposta.cores,
       logo: proposta.logo,
       aplicadaEm: new Date().toISOString(),

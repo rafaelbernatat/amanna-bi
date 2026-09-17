@@ -26,11 +26,23 @@ const jiti = createJiti(import.meta.url, {
     "@/semantica": resolve(RAIZ, "src", "semantica"),
     "@/apresentacao": resolve(RAIZ, "src", "apresentacao"),
     "@/acesso": resolve(RAIZ, "src", "acesso"),
+    "@/marca": resolve(RAIZ, "src", "marca"),
   },
 });
 
 const { matrizExpandida, EXCECOES } = await jiti.import(
   resolve(RAIZ, "src", "seguranca", "autorizacao.ts"),
+);
+
+/*
+ * Quem configura a marca da instalacao (D-MARCA).
+ *
+ * Nao e painel nem dado do cliente, e por isso nao entra no enum de acesso —
+ * mas quem le este arquivo como inventario de "quem pode o que" precisa
+ * encontrar a resposta aqui, e nao descobrir a regra lendo codigo.
+ */
+const { PERFIS_QUE_CONFIGURAM_MARCA } = await jiti.import(
+  resolve(RAIZ, "src", "marca", "permissao.ts"),
 );
 
 const linhas = matrizExpandida();
@@ -47,6 +59,11 @@ const documento = {
   origem: "src/seguranca/autorizacao.ts (T-173) — derivado, nao editar a mao",
   regra: "PRD secao 11: concessao por modulo; excecoes explicitas com motivo",
   excecoes: EXCECOES,
+  configuramMarca: {
+    regra:
+      "D-MARCA: a marca e configuracao da instalacao, fora da matriz de leitura",
+    perfis: PERFIS_QUE_CONFIGURAM_MARCA,
+  },
   totais: Object.fromEntries(
     Object.entries(porPerfil).map(([perfil, telas]) => [
       perfil,

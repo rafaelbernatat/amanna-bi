@@ -14,7 +14,8 @@ import {
   semRuido,
   type Candidatos,
 } from "@/marca/extrair/candidatos";
-import { conferirContraste, extrairMarca } from "@/marca/extrair/extrair";
+import { conferirContraste } from "@/marca/conferir-contraste";
+import { extrairMarca } from "@/marca/extrair/extrair";
 import {
   aplicarEscolha,
   divergenciasDaEscolha,
@@ -302,7 +303,7 @@ describe("extrairMarca, do endereço à proposta", () => {
   it("guarda as cores do site ao lado das aplicadas", async () => {
     const feita = await extrairMarca("https://dreamy.com.br/", AMBIENTE);
     if (!feita.ok) return;
-    expect(Object.keys(feita.proposta.coresDoSite).sort()).toEqual(
+    expect(Object.keys(feita.proposta.coresOriginais).sort()).toEqual(
       Object.keys(feita.proposta.cores).sort(),
     );
   });

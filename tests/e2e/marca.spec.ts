@@ -15,6 +15,10 @@ import { expect, test, type Page } from "@playwright/test";
  * limpar ao fim de cada um é o que torna o resultado repetível — a alternativa
  * seria uma rota de reinício, e um endereço que zera estado é buraco que fica.
  *
+ * A série vale **entre os dois tamanhos de tela também**: `playwright.config.ts`
+ * põe este arquivo em dois projetos próprios, um dependente do outro, porque
+ * o `limpar` de um tamanho apagava a proposta que o outro ia aplicar.
+ *
  * ## O que este arquivo não cobre, e onde isso está coberto
  *
  * O perfil vem do ambiente do processo (`AUTH_PROFILE`), então não dá para
@@ -33,6 +37,16 @@ test.describe.configure({ mode: "serial" });
 const SITE = "dreamy.com.br";
 /** A cor que o site de arnês declara em `theme-color`. */
 const COR_DO_SITE = "rgb(11, 92, 255)";
+
+/** Um PNG de um pixel, para o envio manual. O tipo sai destes bytes. */
+const PNG_DE_UM_PIXEL = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "base64",
+);
+/** Um vetor com script: a conferência dos bytes recusa, e a tela diz. */
+const SVG_PERIGOSO = Buffer.from(
+  '<svg xmlns="http://www.w3.org/2000/svg"><script>x()</script></svg>',
+);
 
 async function limpar(page: Page) {
   await page.goto("/configuracoes/marca");
@@ -214,6 +228,151 @@ test.describe("o fluxo inteiro", () => {
       "data-tem-marca",
       "0",
     );
+  });
+});
+
+test.describe("o caminho manual", () => {
+  test("nome, cores e logo informados à mão viram proposta, e aplicar muda o painel", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/configuracoes/marca");
+    await page.locator('[data-teste="caminho-manual"] summary').click();
+
+    await page.locator('[data-teste="campo-do-nome"]').fill("Dreamy S.A.");
+    // A cor da empresa, que passa no contraste; e uma que reprova.
+    await page.locator('[data-teste="cor-marca"]').fill("#0b5cff");
+    await page.locator('[data-teste="cor-destaque"]').fill("#ffcc00");
+    await page.locator('[data-teste="campo-do-logo"]').setInputFiles({
+      name: "logo.png",
+      mimeType: "image/png",
+      buffer: PNG_DE_UM_PIXEL,
+    });
+    await page.locator('[data-teste="propor-manual"]').click();
+
+    /* --- a proposta --- */
+
+    const proposta = page.locator('[data-teste="proposta"]');
+    await expect(proposta).toBeVisible();
+    await expect(proposta).toHaveAttribute("data-origem", "manual");
+    await expect(proposta).toContainText("Dreamy S.A.");
+
+    const amostras = proposta.locator('[data-teste="amostra-de-cor"]');
+    await expect(amostras).toHaveCount(5);
+    await expect(
+      proposta.locator('[data-teste="amostra-de-cor"][data-papel="marca"]'),
+    ).toHaveAttribute("data-cor", "#0b5cff");
+
+    // O amarelo reprovou no contraste: a original aparece riscada.
+    await expect(proposta.locator('[data-teste="cor-original"]')).toContainText(
+      "#ffcc00",
+    );
+    await expect(
+      proposta.locator('[data-teste="logo-da-proposta"]'),
+    ).toHaveAttribute("data-tem-logo", "1");
+
+    /* --- aplicar --- */
+
+    await page.locator('[data-teste="aplicar-marca"]').click();
+    await expect(page.locator('[data-teste="marca-feito"]')).toBeVisible();
+    const atual = page.locator('[data-teste="marca-atual"]');
+    await expect(atual).toHaveAttribute("data-tem-marca", "1");
+    await expect(atual).toHaveAttribute("data-origem", "manual");
+    await expect(atual).toContainText("cores informadas à mão");
+
+    /* --- o painel --- */
+
+    await page.goto("/rh/visao");
+    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).toBe(
+      COR_DO_SITE,
+    );
+    const logo = page.locator('[data-teste="logo-da-marca"]');
+    await expect(logo).toBeVisible();
+    await expect(logo).toHaveAttribute("alt", "Dreamy S.A.");
+
+    const resposta = await request.get("/api/marca/logo");
+    expect(resposta.status()).toBe(200);
+    expect(resposta.headers()["content-type"]).toBe("image/png");
+  });
+
+  test("sem logo, o nome informado aparece escrito no cabeçalho", async ({
+    page,
+  }) => {
+    await page.goto("/configuracoes/marca");
+    await page.locator('[data-teste="caminho-manual"] summary').click();
+    await page.locator('[data-teste="campo-do-nome"]').fill("Dreamy S.A.");
+    await page.locator('[data-teste="propor-manual"]').click();
+    await page.locator('[data-teste="aplicar-marca"]').click();
+
+    await page.goto("/rh/visao");
+    await expect(page.locator('[data-teste="logo-da-marca"]')).toHaveCount(0);
+    await expect(page.locator('[data-teste="nome-da-instalacao"]')).toHaveText(
+      "Dreamy S.A.",
+    );
+  });
+
+  test("um vetor com script é recusado, e o logo em uso continua", async ({
+    page,
+  }) => {
+    // Primeiro uma marca com logo, pelo site de arnês.
+    await page.goto("/configuracoes/marca");
+    await page.locator('[data-teste="campo-do-site"]').fill(SITE);
+    await page.locator('[data-teste="buscar-marca"]').click();
+    await page.locator('[data-teste="aplicar-marca"]').click();
+
+    await page.locator('[data-teste="caminho-manual"] summary').click();
+    await page.locator('[data-teste="campo-do-logo"]').setInputFiles({
+      name: "logo.svg",
+      mimeType: "image/svg+xml",
+      buffer: SVG_PERIGOSO,
+    });
+    await page.locator('[data-teste="propor-manual"]').click();
+
+    const proposta = page.locator('[data-teste="proposta"]');
+    await expect(proposta).toBeVisible();
+    const recusado = proposta.locator('[data-teste="logo-recusado"]');
+    await expect(recusado).toBeVisible();
+    await expect(recusado).toContainText("script");
+    await expect(recusado).toContainText("continua");
+    await expect(
+      proposta.locator('[data-teste="logo-da-proposta"]'),
+    ).toHaveAttribute("data-tem-logo", "1");
+  });
+
+  test("nome longo demais é recusado pela rota, sem proposta", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto("/configuracoes/marca");
+    const resposta = await page.request.post("/api/marca/manual", {
+      headers: { origin: baseURL ?? "" },
+      maxRedirects: 0,
+      multipart: {
+        nome: "x".repeat(80),
+        marca: "#0b5cff",
+        marcaEscura: "#083fb3",
+        destaque: "#0b5cff",
+        destaqueSuave: "#c9d8ff",
+        barraLateral: "#0b1a3a",
+      },
+    });
+    expect(resposta.status()).toBe(303);
+    expect(resposta.headers()["location"]).toContain("erro=nome");
+
+    await page.goto("/configuracoes/marca");
+    await expect(page.locator('[data-teste="proposta"]')).toHaveCount(0);
+  });
+
+  test("envio de outra origem é recusado antes de ler o corpo", async ({
+    page,
+  }) => {
+    await page.goto("/configuracoes/marca");
+    const resposta = await page.request.post("/api/marca/manual", {
+      headers: { origin: "https://outro.exemplo" },
+      maxRedirects: 0,
+      multipart: { nome: "Dreamy" },
+    });
+    expect(resposta.status()).toBe(403);
   });
 });
 
