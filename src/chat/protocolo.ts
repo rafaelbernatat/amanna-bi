@@ -62,7 +62,13 @@ export type Previa = {
  * Por que não houve resposta. Sem detalhe de erro: o que o navegador precisa
  * é escolher a frase da seção 6.4, e não ler a pilha de uma exceção.
  */
-export type MotivoDeFalha = "sem_permissao" | "erro_de_fonte";
+export type MotivoDeFalha =
+  | "sem_permissao"
+  | "erro_de_fonte"
+  /** O limite de uso da apresentação segurou a pergunta (D-CONVITE). */
+  | "limite_de_uso"
+  /** O convite venceu no meio da conversa. */
+  | "sessao_expirada";
 
 /** Uma linha do fluxo NDJSON, na ordem em que podem chegar. */
 export type LinhaDoFluxo =

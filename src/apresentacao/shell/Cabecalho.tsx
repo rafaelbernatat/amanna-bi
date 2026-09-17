@@ -12,7 +12,7 @@ import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Perfil } from "@/seguranca/identidade";
 import type { Query } from "@/semantica/contrato";
 import type { Dimensoes } from "@/semantica/recortes";
-import { rotaCom } from "@/semantica/url";
+import { rotaCom, rotaDeApresentacao } from "@/semantica/url";
 
 /**
  * Cabecalho da tela: os modulos, o breadcrumb, o titulo, os filtros e a tira
@@ -58,7 +58,11 @@ export function Cabecalho({
   readonly dimensoes: Dimensoes;
   readonly painelDestacado: string | null;
   /** Quem entrou, e se essa pessoa configura a instalacao (D-MARCA). */
-  readonly conta: { readonly perfil: Perfil; readonly podeConfigurar: boolean };
+  readonly conta: {
+    readonly perfil: Perfil;
+    readonly podeConfigurar: boolean;
+    readonly podeApresentar: boolean;
+  };
   /**
    * O nome da instalacao, escrito quando nao ha logo. Chega resolvido: o da
    * marca quando ela tem um, ou o padrao do produto.
@@ -211,6 +215,15 @@ export function Cabecalho({
         <BotaoDeConta
           perfil={conta.perfil}
           podeConfigurar={conta.podeConfigurar}
+          apresentar={
+            conta.podeApresentar
+              ? rotaDeApresentacao(
+                  `${modulo.id}/${tela.slug}`,
+                  query,
+                  painelDestacado,
+                )
+              : null
+          }
         />
       </div>
 

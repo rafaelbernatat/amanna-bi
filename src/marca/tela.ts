@@ -13,11 +13,12 @@
  * apontar para o defeito.
  */
 
-import { lerIdentidade } from "@/acesso/leitura";
+import { lerApresentacao, lerIdentidade } from "@/acesso/leitura";
 import { hospedeiroDe, type Marca } from "@/marca/documento";
 import { lerMarcaAtiva } from "@/marca/leitura";
 import { podeConfigurarMarca } from "@/marca/permissao";
 import { personalizacaoLigada } from "@/marca/armazem";
+import { podeApresentar } from "@/seguranca/convite";
 import type { Perfil } from "@/seguranca/identidade";
 
 export { hospedeiroDe };
@@ -32,6 +33,8 @@ export type CabecalhoDaInstalacao = {
   readonly conta: {
     readonly perfil: Perfil;
     readonly podeConfigurar: boolean;
+    /** Há apresentação em curso, e este perfil a abre (D-CONVITE). */
+    readonly podeApresentar: boolean;
   };
   /** O nome escrito no cabeçalho: o da marca, ou o padrão. */
   readonly nome: string;
@@ -59,9 +62,10 @@ export function rotuloDoLogo(marca: Marca): string {
  * ruim — cache curto, e uma ida ao armazém a cada tela.
  */
 export async function lerCabecalhoDaInstalacao(): Promise<CabecalhoDaInstalacao> {
-  const [identidade, marca] = await Promise.all([
+  const [identidade, marca, apresentacao] = await Promise.all([
     lerIdentidade(),
     lerMarcaAtiva(),
+    lerApresentacao(),
   ]);
 
   const logo =
@@ -78,6 +82,9 @@ export async function lerCabecalhoDaInstalacao(): Promise<CabecalhoDaInstalacao>
       // A personalização desligada esconde o botão: não há para onde ir.
       podeConfigurar:
         personalizacaoLigada() && podeConfigurarMarca(identidade.perfil),
+      // Sem sala aberta não há QR para gerar: o botão não aparece.
+      podeApresentar:
+        apresentacao !== null && podeApresentar(identidade.perfil),
     },
     nome: marca?.nome ?? NOME_PADRAO_DA_INSTALACAO,
     logo,

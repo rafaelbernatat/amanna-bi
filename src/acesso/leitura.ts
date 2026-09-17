@@ -28,6 +28,8 @@ import { ultimoFrescorConhecido } from "@/acesso/meta";
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
+import "@/acesso/provedores";
+import { lerConvite } from "@/acesso/convite";
 import { getSession } from "@/acesso/sessao";
 import type { PedidoDeRankingExterno } from "@/acesso/fronteira";
 import type {
@@ -64,6 +66,22 @@ export async function lerIdentidade(): Promise<{
 }> {
   const { sujeito, perfil } = await getSession();
   return { sujeito, perfil };
+}
+
+/**
+ * A apresentação em curso, quando a instalação entra por convite
+ * (D-CONVITE-apresentacao).
+ *
+ * Devolve a sala e o prazo — nunca o dispositivo: quem apresenta precisa saber
+ * a que sala o QR pertence e a que horas ele vence, e não quem está nela. Em
+ * modo `fixtures` ou `oidc`, `null`: não há apresentação para abrir.
+ */
+export async function lerApresentacao(): Promise<{
+  readonly sala: string;
+  readonly expira: number;
+} | null> {
+  const sessao = await lerConvite();
+  return sessao === null ? null : { sala: sessao.sala, expira: sessao.expira };
 }
 
 /**

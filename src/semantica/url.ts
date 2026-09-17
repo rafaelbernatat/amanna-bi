@@ -135,6 +135,78 @@ export function rotaCom(
 }
 
 /* ------------------------------------------------------------------ *
+ * A conversa em tela cheia (D-CONVITE-apresentacao)
+ * ------------------------------------------------------------------ */
+
+/** A rota do chat de celular. Fora do grupo de painel: não tem tira de telas. */
+export const ROTA_DA_CONVERSA = "/conversa";
+
+/** O parâmetro que diz de que tela a conversa fala. */
+export const PARAMETRO_DA_TELA = "tela";
+
+/**
+ * A conversa sobre uma tela, no mesmo recorte.
+ *
+ * A tela vai como parâmetro, e não como segmento de caminho: `/conversa` é uma
+ * rota só, e o recorte continua sendo lido pelo mesmo leitor de sempre. Um
+ * segmento por tela exigiria treze rotas que fazem a mesma coisa.
+ */
+export function rotaDaConversa(
+  tela: string,
+  q: Query,
+  painelDestacado?: string,
+): string {
+  const busca = queryParaBusca(q);
+  busca.set(PARAMETRO_DA_TELA, tela.replace(/^\//, ""));
+  if (painelDestacado !== undefined && painelDestacado !== "") {
+    busca.set("painel", painelDestacado);
+  }
+  return `${ROTA_DA_CONVERSA}?${busca.toString()}`;
+}
+
+/**
+ * O destino de painel traduzido para a conversa.
+ *
+ * `/rh/visao?periodo=dezembro&painel=x` vira
+ * `/conversa?periodo=dezembro&painel=x&tela=rh/visao`. É o que faz a resposta
+ * do chat "navegar" num celular que não tem a tela ao lado: a conversa passa a
+ * falar de outra tela, e o gráfico vem na bolha.
+ */
+export function paraConversa(destinoDePainel: string): string {
+  const [caminho = "", busca = ""] = destinoDePainel.split("?");
+  const parametros = new URLSearchParams(busca);
+  parametros.set(PARAMETRO_DA_TELA, caminho.replace(/^\//, ""));
+  return `${ROTA_DA_CONVERSA}?${parametros.toString()}`;
+}
+
+/** A rota da tela de apresentação. */
+export const ROTA_DE_APRESENTACAO = "/apresentar";
+
+/**
+ * A tela de apresentação, no recorte e no painel em que se está.
+ *
+ * Leva a tela junto: é sobre ela que a plateia vai conversar, e é o destino
+ * que o QR carrega. O recorte vai pelos mesmos parâmetros de sempre, na mesma
+ * ordem — quem compara duas URLs compara a mesma coisa.
+ */
+export function rotaDeApresentacao(
+  tela: string,
+  q: Query,
+  painelDestacado?: string | null,
+): string {
+  const busca = queryParaBusca(q);
+  busca.set(PARAMETRO_DA_TELA, tela.replace(/^\//, ""));
+  if (
+    painelDestacado !== undefined &&
+    painelDestacado !== null &&
+    painelDestacado !== ""
+  ) {
+    busca.set("painel", painelDestacado);
+  }
+  return `${ROTA_DE_APRESENTACAO}?${busca.toString()}`;
+}
+
+/* ------------------------------------------------------------------ *
  * URL → Query
  * ------------------------------------------------------------------ */
 

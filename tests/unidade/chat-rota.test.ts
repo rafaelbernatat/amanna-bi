@@ -1,6 +1,10 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { lerPedido } from "@/chat/pedido";
+import {
+  esquecerControleDoProcesso,
+  PERGUNTAS_POR_MINUTO,
+} from "@/chat/limite";
 import { TAMANHO_MAXIMO_DA_PERGUNTA, TURNOS_LEMBRADOS } from "@/chat/protocolo";
 import type { LinhaDoFluxo } from "@/chat/protocolo";
 
@@ -19,10 +23,21 @@ beforeAll(() => {
   delete process.env["OPENROUTER_API_KEY"];
 });
 
+/**
+ * Um pedido do próprio site.
+ *
+ * A rota confere a origem antes de tudo (D-CONVITE-apresentacao): um `POST`
+ * com JSON montado por outro site gastaria a cota da apresentação alheia. O
+ * caso de origem cruzada tem teste próprio, abaixo.
+ */
 function pedido(corpo: unknown): Request {
   return new Request("http://painel.local/api/chat", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      origin: "http://painel.local",
+      host: "painel.local",
+    },
     body: typeof corpo === "string" ? corpo : JSON.stringify(corpo),
   });
 }
@@ -166,6 +181,39 @@ describe("POST /api/chat", () => {
     if (previa?.fase !== "previa") return;
     expect(previa.previa.metrica).toBe("turnover_12m");
     expect(previa.previa.acoes.filtros.periodo).toBe("dezembro");
+  });
+
+  it("origem de outro site é recusada com 403, antes de ler o corpo", async () => {
+    const deFora = new Request("http://painel.local/api/chat", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://outro.exemplo",
+        host: "painel.local",
+      },
+      body: JSON.stringify({ pergunta: "qual o turnover" }),
+    });
+    const resposta = await POST(deFora);
+    expect(resposta.status).toBe(403);
+  });
+
+  /**
+   * O arnês e o desenvolvimento não caem no limite por minuto.
+   *
+   * Em `fixtures` todo mundo compartilha o sujeito `fixtures:diretoria`: uma
+   * janela por sujeito mediria a suíte inteira. A janela vale para celular de
+   * apresentação, e a prova dela está em `apresentacao.test.ts`, sobre o
+   * controle puro.
+   */
+  it("em fixtures, perguntar várias vezes seguidas não vira 429", async () => {
+    esquecerControleDoProcesso();
+    for (let i = 0; i < PERGUNTAS_POR_MINUTO + 2; i += 1) {
+      const resposta = await POST(pedido({ pergunta: "qual o turnover" }));
+      expect(resposta.status, `pergunta ${String(i)}`).toBe(200);
+      // O fluxo precisa ser consumido: é o que libera a vaga do semáforo.
+      await linhasDe(resposta);
+    }
+    esquecerControleDoProcesso();
   });
 
   it("busca hostil não derruba a rota: cai no padrão", async () => {

@@ -24,14 +24,22 @@ const NOME_DO_PERFIL: Readonly<Record<Perfil, string>> = {
  * Quem não pode configurar não vê o botão, e isso é cortesia: poupa a pessoa
  * de abrir uma tela que vai recusá-la. O controle de verdade está na rota, que
  * confere a sessão antes de ler o corpo do pedido — esconder da tela nunca
- * impediu ninguém de mandar um pedido à mão.
+ * impediu ninguém de mandar um pedido à mão. Vale igual para o código da
+ * apresentação: a tela `/apresentar` recusa quem não apresenta.
  */
 export function BotaoDeConta({
   perfil,
   podeConfigurar,
+  apresentar = null,
 }: {
   readonly perfil: Perfil;
   readonly podeConfigurar: boolean;
+  /**
+   * O endereço da tela de apresentação, com a tela e o recorte atuais
+   * (D-CONVITE-apresentacao). `null` esconde o botão: ou não há sala aberta,
+   * ou este perfil não apresenta.
+   */
+  readonly apresentar?: string | null;
 }) {
   return (
     <div
@@ -83,6 +91,52 @@ export function BotaoDeConta({
           {NOME_DO_PERFIL[perfil]}
         </span>
       </div>
+
+      {apresentar === null ? null : (
+        <Link
+          href={apresentar}
+          data-teste="abrir-apresentacao"
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir o código da apresentação"
+          title="Código para a plateia perguntar pelo celular"
+          style={{
+            flex: "none",
+            width: 30,
+            height: 30,
+            borderRadius: 999,
+            border: `1px solid ${PALETA.bordaForte}`,
+            background: PALETA.superficie,
+            color: PALETA.textoSecundario,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textDecoration: "none",
+          }}
+        >
+          {/*
+            Um QR desenhado, e não um caractere: o símbolo de código de barras
+            do Unicode sai como caixa vazia em metade dos sistemas, e este
+            botão precisa parecer o mesmo em todos.
+          */}
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <path d="M14 14h3v3h-3zM19 19h2M14 19v2M19 14v2" />
+          </svg>
+        </Link>
+      )}
 
       {podeConfigurar ? (
         <Link

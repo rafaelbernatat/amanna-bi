@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 66 itens (5 resolvidos), destravando 126 tarefas do backlog |
+| **Total** | 68 itens (5 resolvidos), destravando 128 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -41,9 +41,9 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
 | Fase 2 · Dado real | 23 | 19 | 59 |
-| Fase 3 · Chat com IA | 8 | 4 | 22 |
+| Fase 3 · Chat com IA | 10 | 6 | 24 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **66** | **33** | **126** |
+| **Total** | **68** | **35** | **128** |
 
 **Por responsável**
 
@@ -52,7 +52,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Produto | 16 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
-| Engenharia | 8 |
+| Engenharia | 10 |
 | Comercial | 5 |
 | Produto, com Controladoria e RH | 2 |
 | Produto, com Engenharia | 2 |
@@ -1107,7 +1107,7 @@ A base Amanna (`docs/dados`, 82 MB) já carrega e reconcilia num Postgres em pro
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*8 itens · 4 P0 abertos · 4 P1 abertos*
+*10 itens · 6 P0 abertos · 4 P1 abertos*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -1208,6 +1208,36 @@ A Controladoria precisa entregar duas coisas antes de a Fase 3 entrar em produç
 | **Destrava** | T-407, T-408 *(2 tarefas)* |
 
 ---
+
+### [ ] H-66 · Gerar o segredo do convite e ligar o modo de apresentação
+
+`P0` · **Responsável:** Engenharia
+
+**O que fazer**
+
+A apresentação para a plateia entra por convite assinado (D-CONVITE-apresentacao): um link vira QR na tela, e cada celular que escaneia recebe um cookie de sessão. Gere um segredo aleatório de pelo menos 32 caracteres — `node -e "console.log(crypto.randomUUID()+crypto.randomUUID())"` serve — e grave-o como `CONVITE_SEGREDO` nos ambientes Preview e Production da Vercel, e no `.env.local` de quem vai apresentar (o comando que gera o link lê do ambiente de quem o roda, e o link só vale se o segredo for o mesmo do servidor). Ligue `AUTH_PROVIDER=convite` na Vercel. Depois, no terminal: `npm run convite -- --sala=<nome> --horas=4 --url=https://<host>`, que imprime a URL do apresentador. Abra-a no navegador, confirme que o painel abre, e que o ícone de QR aparece no cabeçalho. Registre aqui que foi feito e onde o valor foi colocado. Nunca o valor.
+
+Rotacionar este segredo derruba todos os cookies de uma vez: é o que fazer se o link vazar durante a apresentação.
+
+| | |
+|---|---|
+| **Resultado esperado** | `CONVITE_SEGREDO` nos ambientes da Vercel e no `.env.local` de quem apresenta; `AUTH_PROVIDER=convite` na Vercel; o link do apresentador abrindo o painel e mostrando o QR |
+| **Onde o resultado vai** | Settings > Environment Variables na Vercel; `.env.local` (fora do versionamento) |
+| **Destrava** | A apresentação com QR (T-359, T-360) em produção |
+
+### [ ] H-67 · Desligar a proteção de implantação da Vercel em produção
+
+`P0` · **Responsável:** Engenharia
+
+**O que fazer**
+
+Com a proteção de implantação ligada, todo endereço do projeto pede login da Vercel antes de chegar ao produto — e o QR da apresentação levaria cinquenta pessoas a uma tela de login que nenhuma delas consegue passar. Em Settings > Deployment Protection do projeto `amanna-bi`, confirme o estado de **Production**: ou desligada, ou com um bypass que o link do convite carregue. O estado atual não foi verificado por este laço: a integração da Vercel desta máquina responde 403 (ver a nota de `vercel-amanna-bi` no diário de bordo). Confira também que o domínio que aparece no QR é o mesmo que a plateia consegue abrir da rede de celular — um domínio interno não resolve fora do escritório.
+
+| | |
+|---|---|
+| **Resultado esperado** | Proteção de implantação desligada (ou com bypass) em Production, verificada abrindo o endereço numa janela anônima de um celular fora da rede do escritório |
+| **Onde o resultado vai** | Settings > Deployment Protection do projeto na Vercel; este item |
+| **Destrava** | O QR funcionar na apresentação. Sem isto, T-359 e T-360 existem e não abrem |
 
 ### [ ] H-68 · Aprovar o modelo do laço de ferramentas do chat
 
@@ -1449,6 +1479,8 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-342 | H-28, H-29, H-31, H-33 |
 | T-344 | H-28 |
 | T-350 | H-68 |
+| T-359 | H-66, H-67 |
+| T-360 | H-66, H-67 |
 | T-401 | H-35 |
 | T-404 | H-36 |
 | T-406 | H-35 |

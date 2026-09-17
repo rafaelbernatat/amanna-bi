@@ -174,12 +174,16 @@ describe("a mensagem de erro nunca carrega o valor do segredo", () => {
      * com o modelo pelo OpenRouter, e a chave dele é segredo como as outras
      * duas. A quarta entrou com D-DADOS: a URL de sessão da carga carrega
      * senha como a de transação. A credencial de blob que D-MARCA previu saiu
-     * junto com o modo — a marca mora no Postgres. A lista escrita é o que
+     * junto com o modo — a marca mora no Postgres. A quinta entrou com
+     * D-CONVITE-apresentacao: o segredo que assina o QR e o cookie da
+     * apresentação, e cuja rotação derruba todas as sessões de uma vez. A
+     * lista escrita é o que
      * obriga uma chave nova a passar por aqui — uma variável que vira segredo
      * sem revisão é uma que pode acabar num log.
      */
     expect([...NOMES_DE_SEGREDO].sort()).toEqual([
       "ANTHROPIC_API_KEY",
+      "CONVITE_SEGREDO",
       "DATABASE_URL",
       "DATABASE_URL_CARGA",
       "OPENROUTER_API_KEY",

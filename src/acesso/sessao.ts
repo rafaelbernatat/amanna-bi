@@ -38,8 +38,16 @@ import type { Perfil, Session } from "@/seguranca/identidade";
 import { PERFIS, perfilValido } from "@/seguranca/identidade";
 import { AREAS, ENTIDADES } from "@/semantica/contrato";
 
-/** Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação. */
-export const PROVEDORES = ["fixtures", "oidc"] as const;
+/**
+ * Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação.
+ *
+ * `convite` entrou com D-CONVITE-apresentacao: autenticação de apresentação,
+ * por link assinado, perfil de leitura e prazo de horas. Ele **pode** ficar na
+ * frente de dado real — é uma sessão verificada por assinatura, e não um
+ * perfil escolhido por variável de ambiente —, e por isso a trava abaixo
+ * continua mirando só `fixtures`.
+ */
+export const PROVEDORES = ["fixtures", "oidc", "convite"] as const;
 export type ProvedorDeSessao = (typeof PROVEDORES)[number];
 
 export class ProvedorInvalido extends Error {
@@ -109,6 +117,18 @@ const CONCESSOES: Readonly<
   // exercita a restrição, e é justamente ela que se quer ver funcionando.
   area: { entidades: ["consolidado"], areas: ["tecnologia"] },
 };
+
+/**
+ * O que um perfil enxerga por padrão, para quem constrói sessão fora daqui.
+ *
+ * O provedor de convite usa isto: a plateia de uma apresentação vê o mesmo
+ * consolidado que está na tela grande, com o perfil de leitura do convite.
+ */
+export function concessaoDoPerfil(
+  perfil: Perfil,
+): Pick<Session, "entidades" | "areas"> {
+  return CONCESSOES[perfil];
+}
 
 export function sessaoDeFixtures(
   ambiente: Record<string, string | undefined>,

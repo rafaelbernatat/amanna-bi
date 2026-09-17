@@ -1,10 +1,20 @@
 /**
- * Aplica os cabeçalhos de segurança a toda resposta (T-139).
+ * Os cabeçalhos de segurança de toda resposta (T-139) e a negação cedo de
+ * quem chega sem convite (D-CONVITE-apresentacao).
  *
- * Mora no middleware, e não em `next.config`, por causa do *nonce*: um valor
- * por resposta não sai de configuração estática. Ele viaja em dois lugares —
- * no cabeçalho da requisição, para o Next injetá-lo nos seus próprios scripts,
- * e na CSP da resposta, para o navegador só executar quem o traz.
+ * Os cabeçalhos moram aqui, e não em `next.config`, por causa do *nonce*: um
+ * valor por resposta não sai de configuração estática. Ele viaja em dois
+ * lugares — no cabeçalho da requisição, para o Next injetá-lo nos seus
+ * próprios scripts, e na CSP da resposta, para o navegador só executar quem o
+ * traz.
+ *
+ * ## A negação não é o controle
+ *
+ * O matcher pula requisições de prefetch, e por isso o middleware **não pode**
+ * ser a única verificação de sessão: quem verifica a cada leitura é o provedor
+ * (`src/acesso/convite.ts`). O que acontece aqui é poupar render e pôr a tela
+ * certa na frente de quem chegou sem o QR. Em modo `fixtures` e `oidc` nada é
+ * negado — o arnês de ponta a ponta continua como sempre.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
@@ -14,10 +24,91 @@ import {
   montarCsp,
   gerarNonce,
 } from "@/seguranca/cabecalhos";
+import {
+  decidirAcesso,
+  decidirEntrada,
+  NOME_DO_COOKIE,
+  PARAMETRO_DE_DESTINO,
+  PARAMETRO_DE_MOTIVO,
+  PARAMETRO_DO_CONVITE,
+} from "@/seguranca/convite";
 
-export function middleware(requisicao: NextRequest) {
+/** O caminho onde se entra com o token do QR. */
+const ENTRADA = "/entrar";
+
+/** Segundos desde a época, como os envelopes os contam. */
+function agoraEmSegundos(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+/** Todo caminho de saída leva os mesmos cabeçalhos. */
+function comCabecalhos(resposta: NextResponse, csp: string): NextResponse {
+  for (const [nome, valor] of Object.entries(CABECALHOS_FIXOS)) {
+    resposta.headers.set(nome, valor);
+  }
+  resposta.headers.set("Content-Security-Policy", csp);
+  return resposta;
+}
+
+export async function middleware(requisicao: NextRequest) {
   const nonce = gerarNonce();
   const csp = montarCsp(nonce);
+  const url = requisicao.nextUrl;
+
+  /*
+   * A entrada pelo QR.
+   *
+   * O token vem na URL, e a URL fica no histórico do navegador e no cabeçalho
+   * de referência. Por isso a resposta é um redirecionamento **sem o token**:
+   * o que sobra na barra é o destino, e o acesso passa a viver no cookie.
+   */
+  if (url.pathname === ENTRADA && url.searchParams.has(PARAMETRO_DO_CONVITE)) {
+    const decidida = await decidirEntrada({
+      token: url.searchParams.get(PARAMETRO_DO_CONVITE),
+      ir: url.searchParams.get(PARAMETRO_DE_DESTINO),
+      ambiente: process.env,
+      agoraSegundos: agoraEmSegundos(),
+    });
+
+    if (decidida.tipo === "recusar") {
+      const destino = new URL(ENTRADA, url);
+      destino.searchParams.set(PARAMETRO_DE_MOTIVO, decidida.motivo);
+      return comCabecalhos(NextResponse.redirect(destino, 303), csp);
+    }
+
+    const resposta = NextResponse.redirect(new URL(decidida.destino, url), 303);
+    resposta.cookies.set({
+      name: NOME_DO_COOKIE,
+      value: decidida.cookie,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: url.protocol === "https:",
+      path: "/",
+      maxAge: decidida.maxAge,
+    });
+    return comCabecalhos(resposta, csp);
+  }
+
+  const acesso = await decidirAcesso({
+    caminho: url.pathname,
+    busca: url.searchParams.toString(),
+    cookie: requisicao.cookies.get(NOME_DO_COOKIE)?.value ?? null,
+    ambiente: process.env,
+    agoraSegundos: agoraEmSegundos(),
+  });
+
+  if (acesso.tipo === "negar") {
+    return comCabecalhos(
+      NextResponse.json({ erro: "sessão ausente ou vencida" }, { status: 401 }),
+      csp,
+    );
+  }
+  if (acesso.tipo === "redirecionar") {
+    return comCabecalhos(
+      NextResponse.redirect(new URL(acesso.para, url), 303),
+      csp,
+    );
+  }
 
   /*
    * O Next injeta o nonce nos seus proprios scripts lendo a CSP **da
@@ -29,16 +120,10 @@ export function middleware(requisicao: NextRequest) {
   paraONext.set("Content-Security-Policy", csp);
   paraONext.set("x-nonce", nonce);
 
-  const resposta = NextResponse.next({
-    request: { headers: paraONext },
-  });
-
-  for (const [nome, valor] of Object.entries(CABECALHOS_FIXOS)) {
-    resposta.headers.set(nome, valor);
-  }
-  resposta.headers.set("Content-Security-Policy", csp);
-
-  return resposta;
+  return comCabecalhos(
+    NextResponse.next({ request: { headers: paraONext } }),
+    csp,
+  );
 }
 
 export const config = {
