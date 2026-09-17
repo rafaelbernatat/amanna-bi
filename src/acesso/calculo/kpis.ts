@@ -29,7 +29,7 @@
  * Separando, a comparação fica trivial: mesmos filtros, outra janela.
  */
 
-import { VIEWS, type NomeDeView } from "@/acesso/fixtures/adaptador";
+import type { Base, NomeDeView, Views } from "@/acesso/calculo/base";
 import {
   AGREGADO_DE_AREA,
   AGREGADO_DE_ENTIDADE,
@@ -37,10 +37,10 @@ import {
   AREAS_ARMAZENADAS,
   mesesDe,
 } from "@/acesso/calculo/eixos";
-import { VW_DIM_FAIXA_SALARIAL } from "@/acesso/fixtures/dim";
-import { CUSTO_DO_TURNOVER } from "@/acesso/fixtures/referencia-perfil";
-import { VW_FATO_RH_PERFIL } from "@/acesso/fixtures/perfil";
+import type { LinhaBalancoMes, LinhaRhMes } from "@/acesso/calculo/linhas";
 import {
+  mais,
+  menos,
   MESES_DO_PERIODO,
   mesesDoRecorte,
   somar,
@@ -54,10 +54,6 @@ const CEM = 100;
 /** O divisor da mediana: a metade do quadro. */
 const DOIS = 2;
 
-/** Os componentes que contam como custo de reposição, e não de rescisão. */
-const COMPONENTES_DE_REPOSICAO = new Set(
-  CUSTO_DO_TURNOVER.filter((c) => c.ehReposicao).map((c) => c.codigo),
-);
 const UM_MILHAO = 1_000_000;
 
 /* ------------------------------------------------------------------ *
@@ -88,15 +84,22 @@ export class MetricaSemCalculo extends Error {
  * O recorte: os filtros e a janela
  * ------------------------------------------------------------------ */
 
-/** Filtros dimensionais mais a janela de meses. Ver o cabeçalho. */
+/**
+ * Filtros dimensionais mais a janela de meses, sobre uma base. Ver o cabeçalho.
+ *
+ * A `base` viaja aqui dentro porque toda função do motor já recebe um
+ * `Recorte`: é o menor caminho para o dado chegar a quem o lê sem que nenhum
+ * módulo importe a fixture ou o banco (D-DADOS).
+ */
 export type Recorte = {
   readonly q: Query;
   readonly meses: readonly string[];
+  readonly base: Base;
 };
 
-/** O recorte que uma `Query` descreve. */
-export function recorteDe(q: Query): Recorte {
-  return { q, meses: mesesDoRecorte(q) };
+/** O recorte que uma `Query` descreve, sobre uma base. */
+export function recorteDe(base: Base, q: Query): Recorte {
+  return { q, meses: mesesDoRecorte(q), base };
 }
 
 /** Uma linha pertence ao recorte? Sem multiplicação: escolha de linha. */
@@ -141,16 +144,21 @@ export function pertence(
 export function linhas<N extends NomeDeView>(
   view: N,
   r: Recorte,
-): readonly (typeof VIEWS)[N][number][] {
-  const todas = VIEWS[view] as readonly (typeof VIEWS)[N][number][];
+): readonly Views[N][number][] {
+  const todas = r.base.views[view] as readonly Views[N][number][];
   return todas.filter((l) => pertence(l, r));
 }
 
-/** A soma de uma medida no recorte. `null` quando não há linha (PR-4). */
+/**
+ * A soma de uma medida no recorte. `null` quando não há linha (PR-4).
+ *
+ * Também `null` quando alguma linha não sabe a medida: `somar` propaga a
+ * ausência, e um total que soma só o que se conhece pareceria completo.
+ */
 export function soma<N extends NomeDeView>(
   view: N,
   r: Recorte,
-  medida: (l: (typeof VIEWS)[N][number]) => number,
+  medida: (l: Views[N][number]) => number | null,
 ): number | null {
   const escolhidas = linhas(view, r);
   return escolhidas.length === 0 ? null : somar(escolhidas, medida);
@@ -160,7 +168,7 @@ export function soma<N extends NomeDeView>(
 export function noFim<N extends NomeDeView>(
   view: N,
   r: Recorte,
-  medida: (l: (typeof VIEWS)[N][number]) => number,
+  medida: (l: Views[N][number]) => number | null,
 ): number | null {
   const ultimo = r.meses.at(-1);
   return soma(
@@ -178,20 +186,20 @@ export function noFim<N extends NomeDeView>(
  */
 export function mediaMensal(
   r: Recorte,
-  medida: (l: (typeof VIEWS)["vw_fato_rh_mes"][number]) => number,
+  medida: (l: LinhaRhMes) => number | null,
 ): number | null {
   if (r.meses.length === 0) return null;
   const doRecorte = linhas("vw_fato_rh_mes", r);
   if (doRecorte.length === 0) return null;
-  const total = r.meses.reduce(
-    (acc, mes) =>
-      acc +
-      somar(
-        doRecorte.filter((l) => l.mes === mes),
-        medida,
-      ),
-    0,
-  );
+  let total = 0;
+  for (const mes of r.meses) {
+    const doMes = somar(
+      doRecorte.filter((l) => l.mes === mes),
+      medida,
+    );
+    if (doMes === null) return null;
+    total += doMes;
+  }
   return total / r.meses.length;
 }
 
@@ -215,7 +223,7 @@ export function perfil(
   valores?: readonly string[],
 ): number | null {
   const ultimo = r.meses.at(-1);
-  const escolhidas = VW_FATO_RH_PERFIL.filter(
+  const escolhidas = r.base.views.vw_fato_rh_perfil.filter(
     (l) =>
       l.mes === ultimo &&
       l.dimensao === dimensao &&
@@ -234,7 +242,7 @@ export function perfil(
  * real" (princípio PR-4).
  */
 function medianaSalarial(r: Recorte): number | null {
-  const faixas = VW_DIM_FAIXA_SALARIAL;
+  const faixas = r.base.cadastros.faixaSalarial;
   const contagens = faixas.map((f) => perfil(r, "faixa_salarial", [f.codigo]));
   const total = contagens.reduce<number>((a, v) => a + (v ?? 0), 0);
   if (total === 0) return null;
@@ -372,19 +380,30 @@ function anualizado(fluxo: number | null, r: Recorte): number | null {
 /** A média dos saldos de fim de mês de uma medida do balanço, no recorte. */
 function mediaDoBalanco(
   r: Recorte,
-  medida: (l: (typeof VIEWS)["vw_fato_balanco_mes"][number]) => number,
+  medida: (l: LinhaBalancoMes) => number | null,
 ): number | null {
   const total = soma("vw_fato_balanco_mes", r, medida);
   if (total === null || r.meses.length === 0) return null;
   return total / r.meses.length;
 }
 
-function dividaBrutaEmReais(r: Recorte): number | null {
-  return noFim(
-    "vw_fato_balanco_mes",
-    r,
-    (l) => l.dividaCurtoPrazo + l.dividaLongoPrazo,
+/** A dívida bruta de uma linha do balanço: curto mais longo prazo. */
+function dividaDaLinha(l: LinhaBalancoMes): number | null {
+  return mais(l.dividaCurtoPrazo, l.dividaLongoPrazo);
+}
+
+/** O capital investido de uma linha: PL mais dívida, menos o que está aplicado. */
+function capitalInvestidoDaLinha(l: LinhaBalancoMes): number | null {
+  return mais(
+    l.patrimonioLiquido,
+    l.dividaCurtoPrazo,
+    l.dividaLongoPrazo,
+    menos(l.aplicacoesFinanceiras),
   );
+}
+
+function dividaBrutaEmReais(r: Recorte): number | null {
+  return noFim("vw_fato_balanco_mes", r, dividaDaLinha);
 }
 
 function saldoDeCaixaEmReais(r: Recorte): number | null {
@@ -398,7 +417,7 @@ function custoMedioDaDividaEmFracao(r: Recorte): number | null {
       soma("vw_fato_balanco_mes", r, (l) => l.jurosPagos),
       r,
     ),
-    mediaDoBalanco(r, (l) => l.dividaCurtoPrazo + l.dividaLongoPrazo),
+    mediaDoBalanco(r, dividaDaLinha),
   );
 }
 
@@ -612,13 +631,15 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
   estados_atendidos: (r) => {
     const ultimo = r.meses.at(-1);
     const comGente = new Set(
-      VW_FATO_RH_PERFIL.filter(
-        (l) =>
-          l.mes === ultimo &&
-          l.dimensao === "uf" &&
-          l.headcountFte > 0 &&
-          pertence(l, { ...r, meses: [l.mes] }),
-      ).map((l) => l.valor),
+      r.base.views.vw_fato_rh_perfil
+        .filter(
+          (l) =>
+            l.mes === ultimo &&
+            l.dimensao === "uf" &&
+            l.headcountFte > 0 &&
+            pertence(l, { ...r, meses: [l.mes] }),
+        )
+        .map((l) => l.valor),
     );
     return comGente.size === 0 ? null : comGente.size;
   },
@@ -658,15 +679,17 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
    * Reposição: os componentes que a decomposição marca como tal.
    *
    * Rescisão é verba paga a quem sai; reposição é o que custa colocar outra
-   * pessoa no lugar. A separação vem de `CUSTO_DO_TURNOVER`, onde cada
+   * pessoa no lugar. A separação vem do cadastro da base, onde cada
    * componente traz a marca — e é ela, não uma lista repetida aqui, que decide.
    */
-  custo_de_reposicao: (r) =>
-    emMilhoes(
+  custo_de_reposicao: (r) => {
+    const reposicao = new Set(r.base.cadastros.componentesDeReposicao);
+    return emMilhoes(
       soma("vw_fato_turnover_custo", r, (l) =>
-        COMPONENTES_DE_REPOSICAO.has(l.componente) ? l.valor : 0,
+        reposicao.has(l.componente) ? l.valor : 0,
       ),
-    ),
+    );
+  },
 
   vagas_abertas: (r) => soma("vw_fato_vagas", r, (l) => l.abertas),
   vagas_em_andamento: (r) => soma("vw_fato_vagas", r, (l) => l.emAndamento),
@@ -969,7 +992,9 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
   concentracao_top_10: (r) =>
     emPorcento(
       razao(
-        soma("vw_fato_faturamento_cliente", r, (l) => l.receita),
+        soma("vw_fato_faturamento_cliente", r, (l) =>
+          l.principal ? l.receita : 0,
+        ),
         soma("vw_fato_fin_mes", r, (l) => l.receitaLiquida),
       ),
     ),
@@ -999,17 +1024,7 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
     return bruta === null || caixa === null ? null : emMilhoes(bruta - caixa);
   },
   capital_investido: (r) =>
-    emMilhoes(
-      noFim(
-        "vw_fato_balanco_mes",
-        r,
-        (l) =>
-          l.patrimonioLiquido +
-          l.dividaCurtoPrazo +
-          l.dividaLongoPrazo -
-          l.aplicacoesFinanceiras,
-      ),
-    ),
+    emMilhoes(noFim("vw_fato_balanco_mes", r, capitalInvestidoDaLinha)),
   estoque_sem_giro: (r) =>
     emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.estoqueSemGiro)),
   a_receber_vencido: (r) =>
@@ -1056,15 +1071,7 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
       razao(
         ebit -
           (soma("vw_fato_balanco_mes", r, (l) => l.impostosSobreLucro) ?? 0),
-        noFim(
-          "vw_fato_balanco_mes",
-          r,
-          (l) =>
-            l.patrimonioLiquido +
-            l.dividaCurtoPrazo +
-            l.dividaLongoPrazo -
-            l.aplicacoesFinanceiras,
-        ),
+        noFim("vw_fato_balanco_mes", r, capitalInvestidoDaLinha),
       ),
     );
   },
@@ -1139,10 +1146,8 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
   cobertura_do_servico_da_divida: (r) =>
     razao(
       ebitEmReais(r),
-      soma(
-        "vw_fato_balanco_mes",
-        r,
-        (l) => l.jurosPagos + l.amortizacaoDeDivida,
+      soma("vw_fato_balanco_mes", r, (l) =>
+        mais(l.jurosPagos, l.amortizacaoDeDivida),
       ),
     ),
   custo_medio_da_divida: (r) => emPorcento(custoMedioDaDividaEmFracao(r)),
@@ -1210,15 +1215,7 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
     emMilhoes(pontoDeEquilibrioMensal(custosFixosEmReais(r), r)),
   ponto_de_equilibrio_economico: (r) => {
     const contabil = custoContabilACobrir(r);
-    const capital = noFim(
-      "vw_fato_balanco_mes",
-      r,
-      (l) =>
-        l.patrimonioLiquido +
-        l.dividaCurtoPrazo +
-        l.dividaLongoPrazo -
-        l.aplicacoesFinanceiras,
-    );
+    const capital = noFim("vw_fato_balanco_mes", r, capitalInvestidoDaLinha);
     if (contabil === null || capital === null) return null;
     // O retorno mínimo do recorte: a taxa anual, na proporção dos meses.
     const retornoMinimo =
@@ -1277,11 +1274,8 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
   lancamentos_de_competencia_anterior: (r) =>
     soma("vw_fato_qualidade_mes", r, (l) => l.lancamentosDeCompetenciaAnterior),
   completude_da_base: (r) => {
-    const lacuna = soma(
-      "vw_fato_qualidade_mes",
-      r,
-      (l) =>
-        l.valorSemCentroDeCusto + l.valorEmContaGenerica + l.valorSemNatureza,
+    const lacuna = soma("vw_fato_qualidade_mes", r, (l) =>
+      mais(l.valorSemCentroDeCusto, l.valorEmContaGenerica, l.valorSemNatureza),
     );
     const fracao = razao(
       lacuna,
@@ -1342,17 +1336,19 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
     emPorcento(
       razao(
         lucroLiquidoEmReais(r),
-        noFim(
-          "vw_fato_balanco_mes",
-          r,
-          (l) => l.patrimonioLiquido - l.mutuoComSocios,
+        noFim("vw_fato_balanco_mes", r, (l) =>
+          mais(l.patrimonioLiquido, menos(l.mutuoComSocios)),
         ),
       ),
     ),
   mutuo_com_socios: (r) =>
     emMilhoes(noFim("vw_fato_balanco_mes", r, (l) => l.mutuoComSocios)),
   receita_dos_principais_clientes: (r) =>
-    emMilhoes(soma("vw_fato_faturamento_cliente", r, (l) => l.receita)),
+    emMilhoes(
+      soma("vw_fato_faturamento_cliente", r, (l) =>
+        l.principal ? l.receita : 0,
+      ),
+    ),
 
   /* ---------------- Integração (T-116) ---------------- */
 
@@ -1446,8 +1442,12 @@ function sentimento(
  * testável: agora que as 13 telas têm origem declarada, não há mais tela que
  * sirva de exemplo de falta, e o caso precisa de um registro sintético.
  */
-export function calcularKpi(registro: RegistroDeKpi, q: Query): Kpi {
-  return montar(registro, recorteDe(q));
+export function calcularKpi(
+  base: Base,
+  registro: RegistroDeKpi,
+  q: Query,
+): Kpi {
+  return montar(registro, recorteDe(base, q));
 }
 
 function montar(registro: RegistroDeKpi, r: Recorte): Kpi {
@@ -1506,8 +1506,12 @@ function serieDoKpi(
  * por tela e o registro já obedece — aqui não há corte, porque cortar em
  * silêncio esconderia um registro que cresceu demais.
  */
-export function calcularKpis(tela: string, q: Query): readonly Kpi[] {
-  const r = recorteDe(q);
+export function calcularKpis(
+  base: Base,
+  tela: string,
+  q: Query,
+): readonly Kpi[] {
+  const r = recorteDe(base, q);
   return kpisDaTela(tela).map((registro) => montar(registro, r));
 }
 

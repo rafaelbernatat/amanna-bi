@@ -19,20 +19,21 @@
  * seção 6.2 — a lista não muda porque um mês veio vazio. Ano é o oposto: ele
  * existe porque foi carregado.
  *
- * ## O frescor de uma fixture é agora
+ * ## O frescor vem de quem carregou
  *
  * A fixture é calculada na leitura, então o último sync bem-sucedido é o
- * instante da própria leitura. Fingir um horário passado faria o selo virar
- * aviso sozinho depois de um dia parado, e a demonstração passaria a mostrar um
- * problema que não existe.
+ * instante da própria leitura, e é isso que o adaptador de fixtures informa.
+ * A base no Postgres tem uma carga com data e hora, e é ela que o adaptador de
+ * warehouse informa — e o selo vira aviso um dia depois da carga, que é o
+ * comportamento certo de um dado que ninguém atualizou (D-P5).
  *
  * O que **não** se finge é o `asOf`: ele é o último fechamento que o dado
- * carrega, lido das linhas. Com a fixture de 2026 completa, é 31/12/2026 —
- * mesmo que o relógio diga agosto. É honesto: o dado é esse.
+ * carrega, lido das linhas. Com 2026 completo, é 31/12/2026 — mesmo que o
+ * relógio diga agosto. É honesto: o dado é esse.
  */
 
+import type { Base } from "@/acesso/calculo/base";
 import { anoDoMes } from "@/acesso/calculo/eixos";
-import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
 import {
   CATALOGO_GERADO,
   VERSAO_DO_CATALOGO,
@@ -54,8 +55,10 @@ export class FixtureSemMes extends Error {
 }
 
 /** Os meses que o dado carrega, em ordem. */
-function mesesCarregados(): readonly string[] {
-  const meses = [...new Set(VW_FATO_RH_MES.map((l) => l.mes))].sort();
+function mesesCarregados(base: Base): readonly string[] {
+  const meses = [
+    ...new Set(base.views.vw_fato_rh_mes.map((l) => l.mes)),
+  ].sort();
   if (meses.length === 0) throw new FixtureSemMes();
   return meses;
 }
@@ -74,15 +77,22 @@ function ultimoDiaDoMes(mes: string): string {
   return data.toISOString().slice(0, "0000-00-00".length);
 }
 
+/** Quando a base foi carregada — o que cada adaptador sabe e o motor não. */
+export type Carga = {
+  /** Instante do último sync bem-sucedido, em ISO com fuso. */
+  readonly sincronizadoEm: string;
+};
+
 /**
- * O que a fixture sabe sobre si mesma.
+ * O que a base sabe sobre si mesma.
  *
  * `agora` entra por parâmetro pela mesma razão de `avaliarFrescor`: o instante
  * certo é o da requisição, e um `Date.now()` aqui dentro tornaria o frescor
- * impossível de testar sem esperar o relógio andar.
+ * impossível de testar sem esperar o relógio andar. A `carga` entra pelo mesmo
+ * motivo: quem sabe quando o dado foi carregado é o adaptador.
  */
-export function calcularMeta(agora: Date): Meta {
-  const meses = mesesCarregados();
+export function calcularMeta(base: Base, carga: Carga, agora: Date): Meta {
+  const meses = mesesCarregados(base);
   const anos = [...new Set(meses.map(anoDoMes))].sort().reverse();
   const ultimo = meses[meses.length - 1] ?? "";
 
@@ -98,7 +108,7 @@ export function calcularMeta(agora: Date): Meta {
     metricas: Object.keys(CATALOGO_GERADO).sort(),
     frescor: avaliarFrescor({
       asOf: ultimoDiaDoMes(ultimo),
-      sincronizadoEm: agora.toISOString(),
+      sincronizadoEm: carga.sincronizadoEm,
       agora,
     }),
   };

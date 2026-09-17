@@ -17,21 +17,9 @@
  * fecha em qualquer recorte.
  */
 
-import {
-  CLIENTES_A_RECEBER,
-  FORNECEDORES_A_PAGAR,
-  NATUREZAS_DE_SAIDA,
-  rotuloDe,
-} from "@/acesso/fixtures/contraparte";
-import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
-import { VW_DIM_CARGO } from "@/acesso/fixtures/dim";
+import type { ItemDeCadastro } from "@/acesso/calculo/base";
 import { AGREGADO_DE_AREA } from "@/acesso/calculo/eixos";
-import {
-  VW_FATO_CONTAS,
-  VW_FATO_FATURAMENTO_CLIENTE,
-  VW_FATO_ORCAMENTO,
-  VW_FATO_SAIDA_CATEGORIA,
-} from "@/acesso/fixtures/fin";
+import type { LinhaVagas, NomeDeQuebra } from "@/acesso/calculo/linhas";
 import {
   calculoDaMetrica,
   emMilhoes,
@@ -43,14 +31,13 @@ import {
   type Recorte,
   soma,
 } from "@/acesso/calculo/kpis";
-import { CENTROS_DE_CUSTO } from "@/acesso/fixtures/referencia-fin";
-import {
-  QUEBRAS_DO_QUADRO,
-  SEGMENTOS_DE_CLIENTE,
-} from "@/acesso/fixtures/referencia-perfil";
-import { VW_FATO_VAGAS } from "@/acesso/fixtures/rh";
-import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
+import { somar } from "@/acesso/calculo/recorte";
 import type { Parte, Query, Sentido } from "@/semantica/contrato";
+
+/** O rótulo de um item do cadastro, para o eixo do painel. */
+function rotuloDe(lista: readonly ItemDeCadastro[], codigo: string): string {
+  return lista.find((c) => c.codigo === codigo)?.rotulo ?? codigo;
+}
 
 const CEM = 100;
 const MESES_DO_ANO = 12;
@@ -247,14 +234,12 @@ function quebrar<T extends { mes: string }>(
   r: Recorte,
   categorias: readonly string[],
   chave: (l: T) => string,
-  medida: (l: T) => number,
+  medida: (l: T) => number | null,
 ): readonly (number | null)[] {
   const doRecorte = todas.filter((l) => pertence(l, r));
   return categorias.map((categoria) => {
     const daCategoria = doRecorte.filter((l) => chave(l) === categoria);
-    return daCategoria.length === 0
-      ? null
-      : daCategoria.reduce((a, l) => a + medida(l), 0);
+    return daCategoria.length === 0 ? null : somar(daCategoria, medida);
   });
 }
 
@@ -264,17 +249,20 @@ function ultimoMes(r: Recorte): Recorte {
   return { ...r, meses: ultimo === undefined ? [] : [ultimo] };
 }
 
-/** Os valores de uma quebra do quadro, na ordem declarada. */
-function valoresDaQuebra(dimensao: keyof typeof QUEBRAS_DO_QUADRO) {
-  return QUEBRAS_DO_QUADRO[dimensao].map((v) => v.codigo);
+/** Os valores de uma quebra do quadro, na ordem que o cadastro declara. */
+function valoresDaQuebra(
+  r: Recorte,
+  dimensao: NomeDeQuebra,
+): readonly string[] {
+  return r.base.cadastros.quebrasDoQuadro[dimensao];
 }
 
 /** O quadro por valor de uma dimensão do perfil, no fim da janela. */
 function quadroPor(
   r: Recorte,
-  dimensao: keyof typeof QUEBRAS_DO_QUADRO,
+  dimensao: NomeDeQuebra,
 ): { categorias: readonly string[]; valores: readonly (number | null)[] } {
-  const valores = valoresDaQuebra(dimensao);
+  const valores = valoresDaQuebra(r, dimensao);
   return {
     categorias: valores,
     valores: valores.map((v) => perfil(r, dimensao, [v])),
@@ -288,7 +276,7 @@ function saidasPor(
   valores: readonly string[],
 ): readonly (number | null)[] {
   return quebrar(
-    VW_FATO_RH_DESLIGAMENTO.filter((l) => l.dimensao === dimensao),
+    r.base.views.vw_fato_rh_desligamento.filter((l) => l.dimensao === dimensao),
     r,
     valores,
     (l) => l.valor,
@@ -468,9 +456,9 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
   "tov-tipos": (r) => {
     const tipos = [
       ...new Set(
-        VW_FATO_RH_DESLIGAMENTO.filter((l) => l.dimensao === "tipo").map(
-          (l) => l.valor,
-        ),
+        r.base.views.vw_fato_rh_desligamento
+          .filter((l) => l.dimensao === "tipo")
+          .map((l) => l.valor),
       ),
     ];
     const saidas = saidasPor(r, "tipo", tipos);
@@ -506,7 +494,7 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
     const taxas: (number | null)[] = [];
 
     for (const corte of cortes) {
-      const valores = valoresDaQuebra(corte);
+      const valores = valoresDaQuebra(r, corte);
       const saidas = saidasPor(r, corte, valores);
       valores.forEach((v, i) => {
         const quadro = perfil(ultimoMes(r), corte, [v]);
@@ -531,7 +519,7 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
       return emMilhoes(
         somaDaSerie(
           quebrar(
-            VW_FATO_TURNOVER_CUSTO,
+            r.base.views.vw_fato_turnover_custo,
             r,
             codigos,
             (l) => l.componente,
@@ -851,7 +839,7 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
     return barras(rotulos, valores, somaDaSerie(valores));
   },
 
-  "sal-resumo": () => {
+  "sal-resumo": (r) => {
     /*
      * O único painel que não lê fato nenhum.
      *
@@ -859,14 +847,15 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
      * célula, e por isso não mudam com o recorte. Está declarado como
      * invariante — a alternativa, fingir que respondem ao filtro, seria pior.
      */
-    const tetos = VW_DIM_CARGO.map((c) => c.ate).filter(
-      (v): v is number => v !== null,
-    );
-    const pisos = VW_DIM_CARGO.map((c) => c.de);
+    const cargos = r.base.cadastros.cargo;
+    const tetos = cargos
+      .map((c) => c.ate)
+      .filter((v): v is number => v !== null);
+    const pisos = cargos.map((c) => c.de);
     const maior = tetos.length === 0 ? null : Math.max(...tetos);
     const menor = pisos.length === 0 ? null : Math.min(...pisos);
-    const maiorCargo = VW_DIM_CARGO.find((c) => c.ate === maior);
-    const menorCargo = VW_DIM_CARGO.find((c) => c.de === menor);
+    const maiorCargo = cargos.find((c) => c.ate === maior);
+    const menorCargo = cargos.find((c) => c.de === menor);
 
     return {
       forma: "estatisticas",
@@ -886,25 +875,26 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
   /* ---------------- fin ---------------- */
 
   "cx-cat": (r) => {
-    const codigos = NATUREZAS_DE_SAIDA.map((n) => n.codigo);
+    const naturezas = r.base.cadastros.naturezasDeSaida;
+    const codigos = naturezas.map((n) => n.codigo);
     const valores = quebrar(
-      VW_FATO_SAIDA_CATEGORIA,
+      r.base.views.vw_fato_saida_categoria,
       r,
       codigos,
       (l) => l.categoria,
       (l) => l.valor,
     ).map(emMilhoes);
     return barras(
-      codigos.map((c) => rotuloDe(NATUREZAS_DE_SAIDA, c)),
+      codigos.map((c) => rotuloDe(naturezas, c)),
       valores,
       somaDaSerie(valores),
     );
   },
 
   "orc-gastos": (r) => {
-    const centros = CENTROS_DE_CUSTO.map((c) => c.codigo);
+    const centros = r.base.cadastros.centrosDeCusto.map((c) => c.codigo);
     const valores = quebrar(
-      VW_FATO_ORCAMENTO,
+      r.base.views.vw_fato_orcamento,
       r,
       centros,
       (l) => l.centroDeCusto,
@@ -914,10 +904,10 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
   },
 
   "cr-inadim": (r) => {
-    const nomeados = CLIENTES_A_RECEBER.filter(
-      (c) => c.codigo !== "outros-clientes",
+    const nomeados = r.base.cadastros.clientesAReceber;
+    const vencido = r.base.views.vw_fato_contas.filter(
+      (l) => l.faixaDeAging !== "a-vencer",
     );
-    const vencido = VW_FATO_CONTAS.filter((l) => l.faixaDeAging !== "a-vencer");
     const valores = quebrar(
       vencido,
       ultimoMes(r),
@@ -933,11 +923,9 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
   },
 
   "cp-fornec": (r) => {
-    const nomeados = FORNECEDORES_A_PAGAR.filter(
-      (c) => c.codigo !== "outros-fornecedores",
-    );
+    const nomeados = r.base.cadastros.fornecedoresAPagar;
     const valores = quebrar(
-      VW_FATO_CONTAS,
+      r.base.views.vw_fato_contas,
       ultimoMes(r),
       nomeados.map((c) => c.codigo),
       (l) => l.contraparte,
@@ -951,25 +939,28 @@ export const DESENHO_CATEGORICO: Readonly<Record<string, Fabrica>> = {
   },
 
   "fat-segm": (r) => {
+    const segmentos = r.base.cadastros.segmentosDeCliente;
     const valores = quebrar(
-      VW_FATO_FATURAMENTO_CLIENTE,
+      r.base.views.vw_fato_faturamento_cliente,
       r,
-      SEGMENTOS_DE_CLIENTE,
+      segmentos,
       (l) => l.segmento,
       (l) => l.receita,
     );
     const pcts = participacao(valores);
     return {
       forma: "rosca",
-      fatias: fatiasDe(SEGMENTOS_DE_CLIENTE, valores),
-      centro: { valor: pcts[0] ?? null, rotulo: "indústria" },
+      fatias: fatiasDe(segmentos, valores),
+      // O centro mostra a fatia do primeiro segmento do cadastro — na fixture,
+      // indústria; na base Amanna, o primeiro da lista declarada.
+      centro: { valor: pcts[0] ?? null, rotulo: segmentos[0] ?? "" },
       total: totalDeParticipacao(somaDaSerie(valores)),
     };
   },
 };
 
 /** O tipo das linhas de vagas, para as medidas do funil. */
-type LinhaDeVagas = (typeof VW_FATO_VAGAS)[number];
+type LinhaDeVagas = LinhaVagas;
 
 /** Os painéis categóricos que já sabem se desenhar. */
 export function paineisCategoricosComDesenho(): readonly string[] {

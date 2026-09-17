@@ -25,6 +25,7 @@
  * chat não calcula".
  */
 
+import type { Base } from "@/acesso/calculo/base";
 import {
   calculoDaMetrica,
   type Recorte,
@@ -197,8 +198,8 @@ function fechamentoDoRecorte(r: Recorte): string {
   return `${ultimo}-${String(dia)}`;
 }
 
-/** O valor de uma métrica do catálogo, no recorte pedido. */
-export function calcularMetrica(id: string, q: Query): MetricValue {
+/** O valor de uma métrica do catálogo, no recorte pedido, sobre uma base. */
+export function calcularMetrica(base: Base, id: string, q: Query): MetricValue {
   const entrada = CATALOGO_GERADO[id];
   if (entrada === undefined) {
     throw new MetricaDesconhecida(id, metricasProximas(id));
@@ -217,7 +218,7 @@ export function calcularMetrica(id: string, q: Query): MetricValue {
     );
   }
 
-  const r = recorteDe(q);
+  const r = recorteDe(base, q);
 
   return {
     id,

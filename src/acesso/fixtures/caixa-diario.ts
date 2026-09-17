@@ -37,63 +37,14 @@
  * amanhã não.
  */
 
+export { diasUteisDoMes } from "@/acesso/calculo/calendario";
+import { diasUteisDoMes } from "@/acesso/calculo/calendario";
 import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { repartir } from "@/acesso/fixtures/reparticao";
+import type { LinhaCaixaDiario } from "@/acesso/calculo/linhas";
 
-/** Uma linha da view: um dia útil, uma entidade. */
-export type LinhaCaixaDiario = {
-  /** Dia no formato `AAAA-MM-DD`. */
-  readonly dia: string;
-  readonly mes: string;
-  readonly entidade: string;
-  readonly entradas: number;
-  readonly saidas: number;
-};
-
-/** Dias de cada mês em ano comum. Fevereiro trata bissexto à parte. */
-const DIAS_NO_MES = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
-
-const SABADO = 6;
-const DOMINGO = 0;
-
-/**
- * O dia da semana, em UTC.
- *
- * `Date.UTC` e não `new Date("2026-01-05")`: a segunda forma depende do fuso da
- * máquina para datas sem hora em alguns motores, e uma fixture que muda de
- * conteúdo conforme o relógio de quem roda o teste não é fixture.
- */
-function diaDaSemana(ano: number, mes: number, dia: number): number {
-  return new Date(Date.UTC(ano, mes - 1, dia)).getUTCDay();
-}
-
-function ehBissexto(ano: number): boolean {
-  const QUATRO = 4;
-  const CEM = 100;
-  const QUATROCENTOS = 400;
-  return (ano % QUATRO === 0 && ano % CEM !== 0) || ano % QUATROCENTOS === 0;
-}
-
-/** Os dias úteis de um mês `AAAA-MM`, em ordem. Feriado não entra na fixture. */
-export function diasUteisDoMes(mes: string): readonly string[] {
-  const [anoTexto, mesTexto] = mes.split("-");
-  const ano = Number(anoTexto);
-  const numeroDoMes = Number(mesTexto);
-  const FEVEREIRO = 2;
-  const quantos =
-    numeroDoMes === FEVEREIRO && ehBissexto(ano)
-      ? (DIAS_NO_MES[1] ?? 0) + 1
-      : (DIAS_NO_MES[numeroDoMes - 1] ?? 0);
-
-  const dias: string[] = [];
-  for (let dia = 1; dia <= quantos; dia += 1) {
-    const semana = diaDaSemana(ano, numeroDoMes, dia);
-    if (semana === SABADO || semana === DOMINGO) continue;
-    dias.push(`${mes}-${dia < 10 ? `0${String(dia)}` : String(dia)}`);
-  }
-  return dias;
-}
+export type { LinhaCaixaDiario } from "@/acesso/calculo/linhas";
 
 /**
  * Os dias do mês em que a saída de caixa se concentra.

@@ -47,6 +47,7 @@ import {
   saldoDoMes,
 } from "@/acesso/fixtures/fin";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
+import type { Completa, LinhaBalancoMes } from "@/acesso/calculo/linhas";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
 const POR_MIL = 1000;
@@ -68,30 +69,7 @@ const APLICADO_POR_MIL = 600;
 /** A parte do estoque sem movimentação há mais de 90 dias, em milésimos. */
 const SEM_GIRO_POR_MIL = 180;
 
-export type LinhaBalancoMes = {
-  readonly mes: string;
-  readonly entidade: string;
-  /** Saldos no fechamento do mês, em reais. */
-  readonly patrimonioLiquido: number;
-  readonly ativoTotal: number;
-  readonly ativoCirculante: number;
-  readonly passivoCirculante: number;
-  readonly imobilizado: number;
-  /** A parte do caixa que está aplicada: entra no capital investido pelo sinal negativo. */
-  readonly aplicacoesFinanceiras: number;
-  readonly dividaCurtoPrazo: number;
-  readonly dividaLongoPrazo: number;
-  readonly estoqueSemGiro: number;
-  readonly aReceberVencido: number;
-  readonly aPagarVencido: number;
-  readonly mutuoComSocios: number;
-  /** Fluxos do mês, em reais. */
-  readonly jurosPagos: number;
-  readonly impostosSobreLucro: number;
-  readonly amortizacaoDeDivida: number;
-  readonly captacao: number;
-  readonly distribuicaoASocios: number;
-};
+export type { LinhaBalancoMes } from "@/acesso/calculo/linhas";
 
 /** A receita líquida consolidada de cada mês, em reais: a forma dos saldos. */
 const RECEITA_MENSAL: readonly number[] = MESES.map((mes) =>
@@ -150,85 +128,88 @@ function dividaDoMes(mes: string, entidade: string) {
   };
 }
 
-export const VW_FATO_BALANCO_MES: readonly LinhaBalancoMes[] = (() => {
-  const patrimonio = [
-    ...porEntidade(emReais(PATRIMONIO_DE_ABERTURA), "balanco"),
-  ];
-  const imobilizado = [
-    ...porEntidade(emReais(IMOBILIZADO_DE_ABERTURA), "balanco"),
-  ];
-  const mutuo = porEntidade(emReais(MUTUO_COM_SOCIOS), "balanco");
-  const saida: LinhaBalancoMes[] = [];
+export const VW_FATO_BALANCO_MES: readonly Completa<LinhaBalancoMes>[] =
+  (() => {
+    const patrimonio = [
+      ...porEntidade(emReais(PATRIMONIO_DE_ABERTURA), "balanco"),
+    ];
+    const imobilizado = [
+      ...porEntidade(emReais(IMOBILIZADO_DE_ABERTURA), "balanco"),
+    ];
+    const mutuo = porEntidade(emReais(MUTUO_COM_SOCIOS), "balanco");
+    const saida: Completa<LinhaBalancoMes>[] = [];
 
-  MESES.forEach((mes, m) => {
-    const outrosCirculantes = porEntidade(
-      saldoDoMes(emReais(OUTROS_CIRCULANTES_DEZEMBRO), RECEITA_MENSAL, m),
-      "balanco",
-    );
-    const acrescimos = porEntidade(
-      saldoDoMes(emReais(ACRESCIMOS_DEZEMBRO), RECEITA_MENSAL, m),
-      "balanco",
-    );
-    const distribuicao = porEntidade(
-      m === MES_DA_DISTRIBUICAO ? emReais(DISTRIBUICAO_ANUAL) : 0,
-      "balanco",
-    );
-
-    ENTIDADES_ARMAZENADAS.forEach((entidade, e) => {
-      const dre = VW_FATO_FIN_MES.find(
-        (l) => l.mes === mes && l.entidade === entidade,
+    MESES.forEach((mes, m) => {
+      const outrosCirculantes = porEntidade(
+        saldoDoMes(emReais(OUTROS_CIRCULANTES_DEZEMBRO), RECEITA_MENSAL, m),
+        "balanco",
       );
-      if (dre === undefined) return;
+      const acrescimos = porEntidade(
+        saldoDoMes(emReais(ACRESCIMOS_DEZEMBRO), RECEITA_MENSAL, m),
+        "balanco",
+      );
+      const distribuicao = porEntidade(
+        m === MES_DA_DISTRIBUICAO ? emReais(DISTRIBUICAO_ANUAL) : 0,
+        "balanco",
+      );
 
-      const lucro =
-        dre.receitaLiquida -
-        dre.cmv -
-        dre.despesasOperacionais -
-        dre.depreciacaoEAmortizacao -
-        dre.resultadoFinanceiro -
-        dre.naoOperacional;
-      patrimonio[e] = (patrimonio[e] ?? 0) + lucro - (distribuicao[e] ?? 0);
-      imobilizado[e] =
-        (imobilizado[e] ?? 0) + dre.capex - dre.depreciacaoEAmortizacao;
+      ENTIDADES_ARMAZENADAS.forEach((entidade, e) => {
+        const dre = VW_FATO_FIN_MES.find(
+          (l) => l.mes === mes && l.entidade === entidade,
+        );
+        if (dre === undefined) return;
 
-      const contas = contasDoMes(mes, entidade);
-      const divida = dividaDoMes(mes, entidade);
+        const lucro =
+          dre.receitaLiquida -
+          dre.cmv -
+          dre.despesasOperacionais -
+          dre.depreciacaoEAmortizacao -
+          dre.resultadoFinanceiro -
+          dre.naoOperacional;
+        patrimonio[e] = (patrimonio[e] ?? 0) + lucro - (distribuicao[e] ?? 0);
+        imobilizado[e] =
+          (imobilizado[e] ?? 0) + dre.capex - dre.depreciacaoEAmortizacao;
 
-      const ativoCirculante =
-        dre.saldoDeCaixa +
-        contas.aReceber +
-        dre.estoque +
-        (outrosCirculantes[e] ?? 0);
-      const passivoCirculante =
-        contas.aPagar + divida.curto + (acrescimos[e] ?? 0);
-      const patrimonioLiquido = patrimonio[e] ?? 0;
+        const contas = contasDoMes(mes, entidade);
+        const divida = dividaDoMes(mes, entidade);
 
-      saida.push({
-        mes,
-        entidade,
-        patrimonioLiquido,
-        // A identidade contábil: o que sobra além do circulante e do
-        // imobilizado são os outros ativos não circulantes.
-        ativoTotal: passivoCirculante + divida.longo + patrimonioLiquido,
-        ativoCirculante,
-        passivoCirculante,
-        imobilizado: imobilizado[e] ?? 0,
-        aplicacoesFinanceiras: Math.round(
-          (dre.saldoDeCaixa * APLICADO_POR_MIL) / POR_MIL,
-        ),
-        dividaCurtoPrazo: divida.curto,
-        dividaLongoPrazo: divida.longo,
-        estoqueSemGiro: Math.round((dre.estoque * SEM_GIRO_POR_MIL) / POR_MIL),
-        aReceberVencido: contas.aReceberVencido,
-        aPagarVencido: contas.aPagarVencido,
-        mutuoComSocios: mutuo[e] ?? 0,
-        jurosPagos: dre.resultadoFinanceiro,
-        impostosSobreLucro: dre.naoOperacional,
-        amortizacaoDeDivida: divida.amortizacao,
-        captacao: divida.captacao,
-        distribuicaoASocios: distribuicao[e] ?? 0,
+        const ativoCirculante =
+          dre.saldoDeCaixa +
+          contas.aReceber +
+          dre.estoque +
+          (outrosCirculantes[e] ?? 0);
+        const passivoCirculante =
+          contas.aPagar + divida.curto + (acrescimos[e] ?? 0);
+        const patrimonioLiquido = patrimonio[e] ?? 0;
+
+        saida.push({
+          mes,
+          entidade,
+          patrimonioLiquido,
+          // A identidade contábil: o que sobra além do circulante e do
+          // imobilizado são os outros ativos não circulantes.
+          ativoTotal: passivoCirculante + divida.longo + patrimonioLiquido,
+          ativoCirculante,
+          passivoCirculante,
+          imobilizado: imobilizado[e] ?? 0,
+          aplicacoesFinanceiras: Math.round(
+            (dre.saldoDeCaixa * APLICADO_POR_MIL) / POR_MIL,
+          ),
+          dividaCurtoPrazo: divida.curto,
+          dividaLongoPrazo: divida.longo,
+          estoqueSemGiro: Math.round(
+            (dre.estoque * SEM_GIRO_POR_MIL) / POR_MIL,
+          ),
+          aReceberVencido: contas.aReceberVencido,
+          aPagarVencido: contas.aPagarVencido,
+          mutuoComSocios: mutuo[e] ?? 0,
+          jurosPagos: dre.resultadoFinanceiro,
+          impostosSobreLucro: dre.naoOperacional,
+          amortizacaoDeDivida: divida.amortizacao,
+          captacao: divida.captacao,
+          distribuicaoASocios: distribuicao[e] ?? 0,
+        });
       });
     });
-  });
-  return saida;
-})();
+    return saida;
+  })();

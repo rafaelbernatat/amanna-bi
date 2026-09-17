@@ -37,6 +37,7 @@ import {
 } from "@/acesso/calculo/recorte";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
+import type { LinhaRhMes } from "@/acesso/calculo/linhas";
 import type { Query } from "@/semantica/contrato";
 import { PERIODOS, QUERY_PADRAO } from "@/semantica/contrato";
 
@@ -220,9 +221,7 @@ function com(mudanca: Partial<Query>): Query {
 }
 
 /** As medidas aditivas de RH que precisam fechar. */
-const MEDIDAS_DE_RH: ReadonlyArray<
-  [string, (l: (typeof VW_FATO_RH_MES)[number]) => number]
-> = [
+const MEDIDAS_DE_RH: ReadonlyArray<[string, (l: LinhaRhMes) => number]> = [
   ["admissoes", (l) => l.admissoes],
   ["desligamentos", (l) => l.desligamentos],
   ["folha", (l) => l.folhaReais],
@@ -268,7 +267,7 @@ describe("soma(Unidade SP) + soma(Demais unidades) = soma(Consolidado)", () => {
             medida,
           ),
         );
-        const soma = partes.reduce((a, b) => a + b, 0);
+        const soma = partes.reduce<number>((a, b) => a + (b ?? 0), 0);
         if (soma !== consolidado) falhas.push(`${mes}/${nome}`);
       }
     }
@@ -472,7 +471,18 @@ describe("as séries mensais", () => {
 
 describe("o adaptador publica as views da seção 10.1", () => {
   it("as sete views existem e nenhuma está vazia", () => {
+    /*
+     * Uma exceção nomeada: o razão por conta (`vw_fato_dre_conta_mes`) não
+     * existe na fixture, que não tem razão. Ela nasce vazia de propósito e o
+     * ranking por conta responde "não abre nesta fonte" — fabricar lançamentos
+     * só para a lista não ficar vazia seria inventar dado (D-DADOS).
+     */
+    const SEM_RAZAO_NA_FIXTURE = new Set(["vw_fato_dre_conta_mes"]);
     for (const [nome, linhas] of Object.entries(VIEWS)) {
+      if (SEM_RAZAO_NA_FIXTURE.has(nome)) {
+        expect(linhas.length, nome).toBe(0);
+        continue;
+      }
       expect(linhas.length, nome).toBeGreaterThan(0);
     }
   });

@@ -31,6 +31,7 @@ import {
   origemDoPainel,
 } from "@/semantica/origem-de-painel";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const BASE: Query = {
   entidade: "consolidado",
@@ -57,7 +58,7 @@ const PERIODOS = ["12-meses", "6-meses", "4-trimestre", "dezembro"] as const;
  * teste falha com uma frase, em vez de o compilador ser calado.
  */
 function cartesiano(id: string, q: Query) {
-  const envelope = calcularPainel(id, q);
+  const envelope = calcularPainel(BASE_DE_FIXTURES, id, q);
   if (!("categories" in envelope) || !("series" in envelope)) {
     throw new Error(
       `${id} devolveu um envelope sem carga cartesiana — forma ${envelope.forma}`,
@@ -104,7 +105,9 @@ describe("todo painel responde com envelope válido", () => {
 
   it.each(IDS)("%s declara fórmula não vazia", (id) => {
     // PR-3 e T-109: número sem fórmula é número sem procedência.
-    expect(calcularPainel(id, BASE).formula.trim().length).toBeGreaterThan(0);
+    expect(
+      calcularPainel(BASE_DE_FIXTURES, id, BASE).formula.trim().length,
+    ).toBeGreaterThan(0);
   });
 
   it.each(IDS)(
@@ -124,9 +127,9 @@ describe("todo painel responde com envelope válido", () => {
   it("painel que não existe lança, e não devolve envelope vazio", () => {
     // Envelope vazio faria um id errado parecer um recorte sem dado — o pior
     // dos dois erros, porque parece uma resposta.
-    expect(() => calcularPainel("nao-existe", BASE)).toThrowError(
-      PainelDesconhecido,
-    );
+    expect(() =>
+      calcularPainel(BASE_DE_FIXTURES, "nao-existe", BASE),
+    ).toThrowError(PainelDesconhecido);
   });
 
   it("todas as doze formas desenham — não sobrou nenhuma recusando", () => {

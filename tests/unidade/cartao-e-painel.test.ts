@@ -36,6 +36,7 @@ import { calcularKpis } from "@/acesso/calculo/kpis";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import type { Kpi, PanelResponse, Query } from "@/semantica/contrato";
 import { readFileSync } from "node:fs";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const CONSULTA: Query = {
   entidade: "consolidado",
@@ -242,7 +243,7 @@ describe("nenhuma tela renderiza mais de seis cartões", () => {
   it.each([...new Set(REGISTRO_DE_KPIS.map((k) => k.tela))])(
     "a tela %s cabe no limite",
     (tela) => {
-      const kpis = calcularKpis(tela, CONSULTA);
+      const kpis = calcularKpis(BASE_DE_FIXTURES, tela, CONSULTA);
       expect(
         kpis.length,
         `${tela} tem ${String(kpis.length)} KPIs no registro`,
@@ -350,7 +351,7 @@ describe("valor, delta, rodapé e sparkline vêm do KPI recebido", () => {
 
 describe("a série do KPI vem do cálculo, com um ponto por mês", () => {
   it("doze meses de janela dão doze pontos", () => {
-    const kpis = calcularKpis("rh/visao", CONSULTA);
+    const kpis = calcularKpis(BASE_DE_FIXTURES, "rh/visao", CONSULTA);
     expect(kpis.length).toBeGreaterThan(0);
     for (const kpi of kpis) {
       expect(kpi.serie.length, kpi.id).toBe(12);
@@ -358,7 +359,10 @@ describe("a série do KPI vem do cálculo, com um ponto por mês", () => {
   });
 
   it("janela de um mês dá um ponto, e aí não há traço para desenhar", () => {
-    const kpis = calcularKpis("rh/visao", { ...CONSULTA, periodo: "dezembro" });
+    const kpis = calcularKpis(BASE_DE_FIXTURES, "rh/visao", {
+      ...CONSULTA,
+      periodo: "dezembro",
+    });
     for (const kpi of kpis) {
       expect(kpi.serie.length, kpi.id).toBe(1);
     }
@@ -367,8 +371,8 @@ describe("a série do KPI vem do cálculo, com um ponto por mês", () => {
   });
 
   it("a série responde ao recorte, como o número responde", () => {
-    const consolidado = calcularKpis("rh/visao", CONSULTA);
-    const unidadeSp = calcularKpis("rh/visao", {
+    const consolidado = calcularKpis(BASE_DE_FIXTURES, "rh/visao", CONSULTA);
+    const unidadeSp = calcularKpis(BASE_DE_FIXTURES, "rh/visao", {
       ...CONSULTA,
       entidade: "unidade-sp",
     });

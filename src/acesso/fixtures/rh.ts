@@ -85,6 +85,13 @@ import {
   FOLHA_POR_MODALIDADE,
   noMes,
 } from "@/acesso/fixtures/sazonalidade";
+import type {
+  Completa,
+  LinhaRhMes,
+  LinhaVagas,
+  LinhaFonteDeCandidato,
+  LinhaTreinamento,
+} from "@/acesso/calculo/linhas";
 
 /** O ano que esta fixture carrega. 2025 entra com T-152. */
 export const ANO_DA_FIXTURE = "2026";
@@ -583,94 +590,38 @@ const CUSTO_DE_DESLIGAMENTO = custoDeSaida(false);
  * vw_fato_rh_mes
  * ------------------------------------------------------------------ */
 
-export type LinhaRhMes = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly area: string;
-  readonly modalidade: string;
-  /** Estoque no fechamento do mês. Agrega por `last` no tempo. */
-  readonly headcountFte: number;
-  readonly admissoes: number;
-  readonly desligamentos: number;
-  /** Em reais. A soma das quatro parcelas abaixo, nunca uma coluna à parte. */
-  readonly folhaReais: number;
-  readonly salarios: number;
-  readonly encargos: number;
-  readonly beneficios: number;
-  readonly variavel: number;
-  /**
-   * Quem pode responder à pesquisa de clima. Denominador de "Cobertura".
-   *
-   * Na fixture coincide com o quadro, porque ninguém está marcado como
-   * inelegível. A coluna existe assim mesmo, e é o ponto: a fórmula nomeia
-   * `elegiveis`, e no dia em que o dado real distinguir os dois — afastados,
-   * admitidos há menos de 90 dias — nada na fórmula muda.
-   */
-  readonly elegiveis: number;
-  /** Soma das idades. A média é `somaDeIdade / headcountFte`. */
-  readonly somaDeIdade: number;
-  /** Soma dos tempos de casa, em anos. */
-  readonly somaDeTempoDeCasa: number;
-  /** Soma do tempo de casa **de quem saiu**. Denominador: `desligamentos`. */
-  readonly somaDeTempoAteASaida: number;
-  /**
-   * Quantas pessoas do quadro iniciaram ao menos uma trilha no mês.
-   *
-   * Mora aqui, e não em `vw_fato_treinamento`, porque é atributo do **quadro**.
-   * Na view de treinamento a mesma pessoa apareceria uma vez por trilha e uma
-   * vez por modalidade, e somar daria mais gente treinando do que gente — a
-   * participação passava de 100%, medida em 108,9%.
-   *
-   * Continua sendo estoque no tempo: quem treinou em janeiro e em março é uma
-   * pessoa, não duas. Por isso a participação se lê no último mês da janela.
-   */
-  readonly participantesDeTreinamento: number;
-  /** Ramp-up e produtividade perdida, em reais. */
-  readonly custoDeReposicao: number;
-  /** Rescisão e recrutamento de reposição, em reais. */
-  readonly custoDeDesligamento: number;
-  /** Denominador do absenteísmo. */
-  readonly horasPrevistas: number;
-  /** Numerador do absenteísmo. */
-  readonly horasAusentes: number;
-  /** Denominador do eNPS e do engajamento. */
-  readonly respondentes: number;
-  readonly promotores: number;
-  readonly neutros: number;
-  readonly detratores: number;
-  /** Soma dos pontos. A média é `pontosDeEngajamento / respondentes`. */
-  readonly pontosDeEngajamento: number;
-};
+export type { LinhaRhMes } from "@/acesso/calculo/linhas";
 
-export const VW_FATO_RH_MES: readonly LinhaRhMes[] = MESES.flatMap((mes, m) =>
-  CELULAS.map((c, k) => ({
-    mes,
-    entidade: c.entidade,
-    area: c.area,
-    modalidade: c.modalidade,
-    headcountFte: HEADCOUNT[m]?.[k] ?? 0,
-    admissoes: ADMISSOES[m]?.[k] ?? 0,
-    desligamentos: DESLIGAMENTOS[m]?.[k] ?? 0,
-    folhaReais: FOLHA[m]?.[k] ?? 0,
-    salarios: COMPONENTES_DA_FOLHA[0]?.[m]?.[k] ?? 0,
-    encargos: COMPONENTES_DA_FOLHA[1]?.[m]?.[k] ?? 0,
-    beneficios: COMPONENTES_DA_FOLHA[2]?.[m]?.[k] ?? 0,
-    variavel: COMPONENTES_DA_FOLHA[3]?.[m]?.[k] ?? 0,
-    elegiveis: HEADCOUNT[m]?.[k] ?? 0,
-    somaDeIdade: SOMA_DE_IDADE[m]?.[k] ?? 0,
-    somaDeTempoDeCasa: SOMA_DE_TEMPO_DE_CASA[m]?.[k] ?? 0,
-    somaDeTempoAteASaida: SOMA_DE_TEMPO_ATE_A_SAIDA[m]?.[k] ?? 0,
-    participantesDeTreinamento: PARTICIPANTES[m]?.[k] ?? 0,
-    custoDeReposicao: CUSTO_DE_REPOSICAO[m]?.[k] ?? 0,
-    custoDeDesligamento: CUSTO_DE_DESLIGAMENTO[m]?.[k] ?? 0,
-    horasPrevistas: HORAS_PREVISTAS[m]?.[k] ?? 0,
-    horasAusentes: HORAS_AUSENTES[m]?.[k] ?? 0,
-    respondentes: RESPONDENTES[m]?.[k] ?? 0,
-    promotores: CLIMA[m]?.promotores[k] ?? 0,
-    neutros: CLIMA[m]?.neutros[k] ?? 0,
-    detratores: CLIMA[m]?.detratores[k] ?? 0,
-    pontosDeEngajamento: ENGAJAMENTO[m]?.[k] ?? 0,
-  })),
+export const VW_FATO_RH_MES: readonly Completa<LinhaRhMes>[] = MESES.flatMap(
+  (mes, m) =>
+    CELULAS.map((c, k) => ({
+      mes,
+      entidade: c.entidade,
+      area: c.area,
+      modalidade: c.modalidade,
+      headcountFte: HEADCOUNT[m]?.[k] ?? 0,
+      admissoes: ADMISSOES[m]?.[k] ?? 0,
+      desligamentos: DESLIGAMENTOS[m]?.[k] ?? 0,
+      folhaReais: FOLHA[m]?.[k] ?? 0,
+      salarios: COMPONENTES_DA_FOLHA[0]?.[m]?.[k] ?? 0,
+      encargos: COMPONENTES_DA_FOLHA[1]?.[m]?.[k] ?? 0,
+      beneficios: COMPONENTES_DA_FOLHA[2]?.[m]?.[k] ?? 0,
+      variavel: COMPONENTES_DA_FOLHA[3]?.[m]?.[k] ?? 0,
+      elegiveis: HEADCOUNT[m]?.[k] ?? 0,
+      somaDeIdade: SOMA_DE_IDADE[m]?.[k] ?? 0,
+      somaDeTempoDeCasa: SOMA_DE_TEMPO_DE_CASA[m]?.[k] ?? 0,
+      somaDeTempoAteASaida: SOMA_DE_TEMPO_ATE_A_SAIDA[m]?.[k] ?? 0,
+      participantesDeTreinamento: PARTICIPANTES[m]?.[k] ?? 0,
+      custoDeReposicao: CUSTO_DE_REPOSICAO[m]?.[k] ?? 0,
+      custoDeDesligamento: CUSTO_DE_DESLIGAMENTO[m]?.[k] ?? 0,
+      horasPrevistas: HORAS_PREVISTAS[m]?.[k] ?? 0,
+      horasAusentes: HORAS_AUSENTES[m]?.[k] ?? 0,
+      respondentes: RESPONDENTES[m]?.[k] ?? 0,
+      promotores: CLIMA[m]?.promotores[k] ?? 0,
+      neutros: CLIMA[m]?.neutros[k] ?? 0,
+      detratores: CLIMA[m]?.detratores[k] ?? 0,
+      pontosDeEngajamento: ENGAJAMENTO[m]?.[k] ?? 0,
+    })),
 );
 
 /* ------------------------------------------------------------------ *
@@ -726,36 +677,7 @@ const FUNIL = FUNIL_ANUAL.map((etapa) =>
   ),
 );
 
-export type LinhaVagas = {
-  readonly mes: string;
-  readonly area: string;
-  readonly abertas: number;
-  readonly emAndamento: number;
-  readonly fechadas: number;
-  readonly canceladas: number;
-  /**
-   * Custo de recrutamento do mês, em reais (T-143).
-   *
-   * O custo por contratação é `custoDeRecrutamento / contratados`. Varia por
-   * área porque acompanha o tempo de fechamento: vaga que demora custa mais
-   * anúncio, mais hora de entrevista e mais agência. Se fosse um múltiplo fixo
-   * das contratações, o KPI daria os mesmos R$ 8,6 mil em todo recorte — que é
-   * o defeito do achado 5 outra vez, com uma coluna a mais.
-   */
-  readonly custoDeRecrutamento: number;
-  /**
-   * Soma dos dias de todas as vagas fechadas no mês.
-   *
-   * O tempo médio é `diasSomados / fechadas`. Guardar a média já pronta faria
-   * o recorte de uma área tirar média de médias — outro número.
-   */
-  readonly diasSomados: number;
-  readonly candidaturas: number;
-  readonly triagem: number;
-  readonly entrevistas: number;
-  readonly propostas: number;
-  readonly contratados: number;
-};
+export type { LinhaVagas } from "@/acesso/calculo/linhas";
 
 /**
  * O custo de recrutamento, com o total do ano exato.
@@ -811,21 +733,7 @@ export const VW_FATO_VAGAS: readonly LinhaVagas[] = MESES.flatMap((mes, m) =>
  * vw_fato_vagas_fonte
  * ------------------------------------------------------------------ */
 
-/**
- * De onde veio quem foi contratado — em tabela própria, e a razão importa.
- *
- * A seção 10.1 lista "fonte do candidato" entre as colunas de `vw_fato_vagas`.
- * Pôr a fonte no mesmo grão obrigaria a escolher entre duas coisas erradas:
- * repetir a contagem de vagas em cada fonte, ou inventar uma fonte para uma
- * vaga que ainda está **aberta** e que por definição não tem candidato
- * contratado. Contagem de vaga e origem de contratação são grãos diferentes.
- */
-export type LinhaFonteDeCandidato = {
-  readonly mes: string;
-  readonly area: string;
-  readonly fonte: string;
-  readonly contratados: number;
-};
+export type { LinhaFonteDeCandidato } from "@/acesso/calculo/linhas";
 
 export const VW_FATO_VAGAS_FONTE: readonly LinhaFonteDeCandidato[] = (() => {
   const contratadosPorMesArea = FUNIL[4] ?? [];
@@ -878,18 +786,7 @@ const HORAS_POR_MODALIDADE = ajustarMargemDeColuna(
   MODALIDADES_DE_TREINAMENTO.map((x) => x.horas),
 );
 
-export type LinhaTreinamento = {
-  readonly mes: string;
-  readonly area: string;
-  readonly trilha: string;
-  /** `online`, `presencial` ou `hibrido` — a modalidade **da trilha**. */
-  readonly modalidadeDeTrilha: string;
-  readonly horas: number;
-  readonly investimentoReais: number;
-  readonly trilhasIniciadas: number;
-  readonly trilhasConcluidas: number;
-  readonly participantes: number;
-};
+export type { LinhaTreinamento } from "@/acesso/calculo/linhas";
 
 export const VW_FATO_TREINAMENTO: readonly LinhaTreinamento[] = MESES.flatMap(
   (mes, m) =>

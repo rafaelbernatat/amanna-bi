@@ -151,12 +151,45 @@ export function linhasDoRecorte<T extends LinhaDeFato>(
  * Somar
  * ------------------------------------------------------------------ */
 
-/** A soma de uma medida sobre um conjunto de linhas. */
+/**
+ * A soma de uma medida sobre um conjunto de linhas.
+ *
+ * Propaga o `null`: se **uma** linha não sabe o valor, a soma não sabe. É o
+ * princípio PR-4 na aritmética — somar o que se conhece e calar sobre o resto
+ * daria um total que parece completo e não é. A fixture nunca devolve nulo,
+ * então em modo `fixtures` esta função soma como sempre somou; é a base
+ * Amanna, com balanço sem saldo de abertura e custo modelado sem parâmetro,
+ * que traz o nulo até aqui (D-DADOS).
+ *
+ * Lista vazia soma zero, como antes: "não há linha" é decisão de quem chama,
+ * que já a trata antes de somar.
+ */
 export function somar<T>(
   linhas: readonly T[],
-  medida: (l: T) => number,
-): number {
-  return linhas.reduce((total, l) => total + medida(l), 0);
+  medida: (l: T) => number | null,
+): number | null {
+  let total = 0;
+  for (const l of linhas) {
+    const valor = medida(l);
+    if (valor === null) return null;
+    total += valor;
+  }
+  return total;
+}
+
+/** A soma de parcelas que podem faltar: nula se qualquer uma faltar. */
+export function mais(...parcelas: readonly (number | null)[]): number | null {
+  let total = 0;
+  for (const parcela of parcelas) {
+    if (parcela === null) return null;
+    total += parcela;
+  }
+  return total;
+}
+
+/** O simétrico, preservando a ausência. */
+export function menos(valor: number | null): number | null {
+  return valor === null ? null : -valor;
 }
 
 /**
@@ -169,7 +202,7 @@ export function somar<T>(
 export function serieSomada<T extends LinhaDeFato>(
   linhas: readonly T[],
   q: Query,
-  medida: (l: T) => number,
+  medida: (l: T) => number | null,
 ): readonly { readonly mes: string; readonly valor: number | null }[] {
   const doRecorte = linhasDoRecorte(linhas, q);
   return mesesDoRecorte(q).map((mes) => {
@@ -191,8 +224,8 @@ export function serieSomada<T extends LinhaDeFato>(
 export function serieDeTaxa<T extends LinhaDeFato>(
   linhas: readonly T[],
   q: Query,
-  numerador: (l: T) => number,
-  denominador: (l: T) => number,
+  numerador: (l: T) => number | null,
+  denominador: (l: T) => number | null,
 ): readonly {
   readonly mes: string;
   readonly valor: number | null;
@@ -207,7 +240,12 @@ export function serieDeTaxa<T extends LinhaDeFato>(
     }
     const n = somar(doMes, numerador);
     const d = somar(doMes, denominador);
-    return { mes, valor: d === 0 ? null : n / d, numerador: n, denominador: d };
+    return {
+      mes,
+      valor: n === null || d === null || d === 0 ? null : n / d,
+      numerador: n,
+      denominador: d,
+    };
   });
 }
 
@@ -236,7 +274,7 @@ export function quebrarPor<T extends LinhaDeFato>(
   q: Query,
   dimensao: keyof LinhaDeFato,
   valores: readonly string[],
-  medida: (l: T) => number,
+  medida: (l: T) => number | null,
 ): readonly { readonly categoria: string; readonly valor: number | null }[] {
   const doRecorte = linhasDoRecorte(linhas, q);
   return valores.map((valor) => {

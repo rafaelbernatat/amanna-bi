@@ -130,7 +130,7 @@ export const QUEBRAS_DO_QUADRO = {
   genero: QUADRO_POR_GENERO,
 } as const;
 
-export type NomeDeQuebra = keyof typeof QUEBRAS_DO_QUADRO;
+export type { NomeDeQuebra } from "@/acesso/calculo/linhas";
 
 /* ------------------------------------------------------------------ *
  * As médias que viram soma

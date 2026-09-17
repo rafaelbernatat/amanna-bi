@@ -29,11 +29,16 @@ import {
   InstanteInvalido,
   LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
 } from "@/semantica/frescor";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 /** Um instante fixo, para o teste não depender do relógio da máquina. */
 const AGORA = new Date("2026-12-31T09:00:00Z");
 
-const META = calcularMeta(AGORA);
+const META = calcularMeta(
+  BASE_DE_FIXTURES,
+  { sincronizadoEm: AGORA.toISOString() },
+  AGORA,
+);
 
 /* ------------------------------------------------------------------ *
  * 1 · As dimensões

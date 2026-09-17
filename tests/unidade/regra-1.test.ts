@@ -37,6 +37,7 @@ import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import { origemDoPainel } from "@/semantica/origem-de-painel";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
 import { matrizDeRecortes, type Recorte } from "@/semantica/recortes";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 /** A regra não usa a fonte: lê pelas funções da fixture, como o produto. */
 /*
@@ -232,13 +233,13 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
        * respondia — pior que não filtrar, porque parece certo.
        */
       for (const area of ["tecnologia", "operacoes", "rh"]) {
-        const envelope = calcularPainel(id, {
+        const envelope = calcularPainel(BASE_DE_FIXTURES, id, {
           entidade: "consolidado",
           area,
           modalidade: "todas",
           periodo: "12-meses",
           ano: "2026",
-        } as Parameters<typeof calcularPainel>[1]);
+        } as Parameters<typeof calcularPainel>[2]);
         expect("categories" in envelope, id).toBe(true);
         if (!("categories" in envelope)) continue;
         expect(envelope.categories, `${id} sob ${area}`).toEqual([area]);
@@ -337,13 +338,13 @@ describe("sob recorte de uma área, o painel mostra só aquela área", () => {
     // O contraste: sem ele, um painel que devolvesse sempre uma categoria
     // passaria no caso de cima e estaria igualmente quebrado.
     for (const id of QUEBRADOS_POR_AREA) {
-      const envelope = calcularPainel(id, {
+      const envelope = calcularPainel(BASE_DE_FIXTURES, id, {
         entidade: "consolidado",
         area: "todas",
         modalidade: "todas",
         periodo: "12-meses",
         ano: "2026",
-      } as Parameters<typeof calcularPainel>[1]);
+      } as Parameters<typeof calcularPainel>[2]);
       if (!("categories" in envelope)) continue;
       expect(envelope.categories.length, id).toBe(7);
     }
@@ -361,7 +362,7 @@ describe("carga vazia é ausência de dado, não forma errada", () => {
     modalidade: "todas",
     periodo: "12-meses",
     ano: "2025",
-  } as Parameters<typeof calcularPainel>[1];
+  } as Parameters<typeof calcularPainel>[2];
 
   it("a régua sem faixas devolve nulo, e não 'forma inexistente'", () => {
     /*
@@ -372,7 +373,11 @@ describe("carga vazia é ausência de dado, não forma errada", () => {
      * como declaração errada e acusava nove pares corretos. Carga vazia é
      * ausência; carga cheia sem o alvo declarado é que é erro de declaração.
      */
-    const envelope = calcularPainel("ct-ciclo", RECORTE_SEM_DADO);
+    const envelope = calcularPainel(
+      BASE_DE_FIXTURES,
+      "ct-ciclo",
+      RECORTE_SEM_DADO,
+    );
     const valor = valorDoPainel(
       envelope,
       { tipo: "largura_da_faixa", faixa: "Recebimento (PMR)" },
@@ -382,7 +387,7 @@ describe("carga vazia é ausência de dado, não forma errada", () => {
   });
 
   it("mas faixa inexistente numa régua cheia continua sendo erro", () => {
-    const envelope = calcularPainel("ct-ciclo", {
+    const envelope = calcularPainel(BASE_DE_FIXTURES, "ct-ciclo", {
       ...RECORTE_SEM_DADO,
       ano: "2026",
     });
@@ -397,7 +402,11 @@ describe("carga vazia é ausência de dado, não forma errada", () => {
   it("o mosaico sem dado não conta zero estados", () => {
     // Zero afirmaria que a empresa não opera em lugar nenhum; o que se sabe é
     // que não há dado neste recorte.
-    const envelope = calcularPainel("col-mapa", RECORTE_SEM_DADO);
+    const envelope = calcularPainel(
+      BASE_DE_FIXTURES,
+      "col-mapa",
+      RECORTE_SEM_DADO,
+    );
     const valor = valorDoPainel(
       envelope,
       { tipo: "contagem_de_celulas_com_dado" },
@@ -409,7 +418,7 @@ describe("carga vazia é ausência de dado, não forma errada", () => {
   it("somar série de unidade não somável é recusado na leitura", () => {
     // O cinto da declaração: mesmo que alguém escreva `soma_da_serie` numa
     // taxa, a leitura devolve `undefined` e o relatório aponta a declaração.
-    const envelope = calcularPainel("fin-margens", {
+    const envelope = calcularPainel(BASE_DE_FIXTURES, "fin-margens", {
       ...RECORTE_SEM_DADO,
       ano: "2026",
     });

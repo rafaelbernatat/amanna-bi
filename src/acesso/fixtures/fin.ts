@@ -65,6 +65,14 @@ import {
 } from "@/acesso/fixtures/referencia-perfil";
 import { repartir, repartirMatriz } from "@/acesso/fixtures/reparticao";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
+import type {
+  Completa,
+  LinhaFinMes,
+  LinhaOrcamento,
+  LinhaContas,
+  LinhaSaidaCategoria,
+  LinhaFaturamentoCliente,
+} from "@/acesso/calculo/linhas";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
 const UM_MILHAO = 1_000_000;
@@ -182,59 +190,15 @@ const ESTOQUE = MESES.map((_, m) =>
  * vw_fato_fin_mes
  * ------------------------------------------------------------------ */
 
-export type LinhaFinMes = {
-  readonly mes: string;
-  readonly entidade: string;
-  /** Todos os valores em reais. `BRL_mi` é unidade de apresentação. */
-  readonly receitaBruta: number;
-  readonly deducoes: number;
-  readonly receitaLiquida: number;
-  readonly cmv: number;
-  readonly despesasOperacionais: number;
-  readonly depreciacaoEAmortizacao: number;
-  /** Positivo é despesa: entra na ponte como dedução. */
-  readonly resultadoFinanceiro: number;
-  readonly naoOperacional: number;
-  readonly fco: number;
-  /** Investimento do mês. Positivo é saída de caixa. */
-  readonly capex: number;
-  /** Financiamento líquido. Positivo é saída de caixa. */
-  readonly financiamento: number;
-  readonly entradasDeCaixa: number;
-  readonly saidasDeCaixa: number;
-  /** Estoque no fechamento. Denominador do PME. */
-  readonly estoque: number;
-  /**
-   * Receita líquida do mesmo mês do ano anterior (T-116).
-   *
-   * É a série de comparação, e **não** um recorte de 2025 — a distinção é o
-   * achado 6 do Anexo D, que aponta que o protótipo tem `receitaLY` e não tem
-   * ano. Serve ao KPI de crescimento enquanto 2025 não entra na fixture com
-   * T-152; quando entrar, quem decide se esta coluna some é T-185.
-   *
-   * Somar 1.068 mi no ano é o que faz `1.200 / 1.068 - 1` dar os +12,4% do
-   * Anexo C.
-   */
-  readonly receitaLiquidaAnoAnterior: number;
-  /**
-   * Notas fiscais emitidas no mês (T-143).
-   *
-   * O ticket médio é `receita_liquida / notas_emitidas`. Sem esta coluna ele
-   * seria os R$ 65,2 mil cravados do protótipo, iguais em todo recorte — o
-   * achado 5. Com ela, o ticket de um mês difere do ticket do ano.
-   */
-  readonly notasEmitidas: number;
-  /** Saldo no fechamento do mês: o inicial mais o acumulado de entradas e saídas. */
-  readonly saldoDeCaixa: number;
-};
+export type { LinhaFinMes } from "@/acesso/calculo/linhas";
 
-export const VW_FATO_FIN_MES: readonly LinhaFinMes[] = (() => {
+export const VW_FATO_FIN_MES: readonly Completa<LinhaFinMes>[] = (() => {
   const saldoInicial = porEntidade(
     emReais(PONTE_DO_CAIXA.saldoInicial),
     "caixa",
   );
   const corrente = [...saldoInicial];
-  const saida: LinhaFinMes[] = [];
+  const saida: Completa<LinhaFinMes>[] = [];
 
   MESES.forEach((mes, m) => {
     const receita = porEntidade(RECEITA_LIQUIDA[m] ?? 0, "receita");
@@ -306,13 +270,7 @@ const REALIZADO = porMesECentro(
   CENTROS_DE_CUSTO.map((c) => c.realizado),
 );
 
-export type LinhaOrcamento = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly centroDeCusto: string;
-  readonly orcado: number;
-  readonly realizado: number;
-};
+export type { LinhaOrcamento } from "@/acesso/calculo/linhas";
 
 export const VW_FATO_ORCAMENTO: readonly LinhaOrcamento[] = MESES.flatMap(
   (mes, m) =>
@@ -350,22 +308,7 @@ export function saldoDoMes(
   return Math.round(totalDeDezembro * ((serie[m] ?? 0) / dezembro));
 }
 
-export type LinhaContas = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly faixaDeAging: string;
-  /**
-   * Quem deve ou a quem se deve (T-118.1).
-   *
-   * Uma linha é de um cliente **ou** de um fornecedor, nunca dos dois: a
-   * contraparte de quem se recebe não é a mesma de quem se paga. Por isso a
-   * linha de cliente tem `aPagar` zero e a de fornecedor tem `aReceber` zero —
-   * zero de verdade, e não ausência: não há saldo a pagar com um cliente.
-   */
-  readonly contraparte: string;
-  readonly aReceber: number;
-  readonly aPagar: number;
-};
+export type { LinhaContas } from "@/acesso/calculo/linhas";
 
 /**
  * Reparte um saldo entre contrapartes, com a soma exata.
@@ -422,13 +365,7 @@ export const VW_FATO_CONTAS: readonly LinhaContas[] = MESES.flatMap((mes, m) =>
  * vw_fato_saida_categoria
  * ------------------------------------------------------------------ */
 
-export type LinhaSaidaCategoria = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly categoria: string;
-  /** Desembolso do mês naquela natureza, em reais. */
-  readonly valor: number;
-};
+export type { LinhaSaidaCategoria } from "@/acesso/calculo/linhas";
 
 /**
  * A saída de caixa aberta por natureza.
@@ -463,41 +400,7 @@ export const VW_FATO_SAIDA_CATEGORIA: readonly LinhaSaidaCategoria[] =
  * vw_fato_faturamento_cliente
  * ------------------------------------------------------------------ */
 
-/**
- * Receita e margem dos dez maiores clientes (T-143).
- *
- * A concentração top 10 é `soma(receita destes) / receita_liquida`, e dá os
- * 54,3% que o protótipo mostra. Guardar 54,3% pronto seria o achado 5: um
- * número que não muda quando o recorte muda.
- *
- * Cliente é pessoa jurídica e vem anonimizado desde o protótipo (`c1`..`c10`).
- * A seção 11 fala de dado de **pessoa**, e nada aqui desce a esse grão.
- */
-export type LinhaFaturamentoCliente = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly cliente: string;
-  /**
-   * Faixa de rating interno do cliente (T-117.2).
-   *
-   * Qualificação do cliente, e não fato novo — por isso entra como chave aqui
-   * em vez de virar view própria. Quem preenche esta coluna com dado real, e
-   * com que critério, é **H-53**: pode vir do cadastro do ERP, de análise de
-   * crédito própria ou de birô externo, e as três dão escalas diferentes.
-   */
-  readonly rating: string;
-  /**
-   * Segmento comercial do cliente (T-118.1).
-   *
-   * Mesma natureza do rating: qualificação de quem já está na view, e não fato
-   * novo. Quem classifica e com que critério é **H-57**.
-   */
-  readonly segmento: string;
-  /** Receita do mês, em reais. */
-  readonly receita: number;
-  /** Margem de contribuição em pontos-base, para somar sem perder casa. */
-  readonly margemBase: number;
-};
+export type { LinhaFaturamentoCliente } from "@/acesso/calculo/linhas";
 
 const BASE_DA_MARGEM = 100;
 
@@ -526,6 +429,8 @@ export const VW_FATO_FATURAMENTO_CLIENTE: readonly LinhaFaturamentoCliente[] =
         cliente: cliente.codigo,
         rating: cliente.rating,
         segmento: cliente.segmento,
+        // A fixture só carrega os dez maiores: todos são principais.
+        principal: true,
         receita: receita[e] ?? 0,
         margemBase: Math.round(
           ((receita[e] ?? 0) * cliente.margem) / BASE_DA_MARGEM,

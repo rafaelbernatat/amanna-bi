@@ -30,6 +30,7 @@ import {
   origemDoPainel,
 } from "@/semantica/origem-de-painel";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const BASE: Query = {
   entidade: "consolidado",
@@ -62,7 +63,7 @@ describe("as cinco formas respondem com envelope válido", () => {
   });
 
   it.each(IDS)("%s valida contra o JSON Schema publicado", (id) => {
-    const envelope = calcularPainel(id, BASE);
+    const envelope = calcularPainel(BASE_DE_FIXTURES, id, BASE);
     const ok = validar(envelope);
     expect(ok, JSON.stringify(validar.errors?.slice(0, 3))).toBe(true);
   });
@@ -86,13 +87,13 @@ describe("as cinco formas respondem com envelope válido", () => {
      * um id que não existe: devolver envelope vazio ali faria um erro de
      * digitação parecer um recorte sem dado.
      */
-    expect(() => calcularPainel("forma-que-nao-existe", BASE)).toThrowError(
-      PainelDesconhecido,
-    );
+    expect(() =>
+      calcularPainel(BASE_DE_FIXTURES, "forma-que-nao-existe", BASE),
+    ).toThrowError(PainelDesconhecido);
   });
 
   it.each(IDS)("%s traz a carga que a forma exige", (id) => {
-    const e = calcularPainel(id, BASE);
+    const e = calcularPainel(BASE_DE_FIXTURES, id, BASE);
     if (e.forma === "rosca") {
       expect(e.centro.rotulo.length, id).toBeGreaterThan(0);
       expect(Array.isArray(e.fatias), id).toBe(true);
@@ -122,7 +123,7 @@ describe("as cinco formas respondem com envelope válido", () => {
      * Só vale para as formas com carga cartesiana; nas outras a declaração
      * descreve fatias, passos ou grupos, e a checagem é a de carga logo acima.
      */
-    const e = calcularPainel(id, BASE);
+    const e = calcularPainel(BASE_DE_FIXTURES, id, BASE);
     if (!("series" in e)) return;
     const origem = origemDoPainel(id);
     expect(e.series, id).toHaveLength(origem?.series.length ?? -1);
@@ -140,9 +141,9 @@ describe("as cinco formas respondem com envelope válido", () => {
      * não compartilham nem fórmula nem unidade —, e herdar a do painel faria a
      * tela declarar uma procedência que não é a daquele número.
      */
-    const deEstatistica = IDS.map((id) => calcularPainel(id, BASE)).filter(
-      (e) => e.forma === "estatisticas",
-    );
+    const deEstatistica = IDS.map((id) =>
+      calcularPainel(BASE_DE_FIXTURES, id, BASE),
+    ).filter((e) => e.forma === "estatisticas");
     expect(deEstatistica).toHaveLength(7);
 
     for (const e of deEstatistica) {
@@ -173,7 +174,7 @@ describe("sob recorte de uma área, o painel quebrado por área tem uma categori
   });
 
   it.each(POR_AREA)("%s devolve as sete áreas no consolidado", (id) => {
-    const e = calcularPainel(id, BASE);
+    const e = calcularPainel(BASE_DE_FIXTURES, id, BASE);
     expect("categories" in e && e.categories.length, id).toBe(7);
   });
 
@@ -185,7 +186,10 @@ describe("sob recorte de uma área, o painel quebrado por área tem uma categori
      * Operações não está no recorte. Desenhar a barra dela em zero afirma a
      * primeira coisa quando só se sabe a segunda.
      */
-    const e = calcularPainel(id, { ...BASE, area: "tecnologia" });
+    const e = calcularPainel(BASE_DE_FIXTURES, id, {
+      ...BASE,
+      area: "tecnologia",
+    });
     expect("categories" in e, id).toBe(true);
     if (!("categories" in e)) return;
     expect(e.categories, id).toEqual(["tecnologia"]);
@@ -196,10 +200,10 @@ describe("sob recorte de uma área, o painel quebrado por área tem uma categori
 
   it.each(POR_AREA)("%s muda de valor ao trocar de área", (id) => {
     const tec = JSON.stringify(
-      calcularPainel(id, { ...BASE, area: "tecnologia" }),
+      calcularPainel(BASE_DE_FIXTURES, id, { ...BASE, area: "tecnologia" }),
     );
     const ops = JSON.stringify(
-      calcularPainel(id, { ...BASE, area: "operacoes" }),
+      calcularPainel(BASE_DE_FIXTURES, id, { ...BASE, area: "operacoes" }),
     );
     expect(tec).not.toBe(ops);
   });
@@ -236,7 +240,7 @@ describe("as fatias somam o total declarado, em qualquer recorte", () => {
      * daquela área no total da empresa, e o anel fica com um buraco enorme
      * sem que nada avise. Aqui o denominador é a soma do que está na tela.
      */
-    const e = calcularPainel(id, q);
+    const e = calcularPainel(BASE_DE_FIXTURES, id, q);
     expect(e.forma, id).toBe("rosca");
     if (e.forma !== "rosca") return;
     if (e.fatias.length === 0) {
@@ -253,7 +257,7 @@ describe("as fatias somam o total declarado, em qualquer recorte", () => {
   it.each(
     DIVISOES.flatMap((id) => RECORTES.map((r) => [id, r[0], r[1]] as const)),
   )("%s: cada grupo fecha em 100%% no recorte %s", (id, _rotulo, q) => {
-    const e = calcularPainel(id, q);
+    const e = calcularPainel(BASE_DE_FIXTURES, id, q);
     expect(e.forma, id).toBe("divisao");
     if (e.forma !== "divisao") return;
     for (const grupo of e.grupos) {
@@ -270,7 +274,7 @@ describe("as fatias somam o total declarado, em qualquer recorte", () => {
     // O centro repete um número que já está no anel. Se ele viesse de outra
     // conta, a tela mostraria dois valores para a mesma fatia.
     for (const id of ROSCAS) {
-      const e = calcularPainel(id, BASE);
+      const e = calcularPainel(BASE_DE_FIXTURES, id, BASE);
       if (e.forma !== "rosca" || e.centro.valor === null) continue;
       const valores = e.fatias.map((f) => Math.round(f.valor * 1000));
       expect(valores, `${id}: centro ${String(e.centro.valor)}`).toContain(
@@ -286,7 +290,7 @@ describe("as fatias somam o total declarado, em qualquer recorte", () => {
 
 describe("o funil de recrutamento", () => {
   it("cada passo é menor que o anterior — é isso que faz dele um funil", () => {
-    const e = calcularPainel("rec-funil", BASE);
+    const e = calcularPainel(BASE_DE_FIXTURES, "rec-funil", BASE);
     expect(e.forma).toBe("funil");
     if (e.forma !== "funil") return;
     expect(e.passos).toHaveLength(5);
@@ -302,7 +306,7 @@ describe("o funil de recrutamento", () => {
 
   it("o total é o topo, e não a soma dos passos", () => {
     // Somar candidatura com contratação contaria a mesma pessoa cinco vezes.
-    const e = calcularPainel("rec-funil", BASE);
+    const e = calcularPainel(BASE_DE_FIXTURES, "rec-funil", BASE);
     if (e.forma !== "funil") return;
     expect(e.total).toBe(e.passos[0]?.valor);
   });

@@ -28,6 +28,7 @@ import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { kpisDaTela } from "@/semantica/kpis";
 import { origemDoKpi } from "@/semantica/origem-de-kpi";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const TELAS = [
   "fin/visao",
@@ -50,14 +51,14 @@ function com(mudanca: Partial<Query>): Query {
 
 describe("as 6 telas devolvem até 6 KPIs, todos do catálogo", () => {
   it.each(TELAS)("%s devolve no máximo 6", (tela) => {
-    const kpis = calcularKpis(tela, QUERY_PADRAO);
+    const kpis = calcularKpis(BASE_DE_FIXTURES, tela, QUERY_PADRAO);
     expect(kpis.length).toBeGreaterThan(0);
     expect(kpis.length).toBeLessThanOrEqual(MAXIMO_DE_KPIS);
   });
 
   it("as seis somam 28 cartões, e com RH fecham os 70 do registro", () => {
     const daqui = TELAS.reduce(
-      (a, t) => a + calcularKpis(t, QUERY_PADRAO).length,
+      (a, t) => a + calcularKpis(BASE_DE_FIXTURES, t, QUERY_PADRAO).length,
       0,
     );
     expect(daqui).toBe(28);
@@ -82,7 +83,10 @@ describe("as 6 telas devolvem até 6 KPIs, todos do catálogo", () => {
   it("os números do consolidado batem com o Anexo C", () => {
     const porRotulo = (tela: string) =>
       Object.fromEntries(
-        calcularKpis(tela, QUERY_PADRAO).map((k) => [k.label, k.value]),
+        calcularKpis(BASE_DE_FIXTURES, tela, QUERY_PADRAO).map((k) => [
+          k.label,
+          k.value,
+        ]),
       );
 
     const visao = porRotulo("fin/visao");
@@ -131,7 +135,10 @@ describe("as 6 telas devolvem até 6 KPIs, todos do catálogo", () => {
      * de o EBITDA estar errado é uma das três estar.
      */
     const v = Object.fromEntries(
-      calcularKpis("fin/visao", QUERY_PADRAO).map((k) => [k.label, k.value]),
+      calcularKpis(BASE_DE_FIXTURES, "fin/visao", QUERY_PADRAO).map((k) => [
+        k.label,
+        k.value,
+      ]),
     );
     const receita = v["Receita líquida"] ?? 0;
     expect(v["EBITDA"]).toBe(200);
@@ -146,7 +153,10 @@ describe("as 6 telas devolvem até 6 KPIs, todos do catálogo", () => {
     // desvio, e o cartão perderia o que existe para mostrar: houve economia em
     // algum lugar, mesmo com estouro no total.
     const orc = Object.fromEntries(
-      calcularKpis("fin/orc", QUERY_PADRAO).map((k) => [k.label, k.value]),
+      calcularKpis(BASE_DE_FIXTURES, "fin/orc", QUERY_PADRAO).map((k) => [
+        k.label,
+        k.value,
+      ]),
     );
     expect(orc["Economia obtida"]).toBeGreaterThan(0);
     expect(orc["Economia obtida"]).not.toBe(-(orc["Desvio"] ?? 0));
@@ -295,8 +305,8 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
   it.each(PARES)("$dimensao: os valores mudam", ({ dimensao, a, b }) => {
     const iguais: string[] = [];
     for (const tela of TELAS) {
-      const emA = calcularKpis(tela, a);
-      const emB = calcularKpis(tela, b);
+      const emA = calcularKpis(BASE_DE_FIXTURES, tela, a);
+      const emB = calcularKpis(BASE_DE_FIXTURES, tela, b);
       emA.forEach((kpi, i) => {
         const outro = emB[i];
         if (outro === undefined) return;
@@ -319,8 +329,12 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
           enganadas.push(`${id}: não está em nenhuma das 6 telas`);
           continue;
         }
-        const emA = calcularKpis(tela, par.a).find((k) => k.id === id);
-        const emB = calcularKpis(tela, par.b).find((k) => k.id === id);
+        const emA = calcularKpis(BASE_DE_FIXTURES, tela, par.a).find(
+          (k) => k.id === id,
+        );
+        const emB = calcularKpis(BASE_DE_FIXTURES, tela, par.b).find(
+          (k) => k.id === id,
+        );
         if (emA?.value !== emB?.value) {
           enganadas.push(`${id} muda com ${dimensao} — saia da lista`);
         }
@@ -336,8 +350,13 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
      * Não é que Financeiro ignore filtro; é que ignora um filtro específico,
      * e por uma razão declarada na seção 10.1.
      */
-    const sp = calcularKpis("fin/visao", com({ entidade: "unidade-sp" }));
+    const sp = calcularKpis(
+      BASE_DE_FIXTURES,
+      "fin/visao",
+      com({ entidade: "unidade-sp" }),
+    );
     const demais = calcularKpis(
+      BASE_DE_FIXTURES,
       "fin/visao",
       com({ entidade: "demais-unidades" }),
     );
@@ -346,8 +365,16 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
     });
 
     // E o contraste do contraste: sob área, os mesmos seis não mudam.
-    const operacoes = calcularKpis("fin/visao", com({ area: "operacoes" }));
-    const tecnologia = calcularKpis("fin/visao", com({ area: "tecnologia" }));
+    const operacoes = calcularKpis(
+      BASE_DE_FIXTURES,
+      "fin/visao",
+      com({ area: "operacoes" }),
+    );
+    const tecnologia = calcularKpis(
+      BASE_DE_FIXTURES,
+      "fin/visao",
+      com({ area: "tecnologia" }),
+    );
     operacoes.forEach((kpi, i) => {
       expect(kpi.value, kpi.id).toBe(tecnologia[i]?.value);
     });
@@ -365,7 +392,8 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
      * Financeiro.
      */
     const noRecorte = (id: string, q: Query) =>
-      calcularKpis("int/cruz", q)?.find((k) => k.id === id)?.value;
+      calcularKpis(BASE_DE_FIXTURES, "int/cruz", q)?.find((k) => k.id === id)
+        ?.value;
 
     /*
      * Os três cartões de Integração que cruzam views mudam com a área, e todos
@@ -394,7 +422,7 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
 
   it("o ano de 2025 devolve vazio, e não zero (PR-4)", () => {
     for (const tela of TELAS) {
-      const kpis = calcularKpis(tela, com({ ano: "2025" }));
+      const kpis = calcularKpis(BASE_DE_FIXTURES, tela, com({ ano: "2025" }));
       expect(
         kpis.every((k) => k.value === null),
         tela,

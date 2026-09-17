@@ -35,6 +35,7 @@ import {
 } from "@/acesso/fixtures/referencia-perfil";
 import { repartir, repartirMatriz } from "@/acesso/fixtures/reparticao";
 import { ANO_DA_FIXTURE, VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
+import type { LinhaPerfil } from "@/acesso/calculo/linhas";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
 const CELULAS = celulas();
@@ -54,17 +55,7 @@ const QUADRO_POR_MES = MESES.map((mes) => {
   );
 });
 
-export type LinhaPerfil = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly area: string;
-  readonly modalidade: string;
-  /** `faixa_etaria`, `tempo_de_casa`, `escolaridade`, `uf`, `faixa_salarial`. */
-  readonly dimensao: NomeDeQuebra;
-  /** O código do valor dentro daquela dimensão. */
-  readonly valor: string;
-  readonly headcountFte: number;
-};
+export type { LinhaPerfil } from "@/acesso/calculo/linhas";
 
 /**
  * As linhas de perfil, com as duas margens exatas em todo mês.

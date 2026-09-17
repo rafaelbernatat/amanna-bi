@@ -35,6 +35,7 @@ import {
 } from "@/semantica/paineis";
 import { consultaDe } from "@/acesso/contrato/suite";
 import { matrizDeRecortes } from "@/semantica/recortes";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const MATRIZ = matrizDeRecortes(dimensoesProvisorias());
 const ANO = dimensoesProvisorias().ano?.[0] ?? "2026";
@@ -145,7 +146,7 @@ describe("nenhuma nota afirma número fora do recorte que a produziu", () => {
       const fora = !noPadrao(q);
 
       for (const registro of REGISTRO_DE_PAINEIS) {
-        const envelope = calcularPainel(registro.id, q);
+        const envelope = calcularPainel(BASE_DE_FIXTURES, registro.id, q);
         const nota = envelope.note;
         if (nota === null || nota === undefined || nota === "") continue;
         comNota += 1;
@@ -276,13 +277,19 @@ describe("a nota do consolidado some sob recorte, e não é adaptada", () => {
      * número dela vem do recorte em tela; `so_no_padrao` some porque o dela
      * veio de outro.
      */
-    const noPadraoTexto = calcularPainel("rh-areas", QUERY_PADRAO).note;
+    const noPadraoTexto = calcularPainel(
+      BASE_DE_FIXTURES,
+      "rh-areas",
+      QUERY_PADRAO,
+    ).note;
     expect(noPadraoTexto).not.toBeNull();
     expect(afirmaNumero(noPadraoTexto ?? "")).toBe(true);
 
     // Sob recorte de uma área só resta uma categoria, e "as duas maiores" não
     // diz nada: a frase certa é nenhuma frase.
-    expect(calcularPainel("rh-areas", RECORTE).note).toBeNull();
+    expect(
+      calcularPainel(BASE_DE_FIXTURES, "rh-areas", RECORTE).note,
+    ).toBeNull();
   });
 
   it("com várias categorias no recorte, a frase é a daquele recorte", () => {
@@ -300,17 +307,19 @@ describe("a nota do consolidado some sob recorte, e não é adaptada", () => {
      * O que se exige, então, é o que vale em qualquer fixture: a nota reage ao
      * recorte quando a composição muda de fato. `hibrido` muda.
      */
-    const remoto = calcularPainel("rh-areas", {
+    const remoto = calcularPainel(BASE_DE_FIXTURES, "rh-areas", {
       ...QUERY_PADRAO,
       modalidade: "remoto",
     }).note;
     expect(remoto).not.toBeNull();
 
-    const hibrido = calcularPainel("rh-areas", {
+    const hibrido = calcularPainel(BASE_DE_FIXTURES, "rh-areas", {
       ...QUERY_PADRAO,
       modalidade: "hibrido",
     }).note;
-    expect(hibrido).not.toBe(calcularPainel("rh-areas", QUERY_PADRAO).note);
+    expect(hibrido).not.toBe(
+      calcularPainel(BASE_DE_FIXTURES, "rh-areas", QUERY_PADRAO).note,
+    );
   });
 });
 
