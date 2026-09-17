@@ -66,6 +66,72 @@ export const TIPOGRAFIA = {
 export type ChaveDePaleta = keyof typeof PALETA;
 export type ChaveDeTipografia = keyof typeof TIPOGRAFIA;
 
+/* ------------------------------------------------------------------ *
+ * A camada viva: os cinco papeis que a empresa troca (D-MARCA)
+ * ------------------------------------------------------------------ */
+
+/**
+ * Os papeis que a marca da empresa substitui.
+ *
+ * Cinco dos vinte e quatro, e a conta importa: os outros dezenove ficam. Fundo
+ * e texto ficam porque sao o que sustenta a legibilidade medida; `positivo`,
+ * `negativo`, `comparacao` e `meta` ficam porque **sao semanticos** — a secao
+ * 13 diz que cor nunca e o unico sinal, e deixar o cliente escolher a cor de
+ * "prejuizo" seria dar a marca o poder de mudar o que um numero significa.
+ */
+export const CHAVES_DE_MARCA = [
+  "marca",
+  "marcaEscura",
+  "destaque",
+  "destaqueSuave",
+  "barraLateral",
+] as const satisfies readonly ChaveDePaleta[];
+
+export type ChaveDeMarca = (typeof CHAVES_DE_MARCA)[number];
+
+/** As cinco cores de uma marca aplicada. */
+export type CoresDaMarca = Readonly<Record<ChaveDeMarca, string>>;
+
+/** O nome da propriedade CSS de um papel de marca. */
+export function variavelDaMarca(chave: ChaveDeMarca): string {
+  return `--bi-${chave}`;
+}
+
+/**
+ * A camada que a moldura le, e que a empresa troca.
+ *
+ * Cada valor e uma propriedade CSS com **a cor de hoje como recuo**: sem marca
+ * configurada, nenhum pixel muda. O layout raiz emite os valores resolvidos;
+ * quando nao ha marca, nao emite nada e o recuo vale.
+ *
+ * ## Por que a moldura e o grafico leem de lugares diferentes
+ *
+ * `var()` **nao e substituido em atributo de apresentacao de SVG**: um
+ * `stroke="var(--bi-marca, #6b4a2f)"` nao pinta, a linha some. E um SVG
+ * serializado para fora do documento (T-409, T-410) perde o `:root` junto, o
+ * que faria o PNG exportado sair com a cor errada em silencio.
+ *
+ * Entao a regra e de papel, e da para verificar por teste: **moldura le
+ * `MARCA`, grafico le `PALETA`**. `sequencia.ts` e `DesenhoDePainel.tsx`
+ * continuam na `PALETA`, e por isso a rampa categorica nao muda com a marca —
+ * que e tambem a decisao de alcance de D-MARCA.
+ *
+ * ## Por que isto continua sendo constante de modulo
+ *
+ * Cinco componentes de cliente importam a paleta. Como o valor aqui e uma
+ * propriedade CSS, e nao a cor resolvida, ele e identico no servidor e no
+ * pacote do navegador: nao ha divergencia de hidratacao, e **a marca do
+ * cliente nunca entra no pacote JavaScript**. Resolver a cor no servidor e
+ * congela-la aqui perderia as duas coisas.
+ */
+export const MARCA: CoresDaMarca = {
+  marca: `var(${variavelDaMarca("marca")}, ${PALETA.marca})`,
+  marcaEscura: `var(${variavelDaMarca("marcaEscura")}, ${PALETA.marcaEscura})`,
+  destaque: `var(${variavelDaMarca("destaque")}, ${PALETA.destaque})`,
+  destaqueSuave: `var(${variavelDaMarca("destaqueSuave")}, ${PALETA.destaqueSuave})`,
+  barraLateral: `var(${variavelDaMarca("barraLateral")}, ${PALETA.barraLateral})`,
+};
+
 /**
  * Pares texto/fundo que a interface realmente usa. T-183 computa a razao de
  * contraste de cada um; declarar o par aqui e o que torna aquela verificacao

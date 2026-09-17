@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { TELA_PADRAO } from "@/apresentacao/navegacao/telas";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 
 /** 404 para qualquer par modulo/tela fora das 13 (T-126). */
 export default function NaoEncontrada() {
@@ -40,7 +40,7 @@ export default function NaoEncontrada() {
         href={TELA_PADRAO}
         style={{
           font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
-          color: PALETA.marca,
+          color: MARCA.marca,
         }}
       >
         Voltar para a visão geral de RH

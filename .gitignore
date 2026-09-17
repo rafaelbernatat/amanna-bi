@@ -62,3 +62,8 @@ Thumbs.db
 /relatorios/
 
 .vercel
+
+# A base Amanna em CSV (docs/dados, 82 MB) e insumo da carga, nao fonte do
+# codigo: `npm run dados:carregar` a le e grava no Postgres. Versionar 82 MB
+# por commit nao cabe no git; o dicionario de dados, que e texto, fica.
+docs/dados/*.csv

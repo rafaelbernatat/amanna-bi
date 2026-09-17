@@ -7,7 +7,9 @@ import {
   type Modulo,
   type Tela,
 } from "@/apresentacao/navegacao/telas";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { BotaoDeConta } from "@/apresentacao/shell/BotaoDeConta";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type { Perfil } from "@/seguranca/identidade";
 import type { Query } from "@/semantica/contrato";
 import type { Dimensoes } from "@/semantica/recortes";
 import { rotaCom } from "@/semantica/url";
@@ -35,18 +37,35 @@ import { rotaCom } from "@/semantica/url";
  * que ela nao tem seria um destaque que nunca acontece. O prototipo faz o
  * mesmo — `goto(tab, sub, null)` zera o destaque ao trocar de tela a mao.
  */
+/** A altura do logo no cabecalho, em pixels. A largura acompanha a proporcao. */
+const ALTURA_DO_LOGO = 34;
+/** Ate onde um logo largo pode ir antes de espremer a tira de modulos. */
+const LARGURA_MAXIMA_DO_LOGO = 190;
+
 export function Cabecalho({
   modulo,
   tela,
   query,
   dimensoes,
   painelDestacado,
+  conta,
+  logo,
 }: {
   readonly modulo: Modulo;
   readonly tela: Tela;
   readonly query: Query;
   readonly dimensoes: Dimensoes;
   readonly painelDestacado: string | null;
+  /** Quem entrou, e se essa pessoa configura a instalacao (D-MARCA). */
+  readonly conta: { readonly perfil: Perfil; readonly podeConfigurar: boolean };
+  /**
+   * O logo da empresa, quando ha marca configurada.
+   *
+   * Chega como endereco e dimensao, ja resolvidos: a apresentacao nao le
+   * armazem nem decide tamanho de imagem. `null` mostra o nome escrito, que e
+   * o comportamento de sempre.
+   */
+  readonly logo: { readonly src: string; readonly alt: string } | null;
 }) {
   return (
     <header
@@ -84,27 +103,62 @@ export function Cabecalho({
           marginBottom: 16,
         }}
       >
+        {/*
+          A marca da instalacao: o logo da empresa quando ha um, e o nome
+          escrito quando nao ha.
+
+          A altura e fixa e a largura e livre: o logo de cada empresa tem uma
+          proporcao, e esticar todos para a mesma caixa deformaria uns e
+          espremeria outros. Declarar altura e largura maxima e tambem o que
+          impede a imagem de empurrar o cabecalho quando ela chega — o mesmo
+          cuidado que a caixa reservada dos paineis tem com o deslocamento de
+          layout (T-129).
+        */}
         <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              font: `500 15px/1.1 ${TIPOGRAFIA.titulo}`,
-              color: PALETA.texto,
-              letterSpacing: ".005em",
-            }}
-          >
-            Controladoria
-          </div>
-          <div
-            style={{
-              font: `500 8px/1.2 ${TIPOGRAFIA.mono}`,
-              color: PALETA.textoFraco,
-              textTransform: "uppercase",
-              letterSpacing: ".14em",
-              marginTop: 3,
-            }}
-          >
-            Painel executivo · BI
-          </div>
+          {logo === null ? (
+            <>
+              <div
+                style={{
+                  font: `500 15px/1.1 ${TIPOGRAFIA.titulo}`,
+                  color: PALETA.texto,
+                  letterSpacing: ".005em",
+                }}
+              >
+                Controladoria
+              </div>
+              <div
+                style={{
+                  font: `500 8px/1.2 ${TIPOGRAFIA.mono}`,
+                  color: PALETA.textoFraco,
+                  textTransform: "uppercase",
+                  letterSpacing: ".14em",
+                  marginTop: 3,
+                }}
+              >
+                Painel executivo · BI
+              </div>
+            </>
+          ) : (
+            /*
+              Uma tag simples, e nao o componente de imagem do Next: ele
+              otimiza por endereco conhecido em tempo de build, e este vem da
+              instalacao, muda sem novo build e ja chega com teto de bytes
+              conferido. A excecao da regra vive em `eslint.config.mjs`.
+            */
+            <img
+              data-teste="logo-da-marca"
+              src={logo.src}
+              alt={logo.alt}
+              height={ALTURA_DO_LOGO}
+              style={{
+                height: ALTURA_DO_LOGO,
+                width: "auto",
+                maxWidth: LARGURA_MAXIMA_DO_LOGO,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          )}
         </div>
 
         <nav
@@ -112,7 +166,7 @@ export function Cabecalho({
           style={{
             display: "flex",
             gap: 2,
-            background: PALETA.barraLateral,
+            background: MARCA.barraLateral,
             borderRadius: 999,
             padding: 4,
             maxWidth: "100%",
@@ -144,7 +198,10 @@ export function Cabecalho({
           })}
         </nav>
 
-        <div aria-hidden="true" />
+        <BotaoDeConta
+          perfil={conta.perfil}
+          podeConfigurar={conta.podeConfigurar}
+        />
       </div>
 
       <div

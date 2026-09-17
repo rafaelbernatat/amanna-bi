@@ -35,7 +35,7 @@ import {
 } from "@/apresentacao/chat/RespostaDoChat";
 import { formatarValor } from "@/apresentacao/formato/formato";
 import { acharTela } from "@/apresentacao/navegacao/telas";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { LinhaDoFluxo, PedidoDeChat, Previa } from "@/chat/protocolo";
 import { sugestoesDaTela } from "@/chat/sugestoes";
 import { QUERY_PADRAO } from "@/semantica/contrato";
@@ -281,7 +281,7 @@ function ChatNaTela() {
             padding: "10px 16px",
             font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
             cursor: "pointer",
-            boxShadow: `0 6px 18px color-mix(in srgb, ${PALETA.barraLateral} 14%, transparent)`,
+            boxShadow: `0 6px 18px color-mix(in srgb, ${MARCA.barraLateral} 14%, transparent)`,
             whiteSpace: "nowrap",
           }}
         >
@@ -294,13 +294,13 @@ function ChatNaTela() {
           aria-label="Abrir a conversa com os dados"
           style={{
             border: 0,
-            background: PALETA.barraLateral,
+            background: MARCA.barraLateral,
             color: PALETA.textoEmBarra,
             width: 58,
             height: 58,
             borderRadius: "50%",
             cursor: "pointer",
-            boxShadow: `0 14px 34px -8px color-mix(in srgb, ${PALETA.barraLateral} 45%, transparent)`,
+            boxShadow: `0 14px 34px -8px color-mix(in srgb, ${MARCA.barraLateral} 45%, transparent)`,
             font: `600 14px/1 ${TIPOGRAFIA.mono}`,
             letterSpacing: ".02em",
           }}
@@ -352,7 +352,7 @@ function ChatNaTela() {
           background: PALETA.superficieSuave,
           border: `1px solid ${PALETA.borda}`,
           borderRadius: 24,
-          boxShadow: `0 36px 80px -24px color-mix(in srgb, ${PALETA.barraLateral} 45%, transparent), 0 2px 8px color-mix(in srgb, ${PALETA.barraLateral} 8%, transparent)`,
+          boxShadow: `0 36px 80px -24px color-mix(in srgb, ${MARCA.barraLateral} 45%, transparent), 0 2px 8px color-mix(in srgb, ${MARCA.barraLateral} 8%, transparent)`,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -374,7 +374,7 @@ function ChatNaTela() {
               width: 27,
               height: 27,
               borderRadius: 9,
-              background: PALETA.barraLateral,
+              background: MARCA.barraLateral,
               color: PALETA.textoEmBarra,
               display: "flex",
               alignItems: "center",
@@ -504,7 +504,7 @@ function ChatNaTela() {
                 <span
                   style={{
                     font: `600 8.5px/1.2 ${TIPOGRAFIA.mono}`,
-                    color: PALETA.destaque,
+                    color: MARCA.destaque,
                     textTransform: "uppercase",
                     letterSpacing: ".1em",
                     whiteSpace: "nowrap",
@@ -541,7 +541,7 @@ function ChatNaTela() {
                     style={{
                       border: `1px solid ${PALETA.bordaForte}`,
                       background: PALETA.superficie,
-                      color: PALETA.marca,
+                      color: MARCA.marca,
                       borderRadius: 999,
                       padding: "6px 11px",
                       font: `400 10px/1.3 ${TIPOGRAFIA.texto}`,
@@ -590,7 +590,7 @@ function ChatNaTela() {
               disabled={ocupado || texto.trim() === ""}
               style={{
                 border: 0,
-                background: ocupado ? PALETA.destaque : PALETA.barraLateral,
+                background: ocupado ? MARCA.destaque : MARCA.barraLateral,
                 color: PALETA.textoEmBarra,
                 borderRadius: 999,
                 padding: "0 17px",
@@ -639,7 +639,7 @@ function TurnoNaTela({
         style={{
           alignSelf: "flex-end",
           maxWidth: "88%",
-          background: PALETA.barraLateral,
+          background: MARCA.barraLateral,
           color: PALETA.textoEmBarra,
           borderRadius: "16px 16px 4px 16px",
           padding: "9px 12px",
@@ -842,7 +842,7 @@ function AcoesAplicadas({
           href={destino}
           data-teste="chat-ver-grafico"
           style={{
-            background: PALETA.barraLateral,
+            background: MARCA.barraLateral,
             color: PALETA.textoEmBarra,
             borderRadius: 999,
             padding: "6px 12px",
@@ -858,7 +858,7 @@ function AcoesAplicadas({
           style={{
             border: `1px solid ${PALETA.bordaForte}`,
             background: PALETA.superficie,
-            color: PALETA.marca,
+            color: MARCA.marca,
             borderRadius: 999,
             padding: "5px 12px",
             font: `500 10px/1 ${TIPOGRAFIA.texto}`,

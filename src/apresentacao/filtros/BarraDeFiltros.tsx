@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import {
@@ -102,8 +102,8 @@ export function BarraDeFiltros({
         data-teste="aplicar-filtros"
         style={{
           height: 33,
-          border: `1px solid ${PALETA.marca}`,
-          background: PALETA.marca,
+          border: `1px solid ${MARCA.marca}`,
+          background: MARCA.marca,
           color: PALETA.superficie,
           borderRadius: 999,
           padding: "0 16px",
@@ -190,11 +190,11 @@ function Controle({
           background: foraDoPadrao
             ? PALETA.superficieSuave
             : PALETA.superficieAlta,
-          border: `1px solid ${foraDoPadrao ? PALETA.destaque : PALETA.bordaForte}`,
+          border: `1px solid ${foraDoPadrao ? MARCA.destaque : PALETA.bordaForte}`,
           borderRadius: 999,
           padding: "7px 14px",
           font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
-          color: foraDoPadrao ? PALETA.marca : PALETA.texto,
+          color: foraDoPadrao ? MARCA.marca : PALETA.texto,
           cursor: "pointer",
           minWidth: 114,
         }}
