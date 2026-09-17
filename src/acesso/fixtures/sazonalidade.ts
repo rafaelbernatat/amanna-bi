@@ -35,7 +35,7 @@
  * olhando o painel encontraria um pico que não explica nada.
  */
 
-import { mesesDe } from "@/acesso/fixtures/eixos";
+import { mesesDe } from "@/acesso/calculo/eixos";
 
 /**
  * Doze pontos, um por mês, de janeiro a dezembro, **em milésimos**.

@@ -14,7 +14,7 @@ import {
   diasUteisDoMes,
   VW_FATO_CAIXA_DIARIO,
 } from "@/acesso/fixtures/caixa-diario";
-import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 
 const MESES = mesesDe("2026");

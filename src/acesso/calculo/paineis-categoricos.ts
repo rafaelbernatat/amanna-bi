@@ -25,7 +25,7 @@ import {
 } from "@/acesso/fixtures/contraparte";
 import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
 import { VW_DIM_CARGO } from "@/acesso/fixtures/dim";
-import { AGREGADO_DE_AREA } from "@/acesso/fixtures/eixos";
+import { AGREGADO_DE_AREA } from "@/acesso/calculo/eixos";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FATURAMENTO_CLIENTE,
@@ -42,7 +42,7 @@ import {
   razao,
   type Recorte,
   soma,
-} from "@/acesso/fixtures/kpis";
+} from "@/acesso/calculo/kpis";
 import { CENTROS_DE_CUSTO } from "@/acesso/fixtures/referencia-fin";
 import {
   QUEBRAS_DO_QUADRO,

@@ -40,7 +40,7 @@ import {
   AGREGADO_DE_ENTIDADE,
   AGREGADO_DE_MODALIDADE,
   mesesDe,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 
 /** Uma linha de fato: mês obrigatório, dimensões conforme a view. */
 export type LinhaDeFato = {

@@ -35,9 +35,9 @@ import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
 import { VW_FATO_DIVIDA_MES } from "@/acesso/fixtures/divida";
 import { VW_FATO_NATUREZA_MES } from "@/acesso/fixtures/natureza";
 import { VW_FATO_QUALIDADE_MES } from "@/acesso/fixtures/qualidade";
-import { calcularMeta } from "@/acesso/fixtures/meta";
-import { calcularMetrica } from "@/acesso/fixtures/metricas";
-import { calcularPainel } from "@/acesso/fixtures/paineis";
+import { calcularMeta } from "@/acesso/calculo/meta";
+import { calcularMetrica } from "@/acesso/calculo/metricas";
+import { calcularPainel } from "@/acesso/calculo/paineis";
 import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
 import {
   VW_FATO_CONTAS,
@@ -53,8 +53,8 @@ import {
   VW_FATO_VAGAS,
   VW_FATO_VAGAS_FONTE,
 } from "@/acesso/fixtures/rh";
-import { calcularKpis } from "@/acesso/fixtures/kpis";
-import { linhasDoRecorte, recortar, somar } from "@/acesso/fixtures/recorte";
+import { calcularKpis } from "@/acesso/calculo/kpis";
+import { linhasDoRecorte, recortar, somar } from "@/acesso/calculo/recorte";
 
 /**
  * As views da seção 10.1 que a fixture publica, por nome.

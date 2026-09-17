@@ -27,7 +27,7 @@
  * unidade mais cara e não a mais produtiva, que é a tensão que o dataset conta.
  */
 
-import { ENTIDADES_ARMAZENADAS } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS } from "@/acesso/calculo/eixos";
 
 /** A fatia da Unidade SP em cada medida. O resto fica com `demais-unidades`. */
 export const FATIA_DA_UNIDADE_SP: Readonly<Record<string, number>> = {

@@ -19,7 +19,7 @@ import {
   QUEBRAS_DA_SAIDA,
   VW_FATO_RH_DESLIGAMENTO,
 } from "@/acesso/fixtures/desligamento";
-import { mesesDe } from "@/acesso/fixtures/eixos";
+import { mesesDe } from "@/acesso/calculo/eixos";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FATURAMENTO_CLIENTE,

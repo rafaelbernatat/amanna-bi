@@ -29,7 +29,7 @@ import {
 } from "@/acesso/contrato/reconciliacao";
 import { consultaDe, type Falha } from "@/acesso/contrato/suite";
 import { criarFonteDeFixtures } from "@/acesso/fixtures/adaptador";
-import { calcularPainel } from "@/acesso/fixtures/paineis";
+import { calcularPainel } from "@/acesso/calculo/paineis";
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { podeSomar } from "@/semantica/agregacao";
 import type { DataSource, PanelResponse } from "@/semantica/contrato";

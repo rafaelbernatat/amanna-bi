@@ -21,9 +21,9 @@ import {
   MetricaDesconhecida,
   metricasDoCatalogo,
   metricasProximas,
-} from "@/acesso/fixtures/metricas";
-import { metricasComCalculo } from "@/acesso/fixtures/kpis";
-import { MESES_DO_PERIODO } from "@/acesso/fixtures/recorte";
+} from "@/acesso/calculo/metricas";
+import { metricasComCalculo } from "@/acesso/calculo/kpis";
+import { MESES_DO_PERIODO } from "@/acesso/calculo/recorte";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import type { Query } from "@/semantica/contrato";
 

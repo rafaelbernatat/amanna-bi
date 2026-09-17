@@ -30,7 +30,7 @@ import {
   calcularKpis,
   KpiSemOrigem,
   metricasComCalculo,
-} from "@/acesso/fixtures/kpis";
+} from "@/acesso/calculo/kpis";
 import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { kpisDaTela, REGISTRO_DE_KPIS } from "@/semantica/kpis";

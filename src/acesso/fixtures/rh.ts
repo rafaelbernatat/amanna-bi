@@ -39,7 +39,7 @@ import {
   MODALIDADES_ARMAZENADAS,
   mesesDe,
   type Celula,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 import { fatiaDaEntidade } from "@/acesso/fixtures/entidade";
 import {
   ABSENTEISMO_MENSAL,

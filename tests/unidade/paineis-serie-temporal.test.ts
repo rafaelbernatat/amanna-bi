@@ -20,8 +20,8 @@ import {
   calcularPainel,
   paineisComDesenho,
   PainelDesconhecido,
-} from "@/acesso/fixtures/paineis";
-import { MESES_DO_PERIODO } from "@/acesso/fixtures/recorte";
+} from "@/acesso/calculo/paineis";
+import { MESES_DO_PERIODO } from "@/acesso/calculo/recorte";
 import type { Query } from "@/semantica/contrato";
 import {
   EIXOS_TEMPORAIS,

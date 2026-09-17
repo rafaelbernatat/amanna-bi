@@ -49,8 +49,8 @@ import {
   AGREGADO_DE_AREA,
   AGREGADO_DE_ENTIDADE,
   AGREGADO_DE_MODALIDADE,
-} from "@/acesso/fixtures/eixos";
-import { MESES_DO_PERIODO } from "@/acesso/fixtures/recorte";
+} from "@/acesso/calculo/eixos";
+import { MESES_DO_PERIODO } from "@/acesso/calculo/recorte";
 
 /**
  * O fator de entidade do protótipo, copiado de `fctx()`.

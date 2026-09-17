@@ -16,7 +16,7 @@
  * warehouse e alimentam esta view.
  */
 
-import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
 

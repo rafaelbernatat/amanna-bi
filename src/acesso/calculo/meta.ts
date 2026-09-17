@@ -31,7 +31,7 @@
  * mesmo que o relógio diga agosto. É honesto: o dado é esse.
  */
 
-import { anoDoMes } from "@/acesso/fixtures/eixos";
+import { anoDoMes } from "@/acesso/calculo/eixos";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
 import {
   CATALOGO_GERADO,

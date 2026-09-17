@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { ENTIDADES_ARMAZENADAS } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { VW_FATO_NATUREZA_MES } from "@/acesso/fixtures/natureza";
 import { VW_FATO_QUALIDADE_MES } from "@/acesso/fixtures/qualidade";

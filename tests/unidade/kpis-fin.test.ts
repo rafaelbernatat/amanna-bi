@@ -23,7 +23,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { calcularKpis, metricasComCalculo } from "@/acesso/fixtures/kpis";
+import { calcularKpis, metricasComCalculo } from "@/acesso/calculo/kpis";
 import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { kpisDaTela } from "@/semantica/kpis";

@@ -42,7 +42,7 @@ import {
   ENTIDADES_ARMAZENADAS,
   MODALIDADES_ARMAZENADAS,
   mesesDe,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 import { CENTROS_DE_CUSTO } from "@/acesso/fixtures/referencia-fin";
 import { rotuloDe } from "@/semantica/dimensoes";
 

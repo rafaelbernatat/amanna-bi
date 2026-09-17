@@ -23,7 +23,7 @@ import {
   calcularPainel,
   paineisComDesenho,
   PainelDesconhecido,
-} from "@/acesso/fixtures/paineis";
+} from "@/acesso/calculo/paineis";
 import type { Query } from "@/semantica/contrato";
 import {
   FORMAS_CATEGORICAS,
