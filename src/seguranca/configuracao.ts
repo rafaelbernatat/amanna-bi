@@ -22,6 +22,14 @@
  *   copiado para ticket, e segredo em ticket é segredo vazado.
  */
 
+import { ARMAZENS } from "@/marca/armazem";
+import {
+  armazemDeArquivoEmDiscoEfemero,
+  armazemEmMemoriaComDadoReal,
+  EXIGIDAS_POR_ARMAZEM,
+} from "@/marca/configuracao";
+import { FONTES_DE_SITE } from "@/marca/site/fonte";
+
 /** O que uma variável precisa satisfazer. */
 export type RegraDeVariavel = {
   readonly nome: string;
@@ -57,6 +65,26 @@ function urlComEsquema(esquemas: readonly string[]) {
       ? null
       : `esperava esquema ${esquemas.join(" ou ")}`;
   };
+}
+
+/**
+ * Caminho absoluto.
+ *
+ * Relativo é armadilha: resolve contra o diretório de trabalho do processo,
+ * que muda entre `next dev`, `next start` e o contêiner — e a marca gravada
+ * num lugar seria lida noutro.
+ *
+ * A conferência é escrita à mão em vez de vir de `node:path`, e a razão é
+ * concreta: este módulo é carregado pela instrumentação do boot, que roda em
+ * **todos** os runtimes — inclusive o de borda, onde módulo nativo não existe.
+ * Importar `node:path` aqui derrubava o servidor inteiro com "native module
+ * not found", uma requisição por vez.
+ */
+function caminhoAbsoluto() {
+  // Barra inicial cobre POSIX; letra de unidade cobre Windows.
+  const ABSOLUTO = /^(\/|[A-Za-z]:[\\/])/;
+  return (valor: string): string | null =>
+    ABSOLUTO.test(valor) ? null : "esperava um caminho absoluto";
 }
 
 function comprimentoMinimo(minimo: number) {
@@ -137,6 +165,41 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     obrigatoria: false,
     segredo: false,
   },
+  {
+    /*
+     * A personalização visual por empresa (D-MARCA).
+     *
+     * Opcional, e a ausência é um estado explícito: sem armazém a
+     * personalização fica desligada, o botão não aparece e a tela diz isso.
+     * Uma instalação que não quer marca própria não precisa declarar nada.
+     */
+    nome: "MARCA_ARMAZEM",
+    proposito: "onde a marca da instalação é guardada (D-MARCA)",
+    obrigatoria: false,
+    segredo: false,
+    conferir: umDentre([...ARMAZENS]),
+  },
+  {
+    nome: "MARCA_DIR",
+    proposito: "diretório montado onde a marca é gravada (D-MARCA)",
+    obrigatoria: false,
+    segredo: false,
+    conferir: caminhoAbsoluto(),
+  },
+  {
+    nome: "MARCA_BLOB_TOKEN",
+    proposito: "credencial do armazém de marca em nuvem (D-MARCA)",
+    obrigatoria: false,
+    segredo: true,
+    conferir: comprimentoMinimo(20),
+  },
+  {
+    nome: "MARCA_SITE",
+    proposito: "quem busca o site da empresa: a rede ou o arnês (D-MARCA)",
+    obrigatoria: false,
+    segredo: false,
+    conferir: umDentre([...FONTES_DE_SITE]),
+  },
 ];
 
 /**
@@ -185,10 +248,40 @@ export function conferirAmbiente(
   const problemas: ProblemaDeConfiguracao[] = [];
 
   const fonte = ambiente["DATA_SOURCE"];
-  const extras =
-    fonte !== undefined && fonte in EXIGIDAS_POR_FONTE
+  const armazem = ambiente["MARCA_ARMAZEM"];
+  const extras = [
+    ...(fonte !== undefined && fonte in EXIGIDAS_POR_FONTE
       ? (EXIGIDAS_POR_FONTE[fonte] ?? [])
-      : [];
+      : []),
+    ...(armazem !== undefined && armazem in EXIGIDAS_POR_ARMAZEM
+      ? (EXIGIDAS_POR_ARMAZEM[armazem] ?? [])
+      : []),
+  ];
+
+  /*
+   * As duas combinações que sobem **quase** certo.
+   *
+   * Arquivo em disco efêmero grava, lê na mesma invocação e some depois;
+   * memória na frente de dado real perde a marca a cada reinício. As duas
+   * mostram "aplicado" na tela e falham em silêncio horas depois, que é
+   * exatamente o modo de falha que esta validação existe para impedir.
+   */
+  if (armazemDeArquivoEmDiscoEfemero(ambiente)) {
+    problemas.push({
+      variavel: "MARCA_ARMAZEM",
+      problema:
+        "'arquivo' num ambiente de disco efêmero: a gravação sucede e a marca " +
+        "some no próximo início. Use 'blob' aqui, e 'arquivo' onde há volume",
+    });
+  }
+  if (armazemEmMemoriaComDadoReal(ambiente)) {
+    problemas.push({
+      variavel: "MARCA_ARMAZEM",
+      problema:
+        "'memoria' só serve a teste: perde a marca a cada reinício, e " +
+        "DATA_SOURCE=warehouse indica instalação de verdade",
+    });
+  }
 
   for (const regra of ESQUEMA) {
     const valor = ambiente[regra.nome];

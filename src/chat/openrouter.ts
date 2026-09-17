@@ -25,17 +25,19 @@
  * caminho normal e usa o interpretador local — o chat continua respondendo, com
  * o mesmo número, escrevendo pior. Lançar transformaria "a chave não foi
  * configurada" em erro de tela, e isso é configuração, não defeito.
+ *
+ * ## O que saiu daqui
+ *
+ * O **transporte** — chave, modelo, tempo limite e a chamada em si — mora em
+ * `src/gateway/openrouter.ts` desde que a extração de marca passou a precisar
+ * do mesmo gateway (D-MARCA). O que ficou é o que é do chat: as duas
+ * instruções e a forma do que vai e do que volta.
  */
 
+import { conversar, jsonDaResposta } from "@/gateway/openrouter";
 import type { TurnoAnterior } from "@/chat/interpretar";
 
-/** O modelo padrão, quando `OPENROUTER_MODEL` não diz outro. */
-const MODELO_PADRAO = "anthropic/claude-opus-4.1";
-
-const ENDERECO = "https://openrouter.ai/api/v1/chat/completions";
-
-/** Quanto se espera pelo gateway antes de responder pelo caminho local. */
-const LIMITE_MS = 30_000;
+export { gatewayConfigurado, modeloEmUso } from "@/gateway/openrouter";
 
 /**
  * Esforço baixo no estágio 1, alto no 3 (seção 7.3).
@@ -45,69 +47,6 @@ const LIMITE_MS = 30_000;
  */
 const TETO_DE_SAIDA_INTERPRETACAO = 400;
 const TETO_DE_SAIDA_REDACAO = 1200;
-
-/** A chave configurada, ou `null`. Nunca é registrada nem devolvida. */
-function chave(): string | null {
-  const bruta = process.env["OPENROUTER_API_KEY"];
-  return bruta === undefined || bruta.trim() === "" ? null : bruta;
-}
-
-/** O chat tem gateway configurado? A tela usa isto para dizer o que está ativo. */
-export function gatewayConfigurado(): boolean {
-  return chave() !== null;
-}
-
-export function modeloEmUso(): string {
-  const escolhido = process.env["OPENROUTER_MODEL"];
-  return escolhido === undefined || escolhido.trim() === ""
-    ? MODELO_PADRAO
-    : escolhido;
-}
-
-type Mensagem = { readonly role: "system" | "user"; readonly content: string };
-
-type RespostaDoGateway = {
-  readonly choices?: readonly {
-    readonly message?: { readonly content?: unknown };
-  }[];
-};
-
-/**
- * Uma chamada ao gateway. Devolve o texto, ou `null` se não deu.
- *
- * Engole a falha de propósito: rede fora, chave recusada e resposta malformada
- * significam a mesma coisa para quem chama — seguir pelo caminho local.
- */
-async function conversar(
-  mensagens: readonly Mensagem[],
-  tetoDeSaida: number,
-): Promise<string | null> {
-  const autorizacao = chave();
-  if (autorizacao === null) return null;
-
-  try {
-    const resposta = await fetch(ENDERECO, {
-      method: "POST",
-      signal: AbortSignal.timeout(LIMITE_MS),
-      headers: {
-        authorization: `Bearer ${autorizacao}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: modeloEmUso(),
-        max_tokens: tetoDeSaida,
-        messages: mensagens,
-      }),
-    });
-    if (!resposta.ok) return null;
-
-    const corpo = (await resposta.json()) as RespostaDoGateway;
-    const texto = corpo.choices?.[0]?.message?.content;
-    return typeof texto === "string" && texto.trim() !== "" ? texto : null;
-  } catch {
-    return null;
-  }
-}
 
 /* ------------------------------------------------------------------ *
  * Estágio 1 · interpretar
@@ -199,27 +138,16 @@ export async function interpretarComGateway(
   );
   if (texto === null) return null;
 
-  try {
-    // O modelo às vezes embrulha o JSON em cerca de código. Pegar do primeiro
-    // `{` ao último `}` é mais robusto que exigir formato exato, e não afrouxa
-    // nada: o que sai daqui ainda é validado contra o catálogo no estágio 2.
-    const inicio = texto.indexOf("{");
-    const fim = texto.lastIndexOf("}");
-    if (inicio < 0 || fim <= inicio) return null;
+  const bruto = jsonDaResposta(texto) as IntencaoBruta | null;
+  if (bruto === null || typeof bruto.metrica !== "string") return null;
 
-    const bruto = JSON.parse(texto.slice(inicio, fim + 1)) as IntencaoBruta;
-    if (typeof bruto.metrica !== "string") return null;
-
-    return {
-      metrica: bruto.metrica,
-      confianca: typeof bruto.confianca === "number" ? bruto.confianca : 0,
-      alternativas: Array.isArray(bruto.alternativas)
-        ? bruto.alternativas.filter((a): a is string => typeof a === "string")
-        : [],
-    };
-  } catch {
-    return null;
-  }
+  return {
+    metrica: bruto.metrica,
+    confianca: typeof bruto.confianca === "number" ? bruto.confianca : 0,
+    alternativas: Array.isArray(bruto.alternativas)
+      ? bruto.alternativas.filter((a): a is string => typeof a === "string")
+      : [],
+  };
 }
 
 /* ------------------------------------------------------------------ *

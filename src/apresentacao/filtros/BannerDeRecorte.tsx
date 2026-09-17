@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { filtrosForaDoPadrao } from "@/apresentacao/filtros/recorte-ativo";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { rotaCom } from "@/semantica/url";
@@ -59,7 +59,7 @@ export function BannerDeRecorte({
         flexWrap: "wrap",
         background: PALETA.superficie,
         border: `1px solid ${PALETA.grade}`,
-        borderLeft: `3px solid ${PALETA.destaqueSuave}`,
+        borderLeft: `3px solid ${MARCA.destaqueSuave}`,
         borderRadius: 15,
         padding: "11px 15px",
         marginBottom: 16,
@@ -68,7 +68,7 @@ export function BannerDeRecorte({
       <span
         style={{
           font: `500 9px ${TIPOGRAFIA.mono}`,
-          color: PALETA.destaque,
+          color: MARCA.destaque,
           textTransform: "uppercase",
           letterSpacing: ".1em",
         }}
@@ -93,7 +93,7 @@ export function BannerDeRecorte({
           marginLeft: "auto",
           border: `1px solid ${PALETA.bordaForte}`,
           background: PALETA.superficie,
-          color: PALETA.marca,
+          color: MARCA.marca,
           borderRadius: 999,
           padding: "5px 12px",
           font: `500 10px ${TIPOGRAFIA.texto}`,

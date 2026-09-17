@@ -62,6 +62,18 @@ export default defineConfig({
       DATA_SOURCE: "fixtures",
       AUTH_PROVIDER: "fixtures",
       OPENROUTER_API_KEY: "",
+      /*
+       * A personalizacao de marca ligada, em memoria e sobre sites de arnes.
+       *
+       * `memoria` porque cada subida comeca sem marca e um caso nao contamina
+       * o proximo; `fixtures` porque o servidor de teste nao pode buscar um
+       * site de verdade -- seria lento, dependeria de rede, e o resultado
+       * mudaria quando o site mudasse. O que **nao** muda e a guarda de
+       * endereco: ela fica na frente dos dois adaptadores, e o teste de
+       * unidade confere os dois com a mesma tabela.
+       */
+      MARCA_ARMAZEM: "memoria",
+      MARCA_SITE: "fixtures",
     },
     url: BASE_URL,
     reuseExistingServer: !process.env["CI"],

@@ -43,15 +43,23 @@ export function middleware(requisicao: NextRequest) {
 
 export const config = {
   /*
-   * Fora os artefatos estáticos.
+   * Fora os artefatos estáticos, e fora o logo da marca.
    *
    * `_next/static` e as imagens já saem com cache imutável e não executam
    * nada; passá-los pelo middleware custaria uma invocação por arquivo sem
    * fechar superfície nenhuma.
+   *
+   * `api/marca/logo` sai por outra razão, e ela é de segurança: aquela rota
+   * serve **bytes de terceiro**, e por isso declara uma política própria e
+   * mais dura que a do produto — `default-src 'none'; sandbox`, que não
+   * permite nada. Como o middleware escreve a política do site em toda
+   * resposta que atravessa, passar por aqui **afrouxaria** a política daquele
+   * arquivo em vez de endurecê-la. A rota manda os próprios cabeçalhos,
+   * `nosniff` incluído.
    */
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico).*)",
+      source: "/((?!_next/static|_next/image|favicon.ico|api/marca/logo).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

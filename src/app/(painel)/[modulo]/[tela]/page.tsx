@@ -11,6 +11,7 @@ import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
 import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
+import { lerCabecalhoDaInstalacao } from "@/marca/tela";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { COLUNAS_DA_GRADE, paineisDaTela } from "@/semantica/paineis";
@@ -165,6 +166,9 @@ export default async function Pagina({
    */
   const chaveDaUrl = `${rota}?${busca.toString()}`;
 
+  // Quem entrou e qual a marca da instalacao. A apresentacao recebe pronto.
+  const instalacao = await lerCabecalhoDaInstalacao();
+
   return (
     <div
       style={{
@@ -181,6 +185,8 @@ export default async function Pagina({
         query={query}
         dimensoes={dimensoes}
         painelDestacado={painelDestacado}
+        conta={instalacao.conta}
+        logo={instalacao.logo}
       />
 
       <main

@@ -161,6 +161,35 @@ export function formatarMesAno(iso: string): string {
 }
 
 /**
+ * Uma razao de contraste, com duas casas: `3,91`.
+ *
+ * Entrou com a personalizacao de marca (D-MARCA): a tela de configuracao
+ * mostra o contraste antes e depois de um ajuste, e sem isto o numero sairia
+ * de um `toFixed` espalhado pela apresentacao — que e o que a regra de
+ * arquitetura deste modulo existe para impedir.
+ *
+ * Nao usa `toFixed` por acaso: `toFixed` devolve ponto decimal, e o produto
+ * escreve virgula em toda parte.
+ */
+export function formatarRazao(valor: number): string {
+  const CASAS = 100;
+  const arredondada = Math.round(valor * CASAS) / CASAS;
+  const [inteira = "0", decimal = ""] = String(arredondada).split(".");
+  return `${inteira},${decimal.padEnd(2, "0")}`;
+}
+
+/**
+ * Um tamanho de arquivo em quilobytes: `12 KB`.
+ *
+ * A tela de marca mostra o peso do logo encontrado. Mora aqui pela mesma
+ * razao das outras: quem exibe numero nao faz a conta que o produz.
+ */
+export function formatarQuilobytes(bytes: number): string {
+  const MIL = 1024;
+  return `${String(Math.max(1, Math.round(bytes / MIL)))} KB`;
+}
+
+/**
  * Um instante ISO em dia, mes, ano e hora — para o selo de frescor (T-132).
  *
  * A secao 6.4 pede "o horario da ultima leitura bem-sucedida" no estado de erro

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { SeloDeFrescor } from "@/apresentacao/paineis/SeloDeFrescor";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Frescor, PanelResponse } from "@/semantica/contrato";
 
 /**
@@ -141,7 +141,7 @@ export function MolduraDePainel({
       style={{
         minWidth: 0,
         background: PALETA.superficie,
-        border: `1px solid ${destacado ? PALETA.destaque : PALETA.borda}`,
+        border: `1px solid ${destacado ? MARCA.destaque : PALETA.borda}`,
         /*
           Contorno, sombra e rótulo (seção 6.5). A sombra é um halo da cor de
           destaque, para o painel citado se distinguir dos vizinhos mesmo de
@@ -149,7 +149,7 @@ export function MolduraDePainel({
           `scrollMargin` deixa folga quando o navegador rola até aqui.
         */
         boxShadow: destacado
-          ? `0 0 0 4px color-mix(in srgb, ${PALETA.destaque} 22%, transparent), 0 18px 40px -16px color-mix(in srgb, ${PALETA.destaque} 60%, transparent)`
+          ? `0 0 0 4px color-mix(in srgb, ${MARCA.destaque} 22%, transparent), 0 18px 40px -16px color-mix(in srgb, ${MARCA.destaque} 60%, transparent)`
           : undefined,
         scrollMargin: 16,
         borderRadius: 17,
@@ -211,7 +211,7 @@ export function MolduraDePainel({
             data-teste="rotulo-de-referencia"
             style={{
               font: `500 8.5px/1.2 ${TIPOGRAFIA.mono}`,
-              color: PALETA.destaque,
+              color: MARCA.destaque,
               textTransform: "uppercase",
               letterSpacing: ".1em",
             }}

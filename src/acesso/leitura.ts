@@ -37,7 +37,32 @@ import type {
 } from "@/semantica/contrato";
 import type { EstadoDe } from "@/semantica/estado";
 import { GraoProibido } from "@/seguranca/grao";
-import { escopoDaSessao, ForaDoEscopo } from "@/seguranca/identidade";
+import {
+  escopoDaSessao,
+  ForaDoEscopo,
+  type Perfil,
+} from "@/seguranca/identidade";
+
+/**
+ * Quem está usando, para quem precisa do perfil e não do dado.
+ *
+ * A tela de configuração e as rotas de marca (D-MARCA) precisam saber o perfil
+ * de quem entrou, e nada além disso. Sem esta função, cada uma chamaria
+ * `getSession` por conta própria — e um teste de arquitetura reprova isso com
+ * razão: *"uma tela que constrói a própria sessão escolhe o próprio perfil, e
+ * aí o escopo da seção 11 é decorativo"*.
+ *
+ * O que sai daqui é **identidade**, nunca escopo: `AccessScope` continua
+ * saindo só de `escopoDaSessao`, dentro desta camada, e continua sendo a única
+ * porta para ler dado.
+ */
+export async function lerIdentidade(): Promise<{
+  readonly sujeito: string;
+  readonly perfil: Perfil;
+}> {
+  const { sujeito, perfil } = await getSession();
+  return { sujeito, perfil };
+}
 
 /**
  * Os KPIs de uma tela, já restringidos ao perfil de quem pediu.

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 238 tarefas: 173 pendentes e 65 já concluídas (5 no protótipo) |
+| **Total** | 244 tarefas: 173 pendentes e 71 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,11 +37,11 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 107 | 61 | 42 | 4 | 60 de 107 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **238** | **123** | **92** | **18** | **65 de 238** |
+| **Total** | **244** | **124** | **97** | **18** | **71 de 244** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -627,6 +627,24 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 - [ ] **T-256** `P2` `M` `seguranca` Construir a administração de perfis e escopo para instalações sem grupos no IdP
   · **Aceite:** Tela restrita à diretoria permite atribuir perfil e escopo a um usuário, toda alteração grava registro na trilha de auditoria com quem alterou, o que mudou e quando, e os outros quatro perfis recebem 403.
   · **PRD:** seção 11, seção 8.2 · **Depende de:** T-223, T-224
+- [X] **T-260** `P1` `M` `paineis` Separar o tema em base fixa e camada de marca, com recuo para a cor de hoje
+  · **Aceite:** Os cinco papeis de marca sao propriedades CSS com a cor atual como recuo, os dezenove restantes seguem hexadecimais, e um teste reprova qualquer componente de grafico que leia a camada de marca — porque variavel CSS nao pinta atributo de SVG.
+  · **PRD:** secao 13, D-MARCA, T-124 · **Depende de:** T-124
+- [X] **T-261** `P1` `M` `paineis` Calcular contraste pela formula da WCAG e propor o ajuste minimo
+  · **Aceite:** A razao de contraste dos tres pares que o tema mediu a mao bate com os valores anotados, preto sobre branco da 21 para 1, e o ajuste leva um par reprovado a 4,5 para 1 mexendo so na luminosidade e preservando o matiz.
+  · **PRD:** secao 13, D-MARCA, T-183, H-43 · **Depende de:** T-124
+- [X] **T-262** `P1` `M` `plataforma` Construir o armazem da marca da instalacao, trocavel por ambiente
+  · **Aceite:** Uma suite de contrato roda igual nos adaptadores de memoria e de arquivo, gravacao impossivel lanca em vez de falhar em silencio, documento corrompido devolve o estado vazio, e o boot recusa arquivo em disco efemero e memoria na frente de dado real.
+  · **PRD:** secao 15, D1, D-MARCA · **Depende de:** T-139
+- [X] **T-263** `P0` `M` `seguranca` Guardar a busca do site contra requisicao forjada do lado do servidor
+  · **Aceite:** A guarda e pura e recusa esquema, credencial na URL, porta, endereco literal em qualquer notacao, nome reservado, faixa privada e endereco de metadados de nuvem, com o motivo certo em cada caso; a busca fixa o endereco resolvido antes de conectar, e o adaptador de arnes obedece a mesma tabela.
+  · **PRD:** secao 11, D-MARCA · **Depende de:** T-139
+- [X] **T-264** `P1` `L` `chat` Extrair logo e cores do site da empresa em tres estagios, com verificador
+  · **Aceite:** O estagio 1 reune candidatos do que o site declara e ignora cor em comentario e em script, o modelo escolhe por indice da lista, o verificador recusa indice fora da faixa e cai na escolha deterministica, e o logo e aceito pelos bytes com vetor perigoso recusado nomeando a construcao.
+  · **PRD:** secao 7.1, secao 11, D-MARCA · **Depende de:** T-262, T-263
+- [X] **T-265** `P1` `M` `paineis` Abrir a tela de configuracao da marca a partir do cabecalho
+  · **Aceite:** O cabecalho mostra quem entrou e leva as configuracoes so para diretoria e controladoria; o envio e formulario com redirecionamento 303 e conferencia de origem; a tela mostra a proposta com o antes e o depois de cada ajuste antes de aplicar, e voltar ao padrao restaura o tema.
+  · **PRD:** secao 6.1, secao 13, D-MARCA · **Depende de:** T-260, T-261, T-264
 
 ---
 

@@ -163,6 +163,23 @@ export default tseslint.config(
     },
   },
 
+  // D-MARCA: o logo da empresa e servido por rota propria, e nao e imagem
+  // conhecida em tempo de build.
+  //
+  // O componente de imagem do Next otimiza por endereco fixo; este vem da
+  // instalacao, muda sem novo build e ja chega com tipo e teto de bytes
+  // conferidos. A excecao mora aqui, e nao num comentario dentro do arquivo,
+  // porque comentario que desliga regra vira erro em qualquer verificador que
+  // nao conheca aquela regra -- e o teste de arquitetura de T-134 roda o
+  // ESLint com um plugin so.
+  {
+    files: [
+      "src/apresentacao/shell/Cabecalho.tsx",
+      "src/apresentacao/marca/**/*.tsx",
+    ],
+    rules: { "@next/next/no-img-element": "off" },
+  },
+
   {
     rules: {
       // O criterio de aceite de T-005 nomeia este caso explicitamente.

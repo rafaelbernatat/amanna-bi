@@ -27,7 +27,9 @@
       "@/semantica/*": ["src/semantica/*"],
       "@/acesso/*": ["src/acesso/*"],
       "@/seguranca/*": ["src/seguranca/*"],
-      "@/chat/*": ["src/chat/*"]
+      "@/chat/*": ["src/chat/*"],
+      "@/marca/*": ["src/marca/*"],
+      "@/gateway/*": ["src/gateway/*"]
     },
     "plugins": [
       {

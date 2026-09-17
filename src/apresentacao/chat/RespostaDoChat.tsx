@@ -1,5 +1,5 @@
 import { formatarValor } from "@/apresentacao/formato/formato";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Autoria, Resposta } from "@/chat/perguntar";
 
 /**
@@ -243,7 +243,7 @@ export function Atalhos({
             textAlign: "left",
             border: `1px solid ${PALETA.borda}`,
             background: PALETA.superficie,
-            color: PALETA.marca,
+            color: MARCA.marca,
             borderRadius: 12,
             padding: "7px 11px",
             font: `400 11px/1.4 ${TIPOGRAFIA.texto}`,

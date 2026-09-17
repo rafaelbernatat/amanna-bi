@@ -1,7 +1,10 @@
+import { headers } from "next/headers";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
+import { EstiloDaMarca } from "@/apresentacao/tema/EstiloDaMarca";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { lerMarcaAtiva } from "@/marca/leitura";
 
 export const metadata: Metadata = {
   title: "Painel BI de Controladoria",
@@ -19,11 +22,29 @@ export const viewport: Viewport = {
  * rola na horizontal. Quem rola e a area de conteudo, e a tira de abas rola
  * dentro de si mesma.
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  /*
+   * A marca da instalacao, uma vez por requisicao.
+   *
+   * `lerMarcaAtiva` e memorizada pelo `cache` do React, entao o cabecalho le
+   * a mesma coisa sem uma segunda ida ao armazem. O nonce vem do cabecalho da
+   * requisicao, posto pelo middleware — hoje `style-src` tem `unsafe-inline`
+   * e ele nao seria necessario, mas quando H-46 for pago esta folha precisa
+   * continuar saindo assinada.
+   */
+  const [marca, cabecalhos] = await Promise.all([lerMarcaAtiva(), headers()]);
+  const nonce = cabecalhos.get("x-nonce");
+
   return (
     <html lang="pt-BR">
+      <head>
+        <EstiloDaMarca
+          cores={marca?.cores ?? null}
+          {...(nonce === null ? {} : { nonce })}
+        />
+      </head>
       <body
         style={{
           margin: 0,

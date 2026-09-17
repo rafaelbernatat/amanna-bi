@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 60 itens (5 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 64 itens (5 resolvidos), destravando 122 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -39,27 +39,29 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
-| Fase 1 · Contrato | 24 (5 resolvidos) | 8 | 36 |
+| Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
 | Fase 2 · Dado real | 22 | 18 | 56 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **60** | **31** | **122** |
+| **Total** | **64** | **32** | **122** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
-| Produto | 15 |
+| Produto | 16 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
 | Engenharia | 7 |
 | Comercial | 5 |
 | Produto, com Controladoria e RH | 2 |
+| Produto, com o Jurídico do cliente | 2 |
 | RH | 2 |
 | Financeiro | 1 |
 | Juridico do cliente | 1 |
 | Produto, com Engenharia | 1 |
 | RH · **Consultar:** Jurídico / DPO | 1 |
+| TI do cliente, com Engenharia | 1 |
 
 **Os cinco que mais destravam** — se a fila estiver parada, comece por estes:
 
@@ -77,7 +79,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 
 Sem estes, a Fase 1 não fecha o critério de saída.
 
-*24 itens · 3 P0 abertos · 12 P1 abertos · 4 P2 abertos · 5 resolvidos*
+*28 itens · 4 P0 abertos · 14 P1 abertos · 5 P2 abertos · 5 resolvidos*
 
 ### [ ] H-59 · Escrever a narrativa dos painéis, ou decidir que não há
 
@@ -694,6 +696,62 @@ A tarefa T-124 extraiu a paleta do protótipo para um tema tipado e, ao fazer is
 | **Resultado esperado** | Decisão registrada com data e nome do aprovador de Produto, reabrindo D4 e adotando recharts, com as consequências aceitas por escrito |
 | **Onde o resultado vai** | docs/decisoes/D-D4-biblioteca-de-graficos.md; PRD seção 8.2 e linha D4 editadas; aceites de T-129, T-176 e T-409 reescritos para seguir o PRD novo |
 | **Destrava** | T-129, T-130 *(2 tarefas)* |
+
+### [ ] H-61 · Decidir de quais domínios a instalação aceita extrair marca
+
+`P0` · **Responsável:** Produto, com o Jurídico do cliente
+
+**O que fazer**
+
+A personalização visual (D-MARCA) deixa diretoria e controladoria informarem **qualquer** endereço, e o painel passa a exibir o logo e as cores daquele site. Juridicamente, usar a marca do próprio cliente dentro da instalação dedicada dele, para os funcionários dele, é uso ordinário e não exige licença de ninguém. O problema não é jurídico, é de controle: nada no produto garante que o endereço informado é o do cliente. Hoje um `controller` digita o site de um concorrente e a marca registrada de terceiro aparece no cabeçalho de um sistema de gestão. Decida a saída: uma **lista de domínios fixada na instalação**, com a tela oferecendo o domínio do cliente e recusando os outros — que é a recomendação, e resolve de uma vez os termos de uso e o `robots.txt` daquele site; ou um aceite tipado na tela, gravado junto de quem aplicou, que é mais fraco mas ao menos atribuível. Registre também quem, do lado do cliente, autoriza a busca automatizada do site: é o dono da marca, normalmente Marketing ou Comunicação, e não o perfil que está logado.
+
+| | |
+|---|---|
+| **Resultado esperado** | Escolha registrada com data e nome — lista de domínios da instalação ou aceite tipado — e o nome de quem, no cliente, autoriza a busca do site |
+| **Onde o resultado vai** | docs/decisoes/D-MARCA-personalizacao.md, seção de pendências; a lista, quando houver, em configuração de ambiente |
+| **Destrava** | Nada. É pré-requisito da primeira instalação que ligar a personalização |
+
+### [ ] H-62 · Aprovar no contrato o trânsito da busca de site e da lista de candidatos
+
+`P1` · **Responsável:** Produto, com o Jurídico do cliente
+
+**O que fazer**
+
+A seção 11 do PRD diz que *"só o catálogo de métricas, a pergunta e os números já agregados saem do ambiente"*, e exige que o trânsito para a API esteja escrito no contrato, não só no código. A personalização acrescenta duas saídas: a **busca da página do cliente** — um `GET` sem corpo, sem cookie e sem identificação, para um endereço público — e a **lista de cores candidatas** enviada ao gateway do modelo, com a origem de cada cor, uma evidência curta e os endereços de logo. Nenhuma das duas carrega dado do cliente, número do painel ou linha de pessoa. É o mesmo tratamento que D-CHAT deu à chamada ao Banco Central, e a pendência é a mesma que aquela decisão deixou aberta: o contrato precisa nomear o que sai.
+
+| | |
+|---|---|
+| **Resultado esperado** | Cláusula no contrato com o cliente cobrindo as duas saídas, com data e responsável |
+| **Onde o resultado vai** | Contrato do cliente; a decisão D-MARCA registra que a cláusula existe |
+| **Destrava** | Nada. É pré-requisito da primeira instalação que ligar a personalização |
+
+### [ ] H-63 · Provisionar o armazém da marca em cada modo de implantação
+
+`P1` · **Responsável:** TI do cliente, com Engenharia
+
+**O que fazer**
+
+A marca precisa de um lugar para ser gravada, e o modo depende de onde a instalação roda (D5). No **Docker no cliente**: um volume montado e a variável `MARCA_DIR` apontando para ele, com caminho absoluto — o boot recusa relativo, porque relativo resolve contra o diretório de trabalho do processo e muda entre `next dev`, `next start` e o contêiner. Na **nuvem dedicada**: a loja de blobs provisionada e a credencial em `MARCA_BLOB_TOKEN`, que é segredo e nunca entra em arquivo versionado. O boot já recusa a combinação perigosa — armazém de arquivo em disco efêmero grava, lê na mesma invocação e perde tudo no próximo início. Confirme que a variável responde de fato antes de dar o item por resolvido: marcar `[X]` sem o artefato é o que a seção 5 do EXECUTE proíbe.
+
+| | |
+|---|---|
+| **Resultado esperado** | Volume e `MARCA_DIR` no compose do cliente, ou loja de blobs e `MARCA_BLOB_TOKEN` na nuvem, verificados com uma marca aplicada e relida depois de reiniciar |
+| **Onde o resultado vai** | Pacote de instalação; `.env.local` do ambiente ou o cofre de segredos |
+| **Destrava** | Nada. Sem isto a personalização fica desligada, que é um estado válido |
+
+### [ ] H-64 · Decidir o que fazer quando nem o extremo alcança o contraste mínimo
+
+`P2` · **Responsável:** Produto
+
+**O que fazer**
+
+O ajuste de contraste (D-MARCA) caminha na luminosidade preservando o matiz, e propõe a menor mudança que leva o par a 4,5:1. Existe um caso em que nem o extremo resolve: quando o fundo tem luminância intermediária, **nenhuma** cor alcança 4,5:1 sobre ele. Hoje a tela mostra o ajuste marcado como "não alcança o mínimo nem no extremo" e deixa a decisão com quem está aplicando. Decida a política: recusar a marca inteira, aceitar o par abaixo do mínimo com registro, ou trocar também o fundo daquele par. Este item conversa diretamente com **H-43**: não dá para anunciar "ajustamos a sua cor para 4,5:1" enquanto três tokens nossos estão abaixo disso com a decisão em aberto — ou H-43 sai antes, ou D-MARCA declara a inconsistência por escrito e alguém a aceita.
+
+| | |
+|---|---|
+| **Resultado esperado** | Política registrada com data e nome, e a relação com H-43 resolvida ou declarada |
+| **Onde o resultado vai** | docs/decisoes/D-MARCA-personalizacao.md e o texto da tela de configuração |
+| **Destrava** | Nada |
 
 ---
 
