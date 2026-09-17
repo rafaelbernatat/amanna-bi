@@ -225,7 +225,7 @@ describe("a fábrica de armazém", () => {
   });
 
   it("tem exatamente três modos", () => {
-    expect([...ARMAZENS]).toEqual(["memoria", "arquivo", "blob"]);
+    expect([...ARMAZENS]).toEqual(["memoria", "arquivo", "postgres"]);
   });
 
   it("ausência é resposta: a personalização fica desligada", () => {
@@ -242,7 +242,7 @@ describe("a fábrica de armazém", () => {
     try {
       lerModoDeArmazem({ MARCA_ARMAZEM: "s3" });
     } catch (erro) {
-      expect(String(erro)).toContain("memoria, arquivo, blob");
+      expect(String(erro)).toContain("memoria, arquivo, postgres");
     }
   });
 
@@ -252,7 +252,7 @@ describe("a fábrica de armazém", () => {
 
   it("modo válido sem implementação registrada aborta", async () => {
     await expect(
-      obterArmazemDaMarca({ MARCA_ARMAZEM: "blob" }),
+      obterArmazemDaMarca({ MARCA_ARMAZEM: "postgres" }),
     ).rejects.toBeInstanceOf(ArmazemInvalido);
   });
 
@@ -360,8 +360,8 @@ describe("as variaveis da marca no boot", () => {
     },
   );
 
-  it("nuvem exige a credencial", () => {
-    expect(problemas({ MARCA_ARMAZEM: "blob" })).toContain("MARCA_BLOB_TOKEN");
+  it("nuvem exige a conexão com o banco", () => {
+    expect(problemas({ MARCA_ARMAZEM: "postgres" })).toContain("DATABASE_URL");
   });
 
   /**

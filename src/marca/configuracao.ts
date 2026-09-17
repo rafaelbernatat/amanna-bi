@@ -11,7 +11,6 @@
 export const VARIAVEIS_DA_MARCA = [
   "MARCA_ARMAZEM",
   "MARCA_DIR",
-  "MARCA_BLOB_TOKEN",
   "MARCA_SITE",
 ] as const;
 
@@ -33,13 +32,15 @@ export function DIRETORIO_DA_MARCA(
  * O que cada modo de armazém exige junto.
  *
  * Mesma forma do mapa que a configuração já usa para condicionar
- * `DATABASE_URL` à fonte de dados.
+ * `DATABASE_URL` à fonte de dados. O modo `postgres` exige a **mesma**
+ * `DATABASE_URL` da fonte de dados: marca e réplica moram no mesmo banco, no
+ * esquema `amanna`.
  */
 export const EXIGIDAS_POR_ARMAZEM: Readonly<Record<string, readonly string[]>> =
   {
     memoria: [],
     arquivo: ["MARCA_DIR"],
-    blob: ["MARCA_BLOB_TOKEN"],
+    postgres: ["DATABASE_URL"],
   };
 
 /**
