@@ -11,8 +11,8 @@ import Ajv from "ajv";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { calcularPainel, paineisComDesenho } from "@/acesso/fixtures/paineis";
-import { UFS_DO_MOSAICO } from "@/acesso/fixtures/paineis-compostos";
+import { calcularPainel, paineisComDesenho } from "@/acesso/calculo/paineis";
+import { UFS_DO_MOSAICO } from "@/acesso/calculo/paineis-compostos";
 import { PONTE_DA_DRE } from "@/acesso/fixtures/referencia-fin";
 import type { Query } from "@/semantica/contrato";
 import { FORMAS_COMPOSTAS, origemDoPainel } from "@/semantica/origem-de-painel";

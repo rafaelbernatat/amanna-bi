@@ -16,10 +16,10 @@
 import { describe, expect, it } from "vitest";
 
 import { criarFonteDeFixtures } from "@/acesso/fixtures/adaptador";
-import { calcularMeta } from "@/acesso/fixtures/meta";
+import { calcularMeta } from "@/acesso/calculo/meta";
 import { criarLeitorDeMeta, MetaIndisponivel } from "@/acesso/meta";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
-import { anoDoMes } from "@/acesso/fixtures/eixos";
+import { anoDoMes } from "@/acesso/calculo/eixos";
 import { VERSAO_DO_CATALOGO } from "@/semantica/catalogo-gerado";
 import type { DataSource, Meta } from "@/semantica/contrato";
 import { AREAS, ENTIDADES, MODALIDADES, PERIODOS } from "@/semantica/contrato";

@@ -33,7 +33,7 @@ import {
   ENTIDADES_ARMAZENADAS,
   MODALIDADES_ARMAZENADAS,
   mesesDe,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 import { FATIA_DA_UNIDADE_SP } from "@/acesso/fixtures/entidade";
 import {
   ABSENTEISMO_MENSAL,

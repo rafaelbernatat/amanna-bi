@@ -36,7 +36,7 @@ import {
   AGREGADO_DE_MODALIDADE,
   AREAS_ARMAZENADAS,
   mesesDe,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 import { VW_DIM_FAIXA_SALARIAL } from "@/acesso/fixtures/dim";
 import { CUSTO_DO_TURNOVER } from "@/acesso/fixtures/referencia-perfil";
 import { VW_FATO_RH_PERFIL } from "@/acesso/fixtures/perfil";
@@ -44,7 +44,7 @@ import {
   MESES_DO_PERIODO,
   mesesDoRecorte,
   somar,
-} from "@/acesso/fixtures/recorte";
+} from "@/acesso/calculo/recorte";
 import type { Kpi, Query, Sentido } from "@/semantica/contrato";
 import { kpisDaTela, type RegistroDeKpi } from "@/semantica/kpis";
 import { origemDoKpi } from "@/semantica/origem-de-kpi";

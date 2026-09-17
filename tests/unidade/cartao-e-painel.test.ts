@@ -32,7 +32,7 @@ import {
   LARGURA_DA_SPARKLINE,
   MINIMO_DE_PONTOS,
 } from "@/apresentacao/paineis/sparkline";
-import { calcularKpis } from "@/acesso/fixtures/kpis";
+import { calcularKpis } from "@/acesso/calculo/kpis";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import type { Kpi, PanelResponse, Query } from "@/semantica/contrato";
 import { readFileSync } from "node:fs";

@@ -24,7 +24,7 @@ import { linhasDe, somaNoRecorte, VIEWS } from "@/acesso/fixtures/adaptador";
 import {
   AREAS_ARMAZENADAS,
   ENTIDADES_ARMAZENADAS,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 import {
   MESES_DO_PERIODO,
   mesesDoRecorte,
@@ -34,7 +34,7 @@ import {
   serieDeTaxa,
   serieSomada,
   somar,
-} from "@/acesso/fixtures/recorte";
+} from "@/acesso/calculo/recorte";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
 import type { Query } from "@/semantica/contrato";
@@ -182,7 +182,7 @@ describe("os multiplicadores do protótipo não existem", () => {
      */
     for (const arquivo of [
       "src/acesso/fixtures/adaptador.ts",
-      "src/acesso/fixtures/recorte.ts",
+      "src/acesso/calculo/recorte.ts",
     ]) {
       const fonte = codigoSemTextos(arquivo);
       expect(fonte, `${arquivo} multiplica`).not.toMatch(/[^*]\*[^*/]/);

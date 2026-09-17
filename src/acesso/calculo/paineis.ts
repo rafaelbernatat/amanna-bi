@@ -31,8 +31,8 @@ import {
   diasUteisDoMes,
   VW_FATO_CAIXA_DIARIO,
 } from "@/acesso/fixtures/caixa-diario";
-import { AGREGADO_DE_AREA } from "@/acesso/fixtures/eixos";
-import { type CargaParaNota, notaDoPainel } from "@/acesso/fixtures/nota";
+import { AGREGADO_DE_AREA } from "@/acesso/calculo/eixos";
+import { type CargaParaNota, notaDoPainel } from "@/acesso/calculo/nota";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FATURAMENTO_CLIENTE,
@@ -46,7 +46,7 @@ import {
   type Recorte,
   recorteDe,
   soma,
-} from "@/acesso/fixtures/kpis";
+} from "@/acesso/calculo/kpis";
 import {
   CENTROS_DE_CUSTO,
   FAIXAS_DE_AGING,
@@ -61,12 +61,12 @@ import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
 import {
   DESENHO_CATEGORICO,
   paineisCategoricosComDesenho,
-} from "@/acesso/fixtures/paineis-categoricos";
+} from "@/acesso/calculo/paineis-categoricos";
 import {
   DESENHO_COMPOSTO,
   type DesenhoComposto,
   paineisCompostosComDesenho,
-} from "@/acesso/fixtures/paineis-compostos";
+} from "@/acesso/calculo/paineis-compostos";
 import type { Unidade } from "@/semantica/contrato";
 import type {
   PainelBarras,
@@ -84,7 +84,7 @@ import type {
   Query,
   Serie,
 } from "@/semantica/contrato";
-import type { DesenhoCategorico } from "@/acesso/fixtures/paineis-categoricos";
+import type { DesenhoCategorico } from "@/acesso/calculo/paineis-categoricos";
 import type { OrigemDePainel } from "@/semantica/origem-de-painel";
 import { origemDoPainel } from "@/semantica/origem-de-painel";
 import { painelPorId } from "@/semantica/paineis";

@@ -28,7 +28,7 @@
  * número; quem decide não exibi-lo é a camada de cima.
  */
 
-import { celulas, mesesDe } from "@/acesso/fixtures/eixos";
+import { celulas, mesesDe } from "@/acesso/calculo/eixos";
 import {
   QUEBRAS_DO_QUADRO,
   type NomeDeQuebra,

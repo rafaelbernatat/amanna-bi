@@ -38,7 +38,7 @@
  */
 
 import { FLUXOS_DA_DIVIDA, VW_FATO_DIVIDA_MES } from "@/acesso/fixtures/divida";
-import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FIN_MES,

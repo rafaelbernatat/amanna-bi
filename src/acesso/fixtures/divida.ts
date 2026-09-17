@@ -24,7 +24,7 @@
  * sai do sistema de dívida do cliente (seção 10.1).
  */
 
-import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES, emReais, porEntidade } from "@/acesso/fixtures/fin";
 import { repartir } from "@/acesso/fixtures/reparticao";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";

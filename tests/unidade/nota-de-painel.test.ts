@@ -18,8 +18,8 @@
 import { describe, expect, it } from "vitest";
 
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
-import { noPadrao, notaDoPainel } from "@/acesso/fixtures/nota";
-import { calcularPainel } from "@/acesso/fixtures/paineis";
+import { noPadrao, notaDoPainel } from "@/acesso/calculo/nota";
+import { calcularPainel } from "@/acesso/calculo/paineis";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";

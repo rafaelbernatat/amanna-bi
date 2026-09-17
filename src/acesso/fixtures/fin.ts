@@ -42,7 +42,7 @@ import {
   NATUREZAS_DE_SAIDA,
 } from "@/acesso/fixtures/contraparte";
 import { fatiaDaEntidade } from "@/acesso/fixtures/entidade";
-import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import {
   CENTROS_DE_CUSTO,
   EBITDA_MENSAL,

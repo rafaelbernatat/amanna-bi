@@ -28,7 +28,7 @@ import {
   type Falha,
   type Regra,
 } from "@/acesso/contrato/suite";
-import { AGREGADO_DE_AREA } from "@/acesso/fixtures/eixos";
+import { AGREGADO_DE_AREA } from "@/acesso/calculo/eixos";
 import type { PanelResponse } from "@/semantica/contrato";
 import { REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import { ORIGEM_DOS_PAINEIS } from "@/semantica/origem-de-painel";

@@ -27,7 +27,7 @@ import {
   razao,
   type Recorte,
   soma,
-} from "@/acesso/fixtures/kpis";
+} from "@/acesso/calculo/kpis";
 import { VW_DIM_UF } from "@/acesso/fixtures/dim";
 import { TOP_CLIENTES } from "@/acesso/fixtures/referencia-perfil";
 import type { Query, Sentido } from "@/semantica/contrato";

@@ -23,7 +23,7 @@ import {
   AREAS_ARMAZENADAS,
   ENTIDADES_ARMAZENADAS,
   mesesDe,
-} from "@/acesso/fixtures/eixos";
+} from "@/acesso/calculo/eixos";
 import {
   VW_FATO_CONTAS,
   VW_FATO_FIN_MES,

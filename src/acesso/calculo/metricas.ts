@@ -29,7 +29,7 @@ import {
   calculoDaMetrica,
   type Recorte,
   recorteDe,
-} from "@/acesso/fixtures/kpis";
+} from "@/acesso/calculo/kpis";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import type { MetricValue, Query } from "@/semantica/contrato";
 

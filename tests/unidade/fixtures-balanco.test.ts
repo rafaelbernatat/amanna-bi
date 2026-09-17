@@ -21,7 +21,7 @@ import {
   LINHAS_DE_CREDITO,
   VW_FATO_DIVIDA_MES,
 } from "@/acesso/fixtures/divida";
-import { ENTIDADES_ARMAZENADAS } from "@/acesso/fixtures/eixos";
+import { ENTIDADES_ARMAZENADAS } from "@/acesso/calculo/eixos";
 import { FATIA_DA_UNIDADE_SP } from "@/acesso/fixtures/entidade";
 import { VW_FATO_CONTAS, VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 
