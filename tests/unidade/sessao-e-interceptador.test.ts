@@ -33,8 +33,8 @@ import { escopoDaSessao, PERFIS, type Session } from "@/seguranca/identidade";
  * ------------------------------------------------------------------ */
 
 describe("AUTH_PROVIDER", () => {
-  it("aceita exatamente dois modos", () => {
-    expect([...PROVEDORES]).toEqual(["fixtures", "oidc"]);
+  it("aceita exatamente três modos", () => {
+    expect([...PROVEDORES]).toEqual(["fixtures", "oidc", "convite"]);
   });
 
   it("aborta quando ausente, nomeando os aceitos", () => {

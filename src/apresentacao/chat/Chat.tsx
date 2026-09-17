@@ -41,6 +41,7 @@ import type { LinhaDoFluxo, PedidoDeChat, Previa } from "@/chat/protocolo";
 import { sugestoesDaTela } from "@/chat/sugestoes";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { ROTULO_DO_FILTRO, rotuloDe } from "@/semantica/dimensoes";
+import { paraConversa } from "@/semantica/url";
 
 /**
  * O chat, como conversa (seção 7; decisão D-CHAT-conversa-flutuante).
@@ -61,6 +62,18 @@ import { ROTULO_DO_FILTRO, rotuloDe } from "@/semantica/dimensoes";
  * URL — continua na URL: é o que este componente escreve nela quando a
  * resposta chega.
  *
+ * ## Dois modos, o mesmo componente
+ *
+ * `coluna` é o da tela grande: botão flutuante, conversa encostada à direita,
+ * o painel encolhendo para caber ao lado. `cheio` é o do celular
+ * (D-CONVITE-apresentacao): a conversa **é** a tela, não há botão flutuante
+ * nem Fechar, e a tela de que se fala vem por propriedade em vez de sair do
+ * caminho da URL — `/conversa?tela=rh/visao` é uma rota só para as treze.
+ *
+ * Um componente, e não dois: a conversa, o fluxo em duas fases, a prévia com
+ * o gráfico e o verificador são os mesmos. O que muda é a moldura, e moldura
+ * duplicada diverge na primeira correção.
+ *
  * ## O que ele não faz
  *
  * Não lê dado, não calcula e não formata além de `formatarValor`. Manda a
@@ -78,22 +91,44 @@ const MARGEM_DO_PAINEL = 14;
 const MARGEM_DO_LOG = 14;
 const ROTA_DA_API = "/api/chat";
 
-export function Chat() {
+/** Onde o chat está desenhado. Ver o cabeçalho do módulo. */
+export type ModoDoChat = "coluna" | "cheio";
+
+export function Chat({
+  modo = "coluna",
+  tela,
+}: {
+  readonly modo?: ModoDoChat;
+  /** Em `cheio`, a tela de que a conversa fala, como `modulo/tela`. */
+  readonly tela?: string;
+} = {}) {
   // `useSearchParams` pede uma fronteira de Suspense acima (documentação do
   // Next desta versão). A tela é dinâmica, então o fallback nunca aparece.
   return (
     <Suspense fallback={null}>
-      <ChatNaTela />
+      <ChatNaTela modo={modo} tela={tela ?? null} />
     </Suspense>
   );
 }
 
-function ChatNaTela() {
+function ChatNaTela({
+  modo,
+  tela,
+}: {
+  readonly modo: ModoDoChat;
+  readonly tela: string | null;
+}) {
   const caminho = usePathname();
   const busca = useSearchParams();
   const roteador = useRouter();
 
-  const [idDoModulo = "", slug = ""] = caminho
+  const cheio = modo === "cheio";
+  /*
+   * Em `cheio` a tela vem por propriedade: o caminho é `/conversa`, que não é
+   * uma das treze, e derivá-la dali daria `null` — o chat não desenharia.
+   */
+  const pedida = cheio ? (tela ?? "") : caminho;
+  const [idDoModulo = "", slug = ""] = pedida
     .split("/")
     .filter((p) => p !== "");
   const achado = acharTela(idDoModulo, slug);
@@ -170,18 +205,27 @@ function ChatNaTela() {
         ],
       }));
 
-      // A tela reage uma vez por resposta: na prévia, quando o número existe.
+      /*
+       * A tela reage uma vez por resposta: na prévia, quando o número existe.
+       *
+       * Em `cheio` não há painel na página para rolar até: o gráfico vem na
+       * bolha. O que a URL guarda é de que tela a conversa passa a falar —
+       * `replace`, e não `push`, porque a conversa é o histórico aqui, e um
+       * "voltar" do celular deve sair dela, não desfazer um filtro.
+       */
       let aplicado: string | null = null;
       const aplicar = (acoes: Previa["acoes"]) => {
-        const destino = destinoDe(acoes, rota);
+        const naTela = destinoDe(acoes, rota);
+        const destino = cheio ? paraConversa(naTela) : naTela;
         if (destino === aplicado) return;
         aplicado = destino;
         if (destino === origem) {
           // Já estamos na tela e no recorte: só falta rolar até o painel.
-          if (acoes.painel !== null) rolarAte(acoes.painel);
+          if (!cheio && acoes.painel !== null) rolarAte(acoes.painel);
           return;
         }
-        roteador.push(destino);
+        if (cheio) roteador.replace(destino);
+        else roteador.push(destino);
       };
 
       const tratar = (linha: string) => {
@@ -205,6 +249,19 @@ function ChatNaTela() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify(pedido),
         });
+        /*
+         * Dois estados que não são "a rede caiu", e a conversa precisa
+         * distinguir: o limite de uso da apresentação (429) e o convite que
+         * venceu (401). Os dois chegam como status, e não como fluxo.
+         */
+        if (resposta.status === 429 || resposta.status === 401) {
+          atualizarTurno(id, {
+            estado: "falhou",
+            falha:
+              resposta.status === 429 ? "limite_de_uso" : "sessao_expirada",
+          });
+          return;
+        }
         if (!resposta.ok || resposta.body === null) {
           throw new Error(`HTTP ${String(resposta.status)}`);
         }
@@ -236,7 +293,7 @@ function ChatNaTela() {
         emAndamento.current = false;
       }
     },
-    [atualizarTurno, busca, caminho, rota, roteador],
+    [atualizarTurno, busca, caminho, cheio, rota, roteador],
   );
 
   // `?pergunta=` na URL: um link que já chega perguntando. Só uma vez por
@@ -260,7 +317,8 @@ function ChatNaTela() {
     escreverConversa(() => ({ aberto: true, turnos: [] }));
   };
 
-  if (!conversa.aberto) {
+  // Em `cheio` a conversa é a tela: não há o que abrir nem o que fechar.
+  if (!conversa.aberto && !cheio) {
     return (
       <div
         data-teste="chat-flutuante"
@@ -332,21 +390,34 @@ function ChatNaTela() {
     }
   };
 
+  const Moldura = cheio ? "main" : "aside";
+
   return (
-    <aside
+    <Moldura
       data-teste="chat"
+      data-modo={modo}
       aria-label="Conversa com os dados"
       onKeyDown={(evento) => {
-        if (evento.key === "Escape") fechar();
+        if (!cheio && evento.key === "Escape") fechar();
       }}
-      style={{
-        flex: "none",
-        width: LARGURA_DO_PAINEL + 2 * MARGEM_DO_PAINEL,
-        height: "100vh",
-        padding: MARGEM_DO_PAINEL,
-        boxSizing: "border-box",
-        display: "flex",
-      }}
+      style={
+        cheio
+          ? {
+              width: "100%",
+              height: "100dvh",
+              boxSizing: "border-box",
+              display: "flex",
+              background: PALETA.fundo,
+            }
+          : {
+              flex: "none",
+              width: LARGURA_DO_PAINEL + 2 * MARGEM_DO_PAINEL,
+              height: "100vh",
+              padding: MARGEM_DO_PAINEL,
+              boxSizing: "border-box",
+              display: "flex",
+            }
+      }
     >
       <div
         style={{
@@ -354,9 +425,11 @@ function ChatNaTela() {
           minHeight: 0,
           minWidth: 0,
           background: PALETA.superficieSuave,
-          border: `1px solid ${PALETA.borda}`,
-          borderRadius: 24,
-          boxShadow: `0 36px 80px -24px color-mix(in srgb, ${MARCA.barraLateral} 45%, transparent), 0 2px 8px color-mix(in srgb, ${MARCA.barraLateral} 8%, transparent)`,
+          border: cheio ? "none" : `1px solid ${PALETA.borda}`,
+          borderRadius: cheio ? 0 : 24,
+          boxShadow: cheio
+            ? "none"
+            : `0 36px 80px -24px color-mix(in srgb, ${MARCA.barraLateral} 45%, transparent), 0 2px 8px color-mix(in srgb, ${MARCA.barraLateral} 8%, transparent)`,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
@@ -427,25 +500,27 @@ function ChatNaTela() {
               Nova conversa
             </button>
           )}
-          <button
-            type="button"
-            onClick={fechar}
-            data-teste="chat-fechar"
-            aria-label="Fechar a conversa"
-            style={{
-              border: `1px solid ${PALETA.bordaForte}`,
-              background: PALETA.superficie,
-              color: PALETA.textoTerciario,
-              borderRadius: 999,
-              width: 27,
-              height: 27,
-              font: `600 12px/1 ${TIPOGRAFIA.texto}`,
-              cursor: "pointer",
-              flex: "none",
-            }}
-          >
-            ✕
-          </button>
+          {cheio ? null : (
+            <button
+              type="button"
+              onClick={fechar}
+              data-teste="chat-fechar"
+              aria-label="Fechar a conversa"
+              style={{
+                border: `1px solid ${PALETA.bordaForte}`,
+                background: PALETA.superficie,
+                color: PALETA.textoTerciario,
+                borderRadius: 999,
+                width: 27,
+                height: 27,
+                font: `600 12px/1 ${TIPOGRAFIA.texto}`,
+                cursor: "pointer",
+                flex: "none",
+              }}
+            >
+              ✕
+            </button>
+          )}
         </header>
 
         <div
@@ -480,6 +555,7 @@ function ChatNaTela() {
                 key={turno.id}
                 turno={turno}
                 rota={rota}
+                cheio={cheio}
                 aoPerguntar={(p) => {
                   void perguntar(p);
                 }}
@@ -619,7 +695,7 @@ function ChatNaTela() {
           </p>
         </footer>
       </div>
-    </aside>
+    </Moldura>
   );
 }
 
@@ -630,10 +706,12 @@ function ChatNaTela() {
 function TurnoNaTela({
   turno,
   rota,
+  cheio,
   aoPerguntar,
 }: {
   readonly turno: Turno;
   readonly rota: string;
+  readonly cheio: boolean;
   readonly aoPerguntar: (pergunta: string) => void;
 }) {
   return (
@@ -665,7 +743,12 @@ function TurnoNaTela({
           gap: 8,
         }}
       >
-        <CorpoDoTurno turno={turno} rota={rota} aoPerguntar={aoPerguntar} />
+        <CorpoDoTurno
+          turno={turno}
+          rota={rota}
+          cheio={cheio}
+          aoPerguntar={aoPerguntar}
+        />
       </div>
     </>
   );
@@ -674,10 +757,12 @@ function TurnoNaTela({
 function CorpoDoTurno({
   turno,
   rota,
+  cheio,
   aoPerguntar,
 }: {
   readonly turno: Turno;
   readonly rota: string;
+  readonly cheio: boolean;
   readonly aoPerguntar: (pergunta: string) => void;
 }) {
   switch (turno.estado) {
@@ -730,6 +815,7 @@ function CorpoDoTurno({
               acoes={previa.acoes}
               origem={turno.origem}
               rota={rota}
+              cheio={cheio}
             />
           )}
         </>
@@ -753,6 +839,7 @@ function CorpoDoTurno({
               acoes={resposta.resolucao.acoes}
               origem={turno.origem}
               rota={rota}
+              cheio={cheio}
             />
           ) : null}
         </>
@@ -784,6 +871,10 @@ function fraseDaFalha(falha: Turno["falha"]): string {
       return "Você não tem acesso a este recorte.";
     case "erro_de_fonte":
       return "Não foi possível ler a fonte agora. Tente de novo em instantes.";
+    case "limite_de_uso":
+      return "Muita gente perguntando ao mesmo tempo. Espere alguns segundos e tente de novo.";
+    case "sessao_expirada":
+      return "Seu acesso venceu. Peça um novo QR code a quem está apresentando.";
     default:
       return "Não consegui falar com o servidor. Quer tentar de novo?";
   }
@@ -802,10 +893,12 @@ function AcoesAplicadas({
   acoes,
   origem,
   rota,
+  cheio,
 }: {
   readonly acoes: Previa["acoes"];
   readonly origem: string;
   readonly rota: string;
+  readonly cheio: boolean;
 }) {
   const destino = destinoDe(acoes, rota);
   const [idDoModulo = "", slug = ""] = (acoes.tela ?? rota.slice(1)).split("/");
@@ -851,20 +944,27 @@ function AcoesAplicadas({
         ))}
       </div>
       <div style={{ display: "flex", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
-        <Link
-          href={destino}
-          data-teste="chat-ver-grafico"
-          style={{
-            background: MARCA.barraLateral,
-            color: PALETA.textoEmBarra,
-            borderRadius: 999,
-            padding: "6px 12px",
-            font: `500 10px/1 ${TIPOGRAFIA.texto}`,
-            textDecoration: "none",
-          }}
-        >
-          Ver o gráfico
-        </Link>
+        {/*
+          "Ver o gráfico" abre a tela ao lado da conversa. No celular não há
+          tela ao lado — o gráfico já está na bolha —, e o botão levaria a
+          pessoa para fora da conversa que ela está tendo.
+        */}
+        {cheio ? null : (
+          <Link
+            href={destino}
+            data-teste="chat-ver-grafico"
+            style={{
+              background: MARCA.barraLateral,
+              color: PALETA.textoEmBarra,
+              borderRadius: 999,
+              padding: "6px 12px",
+              font: `500 10px/1 ${TIPOGRAFIA.texto}`,
+              textDecoration: "none",
+            }}
+          >
+            Ver o gráfico
+          </Link>
+        )}
         <Link
           href={origem}
           data-teste="chat-desfazer"

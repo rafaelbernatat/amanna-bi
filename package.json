@@ -32,7 +32,8 @@
     "e2e": "playwright test",
     "dados:carregar": "tsx ferramentas/dados/carregar.mts",
     "dados:conferir": "tsx ferramentas/dados/conferir.mts",
-    "dados:ensaio": "tsx ferramentas/dados/ensaio.mts"
+    "dados:ensaio": "tsx ferramentas/dados/ensaio.mts",
+    "convite": "tsx ferramentas/convite/gerar.mts"
   },
   "dependencies": {
     "next": "16.3.2",

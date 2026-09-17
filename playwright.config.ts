@@ -6,6 +6,9 @@ const BASE_URL = `http://127.0.0.1:${PORTA}`;
 /** O unico arquivo de e2e que escreve estado no servidor (a marca, D-MARCA). */
 const MARCA = /marca\.spec\.ts$/;
 
+/** A conversa em tela cheia, que so faz sentido num tamanho de celular. */
+const CONVERSA = /conversa\.spec\.ts$/;
+
 // Os dois tamanhos nomeados no criterio de aceite de T-126.
 const GRANDE = {
   ...devices["Desktop Chrome"],
@@ -41,13 +44,34 @@ export default defineConfig({
   projects: [
     {
       name: "1440x900",
-      testIgnore: MARCA,
+      testIgnore: [MARCA, CONVERSA],
       use: GRANDE,
     },
     {
       name: "1280x720",
-      testIgnore: MARCA,
+      testIgnore: [MARCA, CONVERSA],
       use: PEQUENO,
+    },
+    /*
+     * O celular da apresentacao (D-CONVITE-apresentacao).
+     *
+     * Viewport de iPhone 13 sobre o **mesmo** Chromium dos outros projetos, e
+     * nao WebKit. O que este projeto prova e o layout de 390 px — a conversa
+     * ocupando a tela, o rodape que o teclado nao cobre, o grafico na bolha
+     * sem rolagem horizontal —, e isso nao depende do motor. Um terceiro
+     * navegador no CI custa uns 100 MB de download por rodada para provar a
+     * mesma coisa; quando houver caso que dependa do motor da Apple, ele entra
+     * com a razao escrita.
+     */
+    {
+      name: "celular",
+      testMatch: CONVERSA,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 390, height: 844 },
+        isMobile: false,
+        hasTouch: true,
+      },
     },
     /*
      * A marca roda nos dois tamanhos, mas **um tamanho depois do outro**.

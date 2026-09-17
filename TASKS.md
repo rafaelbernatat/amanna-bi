@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 266 tarefas: 176 pendentes e 90 já concluídas (5 no protótipo) |
+| **Total** | 275 tarefas: 177 pendentes e 98 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 54 | 33 | 18 | 3 | 8 de 54 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 63 | 38 | 21 | 4 | 16 de 63 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **266** | **135** | **103** | **23** | **90 de 266** |
+| **Total** | **275** | **140** | **106** | **24** | **98 de 275** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -57,7 +57,7 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    75 tarefas         54 tarefas
+    75 tarefas         63 tarefas
          |               |
          +-------+-------+
                  |
@@ -693,7 +693,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 
 > **Critério de saída:** O conjunto de 100 perguntas atinge as metas da seção 7.7, com zero número inventado.
 
-*54 tarefas · 33 P0 · 18 P1 · 3 P2*
+*63 tarefas · 38 P0 · 21 P1 · 4 P2*
 
 - [ ] **T-301** `P0` `M` `chat` Definir os contratos Intent e Answer com JSON Schema gerado
   · **Aceite:** Existem os tipos Intent e Answer da seção 7.2 e schemas derivados com additionalProperties false e required completo; o teste rejeita 10 payloads inválidos (métrica ausente, breakdown fora do enum, confidence fora de 0..1, undo sem view) e aceita 5 válidos.
@@ -857,6 +857,33 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-354** `P1` `S` `dados` A porta de ranking em fixtures e na fronteira, para o chat testar sem banco
   · **Aceite:** `lerRanking` responde em fixtures por area, cliente, centro de custo e fornecedor com os mesmos numeros de `calcularRanking`, e as demais dimensoes respondem `abre: false`; a fronteira valida a dimensao antes de tocar a fonte; o executor do chat e testado sobre as fixtures sem banco. (E a mesma entrega de T-272, vista do chat.)
   · **PRD:** RF-18, RF-21, D-DADOS, D-CHAT-ferramentas · **Depende de:** T-272
+- [X] **T-355** `P0` `M` `seguranca` Convite e cookie assinados por HMAC, com tipo, prazo e dispositivo
+  · **Aceite:** `assinarConvite`/`verificarConvite` e `assinarSessao`/`verificarSessao` usam so Web Crypto (rodam no middleware e no servidor); assinatura adulterada, corpo adulterado, segredo diferente, vencido, tipo trocado, base64 malformado e sessao sem dispositivo devolvem nulo; dois dispositivos dao dois sujeitos `convite:<sala>:<dispositivo>`; `destinoSeguro` recusa absoluto, `//`, barra invertida e relativo; a sala tem forma fechada.
+  · **PRD:** secao 11, RF-23, D-CONVITE-apresentacao · **Depende de:** T-139
+- [X] **T-356** `P0` `S` `seguranca` O provedor de sessao `convite`, que pode ficar na frente de dado real
+  · **Aceite:** `PROVEDORES` ganha `convite`, que le o cookie a cada leitura (o middleware pula prefetch e por isso nao e o controle); `src/acesso/convite.ts` e o unico lugar que le `cookies()`; a trava que recusa `fixtures` com `DATA_SOURCE=warehouse` continua; `CONVITE_SEGREDO` e obrigatoria com o provedor e tem tamanho minimo, e a mensagem de erro nunca traz o valor.
+  · **PRD:** secao 11, secao 8.2, RF-23, D-CONVITE-apresentacao · **Depende de:** T-136, T-355
+- [X] **T-357** `P0` `M` `seguranca` Middleware nega por padrao em modo convite, e a tela de entrada explica
+  · **Aceite:** `/entrar?convite=` grava o cookie httpOnly, SameSite=Lax, Secure sob TLS, com o prazo do convite, e redireciona 303 **sem o token na URL**; sem cookie valido, pagina vai para `/entrar` com `motivo` e `ir`, `/api/*` recebe 401; os tres caminhos de saida levam CSP e HSTS; em `fixtures` nada e negado; `/entrar` e estatica, sem formulario e sem numero.
+  · **PRD:** secao 11, secao 13, D-CONVITE-apresentacao · **Depende de:** T-139, T-355
+- [X] **T-358** `P1` `S` `plataforma` O comando que gera o link da apresentacao
+  · **Aceite:** `npm run convite -- --sala=demo --horas=4 --url=https://host` imprime so a URL; sem `CONVITE_SEGREDO` sai 1 nomeando a variavel e nunca o valor; sala fora da forma, perfil desconhecido e horas fora da faixa abortam; perfil que nao apresenta sai com aviso.
+  · **PRD:** secao 15, D-CONVITE-apresentacao · **Depende de:** T-355
+- [X] **T-359** `P0` `M` `paineis` A tela `/apresentar` com o QR gerado no servidor
+  · **Aceite:** o QR e calculado localmente e desenhado como `<path>` em JSX (nada de marcacao injetada, nada de servico de terceiro); o caminho e deterministico e so tem comandos de retangulo; preto no branco, com a margem que a especificacao pede; o token herda a sala e o prazo do cookie de quem apresenta e leva perfil de leitura; a tela mostra o recorte em chips, a hora em que vence e o endereco escrito; quem nao apresenta e a instalacao sem convite recebem cartao proprio; o botao do cabecalho so aparece para quem apresenta com sala aberta.
+  · **PRD:** secao 6.1, secao 11, D-CONVITE-apresentacao · **Depende de:** T-355, T-356
+- [X] **T-360** `P0` `M` `chat` A conversa em tela cheia no celular, com o grafico na bolha
+  · **Aceite:** `/conversa?tela=modulo/tela` valida a tela contra o inventario (fora dele, redireciona para a padrao) e desenha o **mesmo** componente de chat em modo cheio: sem botao flutuante, sem Fechar, sem "Ver o grafico"; a resposta reescreve a URL da propria conversa em vez de navegar para fora; o grafico citado aparece na bolha antes do texto; o e2e roda num projeto de 390 px e confere que o corpo nao rola na horizontal.
+  · **PRD:** secao 6.5, secao 7.2, RF-13, D-CONVITE-apresentacao · **Depende de:** T-351, T-357
+- [X] **T-361** `P1` `M` `chat` Limites de uso do chat na apresentacao, e a origem conferida
+  · **Aceite:** janela deslizante por dispositivo (so para sujeito de convite: em fixtures todos compartilham um sujeito, e a janela mediria a suite), semaforo de concorrencia por instancia e teto de tokens por sala por dia, todos puros e testados na virada do minuto e do dia; a rota responde 429 com `retry-after` e o chat mostra "muita gente perguntando ao mesmo tempo"; sessao vencida vira 401 e "seu acesso venceu"; a rota confere a origem antes de tudo; `liberar` e idempotente e roda tambem quando a aba fecha.
+  · **PRD:** secao 13, secao 7.5, RF-19, D-CONVITE-apresentacao · **Depende de:** T-320, T-356
+- [X] **T-362** `P1` `S` `auditoria` Provar o convite e a conversa sem subir dois servidores
+  · **Aceite:** teste de unidade cobre os dois envelopes, as duas decisoes, o middleware com `NextRequest` e o boot; o e2e da conversa roda num projeto de tamanho de celular sobre o mesmo servidor de `fixtures`; o spec da marca continua em serie entre os dois tamanhos.
+  · **PRD:** secao 8.1, D-CONVITE-apresentacao · **Depende de:** T-355, T-360
+- [ ] **T-363** `P2` `S` `plataforma` Contar o uso do chat no Postgres, quando o limite precisar ser exato
+  · **Aceite:** `amanna.chat_uso` registra pergunta e tokens por sala e por dia, e o controle passa a ler dali em vez da memoria do processo; o limite deixa de ser por instancia; a escrita nao entra no caminho da resposta (fora do fluxo, sem segurar a previa); a retencao sai de T-324.
+  · **PRD:** secao 13, RF-19, D-CONVITE-apresentacao · **Depende de:** T-361, T-267
 
 ---
 

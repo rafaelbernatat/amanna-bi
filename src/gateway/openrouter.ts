@@ -132,13 +132,49 @@ export type Tokens = { readonly entrada: number; readonly saida: number };
 
 const SEM_TOKENS: Tokens = { entrada: 0, saida: 0 };
 
+/**
+ * O que o processo já gastou, somando todas as chamadas.
+ *
+ * Existe para o teto de uma apresentação (D-CONVITE-apresentacao) poder contar
+ * **tudo** — os três estágios e o laço — sem que cada chamada precise carregar
+ * um contador pela mão até a rota. Quem consome lê o total antes e depois, e o
+ * que registra é a diferença; somando as diferenças, o total da instância
+ * fecha com o total do gateway, mesmo com perguntas concorrentes.
+ *
+ * No escopo do processo, como os outros contadores: variável de módulo daria
+ * um contador por pedaço empacotado.
+ */
+const GASTO = Symbol.for("amanna-bi.gateway.tokens");
+type PortadorDeTokens = { [GASTO]?: { entrada: number; saida: number } };
+
+function acumulador(): { entrada: number; saida: number } {
+  const portador = globalThis as unknown as PortadorDeTokens;
+  portador[GASTO] ??= { entrada: 0, saida: 0 };
+  return portador[GASTO];
+}
+
+/** O total gasto por este processo até agora. */
+export function tokensDoProcesso(): Tokens {
+  const atual = acumulador();
+  return { entrada: atual.entrada, saida: atual.saida };
+}
+
+/** Só para teste: devolve o contador ao zero. */
+export function esquecerTokensDoProcesso(): void {
+  delete (globalThis as unknown as PortadorDeTokens)[GASTO];
+}
+
 function tokensDe(corpo: RespostaDoGateway): Tokens {
   const entrada = corpo.usage?.prompt_tokens;
   const saida = corpo.usage?.completion_tokens;
-  return {
+  const lidos: Tokens = {
     entrada: typeof entrada === "number" ? entrada : 0,
     saida: typeof saida === "number" ? saida : 0,
   };
+  const total = acumulador();
+  total.entrada += lidos.entrada;
+  total.saida += lidos.saida;
+  return lidos;
 }
 
 /** Uma ida ao gateway. `null` quando não deu, por qualquer razão. */

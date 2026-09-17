@@ -18,32 +18,21 @@
 
 import { lerIdentidade } from "@/acesso/leitura";
 import { podeConfigurarMarca } from "@/marca/permissao";
+import { origemPropria } from "@/seguranca/origem";
+
+/*
+ * A conferência de origem saiu daqui para `src/seguranca/origem.ts` quando a
+ * rota do chat passou a precisar dela (D-CONVITE-apresentacao). Continua
+ * exportada por este módulo: quem já a importava daqui não muda, e ela é
+ * parte do que "conferir um pedido de marca" quer dizer.
+ */
+export { origemPropria };
 
 export type PedidoRecusado = { readonly resposta: Response };
 
 /** Uma recusa curta. O corpo não diz mais que o estado. */
 function recusar(status: number, erro: string): PedidoRecusado {
   return { resposta: Response.json({ erro }, { status }) };
-}
-
-/**
- * A origem do envio é esta mesma instalação?
- *
- * Sem cabeçalho de origem, o envio não é de formulário de navegador moderno e
- * não passa: preferimos recusar um caso legítimo raro a aceitar o caso hostil
- * comum.
- */
-export function origemPropria(pedido: Request): boolean {
-  const origem = pedido.headers.get("origin");
-  if (origem === null) return false;
-  const anfitriao =
-    pedido.headers.get("x-forwarded-host") ?? pedido.headers.get("host");
-  if (anfitriao === null) return false;
-  try {
-    return new URL(origem).host === anfitriao;
-  } catch {
-    return false;
-  }
 }
 
 /**

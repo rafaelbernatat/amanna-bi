@@ -29,6 +29,8 @@ import {
   EXIGIDAS_POR_ARMAZEM,
 } from "@/marca/configuracao";
 import { FONTES_DE_SITE } from "@/marca/site/fonte";
+import { PROVEDORES } from "@/acesso/sessao";
+import { TAMANHO_MINIMO_DO_SEGREDO } from "@/seguranca/convite";
 
 /** O que uma variável precisa satisfazer. */
 export type RegraDeVariavel = {
@@ -127,7 +129,22 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     proposito: "quem autentica a sessão (seção 8.2, RF-23)",
     obrigatoria: true,
     segredo: false,
-    conferir: umDentre(["fixtures", "oidc"]),
+    conferir: umDentre([...PROVEDORES]),
+  },
+  {
+    /*
+     * O segredo que assina convite e cookie de apresentação.
+     *
+     * Rotacioná-lo derruba todos os cookies de uma vez — é o botão de pânico
+     * de uma apresentação cujo link vazou, e por isso ele é um segredo comum,
+     * trocável sem rebuild.
+     */
+    nome: "CONVITE_SEGREDO",
+    proposito:
+      "assina o convite do QR e o cookie de sessão (D-CONVITE-apresentacao)",
+    obrigatoria: false,
+    segredo: true,
+    conferir: comprimentoMinimo(TAMANHO_MINIMO_DO_SEGREDO),
   },
   {
     /*
@@ -237,6 +254,18 @@ const EXIGIDAS_POR_FONTE: Readonly<Record<string, readonly string[]>> = {
   warehouse: ["DATABASE_URL"],
 };
 
+/**
+ * O mesmo para o provedor de sessão.
+ *
+ * `convite` sem segredo não assina nada: o boot para, em vez de servir uma
+ * tela de entrada que recusa todo mundo sem dizer por quê.
+ */
+const EXIGIDAS_POR_PROVEDOR: Readonly<Record<string, readonly string[]>> = {
+  fixtures: [],
+  oidc: [],
+  convite: ["CONVITE_SEGREDO"],
+};
+
 /* ------------------------------------------------------------------ *
  * A validação
  * ------------------------------------------------------------------ */
@@ -272,9 +301,13 @@ export function conferirAmbiente(
 
   const fonte = ambiente["DATA_SOURCE"];
   const armazem = ambiente["MARCA_ARMAZEM"];
+  const provedor = ambiente["AUTH_PROVIDER"];
   const extras = [
     ...(fonte !== undefined && fonte in EXIGIDAS_POR_FONTE
       ? (EXIGIDAS_POR_FONTE[fonte] ?? [])
+      : []),
+    ...(provedor !== undefined && provedor in EXIGIDAS_POR_PROVEDOR
+      ? (EXIGIDAS_POR_PROVEDOR[provedor] ?? [])
       : []),
     ...(armazem !== undefined && armazem in EXIGIDAS_POR_ARMAZEM
       ? (EXIGIDAS_POR_ARMAZEM[armazem] ?? [])
