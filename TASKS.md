@@ -645,6 +645,30 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 - [X] **T-265** `P1` `M` `paineis` Abrir a tela de configuracao da marca a partir do cabecalho
   · **Aceite:** O cabecalho mostra quem entrou e leva as configuracoes so para diretoria e controladoria; o envio e formulario com redirecionamento 303 e conferencia de origem; a tela mostra a proposta com o antes e o depois de cada ajuste antes de aplicar, e voltar ao padrao restaura o tema.
   · **PRD:** secao 6.1, secao 13, D-MARCA · **Depende de:** T-260, T-261, T-264
+- [X] **T-266** `P0` `M` `plataforma` Um modulo so para o driver do Postgres, compartilhado por adaptador, carga, marca e chat
+  · **Aceite:** `pg` e importado apenas em `src/acesso/postgres/cliente.ts`, e o teste de arquitetura de T-106 nomeia os dois arquivos que podem importa-lo; o pool vive em `globalThis`, um por processo e por URL; numeric e int8 chegam como numero, datas como texto; TLS com verificacao nunca desligada.
+  · **PRD:** secao 8.3, secao 11, secao 15, D-DADOS · **Depende de:** T-139
+- [X] **T-267** `P0` `L` `ingestao` Migracao idempotente e carga dos 38 CSVs da base Amanna, com conferencia contra o dicionario
+  · **Aceite:** `npm run dados:carregar` aplica os arquivos SQL (`IF NOT EXISTS`, `OR REPLACE`) e carrega cada CSV numa transacao, truncando antes; rodar duas vezes da as mesmas contagens; `npm run dados:conferir` prova que o razao fecha em zero, que a DRE de 2026 da R$ 1.198,3 mi / R$ 198,3 mi / R$ -12,3 mi, que o quadro de dez/2026 e 1.235 FTE, que a folha de 2026 e R$ 189,4 mi e que as 504 celulas do gabarito de RH da Unidade SP nao divergem; `npm run dados:ensaio` faz o mesmo num Postgres em processo, sem banco externo.
+  · **PRD:** secao 10.2, secao 10.4, RF-22, D-DADOS · **Depende de:** T-266
+- [X] **T-268** `P0` `L` `dados` O motor de calculo recebe a Base por parametro, e a soma propaga a ausencia
+  · **Aceite:** nenhum arquivo de `src/acesso/calculo/` importa constante de fixture; `Recorte` carrega `base: { views, cadastros }`; `somar` devolve nulo quando uma linha nao sabe a medida; os campos que a base nao deriva sao `number | null` no tipo compartilhado e a fixture declara `Completa<Linha*>`; `npm test` e `npm run contrato -- --source=fixtures` ficam identicos ao antes (768 recortes, zero divergencia).
+  · **PRD:** secao 8.1, secao 9.2 regra 3, PR-1, PR-4, D-DADOS · **Depende de:** T-114
+- [X] **T-269** `P0` `L` `ingestao` Dezoito views SQL na forma exata dos tipos Linha*, com mapas de codigo e parametros declarados
+  · **Aceite:** cada view tem exatamente as colunas do tipo, em snake_case, e a forma declarada em `src/acesso/warehouse/forma.ts` e conferida pelo compilador contra o tipo e por teste contra as fixtures; taxa nenhuma e armazenada; taxonomias viram codigo por `map_codigo`; o que nao e derivavel sai NULL (balanco, ramp-up, amortizacao, conta generica) e o que e convencao vem de `param_*` com origem escrita; as oito `vw_*.csv` entram so como gabarito.
+  · **PRD:** secao 9.2 regra 4, secao 10.1, secao 11, D-DADOS · **Depende de:** T-267, T-268
+- [X] **T-270** `P0` `M` `dados` Adaptador de warehouse com cache por versao de carga, e getMeta com os anos e o frescor do banco
+  · **Aceite:** `DATA_SOURCE=warehouse` registra o adaptador por import dinamico (pg fora do grafo em fixtures); as views sao lidas uma vez por instancia e por versao de carga, com coluna faltante ou tipo errado lancando com o nome da view; `getMeta` deriva 2025 e 2026 do dado e o frescor de `amanna.carga`; `ENSAIO_PGLITE=.ensaio/pglite npx vitest run tests/dados` prova os numeros do dicionario pelo DataSource, a soma das entidades, as 13 telas e os 71 paineis em tres recortes; `CONTRATO_PGLITE=.ensaio/pglite npm run contrato -- --source=warehouse` percorre 768 recortes sem divergencia.
+  · **PRD:** RF-20, RF-21, secao 9.1, secao 10.2, D-P5, D-P8, D-DADOS · **Depende de:** T-266, T-268, T-269
+- [X] **T-271** `P1` `S` `plataforma` Suite de contrato em modo warehouse no CI, condicionada ao segredo do banco
+  · **Aceite:** um job `contrato-warehouse` roda `dados:conferir` e `contrato -- --source=warehouse` so quando `DATABASE_URL` existe nos segredos do repositorio, arquivando o relatorio; sem o segredo o job e pulado e nomeia o motivo; `.env.example` documenta `DATABASE_URL`, `DATABASE_URL_CARGA` e `DATABASE_SSL_CA`.
+  · **PRD:** RF-21, secao 10.5 passo 4, D-DADOS · **Depende de:** T-123, T-270
+- [X] **T-272** `P0` `M` `dados` A quinta porta: ranking de uma metrica por dimensao, pela mesma fronteira
+  · **Aceite:** `DataSource.getRanking` e `Fronteira.lerRanking` existem nos dois adaptadores e no mutante; a dimensao e validada contra a lista fechada de oito antes de tocar a fonte (pessoa, cpf e matricula sao recusados com `GraoProibido`); `total` e o mesmo numero de `getMetric`; por area as partes somam o total; metrica cuja view nao tem a dimensao responde `abre: false` em vez de repetir o consolidado; o teste de arquitetura passa a proibir `getRanking` fora de `src/acesso/`.
+  · **PRD:** secao 7.5, secao 11, RF-18, D-CHAT-ferramentas, D-DADOS · **Depende de:** T-138, T-268
+- [ ] **T-273** `P2` `S` `dados` O delta de 12 meses passa a comparar com o ano anterior quando ele esta carregado
+  · **Aceite:** com 2025 na base, `janelaAnterior` de um recorte de 12 meses de 2026 devolve os doze meses de 2025 em vez de nulo, e o cartao mostra a variacao contra o ano anterior; em fixtures (so 2026) continua nulo, e um teste fixa os dois caminhos.
+  · **PRD:** RF-05, Anexo D achado 6, D-P8, D-DADOS · **Depende de:** T-270
 
 ---
 

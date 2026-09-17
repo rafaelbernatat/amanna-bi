@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 64 itens (5 resolvidos), destravando 122 tarefas do backlog |
+| **Total** | 65 itens (5 resolvidos), destravando 125 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -40,10 +40,10 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
-| Fase 2 · Dado real | 22 | 18 | 56 |
+| Fase 2 · Dado real | 23 | 19 | 59 |
 | Fase 3 · Chat com IA | 7 | 4 | 21 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **64** | **32** | **122** |
+| **Total** | **65** | **33** | **125** |
 
 **Por responsável**
 
@@ -52,7 +52,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Produto | 16 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
-| Engenharia | 7 |
+| Engenharia | 8 |
 | Comercial | 5 |
 | Produto, com Controladoria e RH | 2 |
 | Produto, com o Jurídico do cliente | 2 |
@@ -759,7 +759,7 @@ O ajuste de contraste (D-MARCA) caminha na luminosidade preservando o matiz, e p
 
 Quase tudo aqui depende do cliente. É a fila mais longa e a que costuma atrasar o projeto inteiro — comece cedo.
 
-*22 itens · 18 P0 abertos · 4 P1 abertos*
+*23 itens · 19 P0 abertos · 4 P1 abertos*
 
 ### [ ] H-06 · Decidir P2: transferência interna conta como desligamento
 
@@ -1089,6 +1089,20 @@ Contrate um fornecedor de teste de intrusão, ou aloque um time interno independ
 
 ---
 
+### [ ] H-65 · Criar o projeto no Supabase e entregar as duas conexões da base Amanna
+
+`P0` · **Responsável:** Engenharia
+
+**O que fazer**
+
+A base Amanna (`docs/dados`, 82 MB) já carrega e reconcilia num Postgres em processo (`npm run dados:ensaio`, decisão D-DADOS), mas o produto em produção precisa de um Postgres de verdade, e a decisão de Produto é o **Supabase**. Alguém com conta cria o projeto na região `sa-east-1` (a mesma da Vercel, para o cabeçalho não esperar o banco) e copia duas URLs do painel do projeto, em *Connect*: a do **pooler em modo transação** (Supavisor, porta 6543), que vira `DATABASE_URL`, e a do **pooler em modo sessão** (porta 5432 do host do pooler), que vira `DATABASE_URL_CARGA` — a carga precisa de sessão, e o host direto `db.<ref>.supabase.co` é IPv6 no plano gratuito e costuma falhar em rede IPv4. As duas levam `sslmode=require`. Os valores vão para o `.env.local` de quem carrega e para os ambientes Preview e Production da Vercel (`DATABASE_URL` só), e `DATABASE_URL` entra como segredo do repositório no GitHub para o job `contrato-warehouse`. Depois, uma vez: `npm run dados:carregar` e `npm run dados:conferir` — a segunda tem de imprimir todas as conferências como `ok`. Só então `DATA_SOURCE=warehouse` e `MARCA_ARMAZEM=postgres` entram na Vercel. Registre aqui que foi feito e onde cada valor foi colocado. Nunca o valor.
+
+| | |
+|---|---|
+| **Resultado esperado** | Projeto Supabase criado; `DATABASE_URL` e `DATABASE_URL_CARGA` no `.env.local` e nos ambientes da Vercel; `DATABASE_URL` nos segredos do repositório; `npm run dados:conferir` verde contra o Supabase; o esquema `amanna` invisível pela Data API |
+| **Onde o resultado vai** | Painel do projeto Supabase; `.env.local` (fora do versionamento); Settings > Environment Variables na Vercel; Settings > Secrets no GitHub |
+| **Destrava** | Servir dado real em produção (T-270 em produção), o armazém da marca em nuvem (T-274) e o job `contrato-warehouse` (T-271) |
+
 ## Antes da Fase 3 · Chat com IA
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
@@ -1395,6 +1409,9 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-254 | H-16 |
 | T-255 | H-17 |
 | T-256 | H-21 |
+| T-270 | H-65 |
+| T-271 | H-65 |
+| T-274 | H-65 |
 | T-302 | H-28 |
 | T-304 | H-28, H-29 |
 | T-305 | H-28 |

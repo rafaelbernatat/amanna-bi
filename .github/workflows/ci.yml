@@ -22,7 +22,8 @@ permissions:
 
 env:
   # Fonte de dado do pipeline. RF-20: a variavel troca o adaptador sem que
-  # nenhuma tela mude. O modo warehouse entra em F2, com T-190.
+  # nenhuma tela mude. O modo warehouse roda no job proprio abaixo, quando o
+  # segredo do banco existe (D-DADOS).
   DATA_SOURCE: fixtures
 
 jobs:
@@ -175,5 +176,46 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: relatorio-de-contrato
+          path: relatorios/contrato/
+          retention-days: 30
+
+  # A mesma suite, sobre a base Amanna no Postgres (D-DADOS, T-271).
+  #
+  # Roda so quando o segredo DATABASE_URL existe no repositorio (H-65). O
+  # GitHub nao aceita `secrets` direto em `if`, entao o segredo passa por uma
+  # variavel de ambiente do job. Sem ele, o job e pulado -- e o pulo aparece
+  # no resumo, para ninguem confundir "nao rodou" com "passou". Nao e checagem
+  # obrigatoria ate H-02 decidir.
+  contrato-warehouse:
+    name: contrato-warehouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATA_SOURCE: warehouse
+    steps:
+      - uses: actions/checkout@v5
+      - name: Ha banco?
+        id: banco
+        run: |
+          if [ -n "$DATABASE_URL" ]; then echo "tem=true" >> "$GITHUB_OUTPUT"; else echo "tem=false" >> "$GITHUB_OUTPUT"; echo "::notice::Sem DATABASE_URL nos segredos: a suite de contrato em warehouse foi pulada (H-65)."; fi
+      - uses: actions/setup-node@v5
+        if: steps.banco.outputs.tem == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+        if: steps.banco.outputs.tem == 'true'
+      - name: Conferencias do dicionario
+        if: steps.banco.outputs.tem == 'true'
+        run: npm run dados:conferir
+      - name: Suite de contrato em warehouse
+        if: steps.banco.outputs.tem == 'true'
+        run: npm run contrato -- --source=warehouse
+      - name: Arquivar o relatorio
+        if: always() && steps.banco.outputs.tem == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-de-contrato-warehouse
           path: relatorios/contrato/
           retention-days: 30

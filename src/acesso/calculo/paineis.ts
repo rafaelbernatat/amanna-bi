@@ -305,10 +305,16 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
       (l) => l.componente,
       (l) => l.valor,
     ).map(emMilhoes);
+    /*
+     * O total só existe se todo componente existe. Ramp-up e produtividade
+     * perdida são custo modelado e podem vir nulos (H-52); somar só o que se
+     * conhece daria um "custo do turnover" que parece completo e não é — e o
+     * cartão da mesma tela, que soma a view inteira, já diz "não sei".
+     */
     return {
       categorias: componentes,
       valores: [custo],
-      total: somaDaSerie(custo),
+      total: custo.some((v) => v === null) ? null : somaDaSerie(custo),
     };
   },
 

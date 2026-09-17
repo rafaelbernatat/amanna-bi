@@ -55,6 +55,9 @@ function fonteQueNaoPodeSerTocada(): DataSource {
     getMetric: () => {
       throw new AdaptadorTocado("getMetric");
     },
+    getRanking: () => {
+      throw new AdaptadorTocado("getRanking");
+    },
   };
 }
 
@@ -69,6 +72,10 @@ function fonteQueConta() {
     getKpis: async () => {
       chamadas.push("getKpis");
       return [];
+    },
+    getRanking: async () => {
+      chamadas.push("getRanking");
+      throw new Error("não usado neste teste");
     },
     getPanel: async () => {
       chamadas.push("getPanel");

@@ -219,6 +219,7 @@ function fonteSimples(): DataSource {
     getKpis: async () => [],
     getPanel: async () => ({}) as never,
     getMetric: async () => ({}) as never,
+    getRanking: async () => ({}) as never,
   };
 }
 
@@ -288,6 +289,7 @@ describe("applyScope devolve a recusa como valor", () => {
       lerPainel: async () => ({}) as never,
       lerKpis: async () => [],
       lerMetrica: async () => ({}) as never,
+      lerRanking: async () => ({}) as never,
     };
     expect(() => applyScope(falsa, CONSULTA)).toThrowError(
       /não registrada|criarFronteira/,

@@ -101,6 +101,13 @@ const CADASTROS: Cadastros = {
   faixaSalarial: VW_DIM_FAIXA_SALARIAL,
   cargo: VW_DIM_CARGO,
   uf: VW_DIM_UF.map((u) => u.codigo),
+  // Os clientes que a fixture conhece: os dez maiores e os nomeados no
+  // contas a receber. Um código só aparece uma vez.
+  clientes: [...TOP_CLIENTES.map(item), ...CLIENTES_A_RECEBER.map(item)].filter(
+    (c, i, lista) => lista.findIndex((x) => x.codigo === c.codigo) === i,
+  ),
+  fornecedores: FORNECEDORES_A_PAGAR.map(item),
+  contas: [],
 };
 
 /** A base inteira das fixtures. Construída uma vez, no import. */

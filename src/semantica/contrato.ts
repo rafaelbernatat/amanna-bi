@@ -278,16 +278,89 @@ export type MetricValue = {
   readonly asOf: string;
 };
 
+/* ------------------------------------------------------------------ *
+ * O ranking (D-CHAT-ferramentas)
+ * ------------------------------------------------------------------ */
+
+/**
+ * As dimensões pelas quais uma métrica pode ser aberta em ranking.
+ *
+ * Lista fechada, e nenhuma delas é pessoa: cliente, fornecedor e conta são
+ * pessoa jurídica ou plano de contas; área, centro de custo, UF e segmento
+ * são agregados. É a lista da seção 11 crescendo, e crescer aqui é decisão —
+ * um valor novo passa pelo teste de arquitetura e pela decisão registrada.
+ */
+export const DIMENSOES_DE_RANKING = [
+  "area",
+  "centro_custo",
+  "cliente",
+  "fornecedor",
+  "conta",
+  "linha_dre",
+  "uf",
+  "segmento",
+] as const;
+export type DimensaoDeRanking = (typeof DIMENSOES_DE_RANKING)[number];
+
+export function dimensaoDeRankingValida(
+  candidata: string,
+): candidata is DimensaoDeRanking {
+  return (DIMENSOES_DE_RANKING as readonly string[]).includes(candidata);
+}
+
+/** O que se pede: uma métrica do catálogo, aberta por uma dimensão, os N maiores. */
+export type PedidoDeRanking = {
+  readonly metrica: string;
+  readonly dimensao: DimensaoDeRanking;
+  /** Quantos itens voltam. A fronteira limita. */
+  readonly limite: number;
+  /** Do maior para o menor é o padrão. */
+  readonly ordem?: "maior" | "menor";
+};
+
+export type ItemDeRanking = {
+  readonly codigo: string;
+  readonly rotulo: string;
+  readonly valor: number | null;
+};
+
+/**
+ * O ranking: os itens ordenados e o total da métrica no mesmo recorte.
+ *
+ * `total` é `getMetric` da mesma métrica e do mesmo recorte — reconciliação
+ * por construção, e é o denominador de qualquer participação que alguém
+ * queira calcular. `itens` vazio com `abre: false` significa "esta métrica não
+ * abre por esta dimensão nesta fonte", que é resposta, não erro.
+ */
+export type Ranking = {
+  readonly metrica: string;
+  readonly dimensao: DimensaoDeRanking;
+  readonly unit: Unidade;
+  readonly formula: string;
+  readonly itens: readonly ItemDeRanking[];
+  readonly total: number | null;
+  /** A métrica abre por esta dimensão nesta fonte? */
+  readonly abre: boolean;
+  /** O limite cortou itens? */
+  readonly truncado: boolean;
+  readonly asOf: string;
+};
+
 /**
  * A única forma de ler dado no produto (seção 9.1, princípio PR-1).
  *
  * Trocar `DATA_SOURCE=fixtures` por `=warehouse` troca a implementação desta
  * interface e mais nada. Nenhuma tela muda — é isso que a suíte de contrato
  * prova ao rodar idêntica nos dois modos (RF-21).
+ *
+ * A quinta porta, `getRanking`, entrou com D-CHAT-ferramentas: o chat compõe
+ * leituras por dimensão livre, e a leitura continua sendo código nosso, pela
+ * mesma fronteira das outras quatro.
  */
 export interface DataSource {
   getMeta(): Promise<Meta>;
   getKpis(view: string, q: Query): Promise<readonly Kpi[]>;
   getPanel(id: string, q: Query): Promise<PanelResponse>;
   getMetric(id: string, q: Query): Promise<MetricValue>;
+  getRanking(pedido: PedidoDeRanking, q: Query): Promise<Ranking>;
 }

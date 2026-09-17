@@ -29,11 +29,13 @@ import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
 import { getSession } from "@/acesso/sessao";
+import type { PedidoDeRankingExterno } from "@/acesso/fronteira";
 import type {
   Kpi,
   MetricValue,
   PanelResponse,
   Query,
+  Ranking,
 } from "@/semantica/contrato";
 import type { EstadoDe } from "@/semantica/estado";
 import { GraoProibido } from "@/seguranca/grao";
@@ -181,4 +183,28 @@ export async function lerMetrica(
     dimensoesProvisorias(),
   );
   return fronteira.lerMetrica(metrica, consulta, breakdown);
+}
+
+/**
+ * Um ranking, já restringido ao perfil de quem pediu (D-CHAT-ferramentas).
+ *
+ * Mesmo caminho das outras leituras: sessão, escopo, fronteira, adaptador. É
+ * por aqui que o chat responde "os cinco maiores clientes" — a dimensão é
+ * validada na fronteira contra a lista fechada, e a consulta passa pelo
+ * mesmo `applyScope` das telas antes de qualquer leitura (seção 7.5).
+ */
+export async function lerRanking(
+  pedido: PedidoDeRankingExterno,
+  consulta: Query,
+): Promise<Ranking> {
+  const [sessao, fonte] = await Promise.all([
+    getSession(),
+    obterFonteDeDados(),
+  ]);
+  const fronteira = criarFronteira(
+    fonte,
+    escopoDaSessao(sessao),
+    dimensoesProvisorias(),
+  );
+  return fronteira.lerRanking(pedido, consulta);
 }
