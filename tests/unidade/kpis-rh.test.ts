@@ -35,6 +35,7 @@ import type { Query } from "@/semantica/contrato";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { kpisDaTela, REGISTRO_DE_KPIS } from "@/semantica/kpis";
 import { origemDoKpi } from "@/semantica/origem-de-kpi";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const TELAS_DE_RH = [
   "rh/visao",
@@ -58,14 +59,14 @@ function com(mudanca: Partial<Query>): Query {
 
 describe("as 7 telas devolvem até 6 KPIs, todos do catálogo", () => {
   it.each(TELAS_DE_RH)("%s devolve no máximo 6", (tela) => {
-    const kpis = calcularKpis(tela, QUERY_PADRAO);
+    const kpis = calcularKpis(BASE_DE_FIXTURES, tela, QUERY_PADRAO);
     expect(kpis.length).toBeGreaterThan(0);
     expect(kpis.length).toBeLessThanOrEqual(MAXIMO_DE_KPIS);
   });
 
   it("as sete somam 42 cartões", () => {
     const total = TELAS_DE_RH.reduce(
-      (a, t) => a + calcularKpis(t, QUERY_PADRAO).length,
+      (a, t) => a + calcularKpis(BASE_DE_FIXTURES, t, QUERY_PADRAO).length,
       0,
     );
     expect(total).toBe(42);
@@ -109,11 +110,17 @@ describe("as 7 telas devolvem até 6 KPIs, todos do catálogo", () => {
       detalhadoPor: null,
       constanteNoPrototipo: false,
     } as const;
-    expect(() => calcularKpi(inventado, QUERY_PADRAO)).toThrow(KpiSemOrigem);
+    expect(() =>
+      calcularKpi(BASE_DE_FIXTURES, inventado, QUERY_PADRAO),
+    ).toThrow(KpiSemOrigem);
   });
 
   it("o envelope traz rótulo, unidade, delta e sentimento", () => {
-    for (const kpi of calcularKpis("rh/visao", QUERY_PADRAO)) {
+    for (const kpi of calcularKpis(
+      BASE_DE_FIXTURES,
+      "rh/visao",
+      QUERY_PADRAO,
+    )) {
       expect(kpi.label.trim(), kpi.id).not.toBe("");
       expect(kpi.unit, kpi.id).toBeDefined();
       expect(["good", "bad", "neutral"], kpi.id).toContain(kpi.sentiment);
@@ -127,7 +134,10 @@ describe("as 7 telas devolvem até 6 KPIs, todos do catálogo", () => {
      */
     const porRotulo = (tela: string) =>
       Object.fromEntries(
-        calcularKpis(tela, QUERY_PADRAO).map((k) => [k.label, k.value]),
+        calcularKpis(BASE_DE_FIXTURES, tela, QUERY_PADRAO).map((k) => [
+          k.label,
+          k.value,
+        ]),
       );
 
     const visao = porRotulo("rh/visao");
@@ -319,8 +329,8 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
   it.each(PARES)("$dimensao: os valores mudam", ({ dimensao, a, b }) => {
     const iguais: string[] = [];
     for (const tela of TELAS_DE_RH) {
-      const emA = calcularKpis(tela, a);
-      const emB = calcularKpis(tela, b);
+      const emA = calcularKpis(BASE_DE_FIXTURES, tela, a);
+      const emB = calcularKpis(BASE_DE_FIXTURES, tela, b);
       emA.forEach((kpi, i) => {
         const outro = emB[i];
         if (outro === undefined) return;
@@ -348,8 +358,12 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
           enganadas.push(`${id}: não existe no registro`);
           continue;
         }
-        const emA = calcularKpis(registro.tela, par.a).find((k) => k.id === id);
-        const emB = calcularKpis(registro.tela, par.b).find((k) => k.id === id);
+        const emA = calcularKpis(BASE_DE_FIXTURES, registro.tela, par.a).find(
+          (k) => k.id === id,
+        );
+        const emB = calcularKpis(BASE_DE_FIXTURES, registro.tela, par.b).find(
+          (k) => k.id === id,
+        );
         if (emA?.value !== emB?.value) {
           enganadas.push(`${id} muda com ${dimensao} — saia da lista`);
         }
@@ -366,7 +380,11 @@ describe("nenhum KPI fica idêntico entre recortes distintos", () => {
   it("o ano de 2025 devolve vazio, e não zero (PR-4)", () => {
     // A fixture carrega 2026; 2025 entra com T-152. Ausência é estado, e zero
     // afirmaria que a empresa não teve ninguém.
-    const kpis = calcularKpis("rh/visao", com({ ano: "2025" }));
+    const kpis = calcularKpis(
+      BASE_DE_FIXTURES,
+      "rh/visao",
+      com({ ano: "2025" }),
+    );
     expect(kpis.every((k) => k.value === null)).toBe(true);
   });
 });
@@ -382,24 +400,32 @@ describe("o delta compara com a janela anterior", () => {
      * meses anteriores dentro do ano, e o delta é `null` até 2025 entrar com
      * T-152 — `null`, e não zero: zero afirmaria que o número não mudou.
      */
-    const dezembro = calcularKpis("rh/visao", com({ periodo: "dezembro" }));
+    const dezembro = calcularKpis(
+      BASE_DE_FIXTURES,
+      "rh/visao",
+      com({ periodo: "dezembro" }),
+    );
     expect(dezembro.some((k) => k.delta !== null)).toBe(true);
 
-    const ano = calcularKpis("rh/visao", QUERY_PADRAO);
+    const ano = calcularKpis(BASE_DE_FIXTURES, "rh/visao", QUERY_PADRAO);
     expect(ano.every((k) => k.delta === null)).toBe(true);
   });
 
   it("sem delta, o sentimento é neutro", () => {
     // Cor sem variação seria cor sem informação — e a seção 13 exige que cor
     // nunca seja o único sinal.
-    const ano = calcularKpis("rh/visao", QUERY_PADRAO);
+    const ano = calcularKpis(BASE_DE_FIXTURES, "rh/visao", QUERY_PADRAO);
     expect(ano.every((k) => k.sentiment === "neutral")).toBe(true);
   });
 
   it("turnover subindo é ruim; retenção subindo é bom", () => {
     // O par que mais expõe um sentido trocado: são o mesmo número visto do
     // avesso.
-    const kpis = calcularKpis("rh/turnover", com({ periodo: "dezembro" }));
+    const kpis = calcularKpis(
+      BASE_DE_FIXTURES,
+      "rh/turnover",
+      com({ periodo: "dezembro" }),
+    );
     const tov = kpis.find((k) => k.id === "rh-turnover-turnover-12m");
     const ret = kpis.find((k) => k.id === "rh-turnover-retencao-12m");
     expect(tov?.delta).not.toBeNull();

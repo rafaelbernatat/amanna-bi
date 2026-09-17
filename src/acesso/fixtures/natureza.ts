@@ -20,6 +20,7 @@
 import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
+import type { Completa, LinhaNaturezaMes } from "@/acesso/calculo/linhas";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
 const POR_MIL = 1000;
@@ -34,17 +35,10 @@ const POR_MIL = 1000;
  */
 const VARIAVEL_POR_MIL: readonly number[] = [661, 611];
 
-export type LinhaNaturezaMes = {
-  readonly mes: string;
-  readonly entidade: string;
-  /** Custos que variam com a venda, em reais: CMV variável, comissão, frete, taxa de cartão. */
-  readonly custosVariaveis: number;
-  /** A estrutura, em reais: o que continua existindo sem venda. Sem a depreciação. */
-  readonly custosFixos: number;
-};
+export type { LinhaNaturezaMes } from "@/acesso/calculo/linhas";
 
-export const VW_FATO_NATUREZA_MES: readonly LinhaNaturezaMes[] = MESES.flatMap(
-  (mes) =>
+export const VW_FATO_NATUREZA_MES: readonly Completa<LinhaNaturezaMes>[] =
+  MESES.flatMap((mes) =>
     ENTIDADES_ARMAZENADAS.flatMap((entidade, e) => {
       const dre = VW_FATO_FIN_MES.find(
         (l) => l.mes === mes && l.entidade === entidade,
@@ -63,4 +57,4 @@ export const VW_FATO_NATUREZA_MES: readonly LinhaNaturezaMes[] = MESES.flatMap(
         },
       ];
     }),
-);
+  );

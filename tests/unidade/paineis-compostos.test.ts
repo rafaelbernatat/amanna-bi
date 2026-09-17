@@ -12,11 +12,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { calcularPainel, paineisComDesenho } from "@/acesso/calculo/paineis";
-import { UFS_DO_MOSAICO } from "@/acesso/calculo/paineis-compostos";
 import { PONTE_DA_DRE } from "@/acesso/fixtures/referencia-fin";
 import type { Query } from "@/semantica/contrato";
 import { FORMAS_COMPOSTAS, origemDoPainel } from "@/semantica/origem-de-painel";
 import { REGISTRO_DE_PAINEIS } from "@/semantica/paineis";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const BASE: Query = {
   entidade: "consolidado",
@@ -39,7 +39,7 @@ function daForma<F extends string>(
   q: Query,
   forma: F,
 ): Extract<ReturnType<typeof calcularPainel>, { forma: F }> {
-  const envelope = calcularPainel(id, q);
+  const envelope = calcularPainel(BASE_DE_FIXTURES, id, q);
   if (envelope.forma !== forma) {
     throw new Error(
       `${id} devolveu forma '${envelope.forma}' onde o teste espera '${forma}'`,
@@ -106,7 +106,7 @@ describe("as quatro formas compostas respondem com envelope válido", () => {
   const validar = new Ajv({ allErrors: true, strict: false }).compile(schema);
 
   it.each(IDS)("%s valida contra o JSON Schema publicado", (id) => {
-    const envelope = calcularPainel(id, BASE);
+    const envelope = calcularPainel(BASE_DE_FIXTURES, id, BASE);
     const ok = validar(envelope);
     expect(ok, JSON.stringify(validar.errors?.slice(0, 3))).toBe(true);
   });
@@ -117,7 +117,7 @@ describe("as quatro formas compostas respondem com envelope válido", () => {
       { ...BASE, area: "tecnologia" } as Query,
       { ...BASE, periodo: "dezembro" } as Query,
     ]) {
-      const ok = validar(calcularPainel(id, q));
+      const ok = validar(calcularPainel(BASE_DE_FIXTURES, id, q));
       expect(ok, `${id}: ${JSON.stringify(validar.errors?.slice(0, 2))}`).toBe(
         true,
       );
@@ -354,7 +354,9 @@ describe("a dispersão", () => {
 describe("o mosaico geográfico", () => {
   it("tem uma célula por UF do cadastro, e soma o quadro", () => {
     const e = daForma("col-mapa", BASE, "mosaico-geografico");
-    expect(e.celulas.map((c) => c.uf)).toEqual([...UFS_DO_MOSAICO]);
+    expect(e.celulas.map((c) => c.uf)).toEqual([
+      ...BASE_DE_FIXTURES.cadastros.uf,
+    ]);
     expect(e.total).toBe(1240);
   });
 
@@ -411,8 +413,11 @@ describe("o mosaico geográfico", () => {
   });
 
   it("o mosaico responde ao recorte de área", () => {
-    const todas = calcularPainel("col-mapa", BASE);
-    const tec = calcularPainel("col-mapa", { ...BASE, area: "tecnologia" });
+    const todas = calcularPainel(BASE_DE_FIXTURES, "col-mapa", BASE);
+    const tec = calcularPainel(BASE_DE_FIXTURES, "col-mapa", {
+      ...BASE,
+      area: "tecnologia",
+    });
     expect(JSON.stringify(todas)).not.toBe(JSON.stringify(tec));
   });
 });

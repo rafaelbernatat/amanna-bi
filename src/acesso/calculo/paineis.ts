@@ -27,17 +27,15 @@
  * apresentação (regra 2 da seção 9.2).
  */
 
-import {
-  diasUteisDoMes,
-  VW_FATO_CAIXA_DIARIO,
-} from "@/acesso/fixtures/caixa-diario";
+import type { Base } from "@/acesso/calculo/base";
+import { diasUteisDoMes } from "@/acesso/calculo/calendario";
 import { AGREGADO_DE_AREA } from "@/acesso/calculo/eixos";
+import type {
+  LinhaContas,
+  LinhaVagas,
+  NomeDeQuebra,
+} from "@/acesso/calculo/linhas";
 import { type CargaParaNota, notaDoPainel } from "@/acesso/calculo/nota";
-import {
-  VW_FATO_CONTAS,
-  VW_FATO_FATURAMENTO_CLIENTE,
-  VW_FATO_ORCAMENTO,
-} from "@/acesso/fixtures/fin";
 import {
   calculoDaMetrica,
   emMilhoes,
@@ -47,17 +45,7 @@ import {
   recorteDe,
   soma,
 } from "@/acesso/calculo/kpis";
-import {
-  CENTROS_DE_CUSTO,
-  FAIXAS_DE_AGING,
-} from "@/acesso/fixtures/referencia-fin";
-import {
-  FAIXAS_DE_RATING,
-  type NomeDeQuebra,
-  QUEBRAS_DO_QUADRO,
-} from "@/acesso/fixtures/referencia-perfil";
-import { VW_FATO_RH_MES, VW_FATO_VAGAS } from "@/acesso/fixtures/rh";
-import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
+import { somar } from "@/acesso/calculo/recorte";
 import {
   DESENHO_CATEGORICO,
   paineisCategoricosComDesenho,
@@ -192,14 +180,12 @@ function quebrar<T extends { mes: string }>(
   r: Recorte,
   categorias: readonly string[],
   chave: (l: T) => string,
-  medida: (l: T) => number,
+  medida: (l: T) => number | null,
 ): readonly (number | null)[] {
   const doRecorte = todas.filter((l) => pertence(l as T & { mes: string }, r));
   return categorias.map((categoria) => {
     const daCategoria = doRecorte.filter((l) => chave(l) === categoria);
-    return daCategoria.length === 0
-      ? null
-      : daCategoria.reduce((a, l) => a + medida(l), 0);
+    return daCategoria.length === 0 ? null : somar(daCategoria, medida);
   });
 }
 
@@ -288,7 +274,7 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
   /* ---------------- rh/colab ---------------- */
 
   "col-tempo": (r) => {
-    const faixas = valoresDaQuebra("tempo_de_casa");
+    const faixas = valoresDaQuebra(r, "tempo_de_casa");
     const quadro = faixas.map((faixa) => perfil(r, "tempo_de_casa", [faixa]));
     // Partição: as faixas cobrem o quadro inteiro, então somar é legítimo.
     return {
@@ -310,11 +296,10 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
   }),
 
   "tov-custo": (r) => {
-    const componentes = [
-      ...new Set(VW_FATO_TURNOVER_CUSTO.map((l) => l.componente)),
-    ];
+    const view = r.base.views.vw_fato_turnover_custo;
+    const componentes = [...new Set(view.map((l) => l.componente))];
     const custo = quebrar(
-      VW_FATO_TURNOVER_CUSTO,
+      view,
       r,
       componentes,
       (l) => l.componente,
@@ -341,8 +326,8 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
 
   "rec-vagas": (r) => {
     const areas = areasDoRecorte(r);
-    const porStatus = (medida: (l: (typeof VW_FATO_VAGAS)[number]) => number) =>
-      quebrar(VW_FATO_VAGAS, r, areas, (l) => l.area, medida);
+    const porStatus = (medida: (l: LinhaVagas) => number) =>
+      quebrar(r.base.views.vw_fato_vagas, r, areas, (l) => l.area, medida);
     const abertas = porStatus((l) => l.abertas);
     return {
       categorias: areas,
@@ -392,7 +377,7 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
   /* ---------------- rh/sal ---------------- */
 
   "sal-faixas": (r) => {
-    const faixas = valoresDaQuebra("faixa_salarial");
+    const faixas = valoresDaQuebra(r, "faixa_salarial");
     const quadro = faixas.map((faixa) => perfil(r, "faixa_salarial", [faixa]));
     return {
       categorias: faixas,
@@ -438,7 +423,7 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
   "cx-diario": (r) => {
     const dias = diasUteisDoRecorte(r);
     const fluxo = dias.map((dia) => {
-      const doDia = VW_FATO_CAIXA_DIARIO.filter(
+      const doDia = r.base.views.vw_fato_caixa_diario.filter(
         (l) => l.dia === dia && pertence(l, { ...r, meses: [l.mes] }),
       );
       return doDia.length === 0
@@ -487,9 +472,9 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
   }),
 
   "orc-desvio": (r) => {
-    const centros = CENTROS_DE_CUSTO.map((c) => c.codigo);
+    const centros = r.base.cadastros.centrosDeCusto.map((c) => c.codigo);
     const desvio = quebrar(
-      VW_FATO_ORCAMENTO,
+      r.base.views.vw_fato_orcamento,
       r,
       centros,
       (l) => l.centroDeCusto,
@@ -539,8 +524,10 @@ const DESENHO: Readonly<Record<string, FabricaDeDesenho>> = {
      * sabe, e é o que se mostra.
      */
     const anos = [...new Set(r.meses.map((m) => m.slice(0, 4)))].sort();
-    const doRecorte = VW_FATO_FATURAMENTO_CLIENTE.filter((l) => pertence(l, r));
-    const porFaixa = FAIXAS_DE_RATING.map((faixa) =>
+    const doRecorte = r.base.views.vw_fato_faturamento_cliente.filter((l) =>
+      pertence(l, r),
+    );
+    const porFaixa = r.base.cadastros.faixasDeRating.map((faixa) =>
       anos.map((ano) => {
         const doAno = doRecorte.filter((l) => l.mes.startsWith(ano));
         const total = doAno.reduce((a, l) => a + l.receita, 0);
@@ -626,9 +613,12 @@ const META_DE_DIAS_DE_FECHAMENTO = 40;
 /** O limiar da zona favorável de eNPS. Traço de `eng-enps`. */
 const ZONA_FAVORAVEL_DE_ENPS = 30;
 
-/** Os valores de uma quebra do quadro, na ordem declarada. */
-function valoresDaQuebra(dimensao: NomeDeQuebra): readonly string[] {
-  return QUEBRAS_DO_QUADRO[dimensao].map((v) => v.codigo);
+/** Os valores de uma quebra do quadro, na ordem que o cadastro declara. */
+function valoresDaQuebra(
+  r: Recorte,
+  dimensao: NomeDeQuebra,
+): readonly string[] {
+  return r.base.cadastros.quebrasDoQuadro[dimensao];
 }
 
 /**
@@ -640,7 +630,7 @@ function valoresDaQuebra(dimensao: NomeDeQuebra): readonly string[] {
  */
 function areasDoRecorte(r: Recorte): readonly string[] {
   if (r.q.area !== AGREGADO_DE_AREA) return [r.q.area];
-  return [...new Set(VW_FATO_RH_MES.map((l) => l.area))];
+  return [...new Set(r.base.views.vw_fato_rh_mes.map((l) => l.area))];
 }
 
 /**
@@ -668,15 +658,12 @@ function diasUteisDoRecorte(r: Recorte): readonly string[] {
 }
 
 /** Aging por faixa, no fechamento do último mês da janela. */
-function agingDe(
-  r: Recorte,
-  medida: (l: (typeof VW_FATO_CONTAS)[number]) => number,
-): Desenho {
-  const faixas = FAIXAS_DE_AGING.map((f) => f.codigo);
+function agingDe(r: Recorte, medida: (l: LinhaContas) => number): Desenho {
+  const faixas = r.base.cadastros.faixasDeAging.map((f) => f.codigo);
   const ultimo = ultimoMes(r);
   const doFim = { ...r, meses: ultimo === undefined ? [] : [ultimo] };
   const saldo = quebrar(
-    VW_FATO_CONTAS,
+    r.base.views.vw_fato_contas,
     doFim,
     faixas,
     (l) => l.faixaDeAging,
@@ -722,7 +709,11 @@ export type PainelDesenhado =
  * e `series` não existe em nove delas — quem chamasse esta função e lesse
  * `.series` descobriria isso em produção, não aqui.
  */
-export function calcularPainel(id: string, q: Query): PainelDesenhado {
+export function calcularPainel(
+  base: Base,
+  id: string,
+  q: Query,
+): PainelDesenhado {
   const registro = painelPorId(id);
   if (registro === undefined) throw new PainelDesconhecido(id);
 
@@ -730,14 +721,16 @@ export function calcularPainel(id: string, q: Query): PainelDesenhado {
   const forma = registro.forma;
   if (origem === undefined) throw new PainelSemDesenho(id, forma);
 
+  const r = recorteDe(base, q);
+
   const categorico = DESENHO_CATEGORICO[id];
   if (categorico !== undefined) {
-    return montarCategorico(id, registro, origem, recorteDe(q), categorico);
+    return montarCategorico(id, registro, origem, r, categorico);
   }
 
   const composto = DESENHO_COMPOSTO[id];
   if (composto !== undefined) {
-    return montarComposto(id, registro, origem, recorteDe(q), composto);
+    return montarComposto(id, registro, origem, r, composto);
   }
 
   const desenhar = DESENHO[id];
@@ -748,7 +741,6 @@ export function calcularPainel(id: string, q: Query): PainelDesenhado {
     throw new PainelSemDesenho(id, forma);
   }
 
-  const r = recorteDe(q);
   const desenho = desenhar(r);
 
   const series: Serie[] = origem.series.map((declarada, i) => ({

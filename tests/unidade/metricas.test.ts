@@ -26,6 +26,7 @@ import { metricasComCalculo } from "@/acesso/calculo/kpis";
 import { MESES_DO_PERIODO } from "@/acesso/calculo/recorte";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import type { Query } from "@/semantica/contrato";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 
 const BASE: Query = {
   entidade: "consolidado",
@@ -81,7 +82,11 @@ describe("as 21 métricas do Anexo B respondem", () => {
   )(
     "%s em %s · %s traz valor, unidade, fórmula e série",
     (id, periodo, entidade) => {
-      const m = calcularMetrica(id, { ...BASE, periodo, entidade });
+      const m = calcularMetrica(BASE_DE_FIXTURES, id, {
+        ...BASE,
+        periodo,
+        entidade,
+      });
       const doCatalogo = CATALOGO_GERADO[id];
 
       expect(m.id).toBe(id);
@@ -112,8 +117,11 @@ describe("as 21 métricas do Anexo B respondem", () => {
      * igual seria defeito.
      */
     const iguais = ANEXO_B.filter((id) => {
-      const todos = calcularMetrica(id, BASE).value;
-      const sp = calcularMetrica(id, { ...BASE, entidade: "unidade-sp" }).value;
+      const todos = calcularMetrica(BASE_DE_FIXTURES, id, BASE).value;
+      const sp = calcularMetrica(BASE_DE_FIXTURES, id, {
+        ...BASE,
+        entidade: "unidade-sp",
+      }).value;
       return todos === sp;
     });
 
@@ -148,8 +156,9 @@ describe("as 21 métricas do Anexo B respondem", () => {
   it("o valor responde ao recorte de período", () => {
     // Métrica de fluxo em três meses tem de ser menor que em doze. É o teste
     // que pega o filtro que existe na barra e não chega ao dado (achado 6).
-    const doze = calcularMetrica("folha_total", BASE).value ?? 0;
-    const tri = calcularMetrica("folha_total", {
+    const doze =
+      calcularMetrica(BASE_DE_FIXTURES, "folha_total", BASE).value ?? 0;
+    const tri = calcularMetrica(BASE_DE_FIXTURES, "folha_total", {
       ...BASE,
       periodo: "4-trimestre",
     }).value;
@@ -178,7 +187,7 @@ describe("o catálogo não promete o que não entrega", () => {
   });
 
   it.each(metricasDoCatalogo())("%s responde no recorte padrão", (id) => {
-    const m = calcularMetrica(id, BASE);
+    const m = calcularMetrica(BASE_DE_FIXTURES, id, BASE);
     expect(m.id).toBe(id);
     expect(m.serie.values).toHaveLength(12);
   });
@@ -203,14 +212,14 @@ describe("o catálogo não promete o que não entrega", () => {
 
 describe("métrica fora do catálogo recusa, com saída", () => {
   it("a recusa é tipada, e não um erro genérico", () => {
-    expect(() => calcularMetrica("nao_existe", BASE)).toThrowError(
-      MetricaDesconhecida,
-    );
+    expect(() =>
+      calcularMetrica(BASE_DE_FIXTURES, "nao_existe", BASE),
+    ).toThrowError(MetricaDesconhecida);
   });
 
   it("carrega ao menos duas métricas próximas", () => {
     try {
-      calcularMetrica("nao_existe", BASE);
+      calcularMetrica(BASE_DE_FIXTURES, "nao_existe", BASE);
       expect.unreachable("deveria ter recusado");
     } catch (erro) {
       expect(erro).toBeInstanceOf(MetricaDesconhecida);
@@ -228,7 +237,7 @@ describe("métrica fora do catálogo recusa, com saída", () => {
     // Recusa que não diz o que se pediu obriga a pessoa a adivinhar se o
     // sistema entendeu a pergunta.
     try {
-      calcularMetrica("rotatividade", BASE);
+      calcularMetrica(BASE_DE_FIXTURES, "rotatividade", BASE);
       expect.unreachable("deveria ter recusado");
     } catch (erro) {
       expect(String(erro)).toContain("rotatividade");
@@ -257,6 +266,8 @@ describe("métrica fora do catálogo recusa, com saída", () => {
     // O contraste. Se `turnover_12m` caísse na busca por proximidade, o chat
     // perguntaria "você quis dizer turnover_12m?" para quem digitou
     // turnover_12m.
-    expect(() => calcularMetrica("turnover_12m", BASE)).not.toThrow();
+    expect(() =>
+      calcularMetrica(BASE_DE_FIXTURES, "turnover_12m", BASE),
+    ).not.toThrow();
   });
 });

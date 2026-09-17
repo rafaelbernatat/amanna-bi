@@ -1,10 +1,10 @@
 /**
  * O adaptador de fixtures (T-114).
  *
- * Implementa `DataSource` sobre as seis views de fato de T-110 e T-111. O que
- * este arquivo entrega é a **peça que recorta**: dada uma `Query`, escolher as
- * linhas do recorte e somá-las. As quatro portas de leitura da seção 9.1 são
- * preenchidas pelas tarefas que as nomeiam, e cada uma diz qual.
+ * Implementa `DataSource` sobre a `Base` das fixtures. O motor de cálculo mora
+ * em `src/acesso/calculo/` e recebe a base por parâmetro: este arquivo é a
+ * cola entre a fábrica de T-106 e o motor, e nada mais. O adaptador de
+ * warehouse (D-DADOS) tem a mesma forma, com outra base.
  *
  * ## Por que o adaptador não tem número nenhum
  *
@@ -21,6 +21,13 @@
  * branco que parece dado.
  */
 
+import type { NomeDeView, Views } from "@/acesso/calculo/base";
+import { calcularKpis } from "@/acesso/calculo/kpis";
+import { calcularMeta } from "@/acesso/calculo/meta";
+import { calcularMetrica } from "@/acesso/calculo/metricas";
+import { calcularPainel } from "@/acesso/calculo/paineis";
+import { linhasDoRecorte, recortar, somar } from "@/acesso/calculo/recorte";
+import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 import type {
   DataSource,
   Kpi,
@@ -29,60 +36,17 @@ import type {
   PanelResponse,
   Query,
 } from "@/semantica/contrato";
-import { VW_FATO_BALANCO_MES } from "@/acesso/fixtures/balanco";
-import { VW_FATO_CAIXA_DIARIO } from "@/acesso/fixtures/caixa-diario";
-import { VW_FATO_RH_DESLIGAMENTO } from "@/acesso/fixtures/desligamento";
-import { VW_FATO_DIVIDA_MES } from "@/acesso/fixtures/divida";
-import { VW_FATO_NATUREZA_MES } from "@/acesso/fixtures/natureza";
-import { VW_FATO_QUALIDADE_MES } from "@/acesso/fixtures/qualidade";
-import { calcularMeta } from "@/acesso/calculo/meta";
-import { calcularMetrica } from "@/acesso/calculo/metricas";
-import { calcularPainel } from "@/acesso/calculo/paineis";
-import { VW_FATO_TURNOVER_CUSTO } from "@/acesso/fixtures/turnover-custo";
-import {
-  VW_FATO_CONTAS,
-  VW_FATO_SAIDA_CATEGORIA,
-  VW_FATO_FATURAMENTO_CLIENTE,
-  VW_FATO_FIN_MES,
-  VW_FATO_ORCAMENTO,
-} from "@/acesso/fixtures/fin";
-import { VW_FATO_RH_PERFIL } from "@/acesso/fixtures/perfil";
-import {
-  VW_FATO_RH_MES,
-  VW_FATO_TREINAMENTO,
-  VW_FATO_VAGAS,
-  VW_FATO_VAGAS_FONTE,
-} from "@/acesso/fixtures/rh";
-import { calcularKpis } from "@/acesso/calculo/kpis";
-import { linhasDoRecorte, recortar, somar } from "@/acesso/calculo/recorte";
 
 /**
  * As views da seção 10.1 que a fixture publica, por nome.
  *
  * Eram seis em T-111; as de balanço e dívida entraram em 2026-09-03 para as
- * perguntas de CFO, derivadas das que já existiam.
+ * perguntas de CFO. Hoje são as da `Base`, e este nome existe para quem
+ * confere cobertura e coerência das fixtures.
  */
-export const VIEWS = {
-  vw_fato_rh_mes: VW_FATO_RH_MES,
-  vw_fato_rh_perfil: VW_FATO_RH_PERFIL,
-  vw_fato_vagas: VW_FATO_VAGAS,
-  vw_fato_vagas_fonte: VW_FATO_VAGAS_FONTE,
-  vw_fato_treinamento: VW_FATO_TREINAMENTO,
-  vw_fato_fin_mes: VW_FATO_FIN_MES,
-  vw_fato_caixa_diario: VW_FATO_CAIXA_DIARIO,
-  vw_fato_orcamento: VW_FATO_ORCAMENTO,
-  vw_fato_contas: VW_FATO_CONTAS,
-  vw_fato_faturamento_cliente: VW_FATO_FATURAMENTO_CLIENTE,
-  vw_fato_turnover_custo: VW_FATO_TURNOVER_CUSTO,
-  vw_fato_rh_desligamento: VW_FATO_RH_DESLIGAMENTO,
-  vw_fato_saida_categoria: VW_FATO_SAIDA_CATEGORIA,
-  vw_fato_balanco_mes: VW_FATO_BALANCO_MES,
-  vw_fato_divida_mes: VW_FATO_DIVIDA_MES,
-  vw_fato_natureza_mes: VW_FATO_NATUREZA_MES,
-  vw_fato_qualidade_mes: VW_FATO_QUALIDADE_MES,
-} as const;
+export const VIEWS: Views = BASE_DE_FIXTURES.views;
 
-export type NomeDeView = keyof typeof VIEWS;
+export type { NomeDeView };
 
 /**
  * A porta que ainda não existe.
@@ -103,15 +67,15 @@ export class AindaNaoImplementado extends Error {
 /**
  * Uma leitura recortada de uma view, já somada.
  *
- * É a operação que o resto do adaptador vai usar: nenhuma tela e nenhuma
+ * É a operação que os testes de coerência usam: nenhuma tela e nenhuma
  * métrica reimplementa o recorte por conta própria.
  */
 export function somaNoRecorte<N extends NomeDeView>(
   view: N,
   q: Query,
-  medida: (linha: (typeof VIEWS)[N][number]) => number,
+  medida: (linha: Views[N][number]) => number | null,
 ): number | null {
-  const linhas = VIEWS[view] as readonly (typeof VIEWS)[N][number][];
+  const linhas = VIEWS[view] as readonly Views[N][number][];
   const recortado = recortar(linhas, q);
   if (!recortado.aplicavel) return null;
   if (recortado.linhas.length === 0) return null;
@@ -122,8 +86,8 @@ export function somaNoRecorte<N extends NomeDeView>(
 export function linhasDe<N extends NomeDeView>(
   view: N,
   q: Query,
-): readonly (typeof VIEWS)[N][number][] {
-  const linhas = VIEWS[view] as readonly (typeof VIEWS)[N][number][];
+): readonly Views[N][number][] {
+  const linhas = VIEWS[view] as readonly Views[N][number][];
   return linhasDoRecorte(linhas, q);
 }
 
@@ -140,24 +104,30 @@ export function criarFonteDeFixtures(): DataSource {
      *
      * O instante entra como `new Date()` **aqui**, e não dentro de
      * `calcularMeta`: a fronteira do adaptador é onde o mundo externo começa, e
-     * o relógio é mundo externo. Assim o cálculo continua puro e testável.
+     * o relógio é mundo externo. A fixture é calculada na leitura, então o
+     * último sync é o instante da própria leitura.
      */
     getMeta(): Promise<Meta> {
-      return Promise.resolve(calcularMeta(new Date()));
+      const agora = new Date();
+      return Promise.resolve(
+        calcularMeta(
+          BASE_DE_FIXTURES,
+          { sincronizadoEm: agora.toISOString() },
+          agora,
+        ),
+      );
     },
     /** As 13 telas, com todo numero saindo do catalogo (T-115 e T-116). */
     getKpis(tela: string, q: Query): Promise<readonly Kpi[]> {
-      return Promise.resolve(calcularKpis(tela, q));
+      return Promise.resolve(calcularKpis(BASE_DE_FIXTURES, tela, q));
     },
     getPanel(id: string, q: Query): Promise<PanelResponse> {
-      // T-117 cobre barras, linha e barras empilhadas. As outras nove formas
-      // lançam `PainelSemDesenho`, que nomeia T-118 ou T-119.
-      return Promise.resolve(calcularPainel(id, q));
+      return Promise.resolve(calcularPainel(BASE_DE_FIXTURES, id, q));
     },
     getMetric(id: string, q: Query): Promise<MetricValue> {
       // Métrica fora do catálogo lança `MetricaDesconhecida`, com sugestões:
       // ver o cabeçalho de `metricas.ts`.
-      return Promise.resolve(calcularMetrica(id, q));
+      return Promise.resolve(calcularMetrica(BASE_DE_FIXTURES, id, q));
     },
   };
 }

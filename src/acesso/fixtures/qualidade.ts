@@ -19,6 +19,7 @@
 import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES } from "@/acesso/fixtures/fin";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
+import type { Completa, LinhaQualidadeMes } from "@/acesso/calculo/linhas";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
 const POR_MIL = 1000;
@@ -47,37 +48,14 @@ const CONTAS_COM_CLASSIFICACAO_INCONSISTENTE = 3;
 /** A variação: o resto da divisão do mês por este número muda a taxa. */
 const CICLO_DE_VARIACAO = 4;
 
-export type LinhaQualidadeMes = {
-  readonly mes: string;
-  readonly entidade: string;
-  /** Contagens de lançamentos. */
-  readonly lancamentos: number;
-  readonly lancamentosForaDoPadrao: number;
-  readonly lancamentosEmContaParada: number;
-  readonly paresDeEstorno: number;
-  readonly lancamentosDeCompetenciaAnterior: number;
-  readonly lancamentosDuplicados: number;
-  readonly contasRecorrentesSemLancamento: number;
-  readonly contasComClassificacaoInconsistente: number;
-  /** Valores, em reais. `valorTotal` é o movimento do mês: entradas mais saídas. */
-  readonly valorTotal: number;
-  readonly valorForaDoPadrao: number;
-  readonly valorDeEstornos: number;
-  readonly valorDeCompetenciaAnterior: number;
-  readonly valorDuplicado: number;
-  readonly valorSemCentroDeCusto: number;
-  readonly valorEmContaGenerica: number;
-  readonly valorSemNatureza: number;
-  readonly valorEmClassificacaoInconsistente: number;
-  readonly movimentacaoComPartesRelacionadas: number;
-};
+export type { LinhaQualidadeMes } from "@/acesso/calculo/linhas";
 
 /** Uma parte de um total, em milésimos, com a variação do mês e da entidade. */
 function parte(total: number, porMil: number, variacao: number): number {
   return Math.round((total * (porMil + variacao)) / POR_MIL);
 }
 
-export const VW_FATO_QUALIDADE_MES: readonly LinhaQualidadeMes[] =
+export const VW_FATO_QUALIDADE_MES: readonly Completa<LinhaQualidadeMes>[] =
   MESES.flatMap((mes, m) =>
     ENTIDADES_ARMAZENADAS.flatMap((entidade, e) => {
       const dre = VW_FATO_FIN_MES.find(

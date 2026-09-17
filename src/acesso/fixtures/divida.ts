@@ -28,6 +28,7 @@ import { ENTIDADES_ARMAZENADAS, mesesDe } from "@/acesso/calculo/eixos";
 import { VW_FATO_FIN_MES, emReais, porEntidade } from "@/acesso/fixtures/fin";
 import { repartir } from "@/acesso/fixtures/reparticao";
 import { ANO_DA_FIXTURE } from "@/acesso/fixtures/rh";
+import type { Completa, LinhaDividaMes } from "@/acesso/calculo/linhas";
 
 const MESES = mesesDe(ANO_DA_FIXTURE);
 
@@ -83,16 +84,7 @@ const SALDO_DEZEMBRO = LINHAS_DE_CREDITO.reduce(
   0,
 );
 
-export type LinhaDividaMes = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly linha: LinhaDeCredito;
-  readonly prazo: "curto" | "longo";
-  /** Saldo devedor no fechamento do mês, em reais. */
-  readonly saldo: number;
-  /** Juros pagos no mês, em reais. A soma das linhas é o resultado financeiro. */
-  readonly jurosPagos: number;
-};
+export type { LinhaDividaMes } from "@/acesso/calculo/linhas";
 
 /** Os fluxos da dívida por mês e entidade, para o balanço reconciliar. */
 export type FluxoDaDivida = {
@@ -141,8 +133,8 @@ const SALDO_TOTAL_MENSAL: readonly number[] = (() => {
 const FORMA_DOS_SALDOS = LINHAS_DE_CREDITO.map((l) => l.saldoDezembro);
 const FORMA_DOS_JUROS = LINHAS_DE_CREDITO.map((l) => l.jurosPorMil);
 
-export const VW_FATO_DIVIDA_MES: readonly LinhaDividaMes[] = MESES.flatMap(
-  (mes, m) => {
+export const VW_FATO_DIVIDA_MES: readonly Completa<LinhaDividaMes>[] =
+  MESES.flatMap((mes, m) => {
     const saldoPorEntidade = porEntidade(SALDO_TOTAL_MENSAL[m] ?? 0, "divida");
     return ENTIDADES_ARMAZENADAS.flatMap((entidade, e) => {
       const saldos = repartir(saldoPorEntidade[e] ?? 0, FORMA_DOS_SALDOS);
@@ -156,8 +148,7 @@ export const VW_FATO_DIVIDA_MES: readonly LinhaDividaMes[] = MESES.flatMap(
         jurosPagos: juros[i] ?? 0,
       }));
     });
-  },
-);
+  });
 
 /** Amortização e captação por mês e entidade, na mesma fatia da dívida. */
 export const FLUXOS_DA_DIVIDA: readonly FluxoDaDivida[] = MESES.flatMap(

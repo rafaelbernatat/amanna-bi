@@ -35,17 +35,9 @@
 import { CUSTO_DO_TURNOVER } from "@/acesso/fixtures/referencia-perfil";
 import { repartirMatriz } from "@/acesso/fixtures/reparticao";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
+import type { Completa, LinhaTurnoverCusto } from "@/acesso/calculo/linhas";
 
-/** Uma linha da view: uma célula do grão de RH, um componente de custo. */
-export type LinhaTurnoverCusto = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly area: string;
-  /** `rescisao`, `rampUp`, `produtividade` ou `recrutamento`. */
-  readonly componente: string;
-  /** Valor em reais. */
-  readonly valor: number;
-};
+export type { LinhaTurnoverCusto } from "@/acesso/calculo/linhas";
 
 const UM_MILHAO = 1_000_000;
 
@@ -53,74 +45,75 @@ const UM_MILHAO = 1_000_000;
 export const COMPONENTES_DE_CUSTO_DE_TURNOVER: readonly string[] =
   CUSTO_DO_TURNOVER.map((c) => c.codigo);
 
-export const VW_FATO_TURNOVER_CUSTO: readonly LinhaTurnoverCusto[] = (() => {
-  /*
-   * As células que vão receber custo, e o peso de cada uma.
-   *
-   * Célula sem desligamento recebe peso zero e sai com valor zero — o que está
-   * certo: não houve saída, não houve custo de saída. Não é ausência de dado,
-   * é a medida valendo zero, e as duas coisas se parecem só de longe.
-   */
-  const celulas = VW_FATO_RH_MES.map((l) => ({
-    mes: l.mes,
-    entidade: l.entidade,
-    area: l.area,
-    peso: l.desligamentos,
-  }));
-
-  const totalDeDesligamentos = celulas.reduce((a, c) => a + c.peso, 0);
-  const totalDoCusto = CUSTO_DO_TURNOVER.reduce(
-    (a, c) => a + Math.round(c.milhoes * UM_MILHAO),
-    0,
-  );
-
-  /*
-   * `repartirMatriz` fecha as DUAS margens ao mesmo tempo: a soma de cada
-   * componente é o total declarado dele, e a soma de cada célula é a parte que
-   * cabe àquela célula pelos desligamentos. Repartir componente por componente
-   * fecharia só uma das duas, e a outra sairia com sobra de arredondamento
-   * espalhada — que é como um painel passa a somar 12,3 quando o cartão ao lado
-   * diz 12,4.
-   */
-  const porCelula = celulas.map((c) =>
-    totalDeDesligamentos === 0
-      ? 0
-      : Math.round((totalDoCusto * c.peso) / totalDeDesligamentos),
-  );
-
-  // O arredondamento acima pode deixar a soma das células diferente do total;
-  // a última célula absorve a diferença antes de a matriz ser montada, porque
-  // `repartirMatriz` exige que as duas margens somem igual.
-  const somaDasCelulas = porCelula.reduce((a, b) => a + b, 0);
-  const ultima = porCelula.length - 1;
-  if (ultima >= 0) {
-    porCelula[ultima] =
-      (porCelula[ultima] ?? 0) + (totalDoCusto - somaDasCelulas);
-  }
-
-  const matriz = repartirMatriz(
-    porCelula,
-    CUSTO_DO_TURNOVER.map((c) => Math.round(c.milhoes * UM_MILHAO)),
-  );
-
-  /*
-   * Percorre a MATRIZ, e não os índices dela.
-   *
-   * A primeira versão era `valor: matriz[i]?.[j] ?? 0`, e a regra de T-141
-   * reprovou — com razão. O `?? 0` que o `noUncheckedIndexedAccess` obriga
-   * transformaria célula ausente em "custo zero", que é uma afirmação sobre o
-   * negócio, e não sobre a estrutura de dados. Iterando o próprio vetor, o
-   * valor existe por construção e não sobra literal para escrever.
-   */
-  return matriz.flatMap((valoresDaCelula, i) => {
-    const celula = celulas[i];
-    if (celula === undefined) return [];
-    return valoresDaCelula.map((valor, j) => ({
-      mes: celula.mes,
-      entidade: celula.entidade,
-      area: celula.area,
-      componente: CUSTO_DO_TURNOVER[j]?.codigo ?? "",
-      valor,
+export const VW_FATO_TURNOVER_CUSTO: readonly Completa<LinhaTurnoverCusto>[] =
+  (() => {
+    /*
+     * As células que vão receber custo, e o peso de cada uma.
+     *
+     * Célula sem desligamento recebe peso zero e sai com valor zero — o que está
+     * certo: não houve saída, não houve custo de saída. Não é ausência de dado,
+     * é a medida valendo zero, e as duas coisas se parecem só de longe.
+     */
+    const celulas = VW_FATO_RH_MES.map((l) => ({
+      mes: l.mes,
+      entidade: l.entidade,
+      area: l.area,
+      peso: l.desligamentos,
     }));
-  });
-})();
+
+    const totalDeDesligamentos = celulas.reduce((a, c) => a + c.peso, 0);
+    const totalDoCusto = CUSTO_DO_TURNOVER.reduce(
+      (a, c) => a + Math.round(c.milhoes * UM_MILHAO),
+      0,
+    );
+
+    /*
+     * `repartirMatriz` fecha as DUAS margens ao mesmo tempo: a soma de cada
+     * componente é o total declarado dele, e a soma de cada célula é a parte que
+     * cabe àquela célula pelos desligamentos. Repartir componente por componente
+     * fecharia só uma das duas, e a outra sairia com sobra de arredondamento
+     * espalhada — que é como um painel passa a somar 12,3 quando o cartão ao lado
+     * diz 12,4.
+     */
+    const porCelula = celulas.map((c) =>
+      totalDeDesligamentos === 0
+        ? 0
+        : Math.round((totalDoCusto * c.peso) / totalDeDesligamentos),
+    );
+
+    // O arredondamento acima pode deixar a soma das células diferente do total;
+    // a última célula absorve a diferença antes de a matriz ser montada, porque
+    // `repartirMatriz` exige que as duas margens somem igual.
+    const somaDasCelulas = porCelula.reduce((a, b) => a + b, 0);
+    const ultima = porCelula.length - 1;
+    if (ultima >= 0) {
+      porCelula[ultima] =
+        (porCelula[ultima] ?? 0) + (totalDoCusto - somaDasCelulas);
+    }
+
+    const matriz = repartirMatriz(
+      porCelula,
+      CUSTO_DO_TURNOVER.map((c) => Math.round(c.milhoes * UM_MILHAO)),
+    );
+
+    /*
+     * Percorre a MATRIZ, e não os índices dela.
+     *
+     * A primeira versão era `valor: matriz[i]?.[j] ?? 0`, e a regra de T-141
+     * reprovou — com razão. O `?? 0` que o `noUncheckedIndexedAccess` obriga
+     * transformaria célula ausente em "custo zero", que é uma afirmação sobre o
+     * negócio, e não sobre a estrutura de dados. Iterando o próprio vetor, o
+     * valor existe por construção e não sobra literal para escrever.
+     */
+    return matriz.flatMap((valoresDaCelula, i) => {
+      const celula = celulas[i];
+      if (celula === undefined) return [];
+      return valoresDaCelula.map((valor, j) => ({
+        mes: celula.mes,
+        entidade: celula.entidade,
+        area: celula.area,
+        componente: CUSTO_DO_TURNOVER[j]?.codigo ?? "",
+        valor,
+      }));
+    });
+  })();

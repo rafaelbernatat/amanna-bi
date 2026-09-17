@@ -15,10 +15,7 @@
  * divergirem.
  */
 
-import {
-  VW_FATO_FATURAMENTO_CLIENTE,
-  VW_FATO_FIN_MES,
-} from "@/acesso/fixtures/fin";
+import type { LinhaFinMes } from "@/acesso/calculo/linhas";
 import {
   calculoDaMetrica,
   emMilhoes,
@@ -28,8 +25,6 @@ import {
   type Recorte,
   soma,
 } from "@/acesso/calculo/kpis";
-import { VW_DIM_UF } from "@/acesso/fixtures/dim";
-import { TOP_CLIENTES } from "@/acesso/fixtures/referencia-perfil";
 import type { Query, Sentido } from "@/semantica/contrato";
 
 const BASE_DA_MARGEM = 100;
@@ -141,7 +136,7 @@ type Fabrica = (r: Recorte) => DesenhoComposto;
 
 export const DESENHO_COMPOSTO: Readonly<Record<string, Fabrica>> = {
   "fin-dre": (r) => {
-    const emMi = (medida: (l: (typeof VW_FATO_FIN_MES)[number]) => number) =>
+    const emMi = (medida: (l: LinhaFinMes) => number) =>
       emMilhoes(soma("vw_fato_fin_mes", r, medida));
 
     /*
@@ -177,7 +172,7 @@ export const DESENHO_COMPOSTO: Readonly<Record<string, Fabrica>> = {
   },
 
   "cx-ponte": (r) => {
-    const emMi = (medida: (l: (typeof VW_FATO_FIN_MES)[number]) => number) =>
+    const emMi = (medida: (l: LinhaFinMes) => number) =>
       emMilhoes(soma("vw_fato_fin_mes", r, medida));
 
     /*
@@ -269,7 +264,7 @@ export const DESENHO_COMPOSTO: Readonly<Record<string, Fabrica>> = {
 
   "fat-margem": (r) => {
     const doRecorte = linhas("vw_fato_faturamento_cliente", r);
-    const pontos = TOP_CLIENTES.flatMap((cliente) => {
+    const pontos = r.base.cadastros.topClientes.flatMap((cliente) => {
       const dele = doRecorte.filter((l) => l.cliente === cliente.codigo);
       if (dele.length === 0) return [];
       const receita = dele.reduce((a, l) => a + l.receita, 0);
@@ -344,9 +339,9 @@ export const DESENHO_COMPOSTO: Readonly<Record<string, Fabrica>> = {
      * uma linha; descobrir depois que zero e ausência viraram a mesma coisa
      * custa uma reunião.
      */
-    const celulas = VW_DIM_UF.map((uf) => ({
-      uf: uf.codigo,
-      valor: perfil(r, "uf", [uf.codigo]),
+    const celulas = r.base.cadastros.uf.map((uf) => ({
+      uf,
+      valor: perfil(r, "uf", [uf]),
     }));
     const conhecidos = celulas
       .map((c) => c.valor)
@@ -383,12 +378,3 @@ function negativo(valor: number | null): number | null {
 export function paineisCompostosComDesenho(): readonly string[] {
   return Object.keys(DESENHO_COMPOSTO);
 }
-
-/** Só para o teste: a view que o mosaico usa como vocabulário de UF. */
-export const UFS_DO_MOSAICO = VW_DIM_UF.map((u) => u.codigo);
-
-/** Idem: os clientes que a dispersão de margem pode desenhar. */
-export const CLIENTES_DA_DISPERSAO = TOP_CLIENTES.map((c) => c.codigo);
-
-/** Idem: as linhas de faturamento, para conferir a reconciliação. */
-export const FATURAMENTO = VW_FATO_FATURAMENTO_CLIENTE;

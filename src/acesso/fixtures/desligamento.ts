@@ -43,18 +43,9 @@ import {
 } from "@/acesso/fixtures/referencia-perfil";
 import { repartirMatriz } from "@/acesso/fixtures/reparticao";
 import { VW_FATO_RH_MES } from "@/acesso/fixtures/rh";
+import type { LinhaDesligamento } from "@/acesso/calculo/linhas";
 
-/** Uma linha: uma célula do grão de RH, um valor de uma dimensão. */
-export type LinhaDesligamento = {
-  readonly mes: string;
-  readonly entidade: string;
-  readonly area: string;
-  readonly modalidade: string;
-  /** `tipo`, `genero` ou `faixa_etaria`. */
-  readonly dimensao: string;
-  readonly valor: string;
-  readonly desligamentos: number;
-};
+export type { LinhaDesligamento } from "@/acesso/calculo/linhas";
 
 /**
  * As quebras das saídas, com o peso de cada valor.
