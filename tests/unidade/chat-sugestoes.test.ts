@@ -99,6 +99,8 @@ function resolucaoDe(
     acoes: { filtros, tela: null, painel: null },
     fontes: ["vw_teste"],
     painel: null,
+    leituras: [],
+    caminho: "simples",
   };
 }
 

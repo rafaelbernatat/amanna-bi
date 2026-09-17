@@ -16,6 +16,9 @@ import {
 import type { Resolucao } from "@/chat/resolver";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 
+/** `modulo/tela` cabe nisto; mais que isto não é rota do inventário. */
+const TAMANHO_MAXIMO_DA_TELA = 40;
+
 function ehObjeto(x: unknown): x is Record<string, unknown> {
   return typeof x === "object" && x !== null;
 }
@@ -39,6 +42,13 @@ export function lerPedido(bruto: unknown): PedidoDeChat | null {
   const busca = bruto["busca"];
   if (busca !== undefined && typeof busca !== "string") return null;
 
+  // A tela é validada contra o inventário adiante, ao montar o contexto;
+  // aqui só a forma: texto curto, ou nada.
+  const tela = bruto["tela"];
+  if (tela !== undefined && tela !== null && typeof tela !== "string") {
+    return null;
+  }
+
   const historicoBruto = bruto["historico"];
   const historico: TurnoAnterior[] = [];
   if (historicoBruto !== undefined) {
@@ -59,6 +69,10 @@ export function lerPedido(bruto: unknown): PedidoDeChat | null {
   return {
     pergunta: limpa,
     busca: busca ?? "",
+    tela:
+      typeof tela === "string" && tela.length <= TAMANHO_MAXIMO_DA_TELA
+        ? tela
+        : null,
     historico: historico.slice(-TURNOS_LEMBRADOS),
   };
 }
@@ -71,5 +85,6 @@ export function previaDe(r: Resolucao): Previa {
     valor: r.valor,
     unidade: r.unidade,
     acoes: r.acoes,
+    painel: r.painel,
   };
 }

@@ -1,8 +1,8 @@
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
+import { contextoDe } from "@/chat/contexto";
 import { lerPedido, previaDe } from "@/chat/pedido";
 import { redigirResposta, resolverPergunta } from "@/chat/perguntar";
 import type { LinhaDoFluxo } from "@/chat/protocolo";
-import { buscaParaQuery } from "@/semantica/url";
 import { GraoProibido } from "@/seguranca/grao";
 import { ForaDoEscopo } from "@/seguranca/identidade";
 
@@ -23,10 +23,11 @@ import { ForaDoEscopo } from "@/seguranca/identidade";
  *
  * ## A busca é lida pelo leitor da página
  *
- * O chat manda a busca da URL como texto, e `buscaParaQuery` a lê com a mesma
- * tolerância de T-127: filtro fora do vocabulário cai no padrão, e não em
- * erro. É o que garante que o recorte que o chat herda é o recorte que a
- * tela mostra.
+ * O chat manda a busca da URL como texto e a tela aberta, e `contextoDe` os
+ * lê com a mesma tolerância de T-127: filtro fora do vocabulário cai no
+ * padrão, tela fora do inventário vira nenhuma, painel fora do registro vira
+ * nenhum. É o que garante que o recorte que o chat herda é o recorte que a
+ * tela mostra — e que "esse gráfico" é o painel que a URL destaca.
  */
 
 export const dynamic = "force-dynamic";
@@ -46,7 +47,11 @@ export async function POST(requisicao: Request): Promise<Response> {
   const pedido = lerPedido(bruto);
   if (pedido === null) return recusar(400, "pedido malformado");
 
-  const { query } = buscaParaQuery(pedido.busca, dimensoesProvisorias().ano);
+  const contexto = contextoDe(
+    pedido.tela,
+    pedido.busca,
+    dimensoesProvisorias().ano ?? [],
+  );
 
   const codificador = new TextEncoder();
   const fluxo = new ReadableStream<Uint8Array>({
@@ -57,7 +62,7 @@ export async function POST(requisicao: Request): Promise<Response> {
       try {
         const resolvida = await resolverPergunta(
           pedido.pergunta,
-          query,
+          contexto,
           pedido.historico,
         );
         if (resolvida.tipo === "recusa") {
@@ -68,6 +73,8 @@ export async function POST(requisicao: Request): Promise<Response> {
         const resposta = await redigirResposta(
           pedido.pergunta,
           resolvida.resolucao,
+          resolvida.redacao,
+          contexto,
         );
         emitir({ fase: "resposta", resposta });
       } catch (erro) {

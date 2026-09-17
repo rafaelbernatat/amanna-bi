@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 65 itens (5 resolvidos), destravando 125 tarefas do backlog |
+| **Total** | 66 itens (5 resolvidos), destravando 126 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -41,9 +41,9 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
 | Fase 2 · Dado real | 23 | 19 | 59 |
-| Fase 3 · Chat com IA | 7 | 4 | 21 |
+| Fase 3 · Chat com IA | 8 | 4 | 22 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **65** | **33** | **125** |
+| **Total** | **66** | **33** | **126** |
 
 **Por responsável**
 
@@ -55,11 +55,11 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Engenharia | 8 |
 | Comercial | 5 |
 | Produto, com Controladoria e RH | 2 |
+| Produto, com Engenharia | 2 |
 | Produto, com o Jurídico do cliente | 2 |
 | RH | 2 |
 | Financeiro | 1 |
 | Juridico do cliente | 1 |
-| Produto, com Engenharia | 1 |
 | RH · **Consultar:** Jurídico / DPO | 1 |
 | TI do cliente, com Engenharia | 1 |
 
@@ -1107,7 +1107,7 @@ A base Amanna (`docs/dados`, 82 MB) já carrega e reconcilia num Postgres em pro
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*7 itens · 4 P0 abertos · 3 P1 abertos*
+*8 itens · 4 P0 abertos · 4 P1 abertos*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -1208,6 +1208,20 @@ A Controladoria precisa entregar duas coisas antes de a Fase 3 entrar em produç
 | **Destrava** | T-407, T-408 *(2 tarefas)* |
 
 ---
+
+### [ ] H-68 · Aprovar o modelo do laço de ferramentas do chat
+
+`P1` · **Responsável:** Produto, com Engenharia
+
+**O que fazer**
+
+Com D-CHAT-ferramentas, uma pergunta composta ("os cinco maiores clientes", "o pior mês de receita", "o que esse gráfico mostra") vai a um laço em que o modelo **pede** leituras por um vocabulário fechado e o nosso código as executa. Seguir esse protocolo com disciplina — escolher a ferramenta certa, respeitar o esquema, escrever só com o que voltou — é outra habilidade que redigir uma métrica, e o modelo de produção (`openai/gpt-4o`, escolhido em D-CHAT-perguntas-cfo) já errou escala e inventou benchmark no caminho simples. A recomendação da Engenharia é um modelo da família Claude Sonnet via OpenRouter, com o id conferido no catálogo do gateway no dia. Rode o roteiro manual de D-CHAT-ferramentas (dez perguntas em `/fin/visao?painel=fin-dre`, com autoria "modelo" e zero incidentes de verificador) contra dois candidatos, escolha um e grave o id em `OPENROUTER_MODEL_FERRAMENTAS` na Vercel. Sem a variável, vale `OPENROUTER_MODEL`, e o laço funciona — pior.
+
+| | |
+|---|---|
+| **Resultado esperado** | O id do modelo do laço gravado em `OPENROUTER_MODEL_FERRAMENTAS` (Production e Preview), e o resultado do roteiro — quantas das dez perguntas saíram com autoria "modelo" — anotado aqui |
+| **Onde o resultado vai** | Settings > Environment Variables na Vercel; este item |
+| **Destrava** | A qualidade do caminho composto (T-350) em produção; a medição de latência de D-CHAT-ferramentas |
 
 ## Antes da Fase 4 · Escala
 
@@ -1434,6 +1448,7 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-341 | H-28 |
 | T-342 | H-28, H-29, H-31, H-33 |
 | T-344 | H-28 |
+| T-350 | H-68 |
 | T-401 | H-35 |
 | T-404 | H-36 |
 | T-406 | H-35 |
