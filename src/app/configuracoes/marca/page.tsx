@@ -3,28 +3,37 @@ import type { Metadata } from "next";
 
 import { lerIdentidade } from "@/acesso/leitura";
 import { formatarInstante } from "@/apresentacao/formato/formato";
+import { NOME_DO_PAPEL, PARA_QUE_SERVE } from "@/apresentacao/marca/papeis";
 import { PropostaDeMarca } from "@/apresentacao/marca/PropostaDeMarca";
 import { TELA_PADRAO } from "@/apresentacao/navegacao/telas";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  CHAVES_DE_MARCA,
+  MARCA,
+  PALETA,
+  TIPOGRAFIA,
+} from "@/apresentacao/tema/tema";
 import { personalizacaoLigada } from "@/marca/armazem";
+import { origemLegivel, TETO_DO_NOME, TIPOS_DE_LOGO } from "@/marca/documento";
 import { lerMarcaAtiva, lerPropostaPendente } from "@/marca/leitura";
+import { coresIniciais } from "@/marca/manual";
 import { podeConfigurarMarca } from "@/marca/permissao";
 import { FRASE_DA_RECUSA, type MotivoDeRecusa } from "@/marca/site/guarda";
-import { hospedeiroDe } from "@/marca/tela";
 
 /**
  * A tela de configuração da marca (D-MARCA).
  *
  * Fora do grupo `(painel)`: não é uma das treze telas, não tem filtros e não
- * tem chat. O que ela tem é um formulário e, quando há proposta pendente, a
- * decisão sobre ela.
+ * tem chat. O que ela tem são dois formulários — o site da empresa, ou nome,
+ * cores e logo à mão — e, quando há proposta pendente, a decisão sobre ela.
  *
  * ## Sem estado de cliente
  *
- * Formulário e redirecionamento, como a barra de filtros. Enviar o site vai
- * para uma rota, que extrai, guarda a proposta e devolve um 303 para cá; esta
- * tela lê a proposta e mostra. A fronteira de cliente não cresce, e o
- * comportamento é o mesmo antes e depois da hidratação.
+ * Formulário e redirecionamento, como a barra de filtros. Enviar vai para uma
+ * rota, que monta a proposta, guarda e devolve um 303 para cá; esta tela lê a
+ * proposta e mostra. A fronteira de cliente não cresce, e o comportamento é o
+ * mesmo antes e depois da hidratação. O seletor de cor é o do navegador
+ * (`<input type="color">`), que não precisa de JavaScript nosso.
+ *
  */
 
 export const metadata: Metadata = {
@@ -42,6 +51,11 @@ const AVISOS: Readonly<Record<string, string>> = {
     "Não foi possível gravar. Nada foi alterado — confira a configuração do armazém.",
   acao: "Ação desconhecida. Nada foi alterado.",
   "sem-proposta": "Não há proposta pendente para aplicar.",
+  cor: "Uma das cores não está no formato #rrggbb. Nada foi alterado.",
+  nome: `O nome precisa ter até ${String(TETO_DO_NOME)} caracteres, sem caracteres de controle. Nada foi alterado.`,
+  grande:
+    "O envio é grande demais. O logo tem de ter até 256 KiB. Nada foi alterado.",
+  envio: "Não foi possível ler o formulário enviado. Nada foi alterado.",
 };
 
 const FEITOS: Readonly<Record<string, string>> = {
@@ -101,6 +115,7 @@ export default async function Pagina({
     lerMarcaAtiva(),
     lerPropostaPendente(),
   ]);
+  const iniciais = coresIniciais(marca);
 
   const recusa = primeiro(busca["recusa"]);
   const erro = primeiro(busca["erro"]);
@@ -117,9 +132,11 @@ export default async function Pagina({
         </Link>
         <h1 style={ESTILO_DO_TITULO}>A marca da empresa neste painel</h1>
         <p style={{ ...ESTILO_DO_TEXTO, maxWidth: "68ch" }}>
-          Informe o site da empresa. O painel busca a página, reúne as cores e
-          os logos que ela declara, e a inteligência artificial escolhe entre
-          eles. Nenhuma cor é inventada: só entra o que o site declara.
+          Dois caminhos. Informe o site da empresa: o painel busca a página,
+          reúne as cores e os logos que ela declara, e a inteligência artificial
+          escolhe entre eles — nenhuma cor é inventada. Ou informe à mão o nome,
+          as cinco cores e o logo. Nos dois, você vê a proposta antes de
+          aplicar.
         </p>
       </header>
 
@@ -140,7 +157,7 @@ export default async function Pagina({
         </Faixa>
       )}
 
-      {/* O envio: formulário comum, sem JavaScript. */}
+      {/* O primeiro caminho: o site. Formulário comum, sem JavaScript. */}
       <form
         method="post"
         action="/api/marca/extrair"
@@ -160,16 +177,7 @@ export default async function Pagina({
             flex: "1 1 340px",
           }}
         >
-          <span
-            style={{
-              font: `500 8.5px/1.2 ${TIPOGRAFIA.mono}`,
-              color: PALETA.textoFraco,
-              textTransform: "uppercase",
-              letterSpacing: ".12em",
-            }}
-          >
-            Site da empresa
-          </span>
+          <Rotulo>Site da empresa</Rotulo>
           <input
             type="text"
             name="site"
@@ -178,21 +186,161 @@ export default async function Pagina({
             placeholder="empresa.com.br"
             defaultValue={marca?.site ?? ""}
             data-teste="campo-do-site"
-            style={{
-              font: `400 12.5px/1.4 ${TIPOGRAFIA.texto}`,
-              color: PALETA.texto,
-              background: PALETA.superficie,
-              border: `1px solid ${PALETA.bordaForte}`,
-              borderRadius: 10,
-              padding: "10px 12px",
-              minWidth: 0,
-            }}
+            style={ESTILO_DO_CAMPO}
           />
         </label>
         <button type="submit" data-teste="buscar-marca" style={ESTILO_DO_BOTAO}>
           Buscar no site
         </button>
       </form>
+
+      {/*
+        O segundo caminho: à mão. `multipart` por causa do arquivo; o seletor
+        de cor é o do navegador. As cores abrem com as da marca em uso, para
+        quem quer trocar só uma não precisar digitar as outras quatro.
+      */}
+      <details data-teste="caminho-manual" style={ESTILO_DO_DETALHE}>
+        <summary style={ESTILO_DO_SUMARIO}>Ou informe à mão</summary>
+        <form
+          method="post"
+          action="/api/marca/manual"
+          encType="multipart/form-data"
+          data-teste="formulario-manual"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            paddingTop: 14,
+          }}
+        >
+          <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            <Rotulo>Nome no cabeçalho</Rotulo>
+            <input
+              type="text"
+              name="nome"
+              maxLength={TETO_DO_NOME}
+              autoComplete="organization"
+              placeholder="Controladoria"
+              defaultValue={marca?.nome ?? ""}
+              data-teste="campo-do-nome"
+              style={{ ...ESTILO_DO_CAMPO, maxWidth: 420 }}
+            />
+          </label>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+              gap: 10,
+            }}
+          >
+            {CHAVES_DE_MARCA.map((papel) => (
+              <label
+                key={papel}
+                data-teste="campo-de-cor"
+                data-papel={papel}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  border: `1px solid ${PALETA.borda}`,
+                  borderRadius: 12,
+                  padding: "10px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="color"
+                  name={papel}
+                  defaultValue={iniciais[papel]}
+                  data-teste={`cor-${papel}`}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    flex: "none",
+                    border: `1px solid ${PALETA.bordaForte}`,
+                    borderRadius: 8,
+                    padding: 0,
+                    background: "transparent",
+                  }}
+                />
+                <span style={{ minWidth: 0 }}>
+                  <span
+                    style={{
+                      display: "block",
+                      font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
+                      color: PALETA.texto,
+                    }}
+                  >
+                    {NOME_DO_PAPEL[papel]}
+                  </span>
+                  <span
+                    style={{
+                      display: "block",
+                      font: `400 10px/1.45 ${TIPOGRAFIA.texto}`,
+                      color: PALETA.textoTerciario,
+                    }}
+                  >
+                    {PARA_QUE_SERVE[papel]}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              alignItems: "flex-end",
+              flexWrap: "wrap",
+            }}
+          >
+            <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <Rotulo>Logo (PNG, JPEG, WebP ou SVG, até 256 KiB)</Rotulo>
+              <input
+                type="file"
+                name="logo"
+                accept={TIPOS_DE_LOGO.join(",")}
+                data-teste="campo-do-logo"
+                style={{
+                  font: `400 11.5px/1.4 ${TIPOGRAFIA.texto}`,
+                  color: PALETA.textoSecundario,
+                }}
+              />
+            </label>
+            {marca?.logo == null ? null : (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  font: `400 11.5px/1.4 ${TIPOGRAFIA.texto}`,
+                  color: PALETA.textoSecundario,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  name="semLogo"
+                  value="1"
+                  data-teste="sem-logo"
+                />
+                Remover o logo em uso
+              </label>
+            )}
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              data-teste="propor-manual"
+              style={ESTILO_DO_BOTAO}
+            >
+              Ver a proposta
+            </button>
+          </div>
+        </form>
+      </details>
 
       {proposta === null ? null : (
         <>
@@ -235,6 +383,7 @@ export default async function Pagina({
         <section
           data-teste="marca-atual"
           data-tem-marca="1"
+          data-origem={marca.origem}
           style={{
             borderTop: `1px solid ${PALETA.borda}`,
             paddingTop: 16,
@@ -261,8 +410,9 @@ export default async function Pagina({
             documento guardado é o registro.
           */}
           <p data-teste="quem-aplicou" style={ESTILO_DO_TEXTO}>
-            {hospedeiroDe(marca.site)}, aplicada por {marca.aplicadaPor.perfil}{" "}
-            em {formatarInstante(marca.aplicadaEm)}.
+            {marca.nome === null ? "" : `${marca.nome} · `}
+            {origemLegivel(marca)}, aplicada por {marca.aplicadaPor.perfil} em{" "}
+            {formatarInstante(marca.aplicadaEm)}.
           </p>
           <form method="post" action="/api/marca/aplicar">
             <button
@@ -298,15 +448,20 @@ const ESTILO_DO_TEXTO = {
   color: PALETA.textoSecundario,
 } as const;
 
+/*
+ * Link e botão leem a camada viva do tema, e não a paleta crua: esta é a
+ * tela que **aplica** a marca, e seria a única em que o botão de aplicar
+ * ficaria com a cor antiga depois de aplicada.
+ */
 const ESTILO_DO_LINK = {
   font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
-  color: PALETA.marca,
+  color: MARCA.marca,
   textDecoration: "none",
 } as const;
 
 const ESTILO_DO_BOTAO = {
   border: "none",
-  background: PALETA.marca,
+  background: MARCA.marca,
   color: PALETA.superficie,
   borderRadius: 999,
   padding: "11px 18px",
@@ -323,6 +478,44 @@ const ESTILO_DO_BOTAO_SECUNDARIO = {
   font: `500 11.5px/1 ${TIPOGRAFIA.texto}`,
   cursor: "pointer",
 } as const;
+
+const ESTILO_DO_CAMPO = {
+  font: `400 12.5px/1.4 ${TIPOGRAFIA.texto}`,
+  color: PALETA.texto,
+  background: PALETA.superficie,
+  border: `1px solid ${PALETA.bordaForte}`,
+  borderRadius: 10,
+  padding: "10px 12px",
+  minWidth: 0,
+} as const;
+
+const ESTILO_DO_DETALHE = {
+  background: PALETA.superficie,
+  border: `1px solid ${PALETA.borda}`,
+  borderRadius: 17,
+  padding: "14px 20px",
+} as const;
+
+const ESTILO_DO_SUMARIO = {
+  cursor: "pointer",
+  font: `500 14px/1.2 ${TIPOGRAFIA.titulo}`,
+  color: PALETA.texto,
+} as const;
+
+function Rotulo({ children }: { readonly children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        font: `500 8.5px/1.2 ${TIPOGRAFIA.mono}`,
+        color: PALETA.textoFraco,
+        textTransform: "uppercase",
+        letterSpacing: ".12em",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
 
 function Moldura({ children }: { readonly children: React.ReactNode }) {
   return (

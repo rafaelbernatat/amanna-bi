@@ -182,10 +182,13 @@ describe("gráfico não lê a camada viva", () => {
 describe("a moldura lê a camada viva", () => {
   const MOLDURA = [
     join("src", "apresentacao", "shell", "Cabecalho.tsx"),
+    join("src", "apresentacao", "shell", "BotaoDeConta.tsx"),
     join("src", "apresentacao", "filtros", "BarraDeFiltros.tsx"),
     join("src", "apresentacao", "filtros", "BannerDeRecorte.tsx"),
     join("src", "apresentacao", "paineis", "Painel.tsx"),
     join("src", "apresentacao", "chat", "Chat.tsx"),
+    join("src", "app", "not-found.tsx"),
+    join("src", "app", "configuracoes", "marca", "page.tsx"),
   ];
 
   it.each(MOLDURA)("%s usa MARCA", (caminho) => {
@@ -204,6 +207,34 @@ describe("a moldura lê a camada viva", () => {
         false,
       );
     }
+  });
+
+  /**
+   * A varredura que fecha a regra para todo arquivo de tela, e não só para a
+   * lista acima. As exceções são nomeadas, e cada uma tem razão: gráfico e
+   * desenho de painel pintam SVG (`var()` não vale em atributo de
+   * apresentação); o tema é onde a paleta mora; a página de verificação de
+   * SVG existe para medir a paleta crua.
+   */
+  const EXCECOES_DA_PALETA_CRUA = [
+    join("src", "apresentacao", "graficos") + sep,
+    join("src", "apresentacao", "paineis", "DesenhoDePainel.tsx"),
+    join("src", "apresentacao", "tema") + sep,
+    join("src", "app", "verificacao", "svg") + sep,
+  ];
+
+  it("nenhum outro arquivo de tela lê papel de marca pela paleta crua", () => {
+    const telas = [
+      ...varrer(join(RAIZ, "src", "app")),
+      ...varrer(join(RAIZ, "src", "apresentacao")),
+    ]
+      .map((c) => relative(RAIZ, c))
+      .filter((c) => !EXCECOES_DA_PALETA_CRUA.some((e) => c.startsWith(e)));
+    const infratores = telas.filter((caminho) => {
+      const fonte = semComentarios(caminho);
+      return CHAVES_DE_MARCA.some((chave) => fonte.includes(`PALETA.${chave}`));
+    });
+    expect(infratores).toEqual([]);
   });
 
   it("a lista de papéis de marca é exatamente a que o tipo declara", () => {

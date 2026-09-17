@@ -186,6 +186,7 @@ export default async function Pagina({
         dimensoes={dimensoes}
         painelDestacado={painelDestacado}
         conta={instalacao.conta}
+        nome={instalacao.nome}
         logo={instalacao.logo}
       />
 

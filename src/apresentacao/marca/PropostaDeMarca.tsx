@@ -2,29 +2,12 @@ import {
   formatarQuilobytes,
   formatarRazao,
 } from "@/apresentacao/formato/formato";
+import { NOME_DO_PAPEL, PARA_QUE_SERVE } from "@/apresentacao/marca/papeis";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { CoresDaMarca } from "@/apresentacao/tema/tema";
 import type { AjusteDeContraste } from "@/apresentacao/tema/contraste";
 import type { Proposta } from "@/marca/documento";
 import { ROTA_DO_LOGO } from "@/marca/tela";
-
-/** Como cada papel se chama para quem lê, e não para quem programa. */
-const NOME_DO_PAPEL: Readonly<Record<keyof CoresDaMarca, string>> = {
-  marca: "Ação",
-  marcaEscura: "Ação escura",
-  destaque: "Destaque",
-  destaqueSuave: "Destaque suave",
-  barraLateral: "Barra escura",
-};
-
-/** O que cada papel faz na tela, em uma linha. */
-const PARA_QUE_SERVE: Readonly<Record<keyof CoresDaMarca, string>> = {
-  marca: "Botões, links e o que se clica",
-  marcaEscura: "Estado pressionado e texto sobre fundo claro",
-  destaque: "O contorno do gráfico que a IA citou",
-  destaqueSuave: "Apoio do destaque, em bordas e faixas",
-  barraLateral: "Fundo escuro das abas e do chat",
-};
 
 /** Como a extração descreve de onde veio a escolha. */
 const COMO_ESCOLHEU: Readonly<Record<string, string>> = {
@@ -33,21 +16,26 @@ const COMO_ESCOLHEU: Readonly<Record<string, string>> = {
   "modelo-recusado":
     "a escolha do modelo apontou para fora da lista e foi descartada; valeu a ordem de prioridade",
   "gateway-indisponivel": "o modelo não respondeu; valeu a ordem de prioridade",
+  manual: "informadas à mão",
 };
 
 /**
  * A proposta, antes de alguém aplicar.
  *
  * Mostra as cinco cores, o logo, e — quando houve ajuste de contraste — a cor
- * do site ao lado da cor aplicada, com as duas razões. É o que impede o ajuste
- * de ser silencioso: quem aplica vê exatamente o que vai mudar e por quê.
+ * original ao lado da cor aplicada, com as duas razões. É o que impede o
+ * ajuste de ser silencioso: quem aplica vê exatamente o que vai mudar e por
+ * quê. Vale igual para a proposta que veio do site e para a que a pessoa
+ * digitou; muda só como a tela nomeia a origem.
  */
 export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
   const ajustePor = new Map(proposta.extracao.ajustes.map((a) => [a.papel, a]));
+  const doSite = proposta.origem === "site";
 
   return (
     <section
       data-teste="proposta"
+      data-origem={proposta.origem}
       aria-label="Proposta de marca"
       style={{
         background: PALETA.superficie,
@@ -67,7 +55,9 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             color: PALETA.texto,
           }}
         >
-          O que encontramos em {proposta.site}
+          {doSite
+            ? `O que encontramos em ${proposta.site ?? ""}`
+            : "O que você informou"}
         </h2>
         <p
           data-teste="autoria-da-extracao"
@@ -77,31 +67,60 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             color: PALETA.textoSecundario,
           }}
         >
-          {proposta.candidatos} cores declaradas pelo site,{" "}
+          {doSite
+            ? `${String(proposta.candidatos)} cores declaradas pelo site, `
+            : "Cinco cores "}
           {COMO_ESCOLHEU[proposta.extracao.autoria] ?? "escolhidas"}
           {proposta.extracao.modelo === null
             ? ""
             : ` (${proposta.extracao.modelo})`}
+          {proposta.nome === null
+            ? ""
+            : `, com o nome “${proposta.nome}” no cabeçalho`}
           .
         </p>
       </header>
 
-      {proposta.logo === null ? (
+      {proposta.logoRecusado === null ? null : (
         <p
-          data-teste="logo-da-proposta"
-          data-tem-logo="0"
+          data-teste="logo-recusado"
+          role="status"
           style={{
             margin: 0,
-            font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: `1px solid ${PALETA.bordaForte}`,
+            borderLeft: `3px solid ${PALETA.negativo}`,
+            background: PALETA.superficie,
+            font: `400 11.5px/1.55 ${TIPOGRAFIA.texto}`,
             color: PALETA.textoSecundario,
           }}
         >
-          Nenhum logo utilizável foi encontrado
-          {proposta.logoRecusado === null
-            ? ""
-            : ` (${FRASE_DO_LOGO[proposta.logoRecusado] ?? proposta.logoRecusado})`}
-          . O cabeçalho continua com o nome escrito.
+          {doSite ? "O logo do site" : "O arquivo enviado"} não serviu:{" "}
+          {FRASE_DO_LOGO[proposta.logoRecusado] ?? proposta.logoRecusado}.
+          {proposta.logo === null
+            ? " O cabeçalho continua com o nome escrito."
+            : " O logo em uso continua."}
         </p>
+      )}
+
+      {proposta.logo === null ? (
+        proposta.logoRecusado === null ? (
+          <p
+            data-teste="logo-da-proposta"
+            data-tem-logo="0"
+            style={{
+              margin: 0,
+              font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
+              color: PALETA.textoSecundario,
+            }}
+          >
+            {doSite ? "Nenhum logo utilizável foi encontrado." : "Sem logo."} O
+            cabeçalho continua com o nome escrito.
+          </p>
+        ) : (
+          <p data-teste="logo-da-proposta" data-tem-logo="0" hidden />
+        )
       ) : (
         <div
           data-teste="logo-da-proposta"
@@ -116,7 +135,13 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
           */}
           <img
             src={`${ROTA_DO_LOGO}?de=proposta&v=${proposta.logo.impressao.slice(0, 12)}`}
-            alt={`Logo encontrado em ${proposta.site}`}
+            alt={
+              doSite
+                ? `Logo encontrado em ${proposta.site ?? ""}`
+                : proposta.logoRecusado === null
+                  ? "Logo enviado"
+                  : "Logo em uso, mantido"
+            }
             height={40}
             style={{ height: 40, width: "auto", maxWidth: 200 }}
           />
@@ -143,7 +168,7 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             key={papel}
             papel={papel}
             aplicada={proposta.cores[papel]}
-            doSite={proposta.coresDoSite[papel]}
+            original={proposta.coresOriginais[papel]}
             ajuste={ajustePor.get(papel) ?? null}
           />
         ))}
@@ -165,9 +190,9 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
         >
           {proposta.extracao.ajustes.length === 1
             ? "Uma cor foi escurecida ou clareada"
-            : `${proposta.extracao.ajustes.length} cores foram escurecidas ou clareadas`}{" "}
+            : `${String(proposta.extracao.ajustes.length)} cores foram escurecidas ou clareadas`}{" "}
           para o texto em cima delas continuar legível. O painel exige contraste
-          mínimo de 4,5 para 1 em texto. A cor do site aparece riscada ao lado
+          mínimo de 4,5 para 1 em texto. A cor original aparece riscada ao lado
           da aplicada.
         </p>
       )}
@@ -203,12 +228,12 @@ const FRASE_DO_LOGO: Readonly<Record<string, string>> = {
 function Amostra({
   papel,
   aplicada,
-  doSite,
+  original,
   ajuste,
 }: {
   readonly papel: keyof CoresDaMarca;
   readonly aplicada: string;
-  readonly doSite: string;
+  readonly original: string;
   readonly ajuste: AjusteDeContraste | null;
 }) {
   return (
@@ -256,7 +281,7 @@ function Amostra({
             {ajuste === null ? null : (
               <>
                 {" · "}
-                <s data-teste="cor-do-site">{doSite}</s>
+                <s data-teste="cor-original">{original}</s>
               </>
             )}
           </div>

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 244 tarefas: 173 pendentes e 71 já concluídas (5 no protótipo) |
+| **Total** | 257 tarefas: 174 pendentes e 83 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -37,27 +37,27 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 |---|---:|---:|---:|---:|---:|
 | [Fase 0 · Protótipo](#fase-0--protótipo--concluída) | 5 | — | — | — | **5 de 5** |
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
-| [Fase 1 · Contrato](#fase-1--contrato) | 107 | 61 | 42 | 4 | 60 de 107 |
-| [Fase 2 · Dado real](#fase-2--dado-real) | 56 | 28 | 25 | 3 | 0 de 56 |
+| [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
+| [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 18 de 75 |
 | [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 45 | 28 | 15 | 2 | 0 de 45 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **244** | **124** | **97** | **18** | **71 de 244** |
+| **Total** | **257** | **130** | **100** | **22** | **83 de 257** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
 **Caminho crítico.** F1 destrava tudo. Depois dela, F2 e F3 correm em paralelo — F3 depende do catálogo de métricas, não do dado real. F4 só começa quando F2 e F3 fecharem.
 
 ```
-   Fase 0 · Decisões e bootstrap ......  13 tarefas
+   Fase 0 · Decisões e bootstrap ......  14 tarefas
                  |
                  v
-   F1 · Contrato .......................  94 tarefas
+   F1 · Contrato .......................  101 tarefas
                  |
          +-------+-------+
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    56 tarefas         45 tarefas
+    75 tarefas         45 tarefas
          |               |
          +-------+-------+
                  |
@@ -143,7 +143,7 @@ A fase que transforma o protótipo em produto. Extrai a camada de dados para tr�
 
 > **Critério de saída:** A mesma tela roda com dois adaptadores distintos, e a suíte de contrato passa nos dois.
 
-*94 tarefas · 53 P0 · 37 P1 · 4 P2*
+*101 tarefas · 60 P0 · 37 P1 · 4 P2*
 
 - [X] **T-101** `P0` `M` `dados` Declarar os tipos do contrato de dados em pacote sem dependência de interface
   · **Aceite:** Query, DataSource, Meta, Kpi, PanelResponse e MetricValue são exportados de um pacote que não importa React nem Next (teste de grafo falha se importar); teste de tipo prova que Query aceita exatamente os 4 períodos, 3 entidades, 8 áreas e 4 modalidades e recusa qualquer outro literal; o ano **não** é literal em tipo — é validado contra os anos que `getMeta` declara (D-P8), e a matriz canônica de recortes vem de T-004, com a contagem calculada.
@@ -457,7 +457,7 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 
 > **Critério de saída:** O fechamento do mês confere com o relatório contábil oficial: zero divergência (objetivo O3).
 
-*56 tarefas · 28 P0 · 25 P1 · 3 P2*
+*75 tarefas · 35 P0 · 33 P1 · 7 P2*
 
 - [ ] **T-201** `P0` `L` `ingestao` Escrever a especificação entregável das 6 views de fato e das dimensões
   · **Aceite:** Documento com DDL de referência, dicionário coluna a coluna (nome, tipo, unidade, nulabilidade, domínio), grão declarado e chave primária de cada view, mais código estável, rótulo pt-BR e regra de valor desconhecido por dimensão; revisado por Controladoria e RH e entregue à TI como contrato de entrada.
@@ -669,6 +669,21 @@ Conecta o banco do cliente. É aqui que aparecem as divergências de definição
 - [ ] **T-273** `P2` `S` `dados` O delta de 12 meses passa a comparar com o ano anterior quando ele esta carregado
   · **Aceite:** com 2025 na base, `janelaAnterior` de um recorte de 12 meses de 2026 devolve os doze meses de 2025 em vez de nulo, e o cartao mostra a variacao contra o ano anterior; em fixtures (so 2026) continua nulo, e um teste fixa os dois caminhos.
   · **PRD:** RF-05, Anexo D achado 6, D-P8, D-DADOS · **Depende de:** T-270
+- [X] **T-274** `P1` `M` `plataforma` Armazem da marca em Postgres, no mesmo banco da replica, no lugar do blob nunca implementado
+  · **Aceite:** `MARCA_ARMAZEM=postgres` grava e le `amanna.marca_da_instalacao` (uma linha, `jsonb`, RLS ligada) por upsert; o DDL do adaptador e o da migracao `009_marca.sql` sao o mesmo texto, conferido por teste; o adaptador nao importa `pg` e entra por import dinamico; a suite de contrato do armazem roda nos tres modos, a de Postgres sobre o PGlite em processo; erro do driver vira `FalhaAoGravarMarca` so com o SQLSTATE; `42P01` em limpar e sucesso.
+  · **PRD:** secao 15, D1, D-MARCA, D-DADOS · **Depende de:** T-262, T-266
+- [X] **T-275** `P1` `M` `paineis` O segundo caminho da marca: nome, cinco cores e logo informados a mao, com o documento na versao 2
+  · **Aceite:** `POST /api/marca/manual` confere origem e perfil antes do corpo e o tamanho declarado antes de le-lo; cada cor passa por `normalizarCor`, o arquivo por `conferirLogo` e o nome pela forma do documento (ate 60, sem controle); a proposta tem `origem: manual`, passa pelo mesmo ajuste de contraste com a original riscada ao lado, e arquivo recusado mantem o logo em uso dizendo o motivo; o documento v2 le a v1 sem migracao; e2e cobre proposta, aplicacao, SVG com script recusado e nome longo recusado pela rota.
+  · **PRD:** secao 6.1, secao 13, secao 15, D-MARCA · **Depende de:** T-264, T-265
+- [X] **T-276** `P2` `S` `paineis` O nome da instalacao no cabecalho, no lugar do texto fixo
+  · **Aceite:** com marca que tem nome, o cabecalho escreve o nome quando nao ha logo e usa o nome como texto alternativo do logo; sem nome, o dominio do site; sem marca, "Controladoria" como sempre; o nome passa por `data-teste="nome-da-instalacao"` e o e2e confere.
+  · **PRD:** secao 6.1, D-MARCA · **Depende de:** T-275
+- [X] **T-277** `P2` `S` `seguranca` Fechar as lacunas de teste da marca e publicar quem a configura no contrato de autorizacao
+  · **Aceite:** teste de unidade cobre `origemPropria` (origem, anfitriao encaminhado, ausente, malformada), `conferirPedidoDeMarca` (403 por origem antes da identidade, 403 por perfil, segue para os dois que podem), `verTela` (303 relativo) e `EstiloDaMarca` (saida exata, cor fora da forma descartada, nonce); a varredura da paleta crua cobre `src/app/**` e `src/apresentacao/**` com excecoes nomeadas; `contratos/autorizacao.json` traz `configuramMarca` gerado de `PERFIS_QUE_CONFIGURAM_MARCA`.
+  · **PRD:** secao 11, secao 13, D-MARCA · **Depende de:** T-265
+- [ ] **T-278** `P2` `S` `plataforma` Memoria por processo da marca, com prazo curto — construida, medida e retirada; volta so com causa-raiz
+  · **Aceite:** a memoria por processo (30 s, esquecida a cada gravacao, `{ agora: true }` para a tela de configuracao e as rotas) fez a suite de e2e deixar navegacoes penduradas por 30 s em toda rodada, e a bisseccao apontou o `Date.now()` sincrono no comeco do render (D-MARCA); a tarefa so reabre com a causa no Next 16 entendida ou com a expiracao fora do caminho de render, e com a suite de e2e inteira verde tres vezes seguidas; ate la a leitura e uma por requisicao, e nenhum relogio e lido de forma sincrona no render.
+  · **PRD:** secao 13 (tempo de resposta), secao 15, D-MARCA · **Depende de:** T-262
 
 ---
 

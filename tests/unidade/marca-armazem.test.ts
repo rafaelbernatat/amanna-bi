@@ -4,11 +4,12 @@
  * entrada inválida, e os dois extremos da escala. Nenhuma delas é papel de
  * tema, e escrevê-las por outro caminho seria esconder o dado do caso.
  */
+import { readFileSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PALETA } from "@/apresentacao/tema/tema";
 import {
@@ -32,14 +33,23 @@ import {
   esquecerMarcaEmMemoria,
 } from "@/marca/armazens/memoria";
 import {
+  criarArmazemEmPostgres,
+  ddlDaMarca,
+  TABELA_DA_MARCA,
+} from "@/marca/armazens/postgres";
+import {
   ESTADO_VAZIO,
   lerEstado,
   lerMarca,
+  origemLegivel,
+  TETO_DO_NOME,
   VERSAO_DA_MARCA,
   type Marca,
 } from "@/marca/documento";
 import { registrarArmazensDoProduto } from "@/marca/registrar";
+import type { ClientePostgres } from "@/acesso/postgres/cliente";
 import { conferirAmbiente } from "@/seguranca/configuracao";
+import { criarClientePglite } from "../apoio/pglite";
 
 /**
  * O armazém da marca: a primeira escrita de estado do produto (D-MARCA).
@@ -51,7 +61,9 @@ import { conferirAmbiente } from "@/seguranca/configuracao";
 
 const MARCA: Marca = {
   versao: VERSAO_DA_MARCA,
+  origem: "site",
   site: "https://dreamy.com.br/",
+  nome: null,
   cores: {
     marca: PALETA.marca,
     marcaEscura: PALETA.marcaEscura,
@@ -155,6 +167,37 @@ suiteDeContrato("arquivo", async () => {
   };
 });
 
+/*
+ * O Postgres, num banco em processo.
+ *
+ * Um PGlite por arquivo, e uma tabela por caso: subir o banco custa um ou
+ * dois segundos, e a tabela é o que isola um caso do outro. O mesmo DDL, o
+ * mesmo upsert e o mesmo `DELETE` que rodam no Supabase rodam aqui — é o
+ * PGlite que provou a carga inteira antes de H-65 (D-DADOS).
+ */
+let pglite: Promise<ClientePostgres> | null = null;
+function bancoEmProcesso(): Promise<ClientePostgres> {
+  pglite ??= criarClientePglite();
+  return pglite;
+}
+let contadorDeTabelas = 0;
+
+suiteDeContrato("postgres", async () => {
+  const cliente = await bancoEmProcesso();
+  contadorDeTabelas += 1;
+  const tabela = `amanna.marca_teste_${String(contadorDeTabelas)}`;
+  return {
+    armazem: criarArmazemEmPostgres({ cliente, tabela }),
+    encerrar: async () => {
+      await cliente.consultar(`DROP TABLE IF EXISTS ${tabela}`);
+    },
+  };
+});
+
+afterAll(async () => {
+  if (pglite !== null) await (await pglite).encerrar();
+});
+
 /* ------------------------------------------------------------------ *
  * O que é próprio do adaptador de arquivo
  * ------------------------------------------------------------------ */
@@ -212,6 +255,184 @@ describe("o armazém em arquivo", () => {
       .catch(() => undefined);
     // O diretório original continua com o único arquivo que criamos.
     expect(await readFile(arquivo, "utf8")).toBe("x");
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * O que é próprio do adaptador de Postgres
+ * ------------------------------------------------------------------ */
+
+/**
+ * Um cliente falso que responde às quatro consultas do armazém e anota cada
+ * uma. É o que permite provar a **forma** das consultas — DDL uma vez, upsert,
+ * código de erro — sem depender do banco em processo.
+ */
+function clienteFalso(
+  opcoes: { readonly falharEm?: (sql: string) => Error | null } = {},
+) {
+  const chamadas: { sql: string; parametros: readonly unknown[] }[] = [];
+  let linha: { documento: unknown } | null = null;
+  const cliente: ClientePostgres = {
+    async consultar<T>(sql: string, parametros: readonly unknown[] = []) {
+      chamadas.push({ sql, parametros });
+      const erro = opcoes.falharEm?.(sql) ?? null;
+      if (erro !== null) throw erro;
+      if (/^SELECT/i.test(sql)) {
+        return (linha === null ? [] : [linha]) as unknown as readonly T[];
+      }
+      if (/^INSERT/i.test(sql)) {
+        linha = { documento: JSON.parse(String(parametros[0])) };
+      }
+      if (/^DELETE/i.test(sql)) linha = null;
+      return [] as readonly T[];
+    },
+    transacao: async (f) => f(cliente),
+    encerrar: async () => undefined,
+  };
+  return { cliente, chamadas };
+}
+
+function erroDoDriver(code: string, message: string): Error {
+  return Object.assign(new Error(message), { code, name: "error" });
+}
+
+const ESTADO_COM_MARCA = {
+  versao: VERSAO_DA_MARCA,
+  aplicada: MARCA,
+  proposta: null,
+} as const;
+
+describe("o armazém em Postgres", () => {
+  it("aplica o DDL uma vez por instância, e depois só o upsert", async () => {
+    const { cliente, chamadas } = clienteFalso();
+    const armazem = criarArmazemEmPostgres({ cliente });
+    await armazem.gravar(ESTADO_COM_MARCA);
+    await armazem.gravar(ESTADO_COM_MARCA);
+
+    const ddl = chamadas.filter((c) =>
+      /CREATE TABLE IF NOT EXISTS/.test(c.sql),
+    );
+    const upserts = chamadas.filter((c) => /^INSERT/.test(c.sql));
+    expect(ddl).toHaveLength(1);
+    expect(upserts).toHaveLength(2);
+    for (const u of upserts) {
+      expect(u.sql).toContain("ON CONFLICT (id) DO UPDATE");
+      expect(u.sql).toContain(TABELA_DA_MARCA);
+      // O documento vai como parâmetro, nunca concatenado no texto.
+      expect(u.parametros).toHaveLength(1);
+      expect(u.sql).not.toContain("dreamy");
+    }
+  });
+
+  it("ler não cria tabela nem escreve nada", async () => {
+    const { cliente, chamadas } = clienteFalso();
+    await criarArmazemEmPostgres({ cliente }).ler();
+    expect(chamadas).toHaveLength(1);
+    expect(chamadas[0]?.sql).toMatch(/^SELECT/);
+  });
+
+  it("o que o upsert grava é o que o SELECT devolve", async () => {
+    const { cliente } = clienteFalso();
+    const armazem = criarArmazemEmPostgres({ cliente });
+    await armazem.gravar(ESTADO_COM_MARCA);
+    expect((await armazem.ler()).aplicada).toEqual(MARCA);
+  });
+
+  it("ler com o banco fora devolve o estado vazio, sem lançar", async () => {
+    const { cliente } = clienteFalso({
+      falharEm: (sql) =>
+        /^SELECT/.test(sql) ? erroDoDriver("08006", "connection lost") : null,
+    });
+    expect(await criarArmazemEmPostgres({ cliente }).ler()).toEqual(
+      ESTADO_VAZIO,
+    );
+  });
+
+  /**
+   * O erro do driver não chega à tela. A mensagem pode carregar o texto da
+   * consulta — e o texto da consulta carrega o documento inteiro, com logo e
+   * sujeito. Só o código SQLSTATE passa.
+   */
+  it("gravação que falha lança com o código, e sem a mensagem do driver", async () => {
+    const { cliente } = clienteFalso({
+      falharEm: (sql) =>
+        /^INSERT/.test(sql)
+          ? erroDoDriver("28000", "senha do banco é segredo123")
+          : null,
+    });
+    const armazem = criarArmazemEmPostgres({ cliente });
+    const erro = await armazem
+      .gravar(ESTADO_COM_MARCA)
+      .then(() => null)
+      .catch((e: unknown) => e);
+    expect(erro).toBeInstanceOf(FalhaAoGravarMarca);
+    expect(String(erro)).toContain("28000");
+    expect(String(erro)).not.toContain("segredo123");
+  });
+
+  it("DDL que falhou é tentado de novo na gravação seguinte", async () => {
+    let vezes = 0;
+    const { cliente, chamadas } = clienteFalso({
+      falharEm: (sql) => {
+        if (!/CREATE TABLE/.test(sql)) return null;
+        vezes += 1;
+        return vezes === 1 ? erroDoDriver("57P01", "admin shutdown") : null;
+      },
+    });
+    const armazem = criarArmazemEmPostgres({ cliente });
+    await expect(armazem.gravar(ESTADO_COM_MARCA)).rejects.toBeInstanceOf(
+      FalhaAoGravarMarca,
+    );
+    await expect(armazem.gravar(ESTADO_COM_MARCA)).resolves.toBeUndefined();
+    expect(chamadas.filter((c) => /CREATE TABLE/.test(c.sql))).toHaveLength(2);
+  });
+
+  it("limpar uma tabela que não existe é sucesso", async () => {
+    const { cliente } = clienteFalso({
+      falharEm: (sql) =>
+        /^DELETE/.test(sql)
+          ? erroDoDriver("42P01", "relation does not exist")
+          : null,
+    });
+    await expect(
+      criarArmazemEmPostgres({ cliente }).limpar(),
+    ).resolves.toBeUndefined();
+  });
+
+  it("limpar que falha por outra razão lança", async () => {
+    const { cliente } = clienteFalso({
+      falharEm: (sql) =>
+        /^DELETE/.test(sql) ? erroDoDriver("42501", "permission denied") : null,
+    });
+    await expect(
+      criarArmazemEmPostgres({ cliente }).limpar(),
+    ).rejects.toBeInstanceOf(FalhaAoGravarMarca);
+  });
+
+  it("nome de tabela fora da forma é recusado antes de qualquer consulta", () => {
+    const { cliente, chamadas } = clienteFalso();
+    expect(() =>
+      criarArmazemEmPostgres({ cliente, tabela: "amanna.marca; DROP TABLE x" }),
+    ).toThrow(/forma/);
+    expect(chamadas).toHaveLength(0);
+  });
+
+  /**
+   * O DDL do módulo e o da migração da carga são o mesmo texto, fora
+   * comentário e espaço. Se divergirem, a instalação que ligou a marca antes
+   * da carga fica com uma tabela, e a que rodou a carga fica com outra.
+   */
+  it("o DDL é o mesmo da migração 009_marca.sql", () => {
+    const normalizar = (sql: string) =>
+      sql.replace(/--.*$/gm, "").replace(/\s+/g, " ").trim();
+    const migracao = normalizar(
+      readFileSync(
+        join(process.cwd(), "ferramentas", "dados", "sql", "009_marca.sql"),
+        "utf8",
+      ),
+    );
+    expect(normalizar(ddlDaMarca())).toContain(migracao);
+    expect(ddlDaMarca()).toContain("ENABLE ROW LEVEL SECURITY");
   });
 });
 
@@ -308,6 +529,72 @@ describe("ler o documento guardado", () => {
     expect(
       lerMarca({ ...MARCA, cores: { ...MARCA.cores, marca: "red" } }),
     ).toBeNull();
+  });
+
+  /**
+   * A versão 1 só conhecia o site. Ela continua sendo lida — como origem
+   * `site`, sem nome — e sai já na forma atual, para a próxima gravação
+   * escrever a versão 2 sem ninguém migrar nada.
+   */
+  it("lê a versão 1 como origem site, sem nome, e devolve a versão atual", () => {
+    const { origem: _origem, nome: _nome, ...v1 } = MARCA;
+    const lida = lerMarca({ ...v1, versao: 1 });
+    expect(lida).toEqual({ ...MARCA, versao: VERSAO_DA_MARCA });
+  });
+
+  it("um estado da versão 1 lê a proposta com coresDoSite", () => {
+    const estado = lerEstado({
+      versao: 1,
+      aplicada: null,
+      proposta: {
+        site: "https://dreamy.com.br/",
+        cores: MARCA.cores,
+        coresDoSite: MARCA.cores,
+        logo: null,
+        logoRecusado: null,
+        extracao: MARCA.extracao,
+        candidatos: 3,
+        avisos: [],
+        propostaEm: "2026-09-04T12:00:00.000Z",
+      },
+    });
+    expect(estado.versao).toBe(VERSAO_DA_MARCA);
+    expect(estado.proposta?.origem).toBe("site");
+    expect(estado.proposta?.coresOriginais).toEqual(MARCA.cores);
+    expect(estado.proposta?.nome).toBeNull();
+  });
+
+  it("origem manual não tem site, e origem site não fica sem", () => {
+    expect(
+      lerMarca({ ...MARCA, origem: "manual", site: null, nome: "Dreamy" }),
+    ).not.toBeNull();
+    expect(lerMarca({ ...MARCA, origem: "manual" })).toBeNull();
+    expect(lerMarca({ ...MARCA, origem: "site", site: null })).toBeNull();
+    expect(lerMarca({ ...MARCA, origem: "internet" })).toBeNull();
+  });
+
+  it.each([
+    ["longo demais", "x".repeat(TETO_DO_NOME + 1)],
+    ["com caractere de controle", "Dreamy\u0000"],
+    ["com espaço sobrando", " Dreamy "],
+    ["que não é texto", 12],
+  ])("recusa nome %s", (_, nome) => {
+    expect(lerMarca({ ...MARCA, nome })).toBeNull();
+  });
+
+  it("aceita nome dentro da forma, e ausência vale nulo", () => {
+    expect(lerMarca({ ...MARCA, nome: "Dreamy S.A." })?.nome).toBe(
+      "Dreamy S.A.",
+    );
+    expect(lerMarca({ ...MARCA, nome: "" })?.nome).toBeNull();
+    expect(lerMarca({ ...MARCA, nome: undefined })?.nome).toBeNull();
+  });
+
+  it("a origem legível é o domínio, ou a expressão do caminho manual", () => {
+    expect(origemLegivel(MARCA)).toBe("dreamy.com.br");
+    expect(origemLegivel({ origem: "manual", site: null })).toBe(
+      "cores informadas à mão",
+    );
   });
 
   it("documento quebrado vira estado vazio, e não exceção", () => {

@@ -2,6 +2,10 @@
   "origem": "src/seguranca/autorizacao.ts (T-173) — derivado, nao editar a mao",
   "regra": "PRD secao 11: concessao por modulo; excecoes explicitas com motivo",
   "excecoes": [],
+  "configuramMarca": {
+    "regra": "D-MARCA: a marca e configuracao da instalacao, fora da matriz de leitura",
+    "perfis": ["diretoria", "controller"]
+  },
   "totais": {
     "diretoria": 71,
     "controller": 27,
