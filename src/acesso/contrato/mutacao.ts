@@ -43,7 +43,9 @@ import type {
   Meta,
   MetricValue,
   PanelResponse,
+  PedidoDeRanking,
   Query,
+  Ranking,
 } from "@/semantica/contrato";
 import {
   AGREGADO_DE_AREA,
@@ -334,6 +336,20 @@ export function criarFonteDeMutacao(base: DataSource): DataSource {
           ...metrica.serie,
           values: escalarSerie(metrica.serie.values, k),
         },
+      };
+    },
+
+    async getRanking(pedido: PedidoDeRanking, q: Query): Promise<Ranking> {
+      // O mesmo defeito, no ranking: lê o consolidado e escala cada item.
+      const k = fatorDoRecorte(q);
+      const ranking = await base.getRanking(pedido, consolidada(q));
+      return {
+        ...ranking,
+        total: escalar(ranking.total, k),
+        itens: ranking.itens.map((item) => ({
+          ...item,
+          valor: escalar(item.valor, k),
+        })),
       };
     },
   };

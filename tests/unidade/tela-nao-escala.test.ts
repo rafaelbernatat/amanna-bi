@@ -140,6 +140,9 @@ function fonteArbitraria(
     getMetric(_id: string, _q: Query): Promise<MetricValue> {
       throw new Error("getMetric não é usada por este teste.");
     },
+    getRanking(): never {
+      throw new Error("getRanking não é usada por este teste.");
+    },
   };
 }
 

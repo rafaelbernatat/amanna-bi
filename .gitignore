@@ -67,3 +67,6 @@ Thumbs.db
 # codigo: `npm run dados:carregar` a le e grava no Postgres. Versionar 82 MB
 # por commit nao cabe no git; o dicionario de dados, que e texto, fica.
 docs/dados/*.csv
+
+# O ensaio da base em PGlite (npm run dados:ensaio): saida, nao fonte.
+/.ensaio/

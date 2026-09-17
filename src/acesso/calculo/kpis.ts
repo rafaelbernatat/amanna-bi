@@ -962,23 +962,30 @@ const CALCULO: Readonly<Record<string, Calculo>> = {
       custoDasVendas(r),
     ),
 
+  /*
+   * PMR + PME − PMP, e nulo se qualquer um dos três for nulo.
+   *
+   * A primeira versão tratava prazo desconhecido como zero, e o cartão dizia
+   * "ciclo de 67 dias" enquanto a régua da mesma tela dizia "sem dado" — foi
+   * a suíte de contrato em modo warehouse que pegou, no dia em que o estoque
+   * veio nulo da base. Zero é "o estoque gira no mesmo dia"; ausência é "não
+   * sabemos", e as duas não podem ter o mesmo número (PR-4).
+   */
   ciclo_financeiro: (r) => {
-    const dePrazo = (n: number | null, d: number | null) => prazo(n, d) ?? 0;
-    if (receita(r) === null) return null;
-    return (
-      dePrazo(
-        noFim("vw_fato_contas", r, (l) => l.aReceber),
-        receita(r),
-      ) +
-      dePrazo(
-        noFim("vw_fato_fin_mes", r, (l) => l.estoque),
-        custoDasVendas(r),
-      ) -
-      dePrazo(
-        noFim("vw_fato_contas", r, (l) => l.aPagar),
-        custoDasVendas(r),
-      )
+    const pmr = prazo(
+      noFim("vw_fato_contas", r, (l) => l.aReceber),
+      receita(r),
     );
+    const pme = prazo(
+      noFim("vw_fato_fin_mes", r, (l) => l.estoque),
+      custoDasVendas(r),
+    );
+    const pmp = prazo(
+      noFim("vw_fato_contas", r, (l) => l.aPagar),
+      custoDasVendas(r),
+    );
+    if (pmr === null || pme === null || pmp === null) return null;
+    return pmr + pme - pmp;
   },
 
   ticket_medio: (r) =>

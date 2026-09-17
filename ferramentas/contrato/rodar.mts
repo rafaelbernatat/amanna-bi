@@ -10,15 +10,14 @@
  * Se a suíte precisasse de um caso a mais no warehouse, ela deixaria de provar
  * o que existe para provar.
  *
- * ## O que acontece hoje com `--source=warehouse`
+ * ## `--source=warehouse`
  *
- * O adaptador de warehouse é da Fase 2 e ainda não está registrado. O comando
- * **aceita** o modo, pede a fonte pela fábrica, e falha com `FonteInvalida`
- * dizendo "modo válido, mas sem implementação registrada".
- *
- * Isso é diferente de recusar o flag: o caminho está montado e é o mesmo. No
- * dia em que o adaptador entrar, nada aqui muda — e é exatamente essa a
- * promessa do RF-21 que a Fase 2 vai cobrar.
+ * O adaptador de warehouse existe desde D-DADOS e lê a base Amanna do
+ * Postgres em `DATABASE_URL`. Sem banco externo, `CONTRATO_PGLITE=<pasta>`
+ * aponta para a base que `npm run dados:ensaio` carregou num Postgres em
+ * processo, e a suíte roda idêntica — foi assim que o RF-21 foi provado nos
+ * dois modos pela primeira vez (768 recortes, nenhuma divergência), antes de o
+ * projeto Supabase existir (H-65).
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -27,11 +26,11 @@ import { fileURLToPath } from "node:url";
 
 import { parse } from "yaml";
 
-import { dimensoesProvisorias } from "../../src/acesso/dimensoes-provisorias.ts";
 import {
   FONTES,
   FonteInvalida,
   obterFonteDeDados,
+  registrarFonte,
 } from "../../src/acesso/fabrica.ts";
 import "../../src/acesso/registrar.ts";
 import "../../src/acesso/contrato/registrar.ts";
@@ -135,7 +134,36 @@ const quantosCasos = Array.isArray((casos as { casos?: unknown }).casos)
   : 0;
 
 const matriz = recortesDaMatriz();
-const ano = dimensoesProvisorias().ano?.[0] ?? "";
+
+/*
+ * O warehouse sobre o Postgres em processo (D-DADOS).
+ *
+ * `CONTRATO_PGLITE=<pasta>` aponta para a base que `npm run dados:ensaio`
+ * carregou. A suíte roda então **exatamente** como rodaria contra o Supabase
+ * — mesma migração, mesmas views, mesmo adaptador —, só que sem banco externo.
+ * É o que permite provar o RF-21 nos dois modos antes de H-65 entregar a
+ * conexão. Sem a variável, `warehouse` vai pela fábrica como sempre, lendo
+ * DATABASE_URL.
+ */
+const pastaDoPglite = process.env["CONTRATO_PGLITE"];
+if (
+  fonteEscolhida === "warehouse" &&
+  pastaDoPglite !== undefined &&
+  pastaDoPglite !== ""
+) {
+  const [{ criarClientePglite }, { criarFonteDeWarehouse }] = await Promise.all(
+    [
+      import("../dados/pglite.ts"),
+      import("../../src/acesso/warehouse/adaptador.ts"),
+    ],
+  );
+  registrarFonte("warehouse", async () =>
+    criarFonteDeWarehouse(
+      await criarClientePglite(resolve(RAIZ, pastaDoPglite)),
+    ),
+  );
+  console.log(`warehouse em PGlite: ${resolve(RAIZ, pastaDoPglite)}`);
+}
 
 console.log(
   `suíte de contrato · ${fonteEscolhida} · ${String(matriz.length)} recortes · ` +
@@ -153,6 +181,8 @@ console.log(
  */
 try {
   const fonte = await obterFonteDeDados({ DATA_SOURCE: fonteEscolhida });
+  // O ano de referência vem do dado, e não de uma lista escrita (D-P8).
+  const ano = (await fonte.getMeta()).dimensoes.ano?.[0] ?? "";
   const relatorio = await rodarSuite(fonte, fonteEscolhida, matriz, ano);
   const texto = relatorioEmTexto(relatorio);
   console.log(texto);

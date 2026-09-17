@@ -26,6 +26,7 @@ import { calcularKpis } from "@/acesso/calculo/kpis";
 import { calcularMeta } from "@/acesso/calculo/meta";
 import { calcularMetrica } from "@/acesso/calculo/metricas";
 import { calcularPainel } from "@/acesso/calculo/paineis";
+import { calcularRanking } from "@/acesso/calculo/ranking";
 import { linhasDoRecorte, recortar, somar } from "@/acesso/calculo/recorte";
 import { BASE_DE_FIXTURES } from "@/acesso/fixtures/base";
 import type {
@@ -34,7 +35,9 @@ import type {
   Meta,
   MetricValue,
   PanelResponse,
+  PedidoDeRanking,
   Query,
+  Ranking,
 } from "@/semantica/contrato";
 
 /**
@@ -128,6 +131,9 @@ export function criarFonteDeFixtures(): DataSource {
       // Métrica fora do catálogo lança `MetricaDesconhecida`, com sugestões:
       // ver o cabeçalho de `metricas.ts`.
       return Promise.resolve(calcularMetrica(BASE_DE_FIXTURES, id, q));
+    },
+    getRanking(pedido: PedidoDeRanking, q: Query): Promise<Ranking> {
+      return Promise.resolve(calcularRanking(BASE_DE_FIXTURES, pedido, q));
     },
   };
 }

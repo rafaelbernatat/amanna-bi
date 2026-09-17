@@ -133,6 +133,12 @@ export type Cadastros = {
   readonly cargo: readonly FaixaDeCadastro[];
   /** As UFs do cadastro, em código. */
   readonly uf: readonly string[];
+  /** Os clientes com nome, para o ranking rotular. A carteira inteira na base. */
+  readonly clientes: readonly ItemDeCadastro[];
+  /** Os fornecedores com nome, idem. */
+  readonly fornecedores: readonly ItemDeCadastro[];
+  /** O plano de contas: código e descrição. Vazio na fixture, que não tem razão. */
+  readonly contas: readonly ItemDeCadastro[];
 };
 
 export type Base = {

@@ -25,8 +25,11 @@ import type {
   Meta,
   MetricValue,
   PanelResponse,
+  PedidoDeRanking,
   Query,
+  Ranking,
 } from "@/semantica/contrato";
+import { dimensaoDeRankingValida } from "@/semantica/contrato";
 import { validarQuery } from "@/semantica/query";
 import type { Dimensoes } from "@/semantica/recortes";
 import type { AccessScope, MotivoDeRecusa } from "@/seguranca/identidade";
@@ -71,7 +74,21 @@ export type Denied = {
 };
 export type Escopado = Allowed | Denied;
 
-/** A porta de leitura protegida — as quatro da seção 9.1. */
+/**
+ * Um pedido de ranking vindo de fora: a dimensão é texto até ser validada.
+ *
+ * Mesma razão de `PedidoDeLeitura.breakdown`: ela chega do chat, onde o
+ * modelo a escreveu, e tipá-la como `DimensaoDeRanking` aqui daria a
+ * impressão de já ter sido conferida.
+ */
+export type PedidoDeRankingExterno = {
+  readonly metrica: string;
+  readonly dimensao: string;
+  readonly limite: number;
+  readonly ordem?: "maior" | "menor";
+};
+
+/** A porta de leitura protegida — as quatro da seção 9.1, mais o ranking. */
 export type Fronteira = {
   lerMeta(): Promise<Meta>;
   lerPainel(pedido: PedidoDeLeitura): Promise<PanelResponse>;
@@ -81,6 +98,7 @@ export type Fronteira = {
     consulta: Query,
     breakdown: string,
   ): Promise<MetricValue>;
+  lerRanking(pedido: PedidoDeRankingExterno, consulta: Query): Promise<Ranking>;
 };
 
 /**
@@ -183,6 +201,29 @@ export function criarFronteira(
     async lerMetrica(id, consulta, breakdown) {
       const autorizada = autorizar(consulta, breakdown);
       return fonte.getMetric(id, autorizada);
+    },
+
+    async lerRanking(pedido, consulta) {
+      /*
+       * A dimensão passa pela mesma disciplina do breakdown: vocabulário
+       * fechado, e recusa que lança antes de qualquer toque no adaptador.
+       * Nenhuma das oito dimensões é pessoa; pedir "colaborador" ou "cpf"
+       * cai aqui, com o motivo que vira linha de auditoria.
+       */
+      if (!dimensaoDeRankingValida(pedido.dimensao)) {
+        throw new GraoProibido(
+          "breakdown_fora_do_vocabulario",
+          pedido.dimensao,
+        );
+      }
+      const autorizada = autorizar(consulta, "none");
+      const validado: PedidoDeRanking = {
+        metrica: pedido.metrica,
+        dimensao: pedido.dimensao,
+        limite: pedido.limite,
+        ...(pedido.ordem === undefined ? {} : { ordem: pedido.ordem }),
+      };
+      return fonte.getRanking(validado, autorizada);
     },
   };
 
