@@ -353,7 +353,20 @@ describe("T-106 · fronteira de camadas", () => {
 
   const TODOS = [...varrer(join(RAIZ, "src"))].map((c) => relative(RAIZ, c));
 
-  const FORA_DA_FABRICA = TODOS.filter((c) => c !== FABRICA);
+  /**
+   * Quem pode importar o driver do banco.
+   *
+   * A fábrica nunca importou `pg` — o cabeçalho dela diz que o registro é
+   * explícito justamente para não trazer implementação nenhuma. Quem importa
+   * é o módulo de conexão, e só ele: adaptador de warehouse, carga, marca e
+   * chat recebem um `ClientePostgres` e nunca veem o driver (D-DADOS).
+   */
+  const CLIENTE_POSTGRES = join("src", "acesso", "postgres", "cliente.ts");
+  const PODEM_IMPORTAR_DRIVER = [FABRICA, CLIENTE_POSTGRES];
+
+  const FORA_DA_FABRICA = TODOS.filter(
+    (c) => !PODEM_IMPORTAR_DRIVER.includes(c),
+  );
 
   it("há arquivos para inspecionar, e a fábrica está entre eles", () => {
     expect(TODOS.length).toBeGreaterThan(10);
@@ -369,6 +382,13 @@ describe("T-106 · fronteira de camadas", () => {
       padrao.test(semComentarios(c)),
     );
     expect(infratores).toEqual([]);
+  });
+
+  it("o driver do banco entra por um módulo só, dentro da camada de acesso", () => {
+    const importam = TODOS.filter((c) =>
+      /from\s+["']pg["']/.test(semComentarios(c)),
+    );
+    expect(importam).toEqual([CLIENTE_POSTGRES]);
   });
 
   it("nenhum arquivo de apresentação constrói adaptador por conta própria", () => {

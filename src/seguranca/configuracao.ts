@@ -130,11 +130,34 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     conferir: umDentre(["fixtures", "oidc"]),
   },
   {
+    /*
+     * A conexão com o Postgres.
+     *
+     * Serve a réplica em warehouse (seção 10) **e** a marca da instalação
+     * (D-MARCA): é a URL do pooler em modo transação. A carga dos CSVs usa a
+     * de modo sessão, abaixo, porque `COPY` não atravessa o modo transação.
+     */
     nome: "DATABASE_URL",
-    proposito: "conexão com a réplica em warehouse (seção 10)",
+    proposito:
+      "conexão com o Postgres: réplica em warehouse (seção 10) e marca da instalação (D-MARCA)",
     obrigatoria: false,
     segredo: true,
     conferir: urlComEsquema(["postgres", "postgresql"]),
+  },
+  {
+    nome: "DATABASE_URL_CARGA",
+    proposito:
+      "conexão em modo sessão para a carga dos CSVs (D-DADOS); sem ela a carga usa DATABASE_URL",
+    obrigatoria: false,
+    segredo: true,
+    conferir: urlComEsquema(["postgres", "postgresql"]),
+  },
+  {
+    nome: "DATABASE_SSL_CA",
+    proposito:
+      "autoridade certificadora em PEM, só quando a cadeia do banco exigir (D-DADOS)",
+    obrigatoria: false,
+    segredo: false,
   },
   {
     nome: "ANTHROPIC_API_KEY",
@@ -166,6 +189,13 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     segredo: false,
   },
   {
+    nome: "OPENROUTER_MODEL_FERRAMENTAS",
+    proposito:
+      "qual modelo compõe leituras com ferramentas (D-CHAT-ferramentas); sem ela vale OPENROUTER_MODEL",
+    obrigatoria: false,
+    segredo: false,
+  },
+  {
     /*
      * A personalização visual por empresa (D-MARCA).
      *
@@ -185,13 +215,6 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     obrigatoria: false,
     segredo: false,
     conferir: caminhoAbsoluto(),
-  },
-  {
-    nome: "MARCA_BLOB_TOKEN",
-    proposito: "credencial do armazém de marca em nuvem (D-MARCA)",
-    obrigatoria: false,
-    segredo: true,
-    conferir: comprimentoMinimo(20),
   },
   {
     nome: "MARCA_SITE",
@@ -271,7 +294,8 @@ export function conferirAmbiente(
       variavel: "MARCA_ARMAZEM",
       problema:
         "'arquivo' num ambiente de disco efêmero: a gravação sucede e a marca " +
-        "some no próximo início. Use 'blob' aqui, e 'arquivo' onde há volume",
+        "some no próximo início. Use 'postgres' aqui (com DATABASE_URL), e " +
+        "'arquivo' onde há volume",
     });
   }
   if (armazemEmMemoriaComDadoReal(ambiente)) {

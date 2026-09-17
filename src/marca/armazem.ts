@@ -10,7 +10,8 @@
  *
  * ## A assimetria de erro é proposital
  *
- * `ler()` devolve `null` em qualquer falha; `gravar()` e `limpar()` lançam.
+ * `ler()` devolve o estado vazio em qualquer falha; `gravar()` e `limpar()`
+ * lançam.
  *
  * Não é inconsistência. Armazém fora do ar não pode derrubar treze telas, e
  * "ainda não configuraram a marca" é um estado legítimo que se parece com
@@ -36,8 +37,15 @@ export type ArmazemDaMarca = {
   limpar(): Promise<void>;
 };
 
-/** Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação. */
-export const ARMAZENS = ["memoria", "arquivo", "blob"] as const;
+/**
+ * Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação.
+ *
+ * `postgres` substituiu o `blob` que a primeira versão de D-MARCA declarou e
+ * nunca implementou: a marca mora no mesmo banco da réplica (D-DADOS), e o
+ * modo é o único que funciona em nuvem — `arquivo` é recusado em disco efêmero
+ * e `memoria` perde tudo a cada início.
+ */
+export const ARMAZENS = ["memoria", "arquivo", "postgres"] as const;
 export type ModoDeArmazem = (typeof ARMAZENS)[number];
 
 export class ArmazemInvalido extends Error {
