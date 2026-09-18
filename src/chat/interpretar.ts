@@ -28,6 +28,7 @@
  * o que permite recusar com utilidade em vez de chutar.
  */
 
+import { NOMES_DE_MES, mesesNomeados } from "@/chat/mes";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO, type Query } from "@/semantica/contrato";
 import {
@@ -67,6 +68,13 @@ export type Intencao = {
   readonly confianca: number;
   /** Métricas próximas, para quando a confiança é baixa. */
   readonly alternativas: readonly string[];
+  /**
+   * A pergunta não é sobre os dados da empresa — capital de país, piada,
+   * poema. Só o modelo sabe dizer isso; o casamento local não distingue
+   * "métrica que não temos" de "assunto que não é nosso". A recusa muda de
+   * frase: oferecer "as métricas mais próximas" de uma piada é ruído.
+   */
+  readonly foraDoAssunto?: boolean;
 };
 
 /** Abaixo disto, o chat pergunta em vez de responder (seção 7.2). */
@@ -293,6 +301,9 @@ export function filtrosDaPergunta(pergunta: string, atuais: Query): Query {
  * orquestração; aqui só se responde se há recorte novo na pergunta.
  */
 export function mudaRecorte(pergunta: string, atuais: Query): boolean {
+  // Mês nomeado é recorte, mesmo sem ser valor de filtro: "e em março?"
+  // continua a conversa como "e em dezembro?" continua (`mes.ts`).
+  if (mesesNomeados(pergunta).length > 0) return true;
   const pedidos = filtrosDaPergunta(pergunta, atuais);
   return FILTROS.some((campo) => pedidos[campo] !== atuais[campo]);
 }
@@ -303,6 +314,8 @@ const TERMOS_DE_RECORTE: readonly string[] = [
   ...Object.values(DIMENSOES).flatMap((valores) =>
     valores.map((v) => v.rotulo),
   ),
+  ...NOMES_DE_MES,
+  "mes",
 ]
   .map(normalizar)
   .sort((a, b) => b.length - a.length);

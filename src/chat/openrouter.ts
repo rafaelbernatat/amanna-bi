@@ -58,6 +58,8 @@ export type IntencaoBruta = {
   readonly metrica: string;
   readonly confianca: number;
   readonly alternativas: readonly string[];
+  /** A pergunta não é sobre os dados da empresa. Ver `Intencao.foraDoAssunto`. */
+  readonly foraDoAssunto?: boolean;
 };
 
 const INSTRUCAO_DE_INTERPRETACAO = `Você interpreta perguntas sobre um painel de controladoria.
@@ -70,6 +72,15 @@ Regras:
 - Você NÃO calcula nem estima número nenhum. Sua saída é só a intenção.
 - Se a pergunta não corresponder a nenhuma métrica da lista, devolva
   {"metrica": "", "confianca": 0, "alternativas": [os 3 ids mais próximos]}.
+- Se a pergunta NÃO for sobre os dados da empresa — finanças, controladoria,
+  orçamento, caixa, pessoas e RH — e sim conhecimento geral, notícia, clima,
+  política, piada, poema, programação, conselho pessoal ou conversa, devolva
+  {"metrica": "", "confianca": 0, "alternativas": [], "foraDoAssunto": true}.
+  Pergunta de negócio sem métrica na lista NÃO é fora do assunto.
+- Um termo que aparece em "também:" de uma métrica é o nome dela para quem
+  pergunta: "faturamento" sozinho é a métrica que o lista, e só "faturamento
+  bruto" é a outra. Mês, ano, unidade e área na pergunta são recorte, não
+  mudam a métrica.
 - "confianca" baixa quando a pergunta couber em mais de uma métrica.
 - Quando houver "Conversa até aqui", ela é contexto. Se a pergunta atual for
   continuação da anterior — só troca o recorte ("e em dezembro?", "e na
@@ -148,6 +159,8 @@ export async function interpretarComGateway(
     alternativas: Array.isArray(bruto.alternativas)
       ? bruto.alternativas.filter((a): a is string => typeof a === "string")
       : [],
+    // Só vale junto da recusa: métrica escolhida é pergunta do assunto.
+    foraDoAssunto: bruto.foraDoAssunto === true && bruto.metrica === "",
   };
 }
 
@@ -165,8 +178,11 @@ ${REGRAS_DE_NUMERO}
 
 A estrutura, nesta ordem, num só parágrafo de até oito frases:
 1. O número e o período: "{metrica} foi {formatado} nos {periodo} até
-   {fechamento}". Se "formatado" for nulo, diga que não há dado neste recorte e
-   pare.
+   {fechamento}". Se "mes" não for nulo, o número é de UM MÊS SÓ: escreva
+   "{metrica} foi {formatado} em {mes}", sem "nos {periodo}" e sem "até", e
+   não o chame de acumulado nem de resultado do ano; os outros pontos do
+   "grafico" são os outros meses do mesmo ano. Se "formatado" for nulo, diga
+   que não há dado neste recorte e pare.
 2. "Traduzindo:" — o que o número quer dizer para o negócio. Se
    "traducao.emReais" existir, use a base de "traducao.base" com esse valor
    copiado como está, sinal incluído: porcentagem lê-se a cada R$ 100 ("a

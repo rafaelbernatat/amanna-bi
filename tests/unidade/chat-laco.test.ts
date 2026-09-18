@@ -7,6 +7,7 @@ import {
   resolverComposta,
 } from "@/chat/laco";
 import { redigirResposta, resolverPergunta } from "@/chat/perguntar";
+import { RECUSA_FORA_DO_ASSUNTO } from "@/chat/recusa";
 import {
   conversarComFerramentas,
   type Chamada,
@@ -398,5 +399,47 @@ describe("resolverComposta", () => {
     );
     if (resposta.tipo !== "resposta") throw new Error("esperava resposta");
     expect(resposta.texto).toMatch(/parte composta/);
+  });
+});
+
+describe("o corpo que vai ao gateway", () => {
+  /*
+   * `parallel_tool_calls` com `require_parameters` fazia o OpenRouter devolver
+   * 404 "No endpoints found that can handle the requested parameters" para o
+   * `openai/gpt-4o`: nenhum endpoint declara o parâmetro, o roteador descarta
+   * todos, e toda pergunta composta caía no caminho simples (2026-09-18).
+   */
+  it("exige suporte a ferramentas e não manda parallel_tool_calls", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    const { pedidos } = gatewayFalso([{ content: "pronto" }]);
+    await conversarComFerramentas(
+      MENSAGENS,
+      FERRAMENTAS,
+      async () => "{}",
+      LIMITES,
+    );
+    expect(pedidos[0]).toBeDefined();
+    expect(pedidos[0]).not.toHaveProperty("parallel_tool_calls");
+    expect(pedidos[0]?.["provider"]).toEqual({ require_parameters: true });
+    expect(pedidos[0]?.["tool_choice"]).toBe("required");
+  });
+});
+
+describe("a recusa depois de o modelo rodar", () => {
+  it("pergunta fora do assunto não ouve 'sem o modelo configurado'", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    gatewayFalso([
+      { tool_calls: [{ id: "a", nome: "listar_metricas", argumentos: {} }] },
+      { content: "Não posso responder a esse tipo de pergunta." },
+    ]);
+    const r = await resolverComposta(
+      "Compare a França com a Alemanha",
+      contextoDe("fin/visao", "", ["2026"]),
+      [],
+    );
+    expect(r?.tipo).toBe("recusa");
+    if (r?.tipo !== "recusa") return;
+    expect(r.texto).toBe(RECUSA_FORA_DO_ASSUNTO);
+    expect(r.texto).not.toMatch(/sem o modelo configurado/i);
   });
 });

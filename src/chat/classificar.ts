@@ -22,8 +22,14 @@
  * lê, e o laço não tem ferramenta para causa — ninguém deve fingir que tem.
  */
 
-import { CONFIANCA_MINIMA, type Intencao } from "@/chat/interpretar";
+import {
+  CONFIANCA_MINIMA,
+  interpretarLocalmente,
+  type Intencao,
+} from "@/chat/interpretar";
+import { mesesNomeados } from "@/chat/mes";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
+import { QUERY_PADRAO } from "@/semantica/contrato";
 
 export const SINAIS = [
   "ranking",
@@ -89,6 +95,30 @@ function vocabularioDe(metrica: string): string {
   );
 }
 
+/**
+ * A pergunta nomeia outra métrica além da que o palpite escolheu?
+ *
+ * "O EBITDA cresceu em relação ao ano anterior?" casa com `crescimento_yoy`
+ * — "cresceu" está no vocabulário dele —, e o desconto mandava a pergunta ao
+ * caminho simples, que respondia o crescimento da **receita** a quem perguntou
+ * do EBITDA. Tirando as palavras de variação sobra "o ebitda ?": se isso casa
+ * com outra métrica, a pessoa pediu a variação **dela**, e quem lê variação de
+ * uma métrica qualquer é o laço.
+ */
+function nomeiaOutraMetrica(texto: string, doPalpite: string): boolean {
+  // "sobre o ano" casa antes de "ano anterior" e deixa "anterior" para trás,
+  // que sozinho é nome de métrica ("lançamentos de competência anterior").
+  const resto = texto
+    .replace(new RegExp(PADROES.variacao.source, "g"), " ")
+    .replace(/\b(?:ano|anterior|passad[oa])\b/g, " ");
+  const outra = interpretarLocalmente(resto, QUERY_PADRAO);
+  return (
+    outra !== null &&
+    outra.confianca >= CONFIANCA_MINIMA &&
+    outra.metrica !== doPalpite
+  );
+}
+
 /** Métricas que já são variação: "cresceu?" sobre elas é a própria pergunta. */
 const JA_E_VARIACAO = /\b(?:crescimento|variacao|delta)\b/;
 
@@ -120,17 +150,37 @@ export function sinaisDe(
      * "cresceu" em "Crescimento anual". Nos dois, a pessoa nomeou a métrica,
      * e o caminho simples é quem responde.
      */
+    const outraMetrica =
+      sinal === "variacao" &&
+      palpite !== null &&
+      nomeiaOutraMetrica(texto, palpite.metrica);
     if (
       confiante &&
+      !outraMetrica &&
       (vocabulario.includes(normalizar(casamento[0])) ||
         PADROES[sinal].test(vocabulario))
     ) {
       continue;
     }
-    if (sinal === "variacao" && confiante && JA_E_VARIACAO.test(vocabulario)) {
+    if (
+      sinal === "variacao" &&
+      confiante &&
+      !outraMetrica &&
+      JA_E_VARIACAO.test(vocabulario)
+    ) {
       continue;
     }
     achados.push(sinal);
+  }
+
+  /*
+   * Dois meses nomeados são série: "de janeiro a março", "março e abril".
+   *
+   * Um mês só é o caminho simples, que lê o ponto do mês (`mes.ts`). Dois ou
+   * mais pedem vários pontos na mesma resposta, e quem lê série é o laço.
+   */
+  if (mesesNomeados(pergunta).length >= 2 && !achados.includes("serie")) {
+    achados.push("serie");
   }
 
   /*

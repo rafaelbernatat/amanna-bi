@@ -344,7 +344,17 @@ export async function conversarComFerramentas(
         messages: conversa,
         tools,
         tool_choice: escolha,
-        parallel_tool_calls: true,
+        /*
+         * Sem `parallel_tool_calls`, de propósito.
+         *
+         * Com `require_parameters`, o roteador descarta todo endpoint que não
+         * declare cada parâmetro do corpo — e nenhum do `openai/gpt-4o`
+         * declara este. A resposta era 404 "No endpoints found that can
+         * handle the requested parameters" em 40 ms, o laço devolvia `null`,
+         * e toda pergunta composta caía no caminho simples (2026-09-18).
+         * Chamadas em paralelo já são o padrão de quem as suporta; o que
+         * `require_parameters` precisa garantir é `tools` e `tool_choice`.
+         */
         provider: { require_parameters: true },
       },
       limites.limiteMsPorRodada,
