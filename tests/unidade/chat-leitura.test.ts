@@ -119,7 +119,9 @@ describe("a família", () => {
   it("resultado é lista fechada: lucro e EBITDA sim; receita, saldo e custo não", () => {
     expect(familiaDe("lucro_liquido")).toBe("resultado");
     expect(familiaDe("ebitda")).toBe("resultado");
-    expect(familiaDe("fco")).toBe("resultado");
+    // Caixa gerado é fluxo, não resultado sobre a receita.
+    expect(familiaDe("fco")).toBeNull();
+    expect(familiaDe("fluxo_de_caixa_livre")).toBeNull();
     // Receita é a base do retorno, não um resultado sobre ela: "retorno sobre
     // a receita de 100%" era número certo numa frase sem sentido (T-440).
     expect(familiaDe("receita_liquida")).toBeNull();

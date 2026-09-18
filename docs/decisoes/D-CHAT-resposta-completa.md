@@ -177,8 +177,8 @@ correções, cada uma com tarefa:
 - **A comparação com juros só para resultado de verdade (T-440).** A família
   `resultado` era "reais e maior é melhor", o que incluía a receita — e
   receita dividida por receita é 100%. Virou lista fechada: lucro, EBITDA,
-  resultado operacional, margem de contribuição em reais, FCO, fluxo de caixa
-  livre. Receita, saldo e patrimônio ficam sem comparação, com o motivo dito.
+  resultado operacional, margem de contribuição em reais. Receita, saldo,
+  patrimônio e caixa gerado ficam sem comparação, com o motivo dito.
 - **O laço na dúvida, ligado por padrão (T-436).** "A IA precisa responder
   qualquer pergunta relacionada aos dados com números reais": a pergunta que o
   catálogo não casa de primeira vai ao laço de ferramentas, que busca a métrica

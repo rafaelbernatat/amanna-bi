@@ -978,7 +978,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **Aceite:** `mesDaPergunta` reconhece o mes por extenso (com ou sem ano) e abreviado com ano (`abr/2026`); a resolucao carrega a serie mensal da propria metrica (`serieMensal`) e o ponto pedido (`pontoPedido`); o texto do modelo e o montado abrem com "{metrica} em abr/2026 foi …" e so depois dizem o recorte inteiro; o verificador aceita o ponto pedido livre e cada mes da serie junto do rotulo; "Quanto faturamos em abril?" deixa de abrir com o total de doze meses (print de Produto, 2026-09-18).
   · **PRD:** secao 7.1, RF-15 · **Depende de:** T-432
 - [X] **T-440** `P1` `S` `chat` A comparacao com juros so para resultado de verdade
-  · **Aceite:** a familia `resultado` vira lista fechada (lucro liquido, EBITDA, resultado operacional liquido, margem de contribuicao em reais, FCO, fluxo de caixa livre, resultado com receita 10% menor), no lugar da regra "reais e maior e melhor"; receita, saldo, patrimonio e valor por colaborador ficam sem comparacao, com o motivo dito; "Retorno sobre a receita liquida: 100,0%, 86,3 p.p. acima da Selic" nao volta a aparecer.
+  · **Aceite:** a familia `resultado` vira lista fechada (lucro liquido, EBITDA, resultado operacional liquido, margem de contribuicao em reais, resultado com receita 10% menor), no lugar da regra "reais e maior e melhor"; receita, saldo, patrimonio, caixa gerado e valor por colaborador ficam sem comparacao, com o motivo dito; "Retorno sobre a receita liquida: 100,0%, 86,3 p.p. acima da Selic" nao volta a aparecer.
   · **PRD:** secao 7.1 · **Depende de:** T-433
 
 ---

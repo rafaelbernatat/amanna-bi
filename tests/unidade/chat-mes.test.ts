@@ -137,7 +137,9 @@ describe("a resolução com o mês pedido", () => {
     const r = await resolver("receita_liquida", QUERY_PADRAO);
     expect(r.familia).toBeNull();
     expect(r.comparacao).toBeNull();
-    expect(r.comparacaoIndisponivelPorque).toContain("receita, saldo ou custo");
+    expect(r.comparacaoIndisponivelPorque).toContain(
+      "receita, saldo, caixa ou custo",
+    );
     expect(montarTexto(r, "Qual a receita líquida?")).not.toContain(
       "Retorno sobre a receita",
     );

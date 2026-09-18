@@ -36,16 +36,15 @@ export type Familia =
  * "retorno sobre a receita líquida: 100,0%, 86,3 p.p. acima da Selic" — um
  * número certo numa frase que não diz nada (2026-09-18). Receita é a base do
  * retorno, não um resultado sobre ela; saldo e patrimônio são estoque; um
- * valor por colaborador não se lê contra juros. Resultado é o que sobra, ou
- * falta, sobre a receita que o gerou.
+ * valor por colaborador não se lê contra juros; caixa gerado é fluxo, e
+ * "geração operacional 44% acima da Selic" também não diz nada. Resultado é
+ * o que sobra, ou falta, sobre a receita que o gerou.
  */
 export const FAMILIA: Readonly<Record<string, Familia>> = {
   lucro_liquido: "resultado",
   ebitda: "resultado",
   resultado_operacional_liquido: "resultado",
   margem_de_contribuicao_valor: "resultado",
-  fco: "resultado",
-  fluxo_de_caixa_livre: "resultado",
   resultado_com_receita_10_menor: "resultado",
   roe: "retorno",
   roa: "retorno",

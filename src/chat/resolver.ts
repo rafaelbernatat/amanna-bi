@@ -269,7 +269,7 @@ async function compararComJuros(
         comparacao: null,
         porque:
           unidade === "BRL_mi"
-            ? "a comparação com juros vale para resultado (lucro, EBITDA, caixa gerado), e esta métrica é receita, saldo ou custo"
+            ? "a comparação com juros vale para resultado (lucro, EBITDA), e esta métrica é receita, saldo, caixa ou custo"
             : "esta métrica não se lê contra juros",
       };
 
