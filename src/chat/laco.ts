@@ -63,6 +63,7 @@ import {
 } from "@/chat/interpretar";
 import { REGRAS_DE_NUMERO } from "@/chat/regras";
 import { resolver, type Resolucao } from "@/chat/resolver";
+import { RECUSA_FORA_DO_ASSUNTO, RECUSA_SEM_LEITURA } from "@/chat/recusa";
 import { destinoDaMetrica, metricasComDestino } from "@/chat/roteamento";
 import {
   conversarComFerramentas,
@@ -126,6 +127,15 @@ Como usar as ferramentas:
 - Se não souber o id da métrica, use listar_metricas antes.
 - Um erro devolvido por uma ferramenta é resposta: ajuste o pedido ou diga que
   não há esse dado. Nunca preencha com estimativa.
+- Mês nomeado ("março", "de janeiro a abril") não é valor de "periodo". O
+  número de um mês é o ponto dele em serie_da_metrica, com periodo 12-meses e
+  o ano da pergunta. Ranking e decomposição não abrem por mês: se a pergunta
+  pedir isso, diga que o recorte por mês não existe para essa abertura e
+  responda o período que leu, dizendo qual é.
+- Se a pergunta não for sobre os dados da empresa (conhecimento geral, piada,
+  poema, política, clima, programação), não chame ferramenta: diga em uma
+  frase que não pode responder a esse tipo de pergunta e que responde sobre
+  receita, resultado, caixa, contas, orçamento, dívida e pessoas.
 
 Como escrever (regras que não se negociam):
 ${REGRAS_DE_NUMERO}
@@ -277,7 +287,18 @@ export function dimensaoNaPergunta(pergunta: string): DimensaoDeRanking | null {
 const SEM_GATEWAY =
   "Sem o modelo configurado, respondo uma métrica por vez. Pergunte por uma métrica, ou escolha uma destas:";
 
-function recusaUtil(palpite: Intencao | null): CompostaRecusada {
+/**
+ * A recusa com o que houver de próximo.
+ *
+ * `comModelo` muda a frase: "sem o modelo configurado" dita a quem tem o
+ * modelo configurado é diagnóstico errado na tela. Com o modelo, o laço rodou
+ * e nada do que leu nomeia métrica — ou há próximas a oferecer, ou a pergunta
+ * não é do assunto ("compare a França com a Alemanha" acende `comparacao`).
+ */
+function recusaUtil(
+  palpite: Intencao | null,
+  comModelo = false,
+): CompostaRecusada {
   const ids = [
     ...(palpite === null || palpite.metrica === "" ? [] : [palpite.metrica]),
     ...(palpite?.alternativas ?? []),
@@ -285,7 +306,11 @@ function recusaUtil(palpite: Intencao | null): CompostaRecusada {
   const QUANTAS = 3;
   return {
     tipo: "recusa",
-    texto: SEM_GATEWAY,
+    texto: !comModelo
+      ? SEM_GATEWAY
+      : ids.length === 0
+        ? RECUSA_FORA_DO_ASSUNTO
+        : RECUSA_SEM_LEITURA,
     alternativas: [...new Set(ids)].slice(0, QUANTAS).map((id) => ({
       id,
       rotulo: CATALOGO_GERADO[id]?.rotulo ?? id,
@@ -424,7 +449,7 @@ export async function resolverComposta(
 
   const leituras = executor.leituras();
   const principal = metricaPrincipal(leituras, palpite, contexto.filtros);
-  if (principal === null) return recusaUtil(palpite);
+  if (principal === null) return recusaUtil(palpite, true);
 
   const resolucao =
     guardada.previa !== null && guardada.previa.chave === chaveDe(principal)

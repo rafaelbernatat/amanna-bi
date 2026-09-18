@@ -128,3 +128,29 @@ describe("os sinais de T-435", () => {
     expect(c.sinais).toContain("ranking");
   });
 });
+
+describe("a variação de outra métrica", () => {
+  /*
+   * "cresceu" está no vocabulário de `crescimento_yoy`, e o desconto mandava
+   * "o EBITDA cresceu?" ao caminho simples — que respondia o crescimento da
+   * receita a quem perguntou do EBITDA (2026-09-18).
+   */
+  it("'O EBITDA cresceu em relação ao ano anterior?' vai ao laço", () => {
+    const pergunta = "O EBITDA cresceu em relação ao ano anterior?";
+    const c = classificar(
+      pergunta,
+      interpretarLocalmente(pergunta, QUERY_PADRAO),
+    );
+    expect(c.classe).toBe("composta");
+    expect(c.sinais).toContain("variacao");
+  });
+
+  it("sem outra métrica na pergunta, o crescimento continua simples", () => {
+    const pergunta = "Quanto crescemos sobre o ano anterior?";
+    const c = classificar(
+      pergunta,
+      interpretarLocalmente(pergunta, QUERY_PADRAO),
+    );
+    expect(c.classe).toBe("simples");
+  });
+});

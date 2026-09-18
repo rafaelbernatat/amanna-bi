@@ -39,6 +39,7 @@ import {
   type ComparacaoComJuros,
   type Familia,
 } from "@/chat/leitura";
+import type { MesNomeado } from "@/chat/mes";
 import { destinoDaMetrica } from "@/chat/roteamento";
 import { JANELA_DO_GRAFICO, painelDaSerie } from "@/chat/serie";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
@@ -107,6 +108,12 @@ export type Resolucao = {
    */
   readonly leituras: readonly ResultadoDeFerramenta[];
   readonly caminho: Caminho;
+  /**
+   * O mês que a pergunta nomeou, quando o número é de um mês só (`mes.ts`).
+   * `valor`, `asOf` e o apoio são desse mês; o painel continua o do ano, que é
+   * o contexto em que o mês se lê.
+   */
+  readonly mes?: MesNomeado;
 };
 
 /** A métrica pedida não existe no catálogo. */
@@ -215,13 +222,19 @@ export async function lerApoio(
   metrica: string,
   consulta: Query,
   mapa: (id: string) => readonly string[] = apoioDe,
+  mes?: MesNomeado,
 ): Promise<readonly Consideracao[]> {
   return Promise.all(
     mapa(metrica).map(async (id) => {
       const lida = await lerMetrica(id, consulta);
       return {
         rotulo: CATALOGO_GERADO[id]?.rotulo ?? id,
-        valor: lida.value,
+        // Com mês nomeado, o apoio é o do mês: explicar março com o ano
+        // inteiro seria pôr dois recortes na mesma frase.
+        valor:
+          mes === undefined
+            ? lida.value
+            : (lida.serie.values[mes.indice] ?? null),
         unidade: lida.unit,
         origem: "apoio" as const,
         metrica: id,
@@ -229,6 +242,12 @@ export async function lerApoio(
     }),
   );
 }
+
+/** As métricas que são a base do retorno, e por isso não se leem contra ele. */
+const RECEITAS: ReadonlySet<string> = new Set([
+  "receita_liquida",
+  "receita_bruta",
+]);
 
 /**
  * O número lido contra o custo do dinheiro, por família.
@@ -270,6 +289,21 @@ async function compararComJuros(
       };
 
     case "resultado": {
+      /*
+       * Receita não é resultado sobre a receita: é a própria base.
+       *
+       * A família sai de unidade e sentido, e receita é reais com "maior é
+       * melhor" — então caía aqui, dividia a receita por ela mesma e o texto
+       * dizia "retorno sobre a receita líquida de 100,0%, +86,3 p.p. acima da
+       * Selic". Conta certa, frase sem sentido, e na resposta mais pedida.
+       */
+      if (RECEITAS.has(metrica)) {
+        return {
+          comparacao: null,
+          porque:
+            "receita é a base do retorno, e não um resultado que se leia contra juros",
+        };
+      }
       if (referencias.find((r) => r.id === "selic") === undefined) {
         return {
           comparacao: null,
@@ -349,11 +383,24 @@ async function compararComJuros(
  * As quatro leituras correm em paralelo: a pergunta espera pela mais lenta, e
  * não pela soma. As referências só são buscadas quando a métrica tem família —
  * o turnover não se lê contra o CDI, e não precisa ir ao BCB para saber disso.
+ *
+ * ## Com mês nomeado
+ *
+ * A leitura é a do ano inteiro — 12 meses, para a série ter os doze pontos —,
+ * e o valor é o ponto do mês: a mesma métrica, com a mesma fórmula, avaliada
+ * naquele mês só. O painel continua o do ano, e o mês aparece nele. Não há
+ * comparação com juros: CDI e Selic são taxas ao ano, e pôr o número de um mês
+ * ao lado delas é a comparação que parece conta e não é.
  */
 export async function resolver(
   metrica: string,
-  consulta: Query,
+  consultaPedida: Query,
+  mes?: MesNomeado,
 ): Promise<Resolucao> {
+  const consulta: Query =
+    mes === undefined
+      ? consultaPedida
+      : { ...consultaPedida, periodo: "12-meses" };
   const entrada = CATALOGO_GERADO[metrica];
   if (entrada === undefined) {
     throw new MetricaForaDoCatalogo(metrica, proximasDe(metrica));
@@ -372,6 +419,8 @@ export async function resolver(
    * métrica vira painel de linha. Com o período fora dos doze meses, a série
    * do recorte tem um ponto só, e a métrica é lida de novo na janela de doze
    * meses — só para o desenho; o valor da resposta é o do recorte pedido.
+   *
+   * Com mês nomeado a consulta já é a de doze meses, e a janela não é relida.
    */
   const janela: Query = { ...consulta, periodo: JANELA_DO_GRAFICO };
   const precisaDaJanela =
@@ -381,8 +430,8 @@ export async function resolver(
     await Promise.all([
       lerMetrica(metrica, consulta),
       painelId === null ? Promise.resolve(null) : lerPainel(painelId, consulta),
-      lerApoio(metrica, consulta),
-      familia === null
+      lerApoio(metrica, consulta, apoioDe, mes),
+      familia === null || mes !== undefined
         ? Promise.resolve<readonly TaxaDeReferencia[]>([])
         : lerReferencias(),
       precisaDaJanela ? lerMetrica(metrica, janela) : Promise.resolve(null),
@@ -394,30 +443,45 @@ export async function resolver(
       ? painelDaSerie(metrica, valor, consulta)
       : painelDaSerie(metrica, valorDaJanela, janela));
 
-  const { comparacao, porque } = await compararComJuros(
-    metrica,
-    entrada.rotulo,
-    valor.value,
-    valor.unit,
-    familia,
-    consulta,
-    referencias,
-  );
+  const doMes =
+    mes === undefined ? valor.value : (valor.serie.values[mes.indice] ?? null);
+
+  const { comparacao, porque } =
+    mes === undefined
+      ? await compararComJuros(
+          metrica,
+          entrada.rotulo,
+          valor.value,
+          valor.unit,
+          familia,
+          consulta,
+          referencias,
+        )
+      : {
+          comparacao: null,
+          porque:
+            familia === null
+              ? null
+              : "as taxas de referência são ao ano, e este é o número de um mês só",
+        };
 
   // Apoio cujo rótulo já veio como degrau do painel não entra duas vezes.
-  // Só o painel da tela decompõe; a série sintética não é composição.
+  // Só o painel da tela decompõe; a série sintética não é composição. Com mês
+  // nomeado os degraus ficam de fora: são do ano, não do mês.
   const doPainel =
-    painelDoCartao === null ? [] : consideracoesDo(painelDoCartao);
+    painelDoCartao === null || mes !== undefined
+      ? []
+      : consideracoesDo(painelDoCartao);
   const rotulosDoPainel = new Set(doPainel.map((c) => c.rotulo));
 
   return {
     metrica,
     rotulo: entrada.rotulo,
-    valor: valor.value,
+    valor: doMes,
     unidade: valor.unit,
     formula: valor.formula,
     decisao: entrada.decisao,
-    asOf: valor.asOf,
+    asOf: mes === undefined ? valor.asOf : mes.fechamento,
     consideracoes: [
       ...doPainel,
       ...apoio.filter((a) => !rotulosDoPainel.has(a.rotulo)),
@@ -435,5 +499,6 @@ export async function resolver(
     painel,
     leituras: [],
     caminho: "simples",
+    ...(mes === undefined ? {} : { mes }),
   };
 }
