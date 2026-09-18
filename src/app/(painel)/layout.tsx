@@ -5,18 +5,12 @@ import { lerCoresAplicadas } from "@/marca/tela";
 
 import { lerVisitante } from "@/acesso/leitura";
 import { Chat } from "@/apresentacao/chat/Chat";
-import {
-  CONTEINER_DA_TELA,
-  EstiloDoMenu,
-} from "@/apresentacao/navegacao/EstiloDoMenu";
-import { estadoDoMenu } from "@/apresentacao/navegacao/menu-ativo";
-import { MenuLateral } from "@/apresentacao/navegacao/MenuLateral";
+import { EstiloDoMenu } from "@/apresentacao/navegacao/EstiloDoMenu";
 import { PALETA } from "@/apresentacao/tema/tema";
 import { ROTA_DA_CONVERSA } from "@/semantica/url";
 
 /**
- * O quadro das 13 telas: o menu de telas a esquerda, a tela no meio, a
- * conversa a direita.
+ * O quadro das 13 telas: a tela à esquerda, a conversa à direita.
  *
  * ## Por que um grupo de rota, e por que o chat mora aqui
  *
@@ -29,14 +23,15 @@ import { ROTA_DA_CONVERSA } from "@/semantica/url";
  * Ele existe para que este layout envolva só as telas do produto. A galeria
  * de verificação e a página de 404 ficam de fora, e sem conversa.
  *
- * ## O menu lateral, e o conteiner que o recolhe (T-421)
+ * ## O menu de telas nao mora aqui, e a folha dele sim (T-421)
  *
- * As telas do modulo ativo moram num menu a esquerda, que recolhe a uma faixa
- * fina e lembra a escolha num cookie — lido **aqui**, no servidor, para o
- * primeiro quadro ja sair com a largura certa. Menu e tela ficam num
- * conteiner de CSS: quando a conversa abre ao lado e a coluna fica estreita
- * demais para os dois, uma consulta de conteiner recolhe o menu sem que
- * nenhum JavaScript meca coisa alguma (`EstiloDoMenu`).
+ * O menu lateral e da **pagina**: ela conhece o modulo, a tela e o recorte
+ * que cada link carrega, e o servidor os poe no HTML inicial. Um layout nao
+ * recebe a busca da URL, e le-la por gancho no navegador faria o menu chegar
+ * depois do shell — foi medido: a tela inteira se deslocava quando ele
+ * chegava. O que fica aqui e a unica regra de folha que o menu precisa (a
+ * consulta de conteiner que o recolhe quando a tela e estreita), porque ela
+ * leva o nonce da resposta, como a folha do tema.
  *
  * ## A conversa encosta, não sobrepõe
  *
@@ -53,10 +48,9 @@ export default async function LayoutDoPainel({
    * Por propriedade, e nao por `var()`: o chat e componente de cliente e o
    * SVG nao resolve propriedade CSS (ver `DesenhoDePainel`).
    */
-  const [cores, visitante, menu, cabecalhos] = await Promise.all([
+  const [cores, visitante, cabecalhos] = await Promise.all([
     lerCoresAplicadas(),
     lerVisitante(),
-    estadoDoMenu(),
     headers(),
   ]);
 
@@ -67,7 +61,6 @@ export default async function LayoutDoPainel({
    */
   if (visitante !== null) redirect(ROTA_DA_CONVERSA);
 
-  // A folha do menu leva o nonce da resposta, como a do tema.
   const nonce = cabecalhos.get("x-nonce");
 
   return (
@@ -82,30 +75,16 @@ export default async function LayoutDoPainel({
     >
       <EstiloDoMenu {...(nonce === null ? {} : { nonce })} />
       <div
-        data-teste="quadro-da-tela"
         style={{
           flex: "1 1 auto",
           minWidth: 0,
           minHeight: 0,
           display: "flex",
+          flexDirection: "column",
           overflow: "hidden",
-          containerType: "inline-size",
-          containerName: CONTEINER_DA_TELA,
         }}
       >
-        <MenuLateral recolhidoInicial={menu === "recolhido"} />
-        <div
-          style={{
-            flex: "1 1 auto",
-            minWidth: 0,
-            minHeight: 0,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          {children}
-        </div>
+        {children}
       </div>
       <Chat cores={cores} />
     </div>

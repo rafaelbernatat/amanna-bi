@@ -39,7 +39,7 @@ sem abrir a porta.
 - **Recolhido** é uma faixa de 44 px só com o botão; **aberto** são 220 px
   com o número e o nome do módulo e a lista. Começa aberto.
 - **O estado vive num cookie** (`amanna-bi.menu`), gravado pelo navegador no
-  clique e **lido pelo servidor** no layout do painel. É isso que faz o
+  clique e **lido pelo servidor** na página da tela. É isso que faz o
   primeiro quadro já sair com a largura certa: nada de menu aberto que fecha
   depois de hidratar, e o deslocamento de layout continua zero com e sem
   cookie (`cls.spec`).
@@ -55,6 +55,15 @@ sem abrir a porta.
   pode custar uma ida ao servidor. O componente não lê dado, não formata, não
   mede: recebe do servidor se começa recolhido, inverte no clique e regrava o
   cookie.
+- **Tudo chega por propriedade da página, e nada por gancho de navegação.**
+  A primeira versão lia `useSearchParams` sob um `Suspense`, no layout. O
+  servidor mandava o menu **depois** do shell, num pedaço à parte do fluxo, e
+  a tela inteira se deslocava 220 px quando ele chegava: CLS de 0,15 em 1440
+  px no CI (= 220/1440), e zero na estação, porque ali os pedaços chegam
+  antes da primeira pintura. Módulo, tela ativa e recorte vêm da página, que
+  já os resolveu no servidor; o menu está no HTML inicial, com os links
+  certos mesmo sem JavaScript. O e2e confere que ele vem antes do cabeçalho e
+  de qualquer boundary pendente no HTML servido.
 
 ### Os filtros vivos: controlado, com atraso, e a URL continua o estado
 

@@ -82,7 +82,17 @@ test.describe("o menu lateral de telas", () => {
     const resposta = await page.request.get("/rh/visao", {
       headers: { cookie: `${COOKIE}=recolhido` },
     });
-    expect(await resposta.text()).toContain('data-recolhido="1"');
+    const html = await resposta.text();
+    expect(html).toContain('data-recolhido="1"');
+    // E no shell, nao num pedaco streamado depois: o menu vem antes do
+    // cabecalho da tela e antes de qualquer boundary pendente do fluxo. Foi
+    // o que o CI mediu como deslocamento de 220 px quando o menu lia a busca
+    // por gancho sob Suspense.
+    const menuNoHtml = html.indexOf('data-teste="menu-lateral"');
+    expect(menuNoHtml).toBeGreaterThan(-1);
+    expect(menuNoHtml).toBeLessThan(html.indexOf('data-teste="cabecalho"'));
+    const primeiroPendente = html.indexOf('<template id="B:');
+    expect(primeiroPendente === -1 || menuNoHtml < primeiroPendente).toBe(true);
 
     await page.locator('[data-teste="recolher-menu"]').click();
     await expect(menu).toHaveAttribute("data-recolhido", "0");

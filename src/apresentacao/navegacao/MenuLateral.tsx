@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 
 import {
   cookieDoMenu,
@@ -10,9 +9,10 @@ import {
   LARGURA_DO_MENU_RECOLHIDO,
   type EstadoDoMenu,
 } from "@/apresentacao/navegacao/menu";
-import { acharTela } from "@/apresentacao/navegacao/telas";
+import type { Modulo } from "@/apresentacao/navegacao/telas";
 import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
-import { buscaParaQuery, rotaCom } from "@/semantica/url";
+import type { Query } from "@/semantica/contrato";
+import { rotaCom } from "@/semantica/url";
 
 /**
  * As telas do modulo ativo, num menu lateral recolhivel
@@ -26,10 +26,21 @@ import { buscaParaQuery, rotaCom } from "@/semantica/url";
  * ## Por que e componente de cliente
  *
  * Recolher e abrir sao um clique, e um clique nao pode custar uma ida ao
- * servidor. O estado inicial vem do servidor (cookie lido no layout), para o
+ * servidor. O estado inicial vem do servidor (cookie lido na pagina), para o
  * primeiro quadro ja sair certo; o clique inverte o estado e regrava o cookie
- * no navegador. E a terceira fronteira de cliente da apresentacao, nomeada
- * arquivo a arquivo no teste de arquitetura, junto da barra de filtros.
+ * no navegador. E um dos dois arquivos de cliente fora de `graficos/` e
+ * `chat/`, nomeados no teste de arquitetura.
+ *
+ * ## Por que tudo chega por propriedade, e nada por gancho de navegacao
+ *
+ * Modulo, tela ativa e recorte vem da **pagina**, que ja os resolveu no
+ * servidor. A primeira versao lia `useSearchParams` sob um `Suspense`, e o
+ * servidor mandava o menu **depois** do shell, num pedaco a parte do fluxo:
+ * o primeiro quadro pintava sem a coluna, e a tela inteira se deslocava 220
+ * px quando ela chegava. Local nao se via — o servidor e rapido e os pedacos
+ * chegam juntos —, mas o CI mediu o deslocamento em toda largura. Sem gancho
+ * que suspenda, o menu esta no HTML inicial, com os links certos mesmo sem
+ * JavaScript.
  *
  * ## O que nao faz
  *
@@ -37,35 +48,19 @@ import { buscaParaQuery, rotaCom } from "@/semantica/url";
  * (`EstiloDoMenu`) que recolhe. Nao le dado. Nao formata.
  */
 export function MenuLateral({
+  modulo,
+  telaAtiva,
+  query,
   recolhidoInicial,
 }: {
+  readonly modulo: Modulo;
+  /** O slug da tela aberta, para marcar `aria-current`. */
+  readonly telaAtiva: string;
+  /** O recorte da tela, que cada link carrega junto (secao 6.2). */
+  readonly query: Query;
   readonly recolhidoInicial: boolean;
 }) {
-  // `useSearchParams` pede Suspense acima; a tela e dinamica, o fallback
-  // nunca aparece (o mesmo arranjo do chat).
-  return (
-    <Suspense fallback={null}>
-      <MenuNaTela recolhidoInicial={recolhidoInicial} />
-    </Suspense>
-  );
-}
-
-function MenuNaTela({
-  recolhidoInicial,
-}: {
-  readonly recolhidoInicial: boolean;
-}) {
-  const caminho = usePathname();
-  const busca = useSearchParams();
   const [recolhido, setRecolhido] = useState(recolhidoInicial);
-
-  const [idDoModulo = "", slug = ""] = caminho
-    .split("/")
-    .filter((p) => p !== "");
-  const achado = acharTela(idDoModulo, slug);
-  if (achado === undefined) return null;
-  const { modulo, tela } = achado;
-  const { query } = buscaParaQuery(busca.toString());
 
   const alternar = () => {
     const proximo: EstadoDoMenu = recolhido ? "aberto" : "recolhido";
@@ -178,7 +173,7 @@ function MenuNaTela({
           }}
         >
           {modulo.telas.map((t) => {
-            const ligada = t.slug === tela.slug;
+            const ligada = t.slug === telaAtiva;
             return (
               <Link
                 key={t.slug}

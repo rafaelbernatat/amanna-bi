@@ -15,6 +15,9 @@ import { lerCoresAplicadas } from "@/marca/tela";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
+import { CONTEINER_DA_TELA } from "@/apresentacao/navegacao/EstiloDoMenu";
+import { estadoDoMenu } from "@/apresentacao/navegacao/menu-ativo";
+import { MenuLateral } from "@/apresentacao/navegacao/MenuLateral";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
 import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { lerCabecalhoDaInstalacao } from "@/marca/tela";
@@ -172,121 +175,152 @@ export default async function Pagina({
    */
   const chaveDaUrl = `${rota}?${busca.toString()}`;
 
-  // Quem entrou, qual a marca da instalacao, de onde vem o dado e em que
-  // pele desenhar. A apresentacao recebe tudo pronto.
-  const [instalacao, origem, tema] = await Promise.all([
+  // Quem entrou, qual a marca da instalacao, de onde vem o dado, em que
+  // pele desenhar e se o menu de telas comeca recolhido. A apresentacao
+  // recebe tudo pronto.
+  const [instalacao, origem, tema, menu] = await Promise.all([
     lerCabecalhoDaInstalacao(),
     lerOrigemDosDados(),
     temaAtivo(),
+    estadoDoMenu(),
   ]);
 
   return (
+    /*
+     * O menu de telas a esquerda e a tela ao lado, num conteiner de CSS
+     * (T-421). E a pagina quem monta o menu, e nao o layout: ela conhece o
+     * modulo, a tela e o recorte que cada link carrega, e o servidor os poe
+     * no HTML inicial — le-los por gancho no navegador faria o menu chegar
+     * depois do shell e deslocar a tela inteira (ver `MenuLateral`). O
+     * conteiner e o que permite recolher o menu por consulta de conteiner
+     * quando a conversa aberta deixa a tela estreita (`EstiloDoMenu`).
+     */
     <div
+      data-teste="quadro-da-tela"
       style={{
         display: "flex",
-        flexDirection: "column",
         height: "100%",
         minWidth: 0,
+        minHeight: 0,
         overflow: "hidden",
+        containerType: "inline-size",
+        containerName: CONTEINER_DA_TELA,
       }}
     >
-      <Cabecalho
+      <MenuLateral
         modulo={achado.modulo}
-        tela={achado.tela}
+        telaAtiva={achado.tela.slug}
         query={query}
-        dimensoes={dimensoes}
-        painelDestacado={painelDestacado}
-        conta={instalacao.conta}
-        nome={instalacao.nome}
-        logo={instalacao.logo}
-        origem={origem}
+        recolhidoInicial={menu === "recolhido"}
       />
-
-      <main
-        data-teste="conteudo"
+      <div
         style={{
           flex: "1 1 auto",
-          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
           minWidth: 0,
-          overflowY: "auto",
-          overflowX: "hidden",
-          padding: "16px 28px 28px",
+          minHeight: 0,
+          overflow: "hidden",
         }}
       >
-        {/*
+        <Cabecalho
+          modulo={achado.modulo}
+          tela={achado.tela}
+          query={query}
+          dimensoes={dimensoes}
+          painelDestacado={painelDestacado}
+          conta={instalacao.conta}
+          nome={instalacao.nome}
+          logo={instalacao.logo}
+          origem={origem}
+        />
+
+        <main
+          data-teste="conteudo"
+          style={{
+            flex: "1 1 auto",
+            minHeight: 0,
+            minWidth: 0,
+            overflowY: "auto",
+            overflowX: "hidden",
+            padding: "16px 28px 28px",
+          }}
+        >
+          {/*
           O recorte resolvido fica legivel para o teste e para quem depura.
           Nao e enfeite: e como se prova que colar a URL reproduz o mesmo
           recorte, antes de existir painel que o consuma.
         */}
-        <dl
-          data-teste="recorte"
-          data-periodo={query.periodo}
-          data-ano={query.ano}
-          data-entidade={query.entidade}
-          data-area={query.area}
-          data-modalidade={query.modalidade}
-          data-painel={painelDestacado ?? ""}
-          data-avisos={String(avisos.length)}
-          style={{ display: "none" }}
-        />
+          <dl
+            data-teste="recorte"
+            data-periodo={query.periodo}
+            data-ano={query.ano}
+            data-entidade={query.entidade}
+            data-area={query.area}
+            data-modalidade={query.modalidade}
+            data-painel={painelDestacado ?? ""}
+            data-avisos={String(avisos.length)}
+            style={{ display: "none" }}
+          />
 
-        <Destaque key={chaveDaUrl} painel={painelDestacado} />
+          <Destaque key={chaveDaUrl} painel={painelDestacado} />
 
-        <BannerDeRecorte
-          rota={rota}
-          query={query}
-          painelDestacado={painelDestacado}
-        />
+          <BannerDeRecorte
+            rota={rota}
+            query={query}
+            painelDestacado={painelDestacado}
+          />
 
-        {/*
+          {/*
           Os KPIs da tela, no recorte da URL.
 
           Lidos pela fronteira de seguranca (secao 11), e nao pelo adaptador:
           o recorte por perfil e aplicado no servidor, antes de qualquer
           leitura. `lerKpisDaTela` e o unico ponto onde essa cadeia se monta.
         */}
-        <FaixaDeKpis
-          kpis={await lerKpisDaTela(rota.slice(1), query)}
-          pele={paletaDoTema(tema)}
-        />
+          <FaixaDeKpis
+            kpis={await lerKpisDaTela(rota.slice(1), query)}
+            pele={paletaDoTema(tema)}
+          />
 
-        {avisos.length > 0 ? (
-          <p
-            data-teste="aviso-de-recorte"
-            role="status"
-            style={{
-              margin: "0 0 14px",
-              padding: "8px 12px",
-              borderRadius: 8,
-              border: `1px solid ${PALETA.bordaForte}`,
-              background: PALETA.superficieSuave,
-              font: `400 11px/1.5 ${TIPOGRAFIA.texto}`,
-              color: PALETA.textoSecundario,
-              maxWidth: "68ch",
-            }}
-          >
-            {avisos.length === 1
-              ? "Um filtro do link não existe e foi trocado pelo padrão: "
-              : `${avisos.length} filtros do link não existem e foram trocados pelo padrão: `}
-            {avisos
-              .map((a) => `${a.campo} "${a.pedido}" → "${a.usado}"`)
-              .join("; ")}
-            .
-          </p>
-        ) : null}
+          {avisos.length > 0 ? (
+            <p
+              data-teste="aviso-de-recorte"
+              role="status"
+              style={{
+                margin: "0 0 14px",
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: `1px solid ${PALETA.bordaForte}`,
+                background: PALETA.superficieSuave,
+                font: `400 11px/1.5 ${TIPOGRAFIA.texto}`,
+                color: PALETA.textoSecundario,
+                maxWidth: "68ch",
+              }}
+            >
+              {avisos.length === 1
+                ? "Um filtro do link não existe e foi trocado pelo padrão: "
+                : `${avisos.length} filtros do link não existem e foram trocados pelo padrão: `}
+              {avisos
+                .map((a) => `${a.campo} "${a.pedido}" → "${a.usado}"`)
+                .join("; ")}
+              .
+            </p>
+          ) : null}
 
-        {/*
+          {/*
           Os painéis da tela, na ordem do Anexo A e na grade de 12 colunas da
           seção 5. Quem diz quais painéis e com que largura é o registro de
           T-107 — acrescentar um painel ao Anexo A e ao registro o coloca na
           tela, sem editar arquivo de tela nenhum.
         */}
-        <PaineisDaTela
-          tela={rota.slice(1)}
-          query={query}
-          painelDestacado={painelDestacado}
-        />
-      </main>
+          <PaineisDaTela
+            tela={rota.slice(1)}
+            query={query}
+            painelDestacado={painelDestacado}
+          />
+        </main>
+      </div>
     </div>
   );
 }
