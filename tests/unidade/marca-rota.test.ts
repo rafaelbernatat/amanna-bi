@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { EstiloDaMarca } from "@/apresentacao/tema/EstiloDaMarca";
-import { PALETA, variavelDaMarca } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA, variavelDaMarca } from "@/apresentacao/tema/tema";
 import { PERFIS_QUE_CONFIGURAM_MARCA } from "@/marca/permissao";
 import { conferirPedidoDeMarca, origemPropria, verTela } from "@/marca/rota";
 import { PERFIS } from "@/seguranca/identidade";
@@ -214,14 +214,14 @@ describe("EstiloDaMarca", () => {
     const html = renderToStaticMarkup(
       createElement(EstiloDaMarca, {
         cores: {
-          marca: PALETA.marca,
-          marcaEscura: PALETA.marcaEscura,
-          destaque: PALETA.destaque,
-          destaqueSuave: PALETA.destaqueSuave,
-          barraLateral: PALETA.barraLateral,
+          marca: PALETA_CLARA.marca,
+          marcaEscura: PALETA_CLARA.marcaEscura,
+          destaque: PALETA_CLARA.destaque,
+          destaqueSuave: PALETA_CLARA.destaqueSuave,
+          barraLateral: PALETA_CLARA.barraLateral,
         },
       }),
     );
-    expect(html).toContain(`${variavelDaMarca("marca")}:${PALETA.marca}`);
+    expect(html).toContain(`${variavelDaMarca("marca")}:${PALETA_CLARA.marca}`);
   });
 });

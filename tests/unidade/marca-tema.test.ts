@@ -7,6 +7,7 @@ import {
   CHAVES_DE_MARCA,
   MARCA,
   PALETA,
+  PALETA_CLARA,
   variavelDaMarca,
   type ChaveDeMarca,
 } from "@/apresentacao/tema/tema";
@@ -88,10 +89,17 @@ describe("a camada viva do tema", () => {
     },
   );
 
-  it("cada papel de marca é uma variável CSS com a cor de hoje como recuo", () => {
+  /**
+   * A cadeia comeca pela variavel da marca, e so depois pelo tema.
+   *
+   * A ordem e a decisao: uma empresa que escolheu a propria cor a ve nos dois
+   * temas. O tema so responde pelo que a marca nao definiu.
+   */
+  it("cada papel de marca começa pela variável da marca", () => {
     for (const chave of CHAVES_DE_MARCA) {
-      expect(MARCA[chave]).toBe(
-        `var(${variavelDaMarca(chave)}, ${PALETA[chave]})`,
+      expect(MARCA[chave]).toBe(PALETA[chave]);
+      expect(MARCA[chave].startsWith(`var(${variavelDaMarca(chave)},`)).toBe(
+        true,
       );
     }
   });
@@ -100,10 +108,17 @@ describe("a camada viva do tema", () => {
    * O recuo é o que faz a personalização ser aditiva: uma instalação que nunca
    * configurou nada não tem como notar que esta camada existe.
    */
-  it("o recuo de cada variável é exatamente a cor de hoje", () => {
+  /**
+   * O ultimo recuo da cadeia e a pele clara.
+   *
+   * Com T-372 a cadeia tem tres degraus — marca, tema, pele clara — e o que
+   * importa continua sendo o mesmo: sem marca **e** sem tema, nenhum pixel
+   * muda em relacao ao que o produto sempre mostrou.
+   */
+  it("o último recuo de cada variável é a cor da pele clara", () => {
     for (const chave of CHAVES_DE_MARCA) {
-      const recuo = /,\s*(#[0-9a-f]{6})\)$/.exec(MARCA[chave])?.[1];
-      expect(recuo, chave).toBe(PALETA[chave]);
+      const recuo = /,\s*(#[0-9a-f]{6})\)+$/.exec(MARCA[chave])?.[1];
+      expect(recuo, chave).toBe(PALETA_CLARA[chave]);
       expect(corCanonica(recuo ?? "")).toBe(true);
     }
   });
@@ -114,8 +129,9 @@ describe("a camada viva do tema", () => {
     }
   });
 
-  it("a paleta crua continua sendo só hexadecimal", () => {
-    for (const [chave, valor] of Object.entries(PALETA)) {
+  /** A pele crua continua sendo so hexadecimal; a camada de var() e outra coisa. */
+  it("a pele clara continua sendo só hexadecimal", () => {
+    for (const [chave, valor] of Object.entries(PALETA_CLARA)) {
       expect(corCanonica(valor), chave).toBe(true);
     }
   });

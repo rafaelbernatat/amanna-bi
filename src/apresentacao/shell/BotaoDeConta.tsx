@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import type { Tema } from "@/apresentacao/tema/tema";
 import type { Perfil } from "@/seguranca/identidade";
 
 /** Como cada perfil se chama na tela. O código usa o id; a pessoa lê isto. */
@@ -31,9 +32,15 @@ export function BotaoDeConta({
   perfil,
   podeConfigurar,
   apresentar = null,
+  tema = "claro",
+  de = "/",
 }: {
   readonly perfil: Perfil;
   readonly podeConfigurar: boolean;
+  /** O tema em vigor, para o botao propor o outro (T-372). */
+  readonly tema?: Tema;
+  /** O caminho de volta depois da troca. */
+  readonly de?: string;
   /**
    * O endereço da tela de apresentação, com a tela e o recorte atuais
    * (D-CONVITE-apresentacao). `null` esconde o botão: ou não há sala aberta,
@@ -137,6 +144,61 @@ export function BotaoDeConta({
           </svg>
         </Link>
       )}
+
+      {/*
+        A troca de tema, em formulario e sem JavaScript.
+
+        Vira cookie porque o **servidor** precisa da escolha: a moldura troca
+        sozinha pelas propriedades CSS, mas o grafico recebe a cor ja
+        resolvida, e `var()` nao pinta atributo de SVG (T-372).
+      */}
+      <form method="post" action="/api/tema" style={{ display: "flex" }}>
+        <input
+          type="hidden"
+          name="tema"
+          value={tema === "escuro" ? "claro" : "escuro"}
+        />
+        <input type="hidden" name="de" value={de} />
+        <button
+          type="submit"
+          data-teste="trocar-tema"
+          aria-label={
+            tema === "escuro" ? "Usar tema claro" : "Usar tema escuro"
+          }
+          title={tema === "escuro" ? "Usar tema claro" : "Usar tema escuro"}
+          style={{
+            flex: "none",
+            width: 30,
+            height: 30,
+            display: "grid",
+            placeItems: "center",
+            borderRadius: 999,
+            border: `1px solid ${PALETA.bordaForte}`,
+            background: PALETA.superficie,
+            color: PALETA.textoSecundario,
+            cursor: "pointer",
+          }}
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            aria-hidden="true"
+          >
+            {tema === "escuro" ? (
+              <>
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19" />
+              </>
+            ) : (
+              <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+            )}
+          </svg>
+        </button>
+      </form>
 
       {podeConfigurar ? (
         <Link

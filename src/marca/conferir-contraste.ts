@@ -16,7 +16,7 @@ import {
   contrasteSuficiente,
   type AjusteDeContraste,
 } from "@/apresentacao/tema/contraste";
-import { PALETA, type CoresDaMarca } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA, type CoresDaMarca } from "@/apresentacao/tema/tema";
 
 /**
  * Os pares que carregam texto, e por isso precisam do mínimo de 4,5:1.
@@ -30,11 +30,11 @@ export const PARES_DA_MARCA: readonly {
   readonly papel: keyof CoresDaMarca;
   readonly contra: string;
 }[] = [
-  { papel: "marca", contra: PALETA.superficie },
-  { papel: "marcaEscura", contra: PALETA.superficie },
-  { papel: "destaque", contra: PALETA.superficie },
+  { papel: "marca", contra: PALETA_CLARA.superficie },
+  { papel: "marcaEscura", contra: PALETA_CLARA.superficie },
+  { papel: "destaque", contra: PALETA_CLARA.superficie },
   // A barra escura leva texto claro em cima: quem se move é o fundo.
-  { papel: "barraLateral", contra: PALETA.textoEmBarra },
+  { papel: "barraLateral", contra: PALETA_CLARA.textoEmBarra },
 ];
 
 /** As cores ajustadas e a lista do que mudou. Nada é aplicado aqui. */

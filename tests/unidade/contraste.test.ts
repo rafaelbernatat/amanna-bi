@@ -17,7 +17,7 @@ import {
   normalizarCor,
   razaoDeContraste,
 } from "@/apresentacao/tema/contraste";
-import { PALETA } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA } from "@/apresentacao/tema/tema";
 
 /**
  * A fórmula de contraste da WCAG 2.1 (PRD seção 13) e o ajuste que a marca da
@@ -49,7 +49,7 @@ describe("luminância", () => {
   it("recusa cor fora da forma canônica em vez de adivinhar", () => {
     expect(() => luminancia("#FFF")).toThrow(CorForaDaForma);
     expect(() => luminancia("rgb(0,0,0)")).toThrow(CorForaDaForma);
-    expect(() => luminancia(PALETA.marca.toUpperCase())).toThrow(
+    expect(() => luminancia(PALETA_CLARA.marca.toUpperCase())).toThrow(
       CorForaDaForma,
     );
   });
@@ -62,8 +62,14 @@ describe("razão de contraste", () => {
   });
 
   it("é simétrica: quem é frente e quem é fundo não muda o número", () => {
-    const daFrente = razaoDeContraste(PALETA.marca, PALETA.superficie);
-    const doFundo = razaoDeContraste(PALETA.superficie, PALETA.marca);
+    const daFrente = razaoDeContraste(
+      PALETA_CLARA.marca,
+      PALETA_CLARA.superficie,
+    );
+    const doFundo = razaoDeContraste(
+      PALETA_CLARA.superficie,
+      PALETA_CLARA.marca,
+    );
     expect(daFrente).toBe(doFundo);
   });
 
@@ -88,19 +94,22 @@ describe("razão de contraste", () => {
   ] as const)(
     "%s dá %s:1, como o tema anotou",
     (_, frente, fundo, esperada) => {
-      expect(razaoDeContraste(PALETA[frente], PALETA[fundo])).toBeCloseTo(
-        esperada,
-        TOLERANCIA,
-      );
+      expect(
+        razaoDeContraste(PALETA_CLARA[frente], PALETA_CLARA[fundo]),
+      ).toBeCloseTo(esperada, TOLERANCIA);
     },
   );
 
   it("os pares que já passam continuam passando", () => {
-    expect(contrasteSuficiente(PALETA.texto, PALETA.fundo)).toBe(true);
-    expect(contrasteSuficiente(PALETA.marca, PALETA.superficie)).toBe(true);
-    expect(contrasteSuficiente(PALETA.textoEmBarra, PALETA.barraLateral)).toBe(
+    expect(contrasteSuficiente(PALETA_CLARA.texto, PALETA_CLARA.fundo)).toBe(
       true,
     );
+    expect(
+      contrasteSuficiente(PALETA_CLARA.marca, PALETA_CLARA.superficie),
+    ).toBe(true);
+    expect(
+      contrasteSuficiente(PALETA_CLARA.textoEmBarra, PALETA_CLARA.barraLateral),
+    ).toBe(true);
   });
 
   /**
@@ -111,14 +120,17 @@ describe("razão de contraste", () => {
    * T-371, e estao no caso acima com o numero medido.
    */
   it("só textoFraco continua abaixo do mínimo", () => {
-    expect(contrasteSuficiente(PALETA.textoFraco, PALETA.superficie)).toBe(
-      false,
-    );
-    expect(contrasteSuficiente(PALETA.textoTerciario, PALETA.superficie)).toBe(
-      true,
-    );
     expect(
-      contrasteSuficiente(PALETA.textoEmBarraFraco, PALETA.barraLateral),
+      contrasteSuficiente(PALETA_CLARA.textoFraco, PALETA_CLARA.superficie),
+    ).toBe(false);
+    expect(
+      contrasteSuficiente(PALETA_CLARA.textoTerciario, PALETA_CLARA.superficie),
+    ).toBe(true);
+    expect(
+      contrasteSuficiente(
+        PALETA_CLARA.textoEmBarraFraco,
+        PALETA_CLARA.barraLateral,
+      ),
     ).toBe(true);
   });
 });
@@ -127,10 +139,10 @@ describe("normalizar a cor que vem de um site", () => {
   it.each([
     ["#FFF", BRANCO],
     ["#fff", BRANCO],
-    ["  #0F7C47  ", PALETA.marca],
-    ["rgb(15, 124, 71)", PALETA.marca],
-    ["rgb(15 124 71)", PALETA.marca],
-    ["rgba(15, 124, 71, 1)", PALETA.marca],
+    ["  #0F7C47  ", PALETA_CLARA.marca],
+    ["rgb(15, 124, 71)", PALETA_CLARA.marca],
+    ["rgb(15 124 71)", PALETA_CLARA.marca],
+    ["rgba(15, 124, 71, 1)", PALETA_CLARA.marca],
   ])("aceita %s", (bruta, esperada) => {
     expect(normalizarCor(bruta)).toBe(esperada);
   });
@@ -174,10 +186,10 @@ describe("ajustar para o mínimo", () => {
   it("não toca na cor que já passa", () => {
     const ajuste = ajustarParaContraste(
       "marca",
-      PALETA.marca,
-      PALETA.superficie,
+      PALETA_CLARA.marca,
+      PALETA_CLARA.superficie,
     );
-    expect(ajuste.ajustada).toBe(PALETA.marca);
+    expect(ajuste.ajustada).toBe(PALETA_CLARA.marca);
     expect(ajuste.razaoDepois).toBe(ajuste.razaoAntes);
     expect(ajuste.alcancou).toBe(true);
   });
@@ -185,14 +197,14 @@ describe("ajustar para o mínimo", () => {
   it("escurece o que reprova sobre fundo claro, até passar", () => {
     const ajuste = ajustarParaContraste(
       "textoFraco",
-      PALETA.textoFraco,
-      PALETA.superficie,
+      PALETA_CLARA.textoFraco,
+      PALETA_CLARA.superficie,
     );
     expect(ajuste.razaoAntes).toBeLessThan(CONTRASTE_MINIMO);
     expect(ajuste.razaoDepois).toBeGreaterThanOrEqual(CONTRASTE_MINIMO);
     expect(ajuste.alcancou).toBe(true);
     expect(luminancia(ajuste.ajustada)).toBeLessThan(
-      luminancia(PALETA.textoFraco),
+      luminancia(PALETA_CLARA.textoFraco),
     );
   });
 
@@ -209,7 +221,7 @@ describe("ajustar para o mínimo", () => {
     const ajuste = ajustarParaContraste(
       "textoEmBarraFraco",
       CINZA_QUE_REPROVA,
-      PALETA.barraLateral,
+      PALETA_CLARA.barraLateral,
     );
     expect(ajuste.razaoAntes).toBeLessThan(CONTRASTE_MINIMO);
     expect(ajuste.razaoDepois).toBeGreaterThanOrEqual(CONTRASTE_MINIMO);
@@ -228,8 +240,8 @@ describe("ajustar para o mínimo", () => {
   it("desvia o mínimo necessário", () => {
     const ajuste = ajustarParaContraste(
       "textoFraco",
-      PALETA.textoFraco,
-      PALETA.superficie,
+      PALETA_CLARA.textoFraco,
+      PALETA_CLARA.superficie,
     );
     expect(ajuste.razaoDepois).toBeGreaterThanOrEqual(CONTRASTE_MINIMO);
     expect(ajuste.razaoDepois).toBeLessThan(CONTRASTE_MINIMO + 0.6);
@@ -242,7 +254,7 @@ describe("ajustar para o mínimo", () => {
     const ajuste = ajustarParaContraste(
       "destaqueSuave",
       LARANJA,
-      PALETA.superficie,
+      PALETA_CLARA.superficie,
     );
     // O canal vermelho continua sendo o mais forte, como no original: o ajuste
     // move luminosidade, não matiz.
@@ -270,13 +282,13 @@ describe("ajustar para o mínimo", () => {
   it("é determinístico: duas execuções dão a mesma cor", () => {
     const uma = ajustarParaContraste(
       "textoFraco",
-      PALETA.textoFraco,
-      PALETA.superficie,
+      PALETA_CLARA.textoFraco,
+      PALETA_CLARA.superficie,
     );
     const outra = ajustarParaContraste(
       "textoFraco",
-      PALETA.textoFraco,
-      PALETA.superficie,
+      PALETA_CLARA.textoFraco,
+      PALETA_CLARA.superficie,
     );
     expect(uma).toEqual(outra);
   });

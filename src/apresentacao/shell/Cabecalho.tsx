@@ -8,7 +8,7 @@ import {
   type Tela,
 } from "@/apresentacao/navegacao/telas";
 import { BotaoDeConta } from "@/apresentacao/shell/BotaoDeConta";
-import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { type Tema, MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Perfil } from "@/seguranca/identidade";
 import type { Query } from "@/semantica/contrato";
 import type { Dimensoes } from "@/semantica/recortes";
@@ -62,6 +62,8 @@ export function Cabecalho({
     readonly perfil: Perfil;
     readonly podeConfigurar: boolean;
     readonly podeApresentar: boolean;
+    /** O tema em vigor, para o botao de troca propor o outro (T-372). */
+    readonly tema: Tema;
   };
   /**
    * O nome da instalacao, escrito quando nao ha logo. Chega resolvido: o da
@@ -213,6 +215,8 @@ export function Cabecalho({
         </nav>
 
         <BotaoDeConta
+          tema={conta.tema}
+          de={`/${modulo.id}/${tela.slug}`}
           perfil={conta.perfil}
           podeConfigurar={conta.podeConfigurar}
           apresentar={

@@ -26,19 +26,25 @@
  */
 
 import { razaoDeContraste } from "@/apresentacao/tema/contraste";
-import { PALETA, type CoresDaMarca } from "@/apresentacao/tema/tema";
+import {
+  PALETA_CLARA,
+  type ChaveDePaletaClara,
+  type CoresDaMarca,
+} from "@/apresentacao/tema/tema";
 import type { Sentido } from "@/semantica/contrato";
 
 /** A rampa categorica, na ordem de uso. */
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
+
 export const SEQUENCIA_CATEGORICA: readonly string[] = [
-  PALETA.marca,
-  PALETA.destaque,
-  PALETA.comparacao,
-  PALETA.destaqueSuave,
-  PALETA.marcaEscura,
-  PALETA.positivo,
-  PALETA.neutro,
-  PALETA.meta,
+  PALETA_CLARA.marca,
+  PALETA_CLARA.destaque,
+  PALETA_CLARA.comparacao,
+  PALETA_CLARA.destaqueSuave,
+  PALETA_CLARA.marcaEscura,
+  PALETA_CLARA.positivo,
+  PALETA_CLARA.neutro,
+  PALETA_CLARA.meta,
 ];
 
 /**
@@ -122,6 +128,7 @@ function afastar(cor: string, anteriores: readonly string[]): string {
  */
 export function sequenciaCategorica(
   cores?: CoresDaMarca | null,
+  pele: Pele = PALETA_CLARA,
 ): readonly string[] {
   if (cores === undefined || cores === null) return SEQUENCIA_CATEGORICA;
 
@@ -136,39 +143,46 @@ export function sequenciaCategorica(
   for (const proposta of daMarca) {
     escolhidas.push(afastar(proposta, escolhidas));
   }
-  const [marca = PALETA.marca, destaque = PALETA.destaque] = escolhidas;
-  const suave = escolhidas[2] ?? PALETA.destaqueSuave;
-  const escura = escolhidas[3] ?? PALETA.marcaEscura;
+  const [marca = pele.marca, destaque = pele.destaque] = escolhidas;
+  const suave = escolhidas[2] ?? pele.destaqueSuave;
+  const escura = escolhidas[3] ?? pele.marcaEscura;
 
   return [
     marca,
     destaque,
-    PALETA.comparacao,
+    pele.comparacao,
     suave,
     escura,
-    PALETA.positivo,
-    PALETA.neutro,
-    PALETA.meta,
+    pele.positivo,
+    pele.neutro,
+    pele.meta,
   ];
 }
 
 export function corDaCategoria(
   indice: number,
   cores?: CoresDaMarca | null,
+  pele: Pele = PALETA_CLARA,
 ): string {
-  const rampa = sequenciaCategorica(cores);
+  const rampa = sequenciaCategorica(cores, pele);
   const cor = rampa[indice % rampa.length];
-  return cor ?? PALETA.marca;
+  return cor ?? pele.marca;
 }
 
 /** O papel `marca` da rampa: a cor de uma serie unica. */
-export function corPrincipal(cores?: CoresDaMarca | null): string {
-  return sequenciaCategorica(cores)[0] ?? PALETA.marca;
+export function corPrincipal(
+  cores?: CoresDaMarca | null,
+  pele: Pele = PALETA_CLARA,
+): string {
+  return sequenciaCategorica(cores, pele)[0] ?? pele.marca;
 }
 
 /** O papel `marcaEscura`: a segunda serie de um par. */
-export function corSecundaria(cores?: CoresDaMarca | null): string {
-  return sequenciaCategorica(cores)[4] ?? PALETA.marcaEscura;
+export function corSecundaria(
+  cores?: CoresDaMarca | null,
+  pele: Pele = PALETA_CLARA,
+): string {
+  return sequenciaCategorica(cores, pele)[4] ?? pele.marcaEscura;
 }
 
 /**
@@ -177,8 +191,19 @@ export function corSecundaria(cores?: CoresDaMarca | null): string {
  * `neutro` nao e ausencia de decisao: e a decisao de que subir nao e nem bom
  * nem ruim para aquela medida — headcount, por exemplo.
  */
+export function corDoSentido(
+  sentido: Sentido,
+  pele: Pele = PALETA_CLARA,
+): string {
+  return sentido === "maior_melhor"
+    ? pele.positivo
+    : sentido === "menor_melhor"
+      ? pele.negativo
+      : pele.texto;
+}
+
 export const COR_DO_SENTIDO: Readonly<Record<Sentido, string>> = {
-  maior_melhor: PALETA.positivo,
-  menor_melhor: PALETA.negativo,
-  neutro: PALETA.texto,
+  maior_melhor: PALETA_CLARA.positivo,
+  menor_melhor: PALETA_CLARA.negativo,
+  neutro: PALETA_CLARA.texto,
 };

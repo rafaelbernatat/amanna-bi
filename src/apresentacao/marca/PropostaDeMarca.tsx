@@ -3,7 +3,7 @@ import {
   formatarRazao,
 } from "@/apresentacao/formato/formato";
 import { NOME_DO_PAPEL, PARA_QUE_SERVE } from "@/apresentacao/marca/papeis";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { CoresDaMarca } from "@/apresentacao/tema/tema";
 import type { AjusteDeContraste } from "@/apresentacao/tema/contraste";
 import type { Proposta } from "@/marca/documento";
@@ -38,8 +38,8 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
       data-origem={proposta.origem}
       aria-label="Proposta de marca"
       style={{
-        background: PALETA.superficie,
-        border: `1px solid ${PALETA.bordaForte}`,
+        background: PALETA_CLARA.superficie,
+        border: `1px solid ${PALETA_CLARA.bordaForte}`,
         borderRadius: 17,
         padding: "18px 20px",
         display: "flex",
@@ -52,7 +52,7 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
           style={{
             margin: 0,
             font: `500 18px/1.2 ${TIPOGRAFIA.titulo}`,
-            color: PALETA.texto,
+            color: PALETA_CLARA.texto,
           }}
         >
           {doSite
@@ -64,7 +64,7 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
           style={{
             margin: 0,
             font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
-            color: PALETA.textoSecundario,
+            color: PALETA_CLARA.textoSecundario,
           }}
         >
           {doSite
@@ -89,11 +89,11 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             margin: 0,
             padding: "10px 12px",
             borderRadius: 10,
-            border: `1px solid ${PALETA.bordaForte}`,
-            borderLeft: `3px solid ${PALETA.negativo}`,
-            background: PALETA.superficie,
+            border: `1px solid ${PALETA_CLARA.bordaForte}`,
+            borderLeft: `3px solid ${PALETA_CLARA.negativo}`,
+            background: PALETA_CLARA.superficie,
             font: `400 11.5px/1.55 ${TIPOGRAFIA.texto}`,
-            color: PALETA.textoSecundario,
+            color: PALETA_CLARA.textoSecundario,
           }}
         >
           {doSite ? "O logo do site" : "O arquivo enviado"} não serviu:{" "}
@@ -112,7 +112,7 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             style={{
               margin: 0,
               font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
-              color: PALETA.textoSecundario,
+              color: PALETA_CLARA.textoSecundario,
             }}
           >
             {doSite ? "Nenhum logo utilizável foi encontrado." : "Sem logo."} O
@@ -148,7 +148,7 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
           <span
             style={{
               font: `400 10.5px/1.4 ${TIPOGRAFIA.mono}`,
-              color: PALETA.textoTerciario,
+              color: PALETA_CLARA.textoTerciario,
             }}
           >
             {proposta.logo.tipo} · {formatarQuilobytes(proposta.logo.bytes)}
@@ -182,10 +182,10 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             margin: 0,
             padding: "10px 12px",
             borderRadius: 10,
-            border: `1px solid ${PALETA.bordaForte}`,
-            background: PALETA.superficieSuave,
+            border: `1px solid ${PALETA_CLARA.bordaForte}`,
+            background: PALETA_CLARA.superficieSuave,
             font: `400 11.5px/1.6 ${TIPOGRAFIA.texto}`,
-            color: PALETA.textoSecundario,
+            color: PALETA_CLARA.textoSecundario,
           }}
         >
           {proposta.extracao.ajustes.length === 1
@@ -204,7 +204,7 @@ export function PropostaDeMarca({ proposta }: { readonly proposta: Proposta }) {
             margin: 0,
             paddingLeft: 18,
             font: `400 11px/1.6 ${TIPOGRAFIA.texto}`,
-            color: PALETA.textoTerciario,
+            color: PALETA_CLARA.textoTerciario,
           }}
         >
           {proposta.avisos.map((aviso) => (
@@ -242,7 +242,7 @@ function Amostra({
       data-papel={papel}
       data-cor={aplicada}
       style={{
-        border: `1px solid ${PALETA.borda}`,
+        border: `1px solid ${PALETA_CLARA.borda}`,
         borderRadius: 12,
         padding: "10px 12px",
         display: "flex",
@@ -259,14 +259,14 @@ function Amostra({
             flex: "none",
             borderRadius: 8,
             background: aplicada,
-            border: `1px solid ${PALETA.bordaForte}`,
+            border: `1px solid ${PALETA_CLARA.bordaForte}`,
           }}
         />
         <div style={{ minWidth: 0 }}>
           <div
             style={{
               font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
-              color: PALETA.texto,
+              color: PALETA_CLARA.texto,
             }}
           >
             {NOME_DO_PAPEL[papel]}
@@ -274,7 +274,7 @@ function Amostra({
           <div
             style={{
               font: `400 10px/1.4 ${TIPOGRAFIA.mono}`,
-              color: PALETA.textoTerciario,
+              color: PALETA_CLARA.textoTerciario,
             }}
           >
             {aplicada}
@@ -292,7 +292,7 @@ function Amostra({
         style={{
           margin: 0,
           font: `400 10px/1.45 ${TIPOGRAFIA.texto}`,
-          color: PALETA.textoTerciario,
+          color: PALETA_CLARA.textoTerciario,
         }}
       >
         {PARA_QUE_SERVE[papel]}
@@ -304,7 +304,7 @@ function Amostra({
           style={{
             margin: 0,
             font: `400 10px/1.45 ${TIPOGRAFIA.mono}`,
-            color: PALETA.textoSecundario,
+            color: PALETA_CLARA.textoSecundario,
           }}
         >
           contraste {formatarRazao(ajuste.razaoAntes)} →{" "}

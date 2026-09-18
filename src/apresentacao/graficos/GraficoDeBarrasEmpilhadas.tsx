@@ -11,7 +11,13 @@ import {
 } from "recharts";
 
 import type { ConfiguracaoDeEixo } from "@/apresentacao/graficos/nucleo";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  PALETA_CLARA,
+  TIPOGRAFIA,
+  type ChaveDePaletaClara,
+} from "@/apresentacao/tema/tema";
+
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
 
 import type { SerieDeBarras } from "@/apresentacao/graficos/GraficoDeBarras";
 
@@ -27,11 +33,20 @@ import type { SerieDeBarras } from "@/apresentacao/graficos/GraficoDeBarras";
  * ja vem somado do servidor, e nao e recalculado aqui.
  */
 export function GraficoDeBarrasEmpilhadas({
+  pele = PALETA_CLARA,
   categorias,
   faixas,
   eixo,
   horizontal = false,
 }: {
+  /**
+   * A pele ativa, em valor literal.
+   *
+   * Literal porque isto vira **atributo de SVG**, e `var()` nao pinta
+   * atributo: a linha simplesmente some. Quem resolve o tema e a pagina, no
+   * servidor; aqui ele chega pronto (T-372).
+   */
+  readonly pele?: Pele;
   readonly categorias: readonly string[];
   readonly faixas: readonly SerieDeBarras[];
   readonly eixo: ConfiguracaoDeEixo;
@@ -49,7 +64,7 @@ export function GraficoDeBarrasEmpilhadas({
   });
 
   const marcaDeEixo = {
-    fill: PALETA.textoFraco,
+    fill: pele.textoFraco,
     fontSize: 9.5,
     fontFamily: TIPOGRAFIA.mono,
   } as const;
@@ -62,7 +77,7 @@ export function GraficoDeBarrasEmpilhadas({
         margin={{ top: 8, right: 12, bottom: 4, left: horizontal ? 24 : 4 }}
       >
         <CartesianGrid
-          stroke={PALETA.grade}
+          stroke={pele.grade}
           strokeWidth={0.75}
           vertical={horizontal}
           horizontal={!horizontal}
@@ -75,7 +90,7 @@ export function GraficoDeBarrasEmpilhadas({
               domain={[...eixo.dominio]}
               ticks={[...eixo.cortes]}
               tickLine={false}
-              axisLine={{ stroke: PALETA.bordaForte }}
+              axisLine={{ stroke: pele.bordaForte }}
               tick={marcaDeEixo}
             />
             <YAxis
@@ -93,7 +108,7 @@ export function GraficoDeBarrasEmpilhadas({
               dataKey="categoria"
               interval={eixo.intervaloDeRotulo}
               tickLine={false}
-              axisLine={{ stroke: PALETA.bordaForte }}
+              axisLine={{ stroke: pele.bordaForte }}
               tick={marcaDeEixo}
             />
             <YAxis
@@ -115,7 +130,7 @@ export function GraficoDeBarrasEmpilhadas({
           iconSize={8}
           wrapperStyle={{
             font: `500 9.5px ${TIPOGRAFIA.mono}`,
-            color: PALETA.textoTerciario,
+            color: pele.textoTerciario,
           }}
         />
 

@@ -4,7 +4,14 @@ import {
   caminhosDaSparkline,
   LARGURA_DA_SPARKLINE,
 } from "@/apresentacao/paineis/sparkline";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  PALETA,
+  PALETA_CLARA,
+  TIPOGRAFIA,
+  type ChaveDePaletaClara,
+} from "@/apresentacao/tema/tema";
+
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
 import type { Kpi } from "@/semantica/contrato";
 
 /**
@@ -45,7 +52,14 @@ import type { Kpi } from "@/semantica/contrato";
  * com o rodapé preservado, porque o rodapé diz **em que recorte** o número
  * seria válido. É o princípio PR-4 no menor componente do produto.
  */
-export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
+export function CartaoDeKpi({
+  kpi,
+  pele = PALETA_CLARA,
+}: {
+  readonly kpi: Kpi;
+  /** A pele ativa, literal: a minigrafia e SVG (T-372). */
+  readonly pele?: Pele;
+}) {
   /*
    * O valor sai do objeto uma vez, e o resto do componente decide por ele.
    *
@@ -83,7 +97,7 @@ export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
             width: 5,
             height: 5,
             borderRadius: "50%",
-            background: corDoSentimento(kpi.sentiment),
+            background: corDoSentimento(kpi.sentiment, pele),
             flex: "none",
           }}
         />
@@ -118,7 +132,10 @@ export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
           : formatarValor(valor, kpi.unit)}
       </div>
 
-      <SparklineDoKpi serie={kpi.serie} cor={corDoSentimento(kpi.sentiment)} />
+      <SparklineDoKpi
+        serie={kpi.serie}
+        cor={corDoSentimento(kpi.sentiment, pele)}
+      />
 
       <div
         style={{
@@ -135,7 +152,7 @@ export function CartaoDeKpi({ kpi }: { readonly kpi: Kpi }) {
             data-teste="delta-do-kpi"
             style={{
               font: `500 10px/1.4 ${TIPOGRAFIA.texto}`,
-              color: corDoSentimento(kpi.sentiment),
+              color: corDoSentimento(kpi.sentiment, pele),
             }}
           >
             {/*
@@ -208,11 +225,20 @@ function SparklineDoKpi({
   );
 }
 
-/** A cor do sentimento. Nunca é o único sinal — ver o cabeçalho. */
-function corDoSentimento(sentimento: Kpi["sentiment"]): string {
-  if (sentimento === "good") return PALETA.positivo;
-  if (sentimento === "bad") return PALETA.negativo;
-  return PALETA.neutro;
+/**
+ * A cor do sentimento. Nunca é o único sinal — ver o cabeçalho.
+ *
+ * Recebe a pele em valor literal porque o mesmo retorno alimenta o traco da
+ * minigrafia, que e **atributo de SVG**: ali `var()` nao pinta. Nos usos em
+ * HTML o literal tambem serve, e por isso ha um caminho so.
+ */
+function corDoSentimento(
+  sentimento: Kpi["sentiment"],
+  pele: Pele = PALETA_CLARA,
+): string {
+  if (sentimento === "good") return pele.positivo;
+  if (sentimento === "bad") return pele.negativo;
+  return pele.neutro;
 }
 
 /**
@@ -225,7 +251,13 @@ function corDoSentimento(sentimento: Kpi["sentiment"]): string {
  */
 export const MAXIMO_DE_KPIS_POR_TELA = 6;
 
-export function FaixaDeKpis({ kpis }: { readonly kpis: readonly Kpi[] }) {
+export function FaixaDeKpis({
+  kpis,
+  pele = PALETA_CLARA,
+}: {
+  readonly kpis: readonly Kpi[];
+  readonly pele?: Pele;
+}) {
   return (
     <div
       data-teste="faixa-de-kpis"
@@ -237,7 +269,7 @@ export function FaixaDeKpis({ kpis }: { readonly kpis: readonly Kpi[] }) {
       }}
     >
       {kpis.slice(0, MAXIMO_DE_KPIS_POR_TELA).map((kpi) => (
-        <CartaoDeKpi key={kpi.id} kpi={kpi} />
+        <CartaoDeKpi key={kpi.id} kpi={kpi} pele={pele} />
       ))}
     </div>
   );

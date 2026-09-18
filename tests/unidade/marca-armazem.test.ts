@@ -11,7 +11,7 @@ import { join } from "node:path";
 
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { PALETA } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA } from "@/apresentacao/tema/tema";
 import {
   ARMAZENS,
   ArmazemInvalido,
@@ -65,11 +65,11 @@ const MARCA: Marca = {
   site: "https://dreamy.com.br/",
   nome: null,
   cores: {
-    marca: PALETA.marca,
-    marcaEscura: PALETA.marcaEscura,
-    destaque: PALETA.destaque,
-    destaqueSuave: PALETA.destaqueSuave,
-    barraLateral: PALETA.barraLateral,
+    marca: PALETA_CLARA.marca,
+    marcaEscura: PALETA_CLARA.marcaEscura,
+    destaque: PALETA_CLARA.destaque,
+    destaqueSuave: PALETA_CLARA.destaqueSuave,
+    barraLateral: PALETA_CLARA.barraLateral,
   },
   logo: null,
   aplicadaEm: "2026-09-04T12:00:00.000Z",
