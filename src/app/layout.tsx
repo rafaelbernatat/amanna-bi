@@ -30,7 +30,7 @@ export default async function RootLayout({
    *
    * `lerMarcaAtiva` e memorizada pelo `cache` do React, entao o cabecalho le
    * a mesma coisa sem uma segunda ida ao armazem. O nonce vem do cabecalho da
-   * requisicao, posto pelo middleware — hoje `style-src` tem `unsafe-inline`
+   * requisicao, posto pelo proxy — hoje `style-src` tem `unsafe-inline`
    * e ele nao seria necessario, mas quando H-46 for pago esta folha precisa
    * continuar saindo assinada.
    */

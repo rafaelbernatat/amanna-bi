@@ -881,6 +881,12 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-362** `P1` `S` `auditoria` Provar o convite e a conversa sem subir dois servidores
   · **Aceite:** teste de unidade cobre os dois envelopes, as duas decisoes, o middleware com `NextRequest` e o boot; o e2e da conversa roda num projeto de tamanho de celular sobre o mesmo servidor de `fixtures`; o spec da marca continua em serie entre os dois tamanhos.
   · **PRD:** secao 8.1, D-CONVITE-apresentacao · **Depende de:** T-355, T-360
+- [X] **T-364** `P0` `S` `seguranca` O proxy mora ao lado de `app`, senao o Next o ignora calado
+  · **Aceite:** o arquivo e `src/proxy.ts` e exporta `proxy` (o nome que a versao 16 carrega; `middleware` esta descontinuado); nao existe homonimo na raiz do repositorio, onde `next dev` o ignora sem aviso enquanto `next build` o compila — divergencia que fez a negacao por convite e a politica de seguranca sumirem so no desenvolvimento; um teste de unidade fixa o lugar, a ausencia do homonimo e o nome do export — e e ele que guarda isto, porque o e2e sobe um build de producao, onde o arquivo na raiz ainda era compilado e por isso a suite passava verde com o desenvolvimento cego.
+  · **PRD:** secao 11, secao 13, D-CONVITE-apresentacao · **Depende de:** T-357
+- [X] **T-365** `P0` `M` `seguranca` Apresentar deixa de depender do modo de sessao
+  · **Aceite:** o botao do QR aparece sempre que houver `CONVITE_SEGREDO` e o perfil apresentar, em `fixtures`, `oidc` ou `convite`; `/entrar?convite=` grava o cookie nos tres modos; quem abriu o painel direto apresenta na sala padrao com prazo contado de agora, e quem entrou por convite apresenta na propria sala com o proprio prazo; `getSession` prefere o passe do QR ao provedor, e por isso a plateia le como `auditor` com um sujeito por celular mesmo em instalacao aberta; sem segredo a tela diz desligada; a trava de `fixtures` na frente de `warehouse` continua.
+  · **PRD:** secao 11, RF-23, D-CONVITE-apresentacao · **Depende de:** T-357, T-359
 - [ ] **T-363** `P2` `S` `plataforma` Contar o uso do chat no Postgres, quando o limite precisar ser exato
   · **Aceite:** `amanna.chat_uso` registra pergunta e tokens por sala e por dia, e o controle passa a ler dali em vez da memoria do processo; o limite deixa de ser por instancia; a escrita nao entra no caminho da resposta (fora do fluxo, sem segurar a previa); a retencao sai de T-324.
   · **PRD:** secao 13, RF-19, D-CONVITE-apresentacao · **Depende de:** T-361, T-267

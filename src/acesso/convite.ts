@@ -2,7 +2,7 @@
  * O provedor de sessão por convite (D-CONVITE-apresentacao).
  *
  * Lê o cookie assinado e devolve uma `Session` como qualquer outro provedor.
- * É o **controle**, e não o middleware: o matcher do middleware pula
+ * É o **controle**, e não o proxy: o matcher do proxy pula
  * requisições de prefetch, e uma rota que só confiasse nele serviria dado a
  * quem chegasse por esse caminho. Aqui a verificação acontece a cada leitura,
  * junto com o escopo.
@@ -23,7 +23,7 @@
 
 import { cookies } from "next/headers";
 
-import { registrarProvedor } from "@/acesso/sessao";
+import { registrarConvidado, registrarProvedor } from "@/acesso/sessao";
 import {
   NOME_DO_COOKIE,
   SessaoAusente,
@@ -64,6 +64,18 @@ export async function lerConvite(
   if (bruto === undefined || bruto === "") return null;
   return verificarSessao(bruto, segredo, agoraEmSegundos());
 }
+
+/*
+ * O passe de apresentação, que vale em qualquer modo de sessão.
+ *
+ * Devolve `null` sem cookie — e aí quem responde é o provedor da instalação.
+ * É o que separa apresentar de entrar: o painel abre como sempre, e o QR
+ * acrescenta convidados em vez de trocar a porta.
+ */
+registrarConvidado(async () => {
+  const sessao = await lerConvite();
+  return sessao === null ? null : sessaoDeConvite(sessao);
+});
 
 registrarProvedor("convite", async () => {
   const sessao = await lerConvite();

@@ -94,8 +94,9 @@ export default async function Pagina({
   if (apresentacao === null || segredo === null) {
     return (
       <Cartao titulo="Apresentação desligada">
-        Esta instalação não entra por convite, então não há QR code para gerar.
-        Quem opera a instalação liga isso na configuração do ambiente.
+        Esta instalação não tem segredo para assinar o convite, então não há QR
+        code para gerar. Quem opera a instalação define CONVITE_SEGREDO na
+        configuração do ambiente.
       </Cartao>
     );
   }

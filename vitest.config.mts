@@ -41,5 +41,18 @@ export default defineConfig({
      * investigacao, nao mais folga.
      */
     testTimeout: 60_000,
+
+    /*
+     * O mesmo teto para os ganchos, e a razao e outra.
+     *
+     * O padrao do vitest para `beforeEach`/`afterEach` e 10 s, e o contrato do
+     * armazem da marca sobe um Postgres em processo (PGlite) no gancho: um a
+     * dois segundos sozinho, mais que isso quando oito trabalhadores disputam
+     * a maquina. Estourou uma vez em duas na suite inteira, e nao uma vez
+     * sozinho -- o sintoma tipico de teto curto, nao de defeito.
+     *
+     * Um gancho que passe de 60 s merece investigacao, como o caso acima.
+     */
+    hookTimeout: 60_000,
   },
 });

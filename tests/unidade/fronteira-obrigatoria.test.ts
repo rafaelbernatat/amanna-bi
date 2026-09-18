@@ -37,7 +37,7 @@ function todosOsArquivos(pasta: string): readonly string[] {
 
 const ARQUIVOS = [
   ...todosOsArquivos(FONTES),
-  join(RAIZ, "middleware.ts"),
+  join(FONTES, "proxy.ts"),
   join(RAIZ, "instrumentation.ts"),
 ].filter((c) => {
   try {

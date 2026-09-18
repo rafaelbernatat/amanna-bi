@@ -22,7 +22,7 @@
  *
  * ## Só Web Crypto
  *
- * Nada de `node:crypto`: este módulo roda no middleware, que é runtime de
+ * Nada de `node:crypto`: este módulo roda no proxy, que é runtime de
  * borda, e no servidor. `crypto.subtle` existe nos dois. A chave é derivada
  * uma vez por segredo e fica memorizada — importar a chave a cada requisição
  * custa mais que verificar a assinatura.
@@ -372,7 +372,7 @@ export function destinoSeguro(pedido: string | null | undefined): string {
 }
 
 /* ------------------------------------------------------------------ *
- * As duas decisões do middleware
+ * As duas decisões do proxy
  * ------------------------------------------------------------------ */
 
 /** Por que a tela de entrada apareceu. Enum fechado, como todo motivo. */
@@ -403,6 +403,44 @@ export function segredoDoConvite(
   return bruto === undefined || bruto.trim() === "" ? null : bruto;
 }
 
+/* ------------------------------------------------------------------ *
+ * A sala aberta pelo botão
+ * ------------------------------------------------------------------ */
+
+/**
+ * Apresentar e entrar são coisas diferentes, e esta é a linha entre elas.
+ *
+ * `AUTH_PROVIDER=convite` responde *"como esta instalação sabe quem entrou"*:
+ * é a porta do painel, e existe porque o OIDC ainda não existe (T-221). Já a
+ * apresentação responde outra coisa — *"esta instalação abre uma sala para uma
+ * plateia?"* — e a resposta é sim sempre que houver segredo para assinar o QR.
+ *
+ * Amarrar as duas foi um erro de desenho: obrigava quem apresenta a entrar por
+ * link no próprio painel, quando o pedido era abrir o painel como sempre e
+ * clicar num botão. Com a separação, o painel continua abrindo do jeito que a
+ * instalação escolheu, e o QR passa a existir em qualquer um dos modos.
+ */
+export function apresentacaoLigada(
+  ambiente: Record<string, string | undefined>,
+): boolean {
+  return segredoDoConvite(ambiente) !== null;
+}
+
+/**
+ * A sala de quem abriu a apresentação pelo botão, sem ter entrado por convite.
+ *
+ * Um nome fixo, e não sorteado: a sala é a unidade do teto de tokens do chat
+ * (D-CONVITE-apresentacao), e uma sala nova a cada recarga zeraria esse teto
+ * — que é justamente o que ele existe para não deixar acontecer.
+ */
+export const SALA_PADRAO = "apresentacao";
+
+/** Quanto vale o QR de uma sala aberta pelo botão. */
+export const HORAS_DA_SALA_PADRAO = 4;
+
+/** Segundos numa hora, para as contas de prazo. */
+export const SEGUNDOS_POR_HORA = 3600;
+
 export type Acesso =
   | { readonly tipo: "seguir" }
   | { readonly tipo: "redirecionar"; readonly para: string }
@@ -426,12 +464,12 @@ function publico(caminho: string): boolean {
 /**
  * A decisão de toda requisição que não é a entrada.
  *
- * Em modo aberto (`fixtures`, `oidc`), segue: o middleware não nega nada, e o
+ * Em modo aberto (`fixtures`, `oidc`), segue: o proxy não nega nada, e o
  * arnês de ponta a ponta continua como sempre. Em modo convite, sem cookie
  * válido, página vai para `/entrar` levando o destino, e `/api/*` é negada —
  * uma rota de dados não redireciona, responde 401.
  *
- * **O middleware não é o controle.** O matcher pula requisições de prefetch, e
+ * **O proxy não é o controle.** O matcher pula requisições de prefetch, e
  * por isso quem verifica o cookie de verdade é o provedor de sessão, a cada
  * leitura. Isto aqui é a negação cedo, que poupa render e deixa a tela certa
  * na frente de quem chegou sem convite.
@@ -482,11 +520,19 @@ export async function decidirEntrada(e: {
   readonly ambiente: Record<string, string | undefined>;
   readonly agoraSegundos: number;
 }): Promise<Entrada> {
-  if (!acessoPorConvite(e.ambiente)) {
+  /*
+   * Quem entra pelo QR entra em qualquer modo de sessão.
+   *
+   * Antes esta porta só abria com `AUTH_PROVIDER=convite`, e isso obrigava a
+   * instalação inteira a entrar por link para que a plateia pudesse entrar por
+   * QR. O que decide aqui é haver segredo para conferir a assinatura — sem
+   * ele não há apresentação, e o motivo é `desligado`.
+   */
+  const segredo = segredoDoConvite(e.ambiente);
+  if (segredo === null) {
     return { tipo: "recusar", motivo: "desligado" };
   }
-  const segredo = segredoDoConvite(e.ambiente);
-  if (segredo === null || e.token === null || e.token === "") {
+  if (e.token === null || e.token === "") {
     return { tipo: "recusar", motivo: "invalido" };
   }
   const convite = await verificarConvite(e.token, segredo, e.agoraSegundos);
