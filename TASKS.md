@@ -887,6 +887,9 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-365** `P0` `M` `seguranca` Apresentar deixa de depender do modo de sessao
   · **Aceite:** o botao do QR aparece sempre que houver `CONVITE_SEGREDO` e o perfil apresentar, em `fixtures`, `oidc` ou `convite`; `/entrar?convite=` grava o cookie nos tres modos; quem abriu o painel direto apresenta na sala padrao com prazo contado de agora, e quem entrou por convite apresenta na propria sala com o proprio prazo; `getSession` prefere o passe do QR ao provedor, e por isso a plateia le como `auditor` com um sujeito por celular mesmo em instalacao aberta; sem segredo a tela diz desligada; a trava de `fixtures` na frente de `warehouse` continua.
   · **PRD:** secao 11, RF-23, D-CONVITE-apresentacao · **Depende de:** T-357, T-359
+- [X] **T-366** `P1` `S` `seguranca` A politica de seguranca abre so o que `next dev` precisa
+  · **Aceite:** em `NODE_ENV=development` a `script-src` ganha `'unsafe-eval'` e a `connect-src` aceita `ws:`/`wss:`, porque o React reconstroi pilha por `eval` e o recarregamento do Turbopack entrega modulo assim; em producao, teste e ambiente sem `NODE_ENV` a politica continua exatamente a de antes, e dois casos de unidade fixam os dois lados; o caso de ponta a ponta que proibe `unsafe-eval` roda contra `next start`, onde `NODE_ENV` e producao, e continua valendo.
+  · **PRD:** secao 13, RF-24 · **Depende de:** T-139, T-364
 - [ ] **T-363** `P2` `S` `plataforma` Contar o uso do chat no Postgres, quando o limite precisar ser exato
   · **Aceite:** `amanna.chat_uso` registra pergunta e tokens por sala e por dia, e o controle passa a ler dali em vez da memoria do processo; o limite deixa de ser por instancia; a escrita nao entra no caminho da resposta (fora do fluxo, sem segurar a previa); a retencao sai de T-324.
   · **PRD:** secao 13, RF-19, D-CONVITE-apresentacao · **Depende de:** T-361, T-267

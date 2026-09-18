@@ -197,7 +197,8 @@ describe("a mensagem de erro nunca carrega o valor do segredo", () => {
 });
 
 describe("a Content-Security-Policy", () => {
-  const csp = montarCsp("NONCE-DE-TESTE");
+  /* Em produção, que é o que vai para o cliente. */
+  const csp = montarCsp("NONCE-DE-TESTE", { NODE_ENV: "production" });
 
   function diretiva(nome: string): string {
     return (
@@ -207,6 +208,34 @@ describe("a Content-Security-Policy", () => {
         .find((d) => d.startsWith(`${nome} `) || d === nome) ?? ""
     );
   }
+
+  /**
+   * A exceção de desenvolvimento, e o que ela nao pode vazar.
+   *
+   * `next dev` precisa de `eval()` — o React o usa para reconstruir pilha de
+   * chamada, e o Turbopack entrega modulo assim. O que estes dois casos fixam
+   * e que a folga existe **so** ali: a mesma funcao, com `NODE_ENV` de
+   * producao, continua recusando. Sem isso, uma folga de desenvolvimento
+   * viraria a politica que o cliente recebe, que e como esse tipo de excecao
+   * costuma escapar.
+   */
+  it("em desenvolvimento, script-src ganha unsafe-eval e o websocket entra", () => {
+    const dev = montarCsp("NONCE-DE-TESTE", { NODE_ENV: "development" });
+    expect(dev).toContain("'unsafe-eval'");
+    expect(dev).toMatch(/connect-src[^;]*ws:/);
+  });
+
+  it("a folga nao atravessa para producao", () => {
+    for (const ambiente of [
+      { NODE_ENV: "production" },
+      { NODE_ENV: "test" },
+      {},
+    ]) {
+      const fora = montarCsp("NONCE-DE-TESTE", ambiente);
+      expect(fora, JSON.stringify(ambiente)).not.toContain("unsafe-eval");
+      expect(fora, JSON.stringify(ambiente)).not.toMatch(/connect-src[^;]*ws:/);
+    }
+  });
 
   it("script-src não tem unsafe-inline nem unsafe-eval", () => {
     const d = diretiva("script-src");

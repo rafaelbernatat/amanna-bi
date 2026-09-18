@@ -23,10 +23,35 @@
  * `unsafe-inline` bloqueia execução de código injetado; `style-src` permissivo
  * abre, no pior caso, exfiltração por seletor de CSS, que precisa de injeção de
  * marcação para começar — e essa a `script-src` já barra.
+ *
+ * ## A exceção de desenvolvimento
+ *
+ * Em `next dev`, o React precisa de `eval()` para reconstruir pilha de chamada
+ * entre ambientes, e o recarregamento a quente do Turbopack entrega módulo por
+ * `eval`. Com a política de produção, o navegador recusa os dois e o console
+ * enche de erro — apareceu no instante em que o proxy voltou a rodar em
+ * desenvolvimento (T-364), porque antes disso não havia política nenhuma ali.
+ *
+ * Por isso, e só ali, `script-src` ganha `'unsafe-eval'` e `connect-src` aceita
+ * o *websocket* do recarregamento. Em produção nada muda, e o e2e prova isso
+ * de verdade: ele sobe `next build` e `next start`, onde `NODE_ENV` é
+ * `production`, e o caso que proíbe `unsafe-eval` roda contra essa resposta.
+ *
+ * **`NODE_ENV` aqui é o discriminador certo, e em `src/acesso/sessao.ts` não
+ * era.** Lá a pergunta é de onde vem o dado, e `NODE_ENV` não sabe responder;
+ * aqui a pergunta é literalmente em que modo o React foi compilado, que é o
+ * que essa variável significa.
  */
 
 /** Origens permitidas para conexão. Só a própria; nada sai para terceiro. */
 const CONEXOES = ["'self'"];
+
+/** Esta resposta está sendo servida por `next dev`? Ver o cabeçalho. */
+export function emDesenvolvimento(
+  ambiente: Record<string, string | undefined> = process.env,
+): boolean {
+  return ambiente["NODE_ENV"] === "development";
+}
 
 /**
  * Monta a Content-Security-Policy da resposta.
@@ -34,19 +59,37 @@ const CONEXOES = ["'self'"];
  * O *nonce* muda a cada resposta. Reaproveitá-lo entre respostas devolveria ao
  * atacante exatamente o que o nonce tira: um valor previsível para colar no
  * script injetado.
+ *
+ * O ambiente entra por parâmetro para o teste poder montar as duas políticas
+ * sem mexer em variável de processo.
  */
-export function montarCsp(nonce: string): string {
+export function montarCsp(
+  nonce: string,
+  ambiente: Record<string, string | undefined> = process.env,
+): string {
+  const desenvolvimento = emDesenvolvimento(ambiente);
+
   const diretivas: readonly (readonly [string, readonly string[]])[] = [
     ["default-src", ["'self'"]],
     // Sem 'unsafe-inline' e sem 'unsafe-eval'. 'strict-dynamic' deixa os
     // scripts carregados pelo Next herdarem a confiança do nonce, em vez de
     // exigir uma lista de origens que envelheceria a cada versão.
-    ["script-src", ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'"]],
+    // 'unsafe-eval' só em desenvolvimento: ver a seção no cabeçalho.
+    [
+      "script-src",
+      [
+        "'self'",
+        `'nonce-${nonce}'`,
+        "'strict-dynamic'",
+        ...(desenvolvimento ? ["'unsafe-eval'"] : []),
+      ],
+    ],
     // A dívida declarada. Ver H-46 e o cabeçalho deste arquivo.
     ["style-src", ["'self'", "'unsafe-inline'"]],
     ["img-src", ["'self'", "data:"]],
     ["font-src", ["'self'", "data:"]],
-    ["connect-src", CONEXOES],
+    // O websocket do recarregamento a quente, e só em desenvolvimento.
+    ["connect-src", [...CONEXOES, ...(desenvolvimento ? ["ws:", "wss:"] : [])]],
     // Nenhum plugin, nenhum objeto embutido, nenhuma base reescrita.
     ["object-src", ["'none'"]],
     ["base-uri", ["'none'"]],
@@ -89,10 +132,11 @@ export const CABECALHOS_FIXOS: Readonly<Record<string, string>> = {
 /** Todos os cabeçalhos da resposta, dado o nonce daquela resposta. */
 export function cabecalhosDeSeguranca(
   nonce: string,
+  ambiente: Record<string, string | undefined> = process.env,
 ): Readonly<Record<string, string>> {
   return {
     ...CABECALHOS_FIXOS,
-    "Content-Security-Policy": montarCsp(nonce),
+    "Content-Security-Policy": montarCsp(nonce, ambiente),
   };
 }
 
