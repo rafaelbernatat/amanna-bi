@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { IconeDaTela } from "@/apresentacao/navegacao/IconeDaTela";
 import {
   cookieDoMenu,
   LARGURA_DO_MENU_ABERTO,
@@ -16,12 +17,18 @@ import { rotaCom } from "@/semantica/url";
 
 /**
  * As telas do modulo ativo, num menu lateral recolhivel
- * (D-NAVEGACAO-menu-lateral-e-filtros-vivos, T-421).
+ * (D-NAVEGACAO-menu-lateral-e-filtros-vivos, T-421, T-442).
  *
  * Os modulos continuam abas no cabecalho; o que saiu de la foi a tira de
  * telas, que virou esta coluna. Cada link leva o recorte (secao 6.2) e
  * descarta o painel destacado, como a tira fazia — `painel=orc-desvio` nomeia
  * um painel de outra tela.
+ *
+ * ## Recolhido, ficam os icones
+ *
+ * Aberto, cada tela e icone e titulo; recolhido a 44 px, so o icone, ainda
+ * clicavel, com o titulo no `aria-label` e no `title` (T-442, pedido de
+ * Produto em 2026-09-18). O botao de recolher fica no alto nos dois estados.
  *
  * ## Por que e componente de cliente
  *
@@ -91,7 +98,7 @@ export function MenuLateral({
           alignItems: "center",
           justifyContent: recolhido ? "center" : "space-between",
           gap: 8,
-          padding: recolhido ? "14px 0" : "16px 12px 12px 16px",
+          padding: recolhido ? "14px 0 6px" : "16px 12px 12px 16px",
         }}
       >
         {recolhido ? null : (
@@ -162,48 +169,58 @@ export function MenuLateral({
         </button>
       </div>
 
-      {recolhido ? null : (
-        <div
-          data-parte="telas"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            padding: "0 8px 12px",
-          }}
-        >
-          {modulo.telas.map((t) => {
-            const ligada = t.slug === telaAtiva;
-            return (
-              <Link
-                key={t.slug}
-                href={rotaCom(`/${modulo.id}/${t.slug}`, query)}
-                aria-current={ligada ? "page" : undefined}
-                data-teste={`tela-${t.slug}`}
+      <div
+        data-parte="telas"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          padding: recolhido ? "0 4px 12px" : "0 8px 12px",
+        }}
+      >
+        {modulo.telas.map((t) => {
+          const ligada = t.slug === telaAtiva;
+          return (
+            <Link
+              key={t.slug}
+              href={rotaCom(`/${modulo.id}/${t.slug}`, query)}
+              aria-current={ligada ? "page" : undefined}
+              aria-label={t.titulo}
+              title={recolhido ? t.titulo : undefined}
+              data-teste={`tela-${t.slug}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: recolhido ? "center" : "flex-start",
+                gap: 9,
+                padding: recolhido ? "9px 0" : "8px 10px",
+                borderRadius: 8,
+                background: ligada
+                  ? `color-mix(in srgb, ${PALETA.textoEmBarra} 12%, transparent)`
+                  : "transparent",
+                color: ligada ? PALETA.textoEmBarra : PALETA.textoEmBarraFraco,
+                borderLeft: `2px solid ${ligada && !recolhido ? MARCA.destaqueSuave : "transparent"}`,
+                font: `${ligada ? "600" : "500"} 12px/1.3 ${TIPOGRAFIA.texto}`,
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}
+            >
+              <IconeDaTela icone={t.icone} />
+              <span
+                data-parte="titulo"
                 style={{
-                  display: "block",
-                  padding: "9px 10px",
-                  borderRadius: 8,
-                  background: ligada
-                    ? `color-mix(in srgb, ${PALETA.textoEmBarra} 12%, transparent)`
-                    : "transparent",
-                  color: ligada
-                    ? PALETA.textoEmBarra
-                    : PALETA.textoEmBarraFraco,
-                  borderLeft: `2px solid ${ligada ? MARCA.destaqueSuave : "transparent"}`,
-                  font: `${ligada ? "600" : "500"} 12px/1.3 ${TIPOGRAFIA.texto}`,
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
+                  display: recolhido ? "none" : "block",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
               >
                 {t.titulo}
-              </Link>
-            );
-          })}
-        </div>
-      )}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

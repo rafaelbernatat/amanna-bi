@@ -9,11 +9,31 @@
 
 export type IdDeModulo = "rh" | "fin" | "int";
 
+/** Os icones que o menu lateral desenha, um por tela (T-442). */
+export const ICONES_DE_TELA = [
+  "visao",
+  "pessoas",
+  "giro",
+  "recrutamento",
+  "treinamento",
+  "engajamento",
+  "salarios",
+  "financeiro",
+  "caixa",
+  "orcamento",
+  "contas",
+  "faturamento",
+  "cruzamento",
+] as const;
+export type IconeDeTela = (typeof ICONES_DE_TELA)[number];
+
 export type Tela = {
   /** Segmento da URL dentro do modulo: `/rh/visao` tem slug `visao`. */
   readonly slug: string;
   /** Titulo da tela, mostrado no `h1`. */
   readonly titulo: string;
+  /** O icone no menu lateral; recolhido, e so ele que aparece (T-442). */
+  readonly icone: IconeDeTela;
 };
 
 export type Modulo = {
@@ -36,13 +56,13 @@ export const MODULOS: readonly Modulo[] = [
     nomeCompleto: "Recursos Humanos",
     descricao: "Quadro, retenção, seleção e folha",
     telas: [
-      { slug: "visao", titulo: "Visão geral" },
-      { slug: "colab", titulo: "Colaboradores" },
-      { slug: "turnover", titulo: "Turnover" },
-      { slug: "recrut", titulo: "Recrutamento" },
-      { slug: "trein", titulo: "Treinamento" },
-      { slug: "engaj", titulo: "Engajamento" },
-      { slug: "sal", titulo: "Salários" },
+      { slug: "visao", titulo: "Visão geral", icone: "visao" },
+      { slug: "colab", titulo: "Colaboradores", icone: "pessoas" },
+      { slug: "turnover", titulo: "Turnover", icone: "giro" },
+      { slug: "recrut", titulo: "Recrutamento", icone: "recrutamento" },
+      { slug: "trein", titulo: "Treinamento", icone: "treinamento" },
+      { slug: "engaj", titulo: "Engajamento", icone: "engajamento" },
+      { slug: "sal", titulo: "Salários", icone: "salarios" },
     ],
   },
   {
@@ -52,11 +72,11 @@ export const MODULOS: readonly Modulo[] = [
     nomeCompleto: "Financeiro e controladoria",
     descricao: "Resultado, caixa, orçamento e contas",
     telas: [
-      { slug: "visao", titulo: "Visão financeira" },
-      { slug: "caixa", titulo: "Fluxo de caixa" },
-      { slug: "orc", titulo: "Orçamentário" },
-      { slug: "contas", titulo: "Contas a pagar/receber" },
-      { slug: "fat", titulo: "Faturamento" },
+      { slug: "visao", titulo: "Visão financeira", icone: "financeiro" },
+      { slug: "caixa", titulo: "Fluxo de caixa", icone: "caixa" },
+      { slug: "orc", titulo: "Orçamentário", icone: "orcamento" },
+      { slug: "contas", titulo: "Contas a pagar/receber", icone: "contas" },
+      { slug: "fat", titulo: "Faturamento", icone: "faturamento" },
     ],
   },
   {
@@ -65,7 +85,7 @@ export const MODULOS: readonly Modulo[] = [
     nome: "Integração",
     nomeCompleto: "Integração",
     descricao: "Cruzamento RH × Financeiro",
-    telas: [{ slug: "cruz", titulo: "RH × Financeiro" }],
+    telas: [{ slug: "cruz", titulo: "RH × Financeiro", icone: "cruzamento" }],
   },
 ];
 

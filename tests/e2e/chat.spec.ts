@@ -300,8 +300,14 @@ test.describe("o que o chat recusa", () => {
       timeout: ESPERA,
     });
     await expect(chat.locator('[data-teste="chat-recusa"]')).toContainText(
-      /não tenho/i,
+      /não (tenho|consigo)/i,
     );
+    // E diz o que da para perguntar: o guia da tela vira atalho (T-441).
+    await expect(
+      chat.locator(
+        '[data-teste="chat-recusa"] [data-teste="chat-atalhos"] button',
+      ),
+    ).toHaveCount(3);
     await expect(page).toHaveURL(/\/rh\/visao$/);
     await expect(
       page.locator('[data-teste="painel"][data-destacado="1"]'),

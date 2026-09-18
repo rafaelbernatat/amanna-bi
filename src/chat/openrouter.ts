@@ -53,7 +53,7 @@ export { gatewayConfigurado, modeloEmUso } from "@/gateway/openrouter";
  * modelo degrada a interpretação, que é onde erro vira número errado."*
  */
 const TETO_DE_SAIDA_INTERPRETACAO = 400;
-/** Subiu de 1.200 com T-433: dois ou três parágrafos, até doze frases. */
+/** Subiu de 1.200 com T-433: até três parágrafos, até oito frases (T-441). */
 const TETO_DE_SAIDA_REDACAO = 2000;
 
 /** O registro de uma falha do gateway, com o estágio que a sofreu (T-430). */
@@ -188,15 +188,17 @@ Recebe um resultado JÁ CALCULADO. Sua tarefa é explicar, não calcular.
 Regras que não se negociam:
 ${REGRAS_DE_NUMERO}
 
-A estrutura, nesta ordem, em dois ou três parágrafos curtos e até doze
-frases no total, sem lista:
+A estrutura, nesta ordem, em até três parágrafos curtos SEPARADOS POR UMA
+LINHA EM BRANCO, com no máximo oito frases no total e sem lista. Cada
+parágrafo diz uma coisa, em frases curtas, sem repetir o parágrafo anterior:
 1. O número e o período: "{metrica} foi {formatado} nos {periodo} até
    {fechamento}". Se houver "pontoPedido", a pessoa perguntou por um mês, e a
    PRIMEIRA frase é sobre ele — "{metrica} em {pontoPedido.rotulo} foi
    {pontoPedido.valor}" —; o número do período inteiro vem na frase seguinte,
    como contexto, nunca antes. Se "formatado" for nulo, diga que não há dado
    neste recorte e pare.
-2. "Traduzindo:" — o que o número quer dizer para o negócio. Se
+2. Um parágrafo próprio, que começa exatamente com "Traduzindo:" — uma ou
+   duas frases sobre o que o número quer dizer para o negócio. Se
    "traducao.emReais" existir, use a base de "traducao.base" com esse valor
    copiado como está, sinal incluído: porcentagem lê-se a cada R$ 100 ("a
    cada R$ 100 de patrimônio, o retorno foi -R$ 2,3", ou "perdeu R$ 2,3"),
@@ -208,11 +210,11 @@ frases no total, sem lista:
    lançamentos que pedem um olhar antes do fechamento". Se não houver nada
    concreto a dizer, pule o "Traduzindo": definição genérica da métrica não
    é tradução.
-2b. Se houver "grafico", um parágrafo sobre o que ele mostra: o pico e o
+2b. Se houver "grafico", o terceiro parágrafo diz o que ele mostra: o pico e o
    vale pelos "destaques" (rótulo e valor na mesma frase), o último ponto, e
    a tendência em palavras (subiu, caiu, oscilou, ficou estável) — sem número
    novo, sem média, sem diferença entre pontos.
-3. Se houver "comparacao", situe o número contra o custo do dinheiro com as
+3. No mesmo terceiro parágrafo, se houver "comparacao", situe o número contra o custo do dinheiro com as
    "leituras": a referência pelo nome e valor ("CDI de 13,9% ao ano") e a
    diferença como está ("-5,6 p.p."; "ganho real de 3,7%"), sempre do ponto
    de vista da métrica ("o ROIC fica 2,8 p.p. abaixo do CDI"), nunca do da
@@ -220,11 +222,11 @@ frases no total, sem lista:
    houver "comparacaoIndisponivelPorque", diga-o numa frase curta. Não cite
    faixa saudável, benchmark de mercado nem regra de bolso que não esteja no
    JSON ("até 3 vezes é aceitável" é número inventado).
-4. O que explica o número: cite as "consideracoes" de origem "apoio" pelo
+4. Ainda no terceiro parágrafo, o que explica o número: cite as "consideracoes" de origem "apoio" pelo
    rótulo e pelo "formatado" ("com lucro líquido de -R$ 8,0 mi sobre patrimônio
    de R$ 350,0 mi"). As de origem "painel" são a composição; use-as quando
    ajudarem. Item com "formatado" nulo: diga "sem dado".
-5. Feche com uma pergunta curta oferecendo o próximo passo. Se houver
+5. Feche o último parágrafo com uma pergunta curta oferecendo o próximo passo. Se houver
    "proximoPasso", copie-o; senão, ofereça abrir uma das "consideracoes".
 
 Leitura prática, não recomendação de investimento:
