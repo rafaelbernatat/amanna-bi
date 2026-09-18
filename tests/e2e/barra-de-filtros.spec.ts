@@ -1,12 +1,15 @@
 /**
- * A barra de filtros e o banner de recorte ativo, no navegador (T-128).
+ * A barra de filtros e o banner de recorte ativo, no navegador (T-128, T-420).
  *
  * A regra pura — quais filtros diferem do padrão — está em
  * `tests/unidade/barra-de-filtros.test.ts`, e roda sobre a matriz canônica
  * inteira. Aqui fica o que só o navegador prova:
  *
  * - o controle nasce com o **padrão selecionado**, e não com a primeira opção;
- * - ele é **percorrível por Tab, setas e Enter, sem mouse**;
+ * - trocar um controle **aplica sozinho**, sem botão: a URL muda depois do
+ *   silêncio, e o foco continua no controle;
+ * - setas seguidas no mesmo controle viram **uma** navegação;
+ * - sem JavaScript, o formulário ainda envia por um botão só para esse caso;
  * - o banner aparece e some, e o clique em "Voltar ao consolidado" restaura os
  *   cinco de uma vez;
  * - os 5 casos isolados e o combinado, feitos **pelos controles** — não
@@ -72,6 +75,25 @@ async function lerRecorte(page: Page) {
   }));
 }
 
+/**
+ * Pressiona Tab até chegar ao elemento pedido, ou desiste.
+ *
+ * Devolve quantos Tabs foram precisos. Desistir devolve `-1`, e o teste
+ * reprova com isso — o que importa é que o controle seja **alcançável pela
+ * ordem natural de foco**, sem `focus()` programático, que não é o que uma
+ * pessoa faz.
+ */
+async function tabAte(page: Page, teste: string, limite = 40) {
+  for (let i = 1; i <= limite; i += 1) {
+    await page.keyboard.press("Tab");
+    const atual = await page.evaluate(
+      () => document.activeElement?.getAttribute("data-teste") ?? "",
+    );
+    if (atual === teste) return i;
+  }
+  return -1;
+}
+
 test.describe("os cinco controles da tabela 6.2", () => {
   test("existem, e são cinco", async ({ page }) => {
     await page.goto(TELA);
@@ -134,6 +156,18 @@ test.describe("os cinco controles da tabela 6.2", () => {
       controle(page, "periodo").locator("option:checked"),
     ).toHaveText("Dezembro");
   });
+
+  test("não há botão Aplicar com JavaScript; o de reserva fica em noscript", async ({
+    page,
+  }) => {
+    await page.goto(TELA);
+    await expect(page.locator('[data-teste="aplicar-filtros"]')).toHaveCount(0);
+    // O botão de reserva existe no HTML servido, dentro de `<noscript>`, e
+    // por isso não é visível com o script rodando.
+    await expect(
+      page.locator('[data-teste="aplicar-sem-script"]'),
+    ).toBeHidden();
+  });
 });
 
 test.describe("o banner aparece se e somente se algum filtro sai do padrão", () => {
@@ -151,8 +185,8 @@ test.describe("o banner aparece se e somente se algum filtro sai do padrão", ()
       page,
     }) => {
       await page.goto(TELA);
+      // Só a troca: nenhum botão, nenhum Enter (T-420).
       await controle(page, f.campo).selectOption(f.fora);
-      await page.locator('[data-teste="aplicar-filtros"]').click();
 
       // O controle escreveu na URL: é o que prova que o filtro é o recorte.
       await expect(page).toHaveURL(
@@ -176,7 +210,6 @@ test.describe("o banner aparece se e somente se algum filtro sai do padrão", ()
     await controle(page, "periodo").selectOption("dezembro");
     await controle(page, "entidade").selectOption("unidade-sp");
     await controle(page, "modalidade").selectOption("remoto");
-    await page.locator('[data-teste="aplicar-filtros"]').click();
 
     const banner = page.locator('[data-teste="banner-de-recorte"]');
     await expect(banner).toHaveAttribute(
@@ -223,12 +256,11 @@ test.describe("voltar ao consolidado restaura os cinco", () => {
     page,
   }) => {
     /*
-     * O caso que o `<select>` não controlado quebraria.
-     *
-     * "Voltar ao consolidado" é navegação de cliente: o React reaproveita o nó
-     * do `<select>`, e `defaultValue` só vale na montagem. Sem a chave que
-     * carrega o valor atual, a barra continuaria mostrando "Operações" com a
-     * URL já no consolidado.
+     * "Voltar ao consolidado" é navegação de cliente: o React reaproveita o
+     * nó do `<select>`. O controle é controlado pela URL a cada render, e é
+     * isso que faz a barra acompanhar — um `defaultValue` valeria só na
+     * montagem, e a barra continuaria mostrando "Operações" com a URL já no
+     * consolidado.
      */
     await page.goto(`${TELA}?area=operacoes&periodo=dezembro`);
     await page.locator('[data-teste="voltar-ao-consolidado"]').click();
@@ -242,26 +274,7 @@ test.describe("voltar ao consolidado restaura os cinco", () => {
   });
 });
 
-test.describe("sem mouse: Tab, setas e Enter", () => {
-  /**
-   * Pressiona Tab até chegar ao elemento pedido, ou desiste.
-   *
-   * Devolve quantos Tabs foram precisos. Desistir devolve `-1`, e o teste
-   * reprova com isso — o que importa é que o controle seja **alcançável pela
-   * ordem natural de foco**, sem `focus()` programático, que não é o que uma
-   * pessoa faz.
-   */
-  async function tabAte(page: Page, teste: string, limite = 40) {
-    for (let i = 1; i <= limite; i += 1) {
-      await page.keyboard.press("Tab");
-      const atual = await page.evaluate(
-        () => document.activeElement?.getAttribute("data-teste") ?? "",
-      );
-      if (atual === teste) return i;
-    }
-    return -1;
-  }
-
+test.describe("sem mouse: Tab e setas", () => {
   test("os cinco controles são alcançáveis por Tab", async ({ page }) => {
     await page.goto(TELA);
     for (const f of FILTROS) {
@@ -275,20 +288,15 @@ test.describe("sem mouse: Tab, setas e Enter", () => {
     }
   });
 
-  test("seta troca o valor e Enter aplica, sem tocar no mouse", async ({
+  test("seta troca o valor, a URL acompanha sozinha, e o foco fica no controle", async ({
     page,
   }) => {
     /*
-     * O caminho exato do critério de aceite: Tab chega, seta escolhe, Enter
-     * aplica. Nenhum `focus()` programático, nenhum clique.
-     *
-     * O Enter é dado no botão "Aplicar", e isso foi **medido**, não escolhido:
-     * o envio implícito do HTML — Enter dentro de um campo envia o formulário —
-     * vale para campos de texto, e o Chromium não o dispara a partir de um
-     * `<select>`. A primeira versão deste caso pressionava Enter com o `<select>`
-     * em foco e a URL não mudava. Como o botão está na ordem natural de foco,
-     * logo depois dos cinco controles, o caminho de teclado continua sendo
-     * Tab-setas-Enter, e continua sem uma linha de manipulador de tecla.
+     * O caminho do critério de aceite de T-420: Tab chega, seta escolhe, e o
+     * silêncio aplica. Nenhum Enter, nenhum botão, nenhum `focus()`
+     * programático. E depois da navegação o foco **continua no controle**:
+     * o `<select>` é controlado e não é remontado, então a pessoa pode seguir
+     * com as setas de onde parou.
      */
     await page.goto(TELA);
     expect(await tabAte(page, "filtro-periodo")).toBeGreaterThan(0);
@@ -298,38 +306,93 @@ test.describe("sem mouse: Tab, setas e Enter", () => {
       controle(page, "periodo").locator("option:checked"),
     ).toHaveText("6 meses");
 
-    expect(
-      await tabAte(page, "aplicar-filtros"),
-      "o botão Aplicar não está na ordem de foco depois dos controles",
-    ).toBeGreaterThan(0);
-    await page.keyboard.press("Enter");
-
     await expect(page).toHaveURL(/periodo=6-meses/);
     await expect(page.locator('[data-teste="recorte-ativo-lista"]')).toHaveText(
       "Período: 6 meses",
     );
+    expect(
+      await page.evaluate(
+        () => document.activeElement?.getAttribute("data-teste") ?? "",
+      ),
+    ).toBe("filtro-periodo");
+  });
+
+  test("três setas seguidas são uma navegação só", async ({ page }) => {
+    /*
+     * A objeção de T-128 ao `onChange`, respondida: com o `<select>` fechado
+     * e em foco, cada seta dispara `change`, e sem o atraso seriam três
+     * navegações — e três entradas no histórico para uma escolha só.
+     */
+    await page.goto(TELA);
+    const entradas = await page.evaluate(() => history.length);
+    expect(await tabAte(page, "filtro-periodo")).toBeGreaterThan(0);
+
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+
+    await expect(page).toHaveURL(/periodo=dezembro/);
+    await expect(page.locator('[data-teste="recorte-ativo-lista"]')).toHaveText(
+      "Período: Dezembro",
+    );
+    expect(await page.evaluate(() => history.length)).toBe(entradas + 1);
+  });
+});
+
+test.describe("sem JavaScript", () => {
+  test("o formulário ainda envia, por um botão que só existe nesse caso", async ({
+    browser,
+    baseURL,
+  }) => {
+    /*
+     * O mecanismo de fundo continua sendo um `<form method="get">`: sem
+     * script, o `<noscript>` mostra um botão, o navegador envia os cinco
+     * campos, e a canonização da rota deixa só o que saiu do padrão.
+     */
+    const contexto = await browser.newContext({
+      javaScriptEnabled: false,
+      ...(baseURL === undefined ? {} : { baseURL }),
+    });
+    const page = await contexto.newPage();
+    await page.goto(TELA);
+
+    const botao = page.locator('[data-teste="aplicar-sem-script"]');
+    await expect(botao).toBeVisible();
+    await controle(page, "periodo").selectOption("6-meses");
+    await botao.click();
+
+    await expect(page).toHaveURL(/periodo=6-meses/);
+    expect(new URL(page.url()).search).toBe("?periodo=6-meses");
+    await expect(
+      controle(page, "periodo").locator("option:checked"),
+    ).toHaveText("6 meses");
+    await contexto.close();
   });
 });
 
 test.describe("a URL continua legível depois de mexer nos filtros", () => {
-  test("aplicar no consolidado não deixa cinco parâmetros grudados", async ({
+  test("trocar e voltar ao padrão deixa a URL limpa de novo", async ({
     page,
   }) => {
     /*
-     * Um `<form method="get">` envia todos os campos, inclusive os que estão
-     * no padrão. Sem a canonização da rota, sair do consolidado e voltar
-     * deixaria `?periodo=12-meses&ano=2026&...` na barra de endereços — o
-     * oposto da URL compartilhável que a seção 6.6 promete.
+     * Cada troca navega para a URL **canônica** do recorte: campos no padrão
+     * são omitidos. Sair do consolidado e voltar não pode deixar
+     * `?periodo=12-meses&ano=2026&...` na barra de endereços — o oposto da
+     * URL compartilhável que a seção 6.6 promete.
      */
     await page.goto(TELA);
-    await page.locator('[data-teste="aplicar-filtros"]').click();
+    await controle(page, "periodo").selectOption("6-meses");
+    await expect(page).toHaveURL(/periodo=6-meses/);
+
+    await controle(page, "periodo").selectOption("12-meses");
+    await expect(page).toHaveURL(TELA);
     expect(new URL(page.url()).search).toBe("");
   });
 
   test("e um filtro fora do padrão vira um parâmetro só", async ({ page }) => {
     await page.goto(TELA);
     await controle(page, "area").selectOption("marketing");
-    await page.locator('[data-teste="aplicar-filtros"]').click();
+    await expect(page).toHaveURL(/area=marketing/);
     expect(new URL(page.url()).search).toBe("?area=marketing");
   });
 });
@@ -337,11 +400,11 @@ test.describe("a URL continua legível depois de mexer nos filtros", () => {
 test.describe("o destaque da IA atravessa a troca de filtro", () => {
   test("mudar de área não apaga o painel destacado", async ({ page }) => {
     // Seção 6.5: o destaque permanece até a próxima navegação. Trocar de
-    // filtro é ficar na mesma tela — e um formulário GET reescreve a busca
-    // inteira, então o destaque só sobrevive se for enviado junto.
+    // filtro é ficar na mesma tela — e a navegação reescreve a busca
+    // inteira, então o destaque só sobrevive se for levado junto.
     await page.goto("/fin/orc?painel=orc-desvio");
     await controle(page, "area").selectOption("financeiro");
-    await page.locator('[data-teste="aplicar-filtros"]').click();
+    await expect(page).toHaveURL(/area=financeiro/);
 
     expect(page.url()).toContain("painel=orc-desvio");
     await expect(page.locator('[data-teste="recorte"]')).toHaveAttribute(

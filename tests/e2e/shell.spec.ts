@@ -71,7 +71,7 @@ test.describe("As 13 rotas resolvem no servidor", () => {
 });
 
 test.describe("O shell", () => {
-  test("os tres modulos sao abas no cabecalho, e nao ha barra lateral", async ({
+  test("os tres modulos sao abas no cabecalho, e as telas ficam no menu lateral", async ({
     page,
   }) => {
     await page.goto("/rh/visao");
@@ -87,19 +87,29 @@ test.describe("O shell", () => {
     await expect(itens.nth(2)).toContainText("Integração");
     await expect(itens.nth(0)).toHaveAttribute("aria-current", "page");
 
-    // A tira fica no centro da tela, e a tela comeca na borda esquerda: a
-    // barra lateral do prototipo saiu.
+    // O menu de telas ocupa os primeiros 220 px (T-421), e a tela comeca
+    // onde ele termina. A tira de modulos fica no centro do cabecalho — da
+    // coluna da tela, nao da janela.
+    const menu = await page
+      .locator('[data-teste="menu-lateral"]')
+      .boundingBox();
+    expect(menu?.x).toBe(0);
+    expect(menu?.width).toBe(220);
+
+    const caixaDoCabecalho = await cabecalho.boundingBox();
     const caixaDaTira = await tira.boundingBox();
-    const largura = await page.evaluate(() => window.innerWidth);
+    expect(caixaDoCabecalho).not.toBeNull();
     expect(caixaDaTira).not.toBeNull();
-    if (caixaDaTira === null) return;
-    const centro = caixaDaTira.x + caixaDaTira.width / 2;
-    expect(Math.abs(centro - largura / 2)).toBeLessThan(40);
+    if (caixaDoCabecalho === null || caixaDaTira === null) return;
+    expect(caixaDoCabecalho.x).toBe(220);
+    const centroDaTira = caixaDaTira.x + caixaDaTira.width / 2;
+    const centroDoCabecalho = caixaDoCabecalho.x + caixaDoCabecalho.width / 2;
+    expect(Math.abs(centroDaTira - centroDoCabecalho)).toBeLessThan(40);
 
     const conteudo = await page
       .locator('[data-teste="conteudo"]')
       .boundingBox();
-    expect(conteudo?.x).toBe(0);
+    expect(conteudo?.x).toBe(220);
   });
 
   test("clicar num modulo abre a primeira tela dele", async ({ page }) => {

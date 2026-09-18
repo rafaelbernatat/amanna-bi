@@ -16,15 +16,18 @@ import type { Dimensoes } from "@/semantica/recortes";
 import { rotaCom, rotaDeApresentacao } from "@/semantica/url";
 
 /**
- * Cabecalho da tela: os modulos, o breadcrumb, o titulo, os filtros e a tira
- * de telas (T-126, T-127; decisao D-CHAT-conversa-flutuante).
+ * Cabecalho da tela: os modulos, o breadcrumb, o titulo e os filtros (T-126,
+ * T-127, T-421; decisoes D-CHAT-conversa-flutuante e
+ * D-NAVEGACAO-menu-lateral-e-filtros-vivos).
  *
- * ## Os modulos viraram abas, no centro
+ * ## Os modulos sao abas, no centro; as telas ficam no menu lateral
  *
- * A barra lateral do prototipo saiu. Os tres modulos — Recursos Humanos,
- * Financeiro e Integracao — sao uma tira de abas centralizada no alto da
- * tela, e a tira de telas do modulo fica logo abaixo. Trocar de modulo
- * continua levando a primeira tela dele (secao 6.1), **no mesmo recorte**.
+ * Os tres modulos — Recursos Humanos, Financeiro e Integracao — sao uma tira
+ * de abas centralizada no alto da tela. As telas do modulo ativo ja nao ficam
+ * numa tira abaixo dos filtros: moram no menu lateral recolhivel
+ * (`MenuLateral`), a esquerda da tela, que Produto pediu em 2026-09-18.
+ * Trocar de modulo continua levando a primeira tela dele (secao 6.1), **no
+ * mesmo recorte**.
  *
  * ## Por que a aba recebe a Query inteira, e nao so o ano
  *
@@ -279,53 +282,6 @@ export function Cabecalho({
         dimensoes={dimensoes}
         painelDestacado={painelDestacado}
       />
-
-      {/*
-        `nav`, e nao `div`.
-
-        O `aria-label` estava num `div`, que nao tem papel implicito — um rotulo
-        pendurado em nada, que leitor de tela nao anuncia como regiao. Virou
-        `nav` quando o chat entrou e um atalho dele passou a colidir com a aba
-        de mesmo nome: o teste precisava dizer "a aba, dentro da tira", e a tira
-        precisava ser algo que se possa nomear.
-      */}
-      <nav
-        aria-label={`Telas de ${modulo.nomeCompleto}`}
-        style={{
-          display: "flex",
-          gap: 2,
-          margin: "18px 0 0",
-          background: PALETA.grade,
-          borderRadius: 999,
-          padding: 4,
-          width: "fit-content",
-          maxWidth: "100%",
-          overflowX: "auto",
-          overflowY: "hidden",
-        }}
-      >
-        {modulo.telas.map((t) => {
-          const ligada = t.slug === tela.slug;
-          return (
-            <Link
-              key={t.slug}
-              href={rotaCom(`/${modulo.id}/${t.slug}`, query)}
-              aria-current={ligada ? "page" : undefined}
-              style={{
-                whiteSpace: "nowrap",
-                padding: "7px 14px",
-                borderRadius: 999,
-                background: ligada ? PALETA.superficie : "transparent",
-                color: ligada ? PALETA.texto : PALETA.textoTerciario,
-                font: `${ligada ? "600" : "500"} 11.5px/1.2 ${TIPOGRAFIA.texto}`,
-                textDecoration: "none",
-              }}
-            >
-              {t.titulo}
-            </Link>
-          );
-        })}
-      </nav>
     </header>
   );
 }
