@@ -1,7 +1,10 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { middleware } from "../../middleware";
+import { proxy } from "../../src/proxy";
 import {
   assinarConvite,
   assinarSessao,
@@ -32,7 +35,7 @@ import { podeConfigurarMarca } from "@/marca/permissao";
  * O convite assinado que abre a apresentação (D-CONVITE-apresentacao).
  *
  * Três blocos: o envelope (assinar, verificar, e tudo que precisa falhar), as
- * duas decisões do middleware, e o boot. O que se prova é que só um envelope
+ * duas decisões do proxy, e o boot. O que se prova é que só um envelope
  * **nosso**, íntegro, do tipo certo e no prazo abre qualquer coisa.
  */
 
@@ -358,24 +361,105 @@ describe("decidirEntrada", () => {
     expect(decidida).toEqual({ tipo: "recusar", motivo: "invalido" });
   });
 
-  it("em modo aberto, entrar por convite é recusado como desligado", async () => {
+  /**
+   * Apresentar nao depende do modo de sessao.
+   *
+   * O painel abre do jeito que a instalacao escolheu — em `fixtures` aqui, em
+   * OIDC num cliente — e o QR funciona do mesmo jeito nos dois. Era o
+   * contrario ate 2026-09-17, e o efeito era obrigar quem apresenta a entrar
+   * por link no proprio painel para que a plateia pudesse entrar por QR.
+   */
+  it("em modo aberto, quem escaneia entra do mesmo jeito", async () => {
+    const token = await assinarConvite(convite(), SEGREDO);
+    const decidida = await decidirEntrada({
+      token,
+      ir: null,
+      ambiente: { AUTH_PROVIDER: "fixtures", CONVITE_SEGREDO: SEGREDO },
+      agoraSegundos: AGORA,
+    });
+    expect(decidida.tipo).toBe("entrar");
+  });
+
+  it("sem segredo nenhum, nao ha apresentacao para entrar", async () => {
     const token = await assinarConvite(convite(), SEGREDO);
     expect(
       await decidirEntrada({
         token,
         ir: null,
-        ambiente: { AUTH_PROVIDER: "fixtures", CONVITE_SEGREDO: SEGREDO },
+        ambiente: { AUTH_PROVIDER: "fixtures" },
         agoraSegundos: AGORA,
       }),
     ).toEqual({ tipo: "recusar", motivo: "desligado" });
   });
+
+  it("o passe da plateia leva perfil de leitura e dispositivo proprio", async () => {
+    const token = await assinarConvite(convite(), SEGREDO);
+    const um = await decidirEntrada({
+      token,
+      ir: null,
+      ambiente: { AUTH_PROVIDER: "fixtures", CONVITE_SEGREDO: SEGREDO },
+      agoraSegundos: AGORA,
+    });
+    const dois = await decidirEntrada({
+      token,
+      ir: null,
+      ambiente: { AUTH_PROVIDER: "fixtures", CONVITE_SEGREDO: SEGREDO },
+      agoraSegundos: AGORA,
+    });
+    expect(um.tipo === "entrar" && dois.tipo === "entrar").toBe(true);
+    if (um.tipo !== "entrar" || dois.tipo !== "entrar") return;
+    const sessaoUm = await verificarSessao(um.cookie, SEGREDO, AGORA);
+    const sessaoDois = await verificarSessao(dois.cookie, SEGREDO, AGORA);
+    expect(sessaoUm?.dispositivo).not.toBe(sessaoDois?.dispositivo);
+  });
 });
 
 /* ------------------------------------------------------------------ *
- * O middleware
+ * O proxy
  * ------------------------------------------------------------------ */
 
-describe("o middleware", () => {
+/**
+ * Onde o arquivo mora, e por que isso e um teste.
+ *
+ * O Next so carrega esta convencao se o arquivo estiver **ao lado** de `app`.
+ * Como o produto poe `app` dentro de `src`, o arquivo tem de ser
+ * `src/proxy.ts`; na raiz do repositorio ele e silenciosamente ignorado — sem
+ * aviso, sem erro, sem log. Foi o que aconteceu: os testes abaixo passavam
+ * chamando a funcao direto, e o servidor nunca a executava, de modo que nem a
+ * negacao por convite nem a politica de seguranca chegavam a uma resposta.
+ *
+ * Em 16 o nome `middleware` esta descontinuado e virou `proxy`
+ * (node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md).
+ * Este teste guarda as duas coisas: o lugar e a ausencia de um homonimo na
+ * raiz, que voltaria a criar a mesma ilusao.
+ */
+describe("o arquivo do proxy", () => {
+  const RAIZ = process.cwd();
+
+  it("mora ao lado de app, dentro de src", () => {
+    expect(existsSync(join(RAIZ, "src", "app"))).toBe(true);
+    expect(existsSync(join(RAIZ, "src", "proxy.ts"))).toBe(true);
+  });
+
+  it("nao tem homonimo na raiz, que o Next ignoraria em silencio", () => {
+    for (const nome of [
+      "proxy.ts",
+      "proxy.js",
+      "middleware.ts",
+      "middleware.js",
+    ]) {
+      expect(existsSync(join(RAIZ, nome)), `${nome} na raiz`).toBe(false);
+    }
+  });
+
+  it("exporta `proxy`, o nome que a versao 16 carrega", () => {
+    const texto = readFileSync(join(RAIZ, "src", "proxy.ts"), "utf8");
+    expect(texto).toContain("export async function proxy(");
+    expect(texto).not.toContain("export async function middleware(");
+  });
+});
+
+describe("o proxy", () => {
   function pedido(caminho: string, cookie?: string): NextRequest {
     const requisicao = new NextRequest(`https://painel.local${caminho}`);
     if (cookie !== undefined) {
@@ -386,7 +470,7 @@ describe("o middleware", () => {
 
   it("em modo fixtures, segue e mantém os cabeçalhos de sempre", async () => {
     vi.stubEnv("AUTH_PROVIDER", "fixtures");
-    const resposta = await middleware(pedido("/rh/visao"));
+    const resposta = await proxy(pedido("/rh/visao"));
     expect(resposta.status).toBe(200);
     expect(resposta.headers.get("Content-Security-Policy")).toContain(
       "default-src",
@@ -396,7 +480,7 @@ describe("o middleware", () => {
   it("em modo convite, sem cookie, a página é redirecionada com CSP", async () => {
     vi.stubEnv("AUTH_PROVIDER", "convite");
     vi.stubEnv("CONVITE_SEGREDO", SEGREDO);
-    const resposta = await middleware(pedido("/rh/visao"));
+    const resposta = await proxy(pedido("/rh/visao"));
     expect(resposta.status).toBe(303);
     expect(resposta.headers.get("location")).toContain("/entrar?");
     expect(resposta.headers.get("Content-Security-Policy")).toContain(
@@ -407,7 +491,7 @@ describe("o middleware", () => {
   it("em modo convite, /api/chat sem cookie é 401", async () => {
     vi.stubEnv("AUTH_PROVIDER", "convite");
     vi.stubEnv("CONVITE_SEGREDO", SEGREDO);
-    const resposta = await middleware(pedido("/api/chat"));
+    const resposta = await proxy(pedido("/api/chat"));
     expect(resposta.status).toBe(401);
   });
 
@@ -425,7 +509,7 @@ describe("o middleware", () => {
       convite({ expira: Math.floor(Date.now() / 1000) + 3600 }),
       SEGREDO,
     );
-    const resposta = await middleware(
+    const resposta = await proxy(
       pedido(`/entrar?convite=${encodeURIComponent(token)}&ir=/fin/visao`),
     );
     expect(resposta.status).toBe(303);
@@ -442,7 +526,7 @@ describe("o middleware", () => {
   it("entrar com convite inválido volta para a tela de entrada, sem cookie", async () => {
     vi.stubEnv("AUTH_PROVIDER", "convite");
     vi.stubEnv("CONVITE_SEGREDO", SEGREDO);
-    const resposta = await middleware(pedido("/entrar?convite=nao-e-token"));
+    const resposta = await proxy(pedido("/entrar?convite=nao-e-token"));
     expect(resposta.status).toBe(303);
     expect(resposta.headers.get("location")).toContain("motivo=invalido");
     expect(resposta.cookies.get(NOME_DO_COOKIE)).toBeUndefined();

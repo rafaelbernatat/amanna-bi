@@ -30,6 +30,12 @@ import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
 import "@/acesso/provedores";
 import { lerConvite } from "@/acesso/convite";
+import {
+  apresentacaoLigada,
+  HORAS_DA_SALA_PADRAO,
+  SALA_PADRAO,
+  SEGUNDOS_POR_HORA,
+} from "@/seguranca/convite";
 import { getSession } from "@/acesso/sessao";
 import type { PedidoDeRankingExterno } from "@/acesso/fronteira";
 import type {
@@ -69,19 +75,44 @@ export async function lerIdentidade(): Promise<{
 }
 
 /**
- * A apresentação em curso, quando a instalação entra por convite
+ * A sala da apresentação, ou `null` quando esta instalação não abre nenhuma
  * (D-CONVITE-apresentacao).
  *
  * Devolve a sala e o prazo — nunca o dispositivo: quem apresenta precisa saber
- * a que sala o QR pertence e a que horas ele vence, e não quem está nela. Em
- * modo `fixtures` ou `oidc`, `null`: não há apresentação para abrir.
+ * a que sala o QR pertence e a que horas ele vence, e não quem está nela.
+ *
+ * ## Dois caminhos, e o primeiro tem precedência
+ *
+ * Quem **entrou por convite** apresenta dentro da própria sala, com o próprio
+ * prazo: o QR que ele gera não sobrevive ao acesso dele, e a plateia não fica
+ * com uma porta aberta depois que a de quem abriu fechou.
+ *
+ * Quem **abriu o painel direto** — que é o caso comum, e era o que o desenho
+ * anterior não atendia — apresenta numa sala padrão, com prazo contado a
+ * partir de agora. O painel não pediu link nenhum para abrir; o botão do QR
+ * também não deveria pedir.
+ *
+ * Sem segredo configurado não há sala: assinar o convite é o que torna a
+ * apresentação possível, e sem isso a tela diz que está desligada.
+ *
+ * O relógio é lido **depois** do `await`, e isso é regra, não estilo: um
+ * `Date.now()` síncrono no começo de um render pendura a navegação no Next 16
+ * (ver D-MARCA).
  */
 export async function lerApresentacao(): Promise<{
   readonly sala: string;
   readonly expira: number;
 } | null> {
   const sessao = await lerConvite();
-  return sessao === null ? null : { sala: sessao.sala, expira: sessao.expira };
+  if (sessao !== null) {
+    return { sala: sessao.sala, expira: sessao.expira };
+  }
+  if (!apresentacaoLigada(process.env)) return null;
+  const agora = Math.floor(Date.now() / 1000);
+  return {
+    sala: SALA_PADRAO,
+    expira: agora + HORAS_DA_SALA_PADRAO * SEGUNDOS_POR_HORA,
+  };
 }
 
 /**

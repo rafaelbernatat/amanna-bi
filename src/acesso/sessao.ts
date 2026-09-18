@@ -178,9 +178,32 @@ export function registrarProvedor(
   REGISTRO.set(provedor, construtor);
 }
 
+/* ------------------------------------------------------------------ *
+ * A sessão de convidado
+ * ------------------------------------------------------------------ */
+
+/**
+ * Quem chegou pelo QR, em qualquer modo de sessão.
+ *
+ * Um convidado não é um provedor: o provedor responde *"como esta instalação
+ * identifica quem entra"*, e há um só por instalação. O convidado responde
+ * outra coisa — *"este aparelho traz um passe de apresentação?"* — e convive
+ * com qualquer provedor. É o que permite ao painel abrir do jeito de sempre e,
+ * ao mesmo tempo, a plateia entrar por QR com perfil de leitura e um
+ * identificador por celular (D-CONVITE-apresentacao).
+ *
+ * Quem registra é `src/acesso/convite.ts`, o único módulo que lê `cookies()`.
+ */
+let convidado: (() => Promise<Session | null>) | null = null;
+
+export function registrarConvidado(ler: () => Promise<Session | null>): void {
+  convidado = ler;
+}
+
 /** Só para teste: devolve o registro ao estado limpo. */
 export function limparProvedores(): void {
   REGISTRO.clear();
+  convidado = null;
 }
 
 export function provedoresRegistrados(): readonly ProvedorDeSessao[] {
@@ -200,6 +223,26 @@ registrarProvedor("fixtures", async () => sessaoDeFixtures(process.env));
 export async function getSession(
   ambiente: Record<string, string | undefined> = process.env,
 ): Promise<Session> {
+  /*
+   * O passe do QR vem antes do provedor, e a ordem é a decisão.
+   *
+   * Um celular que escaneou o código lê como `auditor`, com um sujeito só
+   * dele — mesmo numa instalação que, para todo o resto, entra por outro
+   * caminho. Se o provedor viesse antes, a plateia herdaria o perfil de quem
+   * apresenta: cinquenta pessoas com permissão de configurar a marca, e uma
+   * conversa só para todas, que é o conflito que Produto pediu para não
+   * haver.
+   *
+   * Quem apresenta não tem esse cookie — ele nasce em `/entrar?convite=`, do
+   * outro lado do QR. Quem escanear o próprio código no navegador do painel
+   * vira plateia até o passe vencer, e isso é o desenho funcionando, não um
+   * defeito.
+   */
+  if (convidado !== null) {
+    const passe = await convidado();
+    if (passe !== null) return passe;
+  }
+
   const provedor = lerProvedor(ambiente);
   const construtor = REGISTRO.get(provedor);
   if (construtor === undefined) {

@@ -17,7 +17,7 @@ import {
  * adivinhar uma senha. Um campo de senha aqui só ensinaria a plateia a tentar.
  *
  * Estática, sem JavaScript e sem leitura de dado. É pública por construção (o
- * middleware a deixa passar), e por isso não pode mostrar número nenhum.
+ * proxy a deixa passar), e por isso não pode mostrar número nenhum.
  */
 
 export const metadata: Metadata = {
@@ -120,7 +120,7 @@ export default async function Pagina({
         </p>
         {/*
           Um link para a tela padrão, e não para a anterior: se a sessão
-          existir de novo (um segundo QR), o painel abre; se não, o middleware
+          existir de novo (um segundo QR), o painel abre; se não, o proxy
           traz de volta para cá. É o único caminho que não depende de nada.
         */}
         <Link

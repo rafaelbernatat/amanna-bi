@@ -10,7 +10,7 @@
  *
  * ## A negação não é o controle
  *
- * O matcher pula requisições de prefetch, e por isso o middleware **não pode**
+ * O matcher pula requisições de prefetch, e por isso o proxy **não pode**
  * ser a única verificação de sessão: quem verifica a cada leitura é o provedor
  * (`src/acesso/convite.ts`). O que acontece aqui é poupar render e pôr a tela
  * certa na frente de quem chegou sem o QR. Em modo `fixtures` e `oidc` nada é
@@ -50,7 +50,7 @@ function comCabecalhos(resposta: NextResponse, csp: string): NextResponse {
   return resposta;
 }
 
-export async function middleware(requisicao: NextRequest) {
+export async function proxy(requisicao: NextRequest) {
   const nonce = gerarNonce();
   const csp = montarCsp(nonce);
   const url = requisicao.nextUrl;
@@ -131,13 +131,13 @@ export const config = {
    * Fora os artefatos estáticos, e fora o logo da marca.
    *
    * `_next/static` e as imagens já saem com cache imutável e não executam
-   * nada; passá-los pelo middleware custaria uma invocação por arquivo sem
+   * nada; passá-los pelo proxy custaria uma invocação por arquivo sem
    * fechar superfície nenhuma.
    *
    * `api/marca/logo` sai por outra razão, e ela é de segurança: aquela rota
    * serve **bytes de terceiro**, e por isso declara uma política própria e
    * mais dura que a do produto — `default-src 'none'; sandbox`, que não
-   * permite nada. Como o middleware escreve a política do site em toda
+   * permite nada. Como o proxy escreve a política do site em toda
    * resposta que atravessa, passar por aqui **afrouxaria** a política daquele
    * arquivo em vez de endurecê-la. A rota manda os próprios cabeçalhos,
    * `nosniff` incluído.

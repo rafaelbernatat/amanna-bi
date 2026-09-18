@@ -28,6 +28,49 @@ sessão se chama `convite:<sala>:<dispositivo>`, e quem ler a trilha vê isso.
 Isto **não substitui o OIDC** para um cliente de verdade. É o que permite uma
 demonstração com dado real sem inventar um cadastro.
 
+### Apresentar não é entrar
+
+O painel abre do jeito que a instalação escolheu. O QR é um botão dentro dele.
+
+A primeira versão amarrou as duas coisas: o botão só existia com
+`AUTH_PROVIDER=convite`, e por isso quem ia apresentar tinha de entrar por link
+no próprio painel antes de poder gerar o QR da plateia. Produto pediu o
+contrário, e com razão: _"abra o dashboard e tenha um botão para as pessoas
+escanearem"_. Duas perguntas diferentes tinham virado uma.
+
+Agora são duas de novo:
+
+- **`AUTH_PROVIDER`** responde _"como esta instalação sabe quem entrou"_.
+  Continua com três valores, `convite` inclusive — é a porta que segura dado
+  real enquanto o OIDC não existe (T-221).
+- **`CONVITE_SEGREDO`** responde _"esta instalação abre uma sala?"_. Havendo
+  segredo para assinar, o botão do QR aparece para quem apresenta, em qualquer
+  modo de sessão, e quem escaneia entra em qualquer um deles.
+
+Quem entrou por convite apresenta dentro da **própria sala**, com o próprio
+prazo: o QR não sobrevive ao acesso de quem o gerou. Quem abriu o painel direto
+apresenta na sala padrão, com prazo contado de agora. A sala tem nome fixo
+porque é a unidade do teto de tokens do chat — sorteá-la a cada recarga zeraria
+o teto que existe para não deixar a conta crescer.
+
+### O passe do convidado vem antes do provedor
+
+`getSession` tenta o cookie do QR **antes** do provedor da instalação. A ordem
+é a decisão: sem ela, cinquenta pessoas entrariam com o perfil de quem
+apresenta — permissão de configurar a marca e um sujeito só para a sala
+inteira, que é exatamente o conflito que Produto pediu para não haver. Com ela,
+cada celular lê como `auditor`, com identificador próprio, mesmo numa
+instalação que para todo o resto entra por outro caminho.
+
+Quem apresenta não tem esse cookie: ele nasce do outro lado do QR. Quem
+escanear o próprio código no navegador do painel vira plateia até o passe
+vencer — o desenho funcionando, não um defeito.
+
+**O que isto não resolve.** Numa instalação aberta, o painel é aberto: quem
+tiver o endereço entra. Para dado real em produção isso continua sendo
+`AUTH_PROVIDER=convite` ou o OIDC, e a trava que recusa `fixtures` na frente de
+`warehouse` continua de pé.
+
 ### Dois envelopes, um segredo
 
 O **convite** vai no QR; a **sessão** é o cookie. Os dois são
@@ -58,6 +101,23 @@ frente de quem chegou sem QR: página vai para `/entrar`, `/api/*` recebe 401.
 
 Em `fixtures` e `oidc` o middleware não nega nada — o arnês de ponta a ponta
 continua como sempre.
+
+### Onde o arquivo do proxy mora
+
+`src/proxy.ts`, e o lugar e parte da decisao.
+
+O Next so carrega esta convencao quando o arquivo esta **ao lado de `app`**.
+Como o produto poe `app` dentro de `src`, a raiz do repositorio nao serve — e
+a forma como ela nao serve e o problema: `next build` compilava o arquivo da
+raiz e `next dev` o ignorava, sem aviso, sem erro e sem uma linha de log. O
+resultado era um desenvolvimento em que ninguem era barrado e nenhuma
+resposta levava politica de seguranca, enquanto a suite de ponta a ponta —
+que sobe um build de producao — passava verde. Os testes de unidade chamavam a
+funcao direto, e por isso tambem nao viam nada.
+
+Quem guarda isto agora e um teste de unidade sobre o disco: o arquivo existe
+em `src/`, nao existe homonimo na raiz, e o export se chama `proxy`. Em 16 o
+nome `middleware` esta descontinuado e virou `proxy`; a funcao e a mesma.
 
 ### O token sai da URL na entrada
 

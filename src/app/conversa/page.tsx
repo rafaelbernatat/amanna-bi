@@ -28,7 +28,7 @@ import { buscaParaQuery } from "@/semantica/url";
  *
  * `lerIdentidade` monta a sessão pelo provedor configurado. Com
  * `AUTH_PROVIDER=convite`, quem não tem cookie assinado não chega aqui — o
- * middleware manda para `/entrar`, e o provedor recusaria de qualquer forma.
+ * proxy manda para `/entrar`, e o provedor recusaria de qualquer forma.
  */
 
 export const metadata: Metadata = {

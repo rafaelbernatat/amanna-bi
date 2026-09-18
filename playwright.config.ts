@@ -1,6 +1,19 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORTA = 3100;
+/*
+ * A porta do arnes, com escape por ambiente.
+ *
+ * `reuseExistingServer` e o que deixa reexecutar o e2e sem esperar um build
+ * novo, e o preco dele e este: se **qualquer** processo estiver escutando a
+ * porta, o Playwright o adota sem perguntar de quem e. Aconteceu — outro
+ * projeto da mesma maquina subiu na 3100, e a suite inteira foi medir a
+ * aplicacao errada, com 200 falhas que nao tinham nada a ver com o codigo.
+ *
+ * `E2E_PORTA` e a saida quando a porta padrao estiver tomada. O sintoma tem
+ * cara propria: quase tudo falha de uma vez, inclusive casos que nao tocam a
+ * mudanca. Antes de investigar o produto, conferir quem atende a porta.
+ */
+const PORTA = Number(process.env["E2E_PORTA"] ?? 3100);
 const BASE_URL = `http://127.0.0.1:${PORTA}`;
 
 /** O unico arquivo de e2e que escreve estado no servidor (a marca, D-MARCA). */
@@ -130,6 +143,16 @@ export default defineConfig({
        */
       MARCA_ARMAZEM: "memoria",
       MARCA_SITE: "fixtures",
+      /*
+       * A apresentacao ligada, num modo de sessao aberto.
+       *
+       * E o arranjo que Produto pediu e que o arnes precisa cobrir: o painel
+       * abre sem link nenhum (`AUTH_PROVIDER` acima continua `fixtures`) e o
+       * botao do QR existe assim mesmo. O segredo e de arnes, nao serve fora
+       * daqui, e por isso mora no arquivo -- rodar o e2e nao pode depender de
+       * variavel que so uma maquina tem.
+       */
+      CONVITE_SEGREDO: "arnes-de-teste-do-amanna-bi-32-ou-mais",
     },
     url: BASE_URL,
     reuseExistingServer: !process.env["CI"],

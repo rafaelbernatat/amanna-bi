@@ -21,6 +21,7 @@ import {
   PROVEDORES,
   ProvedorInvalido,
   provedoresRegistrados,
+  registrarConvidado,
   registrarProvedor,
   sessaoDeFixtures,
 } from "@/acesso/sessao";
@@ -160,6 +161,43 @@ describe("getSession", () => {
     await expect(getSession({ AUTH_PROVIDER: "oidc" })).rejects.toThrowError(
       /sem implementação registrada/,
     );
+  });
+
+  /**
+   * O passe do QR vem antes do provedor, e por que isso importa.
+   *
+   * Uma plateia que entrasse pelo QR e herdasse o perfil de quem apresenta
+   * teria permissao de configurar a marca e um sujeito so para as cinquenta
+   * pessoas — o teto de uso e o recorte por perfil deixariam de significar
+   * alguma coisa. A ordem e o que separa apresentar de entrar
+   * (D-CONVITE-apresentacao).
+   */
+  it("o passe de apresentacao vem antes do provedor da instalacao", async () => {
+    registrarConvidado(async () => ({
+      sujeito: "convite:sala:um-celular",
+      perfil: "auditor",
+      entidades: ["consolidado"],
+      areas: ["financeiro"],
+    }));
+    try {
+      const s = await getSession({ AUTH_PROVIDER: "fixtures" });
+      expect(s.perfil).toBe("auditor");
+      expect(s.sujeito).toBe("convite:sala:um-celular");
+    } finally {
+      limparProvedores();
+      registrarProvedor("fixtures", async () => sessaoDeFixtures({}));
+    }
+  });
+
+  it("sem passe, quem responde continua sendo o provedor", async () => {
+    registrarConvidado(async () => null);
+    try {
+      const s = await getSession({ AUTH_PROVIDER: "fixtures" });
+      expect(s.perfil).toBe("diretoria");
+    } finally {
+      limparProvedores();
+      registrarProvedor("fixtures", async () => sessaoDeFixtures({}));
+    }
   });
 
   it("um provedor registrado passa a ser usado, sem tela mudar", async () => {
