@@ -35,4 +35,11 @@ paths = [
   '''playwright-report/.*''',
   # O prototipo e HTML estatico com dado ficticio, sem credencial nenhuma.
   '''public/design/.*\.html''',
+  # Os arquivos de ambiente, que **existem** na maquina de quem desenvolve e
+  # nao existem no CI. Sem esta linha a varredura local acusa a propria
+  # DATABASE_URL de quem esta trabalhando e diverge do pipeline — e uma
+  # varredura que grita por engano e uma varredura que se aprende a ignorar.
+  # O `.gitignore` ja recusa estes arquivos, entao o que o CI varre nunca os
+  # contem.
+  '''\.env(\..*)?$''',
 ]

@@ -671,7 +671,16 @@ describe("as variaveis da marca no boot", () => {
   it("memoria na frente de dado real aborta o boot", () => {
     const achados = conferirAmbiente({
       DATA_SOURCE: "warehouse",
-      DATABASE_URL: "postgres://u:s@h:5432/d",
+      /*
+       * Sem `usuario:senha@` de proposito, nem falsos.
+       *
+       * A validacao so confere o esquema, e a varredura de segredo do CI tem
+       * uma regra propria para URL de Postgres com senha embutida (secao 11).
+       * Um literal com a forma de credencial reprova o lint inteiro, mesmo
+       * sendo uma letra por parte — e a regra esta certa em nao tentar
+       * adivinhar quais sao de mentira.
+       */
+      DATABASE_URL: "postgres://h:5432/d",
       AUTH_PROVIDER: "oidc",
       MARCA_ARMAZEM: "memoria",
     }).map((p) => p.variavel);
