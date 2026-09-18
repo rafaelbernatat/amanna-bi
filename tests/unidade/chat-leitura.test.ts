@@ -116,23 +116,26 @@ describe("as leituras de custo e de resultado", () => {
 });
 
 describe("a família", () => {
-  it("resultado em reais continua derivado de unidade e sentido", () => {
-    expect(familiaDe("lucro_liquido", "BRL_mi", "maior_melhor")).toBe(
-      "resultado",
-    );
-    expect(familiaDe("folha_total", "BRL_mi", "neutro")).toBeNull();
-    expect(familiaDe("margem_liquida", "pct", "maior_melhor")).toBeNull();
-    expect(familiaDe("turnover_12m", "pct", "menor_melhor")).toBeNull();
+  it("resultado é lista fechada: lucro e EBITDA sim; receita, saldo e custo não", () => {
+    expect(familiaDe("lucro_liquido")).toBe("resultado");
+    expect(familiaDe("ebitda")).toBe("resultado");
+    expect(familiaDe("fco")).toBe("resultado");
+    // Receita é a base do retorno, não um resultado sobre ela: "retorno sobre
+    // a receita de 100%" era número certo numa frase sem sentido (T-440).
+    expect(familiaDe("receita_liquida")).toBeNull();
+    expect(familiaDe("receita_bruta")).toBeNull();
+    expect(familiaDe("saldo_caixa")).toBeNull();
+    expect(familiaDe("patrimonio_liquido")).toBeNull();
+    expect(familiaDe("receita_por_fte")).toBeNull();
+    expect(familiaDe("folha_total")).toBeNull();
+    expect(familiaDe("margem_liquida")).toBeNull();
+    expect(familiaDe("turnover_12m")).toBeNull();
   });
 
   it("as famílias novas são declaradas por id", () => {
-    expect(familiaDe("roe", "pct", "maior_melhor")).toBe("retorno");
-    expect(familiaDe("custo_medio_da_divida", "pct", "menor_melhor")).toBe(
-      "custo_de_capital",
-    );
-    expect(familiaDe("liquidez_corrente", "vezes", "maior_melhor")).toBe(
-      "liquidez",
-    );
+    expect(familiaDe("roe")).toBe("retorno");
+    expect(familiaDe("custo_medio_da_divida")).toBe("custo_de_capital");
+    expect(familiaDe("liquidez_corrente")).toBe("liquidez");
   });
 
   it("toda oferta de próximo passo é respondível pelo interpretador", () => {

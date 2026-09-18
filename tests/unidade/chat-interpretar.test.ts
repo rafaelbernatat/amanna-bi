@@ -16,7 +16,7 @@
  * a orquestração com o modelo recusando.
  */
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apoioDe } from "@/chat/apoio";
 import { CONFIANCA_MINIMA, interpretarLocalmente } from "@/chat/interpretar";
@@ -35,6 +35,12 @@ import { QUERY_PADRAO } from "@/semantica/contrato";
 vi.hoisted(() => {
   process.env["DATA_SOURCE"] = "fixtures";
   process.env["AUTH_PROVIDER"] = "fixtures";
+});
+
+// O laco na duvida (T-436) e de chat-laco-na-duvida.test.ts; aqui a recusa
+// continua sendo recusa, sem ir ao laco.
+beforeEach(() => {
+  vi.stubEnv("CHAT_LACO_NA_DUVIDA", "0");
 });
 
 vi.mock("@/chat/openrouter", () => ({

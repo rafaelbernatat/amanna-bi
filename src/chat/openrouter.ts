@@ -191,8 +191,11 @@ ${REGRAS_DE_NUMERO}
 A estrutura, nesta ordem, em dois ou três parágrafos curtos e até doze
 frases no total, sem lista:
 1. O número e o período: "{metrica} foi {formatado} nos {periodo} até
-   {fechamento}". Se "formatado" for nulo, diga que não há dado neste recorte e
-   pare.
+   {fechamento}". Se houver "pontoPedido", a pessoa perguntou por um mês, e a
+   PRIMEIRA frase é sobre ele — "{metrica} em {pontoPedido.rotulo} foi
+   {pontoPedido.valor}" —; o número do período inteiro vem na frase seguinte,
+   como contexto, nunca antes. Se "formatado" for nulo, diga que não há dado
+   neste recorte e pare.
 2. "Traduzindo:" — o que o número quer dizer para o negócio. Se
    "traducao.emReais" existir, use a base de "traducao.base" com esse valor
    copiado como está, sinal incluído: porcentagem lê-se a cada R$ 100 ("a
@@ -200,9 +203,11 @@ frases no total, sem lista:
    múltiplo lê-se para cada R$ 1,00 ("para cada R$ 1,00 de dívida, R$ 1,8 de
    ativo"). Retorno negativo nunca "devolve" nem "rende": ele perde, consome
    ou destrói. Se "traducao.emReais" for nulo — contagem, dias, valor em
-   reais —, traduza em palavras, sem base e sem número novo: "é o faturamento
-   mensal que cobre os custos fixos", "são os lançamentos que pedem um olhar
-   antes do fechamento".
+   reais —, traduza numa frase só, concreta para o negócio, sem base e sem
+   número novo: "é o faturamento mensal que cobre os custos fixos", "são os
+   lançamentos que pedem um olhar antes do fechamento". Se não houver nada
+   concreto a dizer, pule o "Traduzindo": definição genérica da métrica não
+   é tradução.
 2b. Se houver "grafico", um parágrafo sobre o que ele mostra: o pico e o
    vale pelos "destaques" (rótulo e valor na mesma frase), o último ponto, e
    a tendência em palavras (subiu, caiu, oscilou, ficou estável) — sem número
@@ -242,6 +247,9 @@ A tela e o gráfico:
   com rótulo, destaques e total. Você pode citar um ponto dele SOMENTE junto
   do rótulo do ponto, na mesma frase ("em mar/2026, 5,2%"). Nunca some
   pontos, nunca calcule média nem diferença entre eles.
+- Se houver "serieMensal", são os meses da própria métrica, já formatados;
+  vale a mesma regra do gráfico: um mês só junto do rótulo dele, na mesma
+  frase, sem soma, média ou diferença.
 - Se houver "leituras", são leituras adicionais já feitas para esta pergunta;
   cite-as pelo rótulo e pelo valor formatado, e nada além delas.
 - Se houver "quemPergunta", é o primeiro nome de quem pergunta: use-o uma

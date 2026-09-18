@@ -383,6 +383,8 @@ describe("o verificador e as leituras", () => {
       familia: null,
       referencias: [],
       comparacao: null,
+      serieMensal: [],
+      pontoPedido: null,
       comparacaoIndisponivelPorque: null,
       acoes: { filtros: QUERY_PADRAO, tela: "fin/visao", painel: null },
       fontes: ["vw_fato_faturamento_cliente"],

@@ -95,6 +95,8 @@ function resolucaoDe(
     familia: null,
     referencias: [],
     comparacao: null,
+    serieMensal: [],
+    pontoPedido: null,
     comparacaoIndisponivelPorque: null,
     acoes: { filtros, tela: null, painel: null },
     fontes: ["vw_teste"],

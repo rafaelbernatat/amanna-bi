@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 305 tarefas: 179 pendentes e 126 já concluídas (5 no protótipo) |
+| **Total** | 307 tarefas: 178 pendentes e 129 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 44 de 93 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 95 | 53 | 35 | 7 | 47 de 95 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **305** | **154** | **119** | **27** | **126 de 305** |
+| **Total** | **307** | **155** | **120** | **27** | **129 de 307** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -57,7 +57,7 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    75 tarefas         93 tarefas
+    75 tarefas         95 tarefas
          |               |
          +-------+-------+
                  |
@@ -693,7 +693,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 
 > **Critério de saída:** O conjunto de 100 perguntas atinge as metas da seção 7.7, com zero número inventado.
 
-*93 tarefas · 52 P0 · 34 P1 · 7 P2*
+*95 tarefas · 53 P0 · 35 P1 · 7 P2*
 
 - [ ] **T-301** `P0` `M` `chat` Definir os contratos Intent e Answer com JSON Schema gerado
   · **Aceite:** Existem os tipos Intent e Answer da seção 7.2 e schemas derivados com additionalProperties false e required completo; o teste rejeita 10 payloads inválidos (métrica ausente, breakdown fora do enum, confidence fora de 0..1, undo sem view) e aceita 5 válidos.
@@ -965,15 +965,21 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-435** `P1` `S` `chat` Sinais a mais no classificador e a continuacao composta
   · **Aceite:** decomposicao, concentracao e "ultimos N meses" levam ao laco; "E por cliente?" apos uma resposta com metrica vira ranking herdado; as 39 sugestoes e as continuacoes de recorte continuam simples por teste.
   · **PRD:** secao 7.1, secao 7.5, D-CHAT-ferramentas · **Depende de:** T-350
-- [ ] **T-436** `P2` `M` `chat` Laco na duvida, atras de variavel, com a evidencia de T-431
-  · **Aceite:** com `CHAT_LACO_NA_DUVIDA=1`, pergunta sem palpite local confiante e sem continuacao vai ao laco com `listar_metricas`; desligada, nada muda; o conjunto de avaliacao compara recusa e acerto nos dois modos.
-  · **PRD:** secao 7.5, secao 7.7, RF-16 · **Depende de:** T-431, T-435
+- [X] **T-436** `P2` `M` `chat` Laco na duvida: pergunta sem metrica no catalogo vai ao laco de ferramentas antes da recusa
+  · **Aceite:** quando nem o interpretador local nem o do modelo casam uma metrica e ha gateway, a pergunta vai ao laco de ferramentas, que busca no catalogo (`listar_metricas`) e le; se o laco conclui, a resposta e a dele (caminho composto, com grafico); senao, a recusa util de sempre, com as proximas; `CHAT_LACO_NA_DUVIDA=0` desliga; o incidente `laco_na_duvida` registra o modelo e se concluiu; ligado por padrao a pedido de Produto (2026-09-18: "a IA precisa responder qualquer pergunta relacionada aos dados com numeros reais").
+  · **PRD:** secao 7.1, RF-16 · **Depende de:** T-431, T-435
 - [X] **T-437** `P1` `S` `chat` Teste vivo com chave, decisao D-CHAT-resposta-completa e H-68 resolvido
   · **Aceite:** `chat-vivo.test.ts` pula sem chave e, com ela, afirma autoria modelo e painel presente em tres perguntas; a decisao registra laco por sinal, grafico para toda resposta, correcao unica, modelo e custo; H-68 marcado resolvido e `npm run instrucoes` verde.
   · **PRD:** secao 7.7, secao 9.4, D-CHAT-ferramentas · **Depende de:** T-432, T-433, T-434
 - [ ] **T-438** `P2` `S` `chat` Cache de prompt para instrucao e ferramentas do laco
   · **Aceite:** o corpo do laco marca instrucao e ferramentas com `cache_control` quando o modelo e Anthropic; o custo de entrada por pergunta composta cai, medido no contador de tokens da sala.
   · **PRD:** secao 7.4, secao 13 · **Depende de:** T-431
+- [X] **T-439** `P0` `S` `chat` A resposta abre com o mes que a pergunta nomeou
+  · **Aceite:** `mesDaPergunta` reconhece o mes por extenso (com ou sem ano) e abreviado com ano (`abr/2026`); a resolucao carrega a serie mensal da propria metrica (`serieMensal`) e o ponto pedido (`pontoPedido`); o texto do modelo e o montado abrem com "{metrica} em abr/2026 foi …" e so depois dizem o recorte inteiro; o verificador aceita o ponto pedido livre e cada mes da serie junto do rotulo; "Quanto faturamos em abril?" deixa de abrir com o total de doze meses (print de Produto, 2026-09-18).
+  · **PRD:** secao 7.1, RF-15 · **Depende de:** T-432
+- [X] **T-440** `P1` `S` `chat` A comparacao com juros so para resultado de verdade
+  · **Aceite:** a familia `resultado` vira lista fechada (lucro liquido, EBITDA, resultado operacional liquido, margem de contribuicao em reais, FCO, fluxo de caixa livre, resultado com receita 10% menor), no lugar da regra "reais e maior e melhor"; receita, saldo, patrimonio e valor por colaborador ficam sem comparacao, com o motivo dito; "Retorno sobre a receita liquida: 100,0%, 86,3 p.p. acima da Selic" nao volta a aparecer.
+  · **PRD:** secao 7.1 · **Depende de:** T-433
 
 ---
 

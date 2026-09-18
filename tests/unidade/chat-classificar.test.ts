@@ -53,6 +53,8 @@ describe("as sugestões continuam simples", () => {
       familia: "retorno",
       referencias: [],
       comparacao: null,
+      serieMensal: [],
+      pontoPedido: null,
       comparacaoIndisponivelPorque: null,
       acoes: { filtros: QUERY_PADRAO, tela: "fin/visao", painel: null },
       fontes: ["vw_fato_fin_mes"],

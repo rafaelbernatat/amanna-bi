@@ -22,6 +22,7 @@
  */
 
 import { formatarMesAno, formatarValor } from "@/apresentacao/formato/formato";
+import { MESES } from "@/chat/mes";
 import type { PanelResponse, Unidade } from "@/semantica/contrato";
 import type { Forma } from "@/semantica/painel";
 
@@ -61,21 +62,6 @@ export type ResumoDoPainel = {
 /* ------------------------------------------------------------------ *
  * Rótulos
  * ------------------------------------------------------------------ */
-
-const MESES = [
-  "janeiro",
-  "fevereiro",
-  "março",
-  "abril",
-  "maio",
-  "junho",
-  "julho",
-  "agosto",
-  "setembro",
-  "outubro",
-  "novembro",
-  "dezembro",
-] as const;
 
 const COMPETENCIA = /^(\d{4})-(\d{2})(?:-\d{2})?$/;
 
