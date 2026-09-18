@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { TELA_PADRAO } from "@/apresentacao/navegacao/telas";
 import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import {
+  CAMINHO_DA_CONVERSA,
   motivoValido,
   PARAMETRO_DE_DESTINO,
   PARAMETRO_DE_MOTIVO,
@@ -30,6 +31,12 @@ import { entradaPorSenhaLigada } from "@/seguranca/senha";
  * — esconder o campo de quem chegou pelo QR — exigiria distinguir os dois antes
  * de haver sessão, que é justamente o que ainda não existe neste ponto.
  *
+ * **A plateia que pede uma tela do painel** chega com o motivo `plateia`
+ * (T-429): a sessão do QR só abre a conversa, e quem quer o painel precisa da
+ * senha. Um link leva de volta à conversa, porque na maior parte das vezes
+ * quem chegou aqui assim é plateia mesmo — e às vezes é quem apresenta, num
+ * navegador em que abriu o próprio QR para testar.
+ *
  * Estática, sem JavaScript e sem leitura de dado. É pública por construção (o
  * proxy a deixa passar), e por isso não pode mostrar número nenhum.
  */
@@ -53,6 +60,8 @@ const FRASE: Readonly<Record<MotivoDeEntrada, string>> = {
   senha: "Senha incorreta. Tente de novo.",
   tentativas:
     "Tentativas demais em pouco tempo. Espere um minuto antes de tentar de novo.",
+  plateia:
+    "Você entrou pela apresentação, e ela abre só a conversa com os dados. Para abrir o painel, digite a senha de quem apresenta.",
 };
 
 type Busca = Record<string, string | string[] | undefined>;
@@ -131,6 +140,20 @@ export default async function Pagina({
         >
           {FRASE[motivo]}
         </p>
+        {motivo === "plateia" ? (
+          <Link
+            href={CAMINHO_DA_CONVERSA}
+            data-teste="voltar-a-conversa"
+            style={{
+              alignSelf: "flex-start",
+              font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
+              color: MARCA.marca,
+              textDecoration: "none",
+            }}
+          >
+            Voltar à conversa
+          </Link>
+        ) : null}
         <p
           style={{
             margin: 0,

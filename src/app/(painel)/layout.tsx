@@ -7,7 +7,7 @@ import { lerVisitante } from "@/acesso/leitura";
 import { Chat } from "@/apresentacao/chat/Chat";
 import { EstiloDoMenu } from "@/apresentacao/navegacao/EstiloDoMenu";
 import { PALETA } from "@/apresentacao/tema/tema";
-import { ROTA_DA_CONVERSA } from "@/semantica/url";
+import { caminhoDaEntrada } from "@/seguranca/convite";
 
 /**
  * O quadro das 13 telas: a tela à esquerda, a conversa à direita.
@@ -55,11 +55,12 @@ export default async function LayoutDoPainel({
   ]);
 
   /*
-   * O publico do QR fica no chat (D-CONVIDADO-cadastro, T-429). O proxy ja
-   * redireciona, mas o proxy nao e o controle: o prefetch o pula, e no arnes
-   * `fixtures` ele segue tudo. Esta e a conferencia que vale.
+   * O publico do QR fica no chat (D-CONVIDADO-cadastro, T-429): uma tela do
+   * painel leva a entrada por senha, que oferece a volta a conversa. O proxy
+   * ja redireciona, mas o proxy nao e o controle: o prefetch o pula, e no
+   * arnes `fixtures` ele segue tudo. Esta e a conferencia que vale.
    */
-  if (visitante !== null) redirect(ROTA_DA_CONVERSA);
+  if (visitante !== null) redirect(caminhoDaEntrada("plateia"));
 
   const nonce = cabecalhos.get("x-nonce");
 

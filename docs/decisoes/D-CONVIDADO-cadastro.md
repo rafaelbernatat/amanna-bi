@@ -74,10 +74,15 @@ vira oráculo. Fechar o diálogo tranca a conversa, com o mesmo link no rodapé.
 
 ### O público fica no chat
 
-Decisão de Produto. `decidirAcesso` manda tela do painel de volta à conversa e
-nega `/api/*` fora da lista; o layout do painel confere de novo, porque o
-prefetch pula o proxy e o arnês `fixtures` o deixa seguir. "Nova conversa" sai
-do modo `cheio`: no celular a conversa é a apresentação.
+Decisão de Produto. `decidirAcesso` manda tela do painel para a **entrada por
+senha**, com o motivo `plateia` e o destino pedido, e nega `/api/*` fora da
+lista; o layout do painel confere de novo, porque o prefetch pula o proxy e o
+arnês `fixtures` o deixa seguir. A tela de entrada explica que a sessão do QR
+só abre a conversa e oferece "Voltar à conversa". Foi para a senha, e não de
+volta à conversa, por um pedido de Produto do mesmo dia: o endereço do produto
+tem de mostrar a senha a quem apresenta, e o navegador de quem apresenta pode
+estar carregando uma sessão de plateia, de um QR aberto para testar. "Nova
+conversa" sai do modo `cheio`: no celular a conversa é a apresentação.
 
 ### O primeiro nome vai ao modelo; o e-mail nunca
 
