@@ -70,8 +70,15 @@ export type MotivoDeFalha =
   /** O convite venceu no meio da conversa. */
   | "sessao_expirada";
 
-/** Uma linha do fluxo NDJSON, na ordem em que podem chegar. */
+/**
+ * Uma linha do fluxo NDJSON, na ordem em que podem chegar.
+ *
+ * `andamento` é o que o laço de ferramentas conta enquanto lê (T-434): uma
+ * frase determinística por leitura, sem número. Só existe com gateway; sem
+ * ele as fases continuam sendo prévia e resposta.
+ */
 export type LinhaDoFluxo =
+  | { readonly fase: "andamento"; readonly passo: string }
   | { readonly fase: "previa"; readonly previa: Previa }
   | { readonly fase: "resposta"; readonly resposta: Resposta }
   | { readonly fase: "falha"; readonly motivo: MotivoDeFalha };

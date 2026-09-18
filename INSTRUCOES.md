@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 70 itens (6 resolvidos), destravando 128 tarefas do backlog |
+| **Total** | 70 itens (7 resolvidos), destravando 128 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -41,7 +41,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
 | Fase 2 · Dado real | 23 (1 resolvidos) | 19 | 59 |
-| Fase 3 · Chat com IA | 12 | 8 | 26 |
+| Fase 3 · Chat com IA | 12 (1 resolvidos) | 8 | 26 |
 | Fase 4 · Escala | 7 | 1 | 11 |
 | **Total** | **70** | **37** | **128** |
 
@@ -1133,7 +1133,7 @@ segredos do GitHub ainda** — ver H-69.
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*12 itens · 8 P0 abertos · 4 P1 abertos*
+*12 itens · 8 P0 abertos · 3 P1 abertos · 1 resolvido*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -1265,7 +1265,7 @@ Com a proteção de implantação ligada, todo endereço do projeto pede login d
 | **Onde o resultado vai** | Settings > Deployment Protection do projeto na Vercel; este item |
 | **Destrava** | O QR funcionar na apresentação. Sem isto, T-359 e T-360 existem e não abrem |
 
-### [ ] H-68 · Aprovar o modelo do laço de ferramentas do chat
+### [X] H-68 · Aprovar o modelo do laço de ferramentas do chat
 
 `P1` · **Responsável:** Produto, com Engenharia
 
@@ -1279,6 +1279,8 @@ Com D-CHAT-ferramentas, uma pergunta composta ("os cinco maiores clientes", "o p
 | **Onde o resultado vai** | Settings > Environment Variables na Vercel; este item |
 | **Destrava** | A qualidade do caminho composto (T-350) em produção; a medição de latência de D-CHAT-ferramentas |
 
+**Resolvido em 2026-09-18.** Modelo do laço: `anthropic/claude-sonnet-5`, gravado em `OPENROUTER_MODEL_FERRAMENTAS` na Vercel (Production) e no `.env.local` da estação. O roteiro de seis perguntas de D-CHAT-resposta-completa fechou 6/6 com autoria "modelo" nos dois candidatos; o Sonnet escreve com mais cuidado e leva 7–9 s na composta contra 3 s do `gpt-4o`, que continua nos estágios 1 e 3. Custo medido ≈ US$ 0,06 por pergunta composta. O que estava derrubando o laço não era o modelo: era `parallel_tool_calls`, que o OpenRouter não lista para provedor nenhum e recusa com 404 sob `require_parameters` — saiu do corpo. Preview **não** recebeu a variável: o CLI não-interativo da Vercel pede a branch e não aceita "todas as branches"; fica para quando Preview subir (H-69).
+
 ### [ ] H-69 · Levar as conexões do Supabase para a Vercel e para o GitHub
 
 `P0` · **Responsável:** Engenharia
@@ -1286,6 +1288,8 @@ Com D-CHAT-ferramentas, uma pergunta composta ("os cinco maiores clientes", "o p
 **O que fazer**
 
 H-65 criou o projeto e carregou a base, mas os três valores vivem só no `.env.local` de uma máquina. Para produção servir dado real, grave na Vercel (Settings > Environment Variables): `DATABASE_URL` em Preview e Production, `DATABASE_SSL_CA` nas mesmas (é a raiz `Supabase Root 2021 CA`, e sem ela a conexão é recusada), e então `DATA_SOURCE=warehouse` com `MARCA_ARMAZEM=postgres`. `DATABASE_URL_CARGA` **não** vai para a Vercel: a carga roda de uma máquina, e uma conexão em modo sessão na nuvem só amplia a superfície. No GitHub, `DATABASE_URL` e `DATABASE_SSL_CA` como segredos do repositório, que é o que liga o job `contrato-warehouse`. A URL vai **sem `sslmode`** — com esse parâmetro o driver ignora a CA (ver H-65). Registre aqui onde cada valor foi colocado, nunca o valor. Antes de dar por resolvido, abra uma tela e confirme que a receita líquida de 2026 aparece como 1.198,3 e não 1.200,0 — a segunda é a fixture.
+
+**Estado em 2026-09-18.** A parte da Vercel está feita: `DATABASE_URL`, `DATABASE_SSL_CA`, `DATA_SOURCE` e `MARCA_ARMAZEM` existem em Production, e `DATABASE_URL` também em Preview. Desde T-419 o cabeçalho do painel diz de onde vem o dado ("Base Amanna · carga de …" ou "Dados de demonstração"), então a conferência deixou de depender de comparar um número. Falta o GitHub — e com um aviso: o workflow `ci.yml` passa só `DATABASE_URL` ao job `contrato-warehouse`, sem `DATABASE_SSL_CA`; gravar o segredo antes de corrigir o workflow faz o job rodar e falhar na conexão. Preview ainda não sobe: `DATA_SOURCE` e `AUTH_PROVIDER` são obrigatórias e só existem em Production.
 
 | | |
 |---|---|

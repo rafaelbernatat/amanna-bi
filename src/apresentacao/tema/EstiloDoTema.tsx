@@ -1,11 +1,13 @@
 import {
   PALETA_ESCURA,
+  seletorDoAlvoDoTema,
+  seletorDoTema,
   variavelDoTema,
   type ChaveDePaletaClara,
 } from "@/apresentacao/tema/tema";
 
 /**
- * A pele escura, como propriedades CSS na raiz do documento (T-372).
+ * A pele escura, como propriedades CSS na raiz do documento (T-372, T-418).
  *
  * ## Por que a moldura troca sozinha e o gráfico não
  *
@@ -22,11 +24,29 @@ import {
  *
  * O primeiro segue o sistema operacional: quem tem o computador em escuro abre
  * o painel em escuro, sem pedir. O segundo deixa a pessoa discordar, e tem de
- * vir depois para vencer. `:root:not([data-theme="light"])` é o que permite
+ * vir depois para vencer. `:root:not([data-tema="claro"])` é o que permite
  * voltar ao claro dentro de um sistema escuro — sem essa negação, a escolha
  * manual só funcionaria numa direção.
  *
- * É o mesmo par de seletores do painel de referência que Produto entregou.
+ * Os dois nascem de `seletorDoTema`, e isso é a correção de T-418. O painel de
+ * referência escrevia `light` e `dark`; o documento escrevia `claro` e
+ * `escuro`; a folha nunca casava com o atributo, e o botão de tema não fazia
+ * nada em nenhuma direção. Nome e valor do atributo têm uma origem só, e um
+ * teste reprova o valor escrito à mão.
+ *
+ * ## `color-scheme`
+ *
+ * Diz ao navegador em que pele estamos. É o que faz `<select>`, barra de
+ * rolagem e caixa de diálogo nativos escurecerem junto — sem isso, os cinco
+ * filtros abriam uma lista branca no meio de uma tela escura.
+ *
+ * ## Os dois botões
+ *
+ * O servidor não enxerga `prefers-color-scheme`, então não sabe qual troca
+ * oferecer. Ele emite os dois formulários, e esta folha esconde o que propõe
+ * a pele já em vigor. Antes, num sistema escuro sem escolha, o botão oferecia
+ * "usar tema escuro" a uma tela já escura, e o primeiro clique parecia não
+ * fazer nada.
  *
  * ## Estático, e por isso sem dado
  *
@@ -34,16 +54,33 @@ import {
  * porque a política de segurança exige, como em `EstiloDaMarca`.
  */
 export function EstiloDoTema({ nonce }: { readonly nonce?: string }) {
-  const regras = Object.entries(PALETA_ESCURA)
+  const tokens = Object.entries(PALETA_ESCURA)
     .map(
       ([chave, cor]) =>
         `${variavelDoTema(chave as ChaveDePaletaClara)}:${String(cor)}`,
     )
     .join(";");
 
+  const claro = seletorDoTema("claro");
+  const escuro = seletorDoTema("escuro");
+  const propoeClaro = seletorDoAlvoDoTema("claro");
+  const propoeEscuro = seletorDoAlvoDoTema("escuro");
+
+  /**
+   * O que segue a raiz vale na pele escura, pelos dois caminhos: o sistema
+   * pede escuro e ninguém discordou, ou a pessoa escolheu escuro.
+   */
+  const naPeleEscura = (resto: string): string =>
+    `@media (prefers-color-scheme:dark){:root:not(${claro})${resto}}` +
+    `:root${escuro}${resto}`;
+
   const folha = [
-    `@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${regras}}}`,
-    `:root[data-theme="dark"]{${regras}}`,
+    `:root{color-scheme:light}`,
+    `${propoeClaro},${propoeEscuro}{display:flex}`,
+    `${propoeClaro}{display:none}`,
+    naPeleEscura(`{color-scheme:dark;${tokens}}`),
+    naPeleEscura(` ${propoeEscuro}{display:none}`),
+    naPeleEscura(` ${propoeClaro}{display:flex}`),
   ].join("");
 
   return (

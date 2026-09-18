@@ -8,9 +8,10 @@ import {
   type Tela,
 } from "@/apresentacao/navegacao/telas";
 import { BotaoDeConta } from "@/apresentacao/shell/BotaoDeConta";
-import { type Tema, MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { OrigemDosDados } from "@/apresentacao/shell/OrigemDosDados";
+import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type { Perfil } from "@/seguranca/identidade";
-import type { Query } from "@/semantica/contrato";
+import type { OrigemDosDados as Origem, Query } from "@/semantica/contrato";
 import type { Dimensoes } from "@/semantica/recortes";
 import { rotaCom, rotaDeApresentacao } from "@/semantica/url";
 
@@ -51,6 +52,7 @@ export function Cabecalho({
   conta,
   nome,
   logo,
+  origem,
 }: {
   readonly modulo: Modulo;
   readonly tela: Tela;
@@ -62,8 +64,6 @@ export function Cabecalho({
     readonly perfil: Perfil;
     readonly podeConfigurar: boolean;
     readonly podeApresentar: boolean;
-    /** O tema em vigor, para o botao de troca propor o outro (T-372). */
-    readonly tema: Tema;
   };
   /**
    * O nome da instalacao, escrito quando nao ha logo. Chega resolvido: o da
@@ -78,6 +78,11 @@ export function Cabecalho({
    * o comportamento de sempre.
    */
   readonly logo: { readonly src: string; readonly alt: string } | null;
+  /**
+   * De onde os numeros vieram, ou `null` quando a fonte nao respondeu
+   * (T-419). Chega resolvido: a apresentacao nao le `getMeta`.
+   */
+  readonly origem: Origem | null;
 }) {
   return (
     <header
@@ -214,9 +219,17 @@ export function Cabecalho({
           })}
         </nav>
 
+        {/*
+          O caminho de volta da troca de tema leva o recorte e o painel
+          destacado: trocar o tema nao pode zerar o filtro que a pessoa
+          escolheu (T-418).
+        */}
         <BotaoDeConta
-          tema={conta.tema}
-          de={`/${modulo.id}/${tela.slug}`}
+          de={rotaCom(
+            `/${modulo.id}/${tela.slug}`,
+            query,
+            painelDestacado ?? undefined,
+          )}
           perfil={conta.perfil}
           podeConfigurar={conta.podeConfigurar}
           apresentar={
@@ -241,6 +254,8 @@ export function Cabecalho({
       >
         {modulo.nomeCompleto} · {query.ano}
       </div>
+
+      <OrigemDosDados origem={origem} />
 
       <h1
         style={{

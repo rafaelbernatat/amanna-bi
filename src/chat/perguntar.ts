@@ -60,13 +60,15 @@ import {
   type Intencao,
   type TurnoAnterior,
 } from "@/chat/interpretar";
-import { resolverComposta } from "@/chat/laco";
+import { resolverComposta, type EventosDoLaco } from "@/chat/laco";
 import { PROXIMO_PASSO } from "@/chat/leitura";
 import { mesNomeado } from "@/chat/mes";
 import { RECUSA_FORA_DO_ASSUNTO } from "@/chat/recusa";
 import {
+  corrigirComGateway,
   gatewayConfigurado,
   interpretarComGateway,
+  modeloEmUso,
   redigirComGateway,
 } from "@/chat/openrouter";
 import {
@@ -91,7 +93,18 @@ export { RECUSA_FORA_DO_ASSUNTO } from "@/chat/recusa";
  * HTTP 402 do gateway ensinou a distinção.
  */
 export type Autoria =
-  "modelo" | "montado" | "modelo-recusado" | "gateway-indisponivel";
+  | "modelo"
+  /** O modelo escreveu, o verificador recusou, e a única reescrita passou (T-433). */
+  | "modelo-corrigido"
+  | "montado"
+  | "modelo-recusado"
+  | "gateway-indisponivel";
+
+/**
+ * Quantas vezes o modelo pode reescrever um texto recusado. Uma: a segunda
+ * recusa cai no montado. Mais que isso seria pagar para o modelo insistir.
+ */
+export const RODADAS_DE_CORRECAO = 1;
 
 /** O que a tela recebe (seção 7.2). */
 export type Resposta =
@@ -234,6 +247,18 @@ function permitir(
     modo: "com_rotulo",
     rotulos: [...new Set([...rotulos, ...n.rotulos])],
   });
+}
+
+/**
+ * A lista do que o texto pode citar, para a rodada de correção (T-433).
+ *
+ * Só as chaves do mapa: nada sai daqui que o envelope já não tenha levado.
+ */
+export function numerosPermitidosDe(
+  r: Resolucao,
+  pergunta: string,
+): readonly string[] {
+  return [...numerosPermitidos(r, pergunta).keys()];
 }
 
 /** Tudo que o texto pode citar sem inventar, e em que condição. */
@@ -720,6 +745,7 @@ export async function resolverPergunta(
   pergunta: string,
   atuaisOuContexto: Query | ContextoDaTela = QUERY_PADRAO,
   historico: readonly TurnoAnterior[] = [],
+  eventos: EventosDoLaco = {},
 ): Promise<Resolvida> {
   const contexto = ehContexto(atuaisOuContexto)
     ? atuaisOuContexto
@@ -737,7 +763,13 @@ export async function resolverPergunta(
   );
   let degradada = false;
   if (classe === "composta") {
-    const composta = await resolverComposta(pergunta, contexto, historico);
+    const composta = await resolverComposta(
+      pergunta,
+      contexto,
+      historico,
+      undefined,
+      eventos,
+    );
     if (composta !== null) {
       if (composta.tipo === "recusa") {
         return {
@@ -757,7 +789,10 @@ export async function resolverPergunta(
     // O laço não concluiu: o caminho simples responde a métrica principal,
     // e o texto dirá que a parte composta ficou sem resposta.
     degradada = true;
-    registrarIncidente({ tipo: "laco_degradou", detalhe: {} });
+    registrarIncidente({
+      tipo: "laco_degradou",
+      detalhe: { modelo: modeloEmUso("ferramentas") },
+    });
   }
 
   const intencao = await interpretar(pergunta, atuais, historico);
@@ -850,17 +885,51 @@ export async function redigirResposta(
       texto = doModelo;
       autoria = redacao?.autoria ?? "modelo";
     } else {
-      // Divergiu: fica o texto montado, e a autoria diz que a redação foi
-      // recusada. RF-15 pede bloqueio, não correção — e registro.
-      autoria = "modelo-recusado";
+      /*
+       * Divergiu. RF-15 pede bloqueio, não correção silenciosa — e o bloqueio
+       * continua: nada com número fora do envelope vai para a tela. O que
+       * T-433 acrescenta é uma reescrita, com os números recusados e a lista
+       * do que pode citar, conferida pelo mesmo verificador. Os dois
+       * incidentes ficam registrados: a frequência continua medida.
+       */
       registrarIncidente({
         tipo: "verificador_recusou",
         detalhe: {
           metrica: resolucao.metrica,
           caminho: resolucao.caminho,
           numerosRecusados: erradas.length,
+          tentativa: 1,
         },
       });
+      const reescrito = gatewayConfigurado()
+        ? await corrigirComGateway(
+            pergunta,
+            paraOModelo(resolucao, contexto),
+            doModelo,
+            erradas,
+            numerosPermitidosDe(resolucao, pergunta),
+          )
+        : null;
+      const erradasDepois =
+        reescrito === null
+          ? null
+          : divergencias(reescrito, resolucao, pergunta);
+      if (reescrito !== null && erradasDepois?.length === 0) {
+        texto = reescrito;
+        autoria = "modelo-corrigido";
+      } else {
+        autoria = "modelo-recusado";
+        registrarIncidente({
+          tipo: "verificador_recusou",
+          detalhe: {
+            metrica: resolucao.metrica,
+            caminho: resolucao.caminho,
+            numerosRecusados: erradasDepois?.length ?? erradas.length,
+            tentativa: RODADAS_DE_CORRECAO + 1,
+            reescrito: reescrito !== null,
+          },
+        });
+      }
     }
   }
 
@@ -928,9 +997,18 @@ export function paraOModelo(r: Resolucao, contexto?: ContextoDaTela): unknown {
     periodo: rotuloDe("periodo", r.acoes.filtros.periodo),
     fechamento: formatarMesAno(r.asOf),
     leitura: r.familia,
+    /*
+     * A tradução em reais só faz sentido para métrica financeira — a que tem
+     * família de leitura. Turnover de 12,1% "a cada R$ 100 de salário" era
+     * número certo e frase sem sentido; sem família, o modelo traduz em
+     * palavras, como a instrução manda.
+     */
     traducao: {
-      base: baseDaTraducao(r.unidade),
-      emReais: r.valor === null ? null : emReaisPorBase(r.valor, r.unidade),
+      base: r.familia === null ? null : baseDaTraducao(r.unidade),
+      emReais:
+        r.valor === null || r.familia === null
+          ? null
+          : emReaisPorBase(r.valor, r.unidade),
     },
     formula: r.formula,
     definicao: r.decisao,

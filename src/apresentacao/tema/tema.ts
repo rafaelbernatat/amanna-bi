@@ -126,6 +126,37 @@ export function temaValido(candidato: string): candidato is Tema {
   return (TEMAS as readonly string[]).includes(candidato);
 }
 
+/**
+ * O atributo do `<html>` que forca um tema; sem ele vale o sistema.
+ *
+ * Os valores sao os proprios nomes de `TEMAS`, e nao `light` e `dark`. O
+ * painel de referencia usava os ingleses; o cookie e o `<html>` gravavam os
+ * nossos; a folha nunca casava com o documento, e o botao de tema nao fazia
+ * nada em nenhuma direcao (T-418). Nome e valor nascem daqui, e
+ * `seletorDoTema` e a unica forma de escreve-los numa folha — um teste
+ * reprova o valor escrito a mao, nos dois lados.
+ */
+export const ATRIBUTO_DO_TEMA = "data-tema";
+
+/** O seletor de atributo daquele tema, para a folha e para o teste. */
+export function seletorDoTema(tema: Tema): string {
+  return `[${ATRIBUTO_DO_TEMA}="${tema}"]`;
+}
+
+/**
+ * O atributo que marca cada formulario de troca com o tema que ele propoe.
+ *
+ * O servidor nao enxerga `prefers-color-scheme`, entao nao sabe qual dos dois
+ * botoes mostrar. Ele emite os dois, e a folha de `EstiloDoTema` esconde o que
+ * propoe a pele ja em vigor — sem JavaScript, e certo na primeira visita.
+ */
+export const ATRIBUTO_DO_ALVO_DO_TEMA = "data-tema-alvo";
+
+/** O seletor do formulario que propoe aquele tema. */
+export function seletorDoAlvoDoTema(tema: Tema): string {
+  return `[${ATRIBUTO_DO_ALVO_DO_TEMA}="${tema}"]`;
+}
+
 /** A tabela literal daquele tema, para o grafico e para a conta de contraste. */
 export function paletaDoTema(
   tema: Tema,

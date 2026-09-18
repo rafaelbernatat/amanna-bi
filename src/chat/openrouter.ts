@@ -34,7 +34,13 @@
  * instruções e a forma do que vai e do que volta.
  */
 
-import { conversar, jsonDaResposta } from "@/gateway/openrouter";
+import {
+  conversar,
+  jsonDaResposta,
+  modeloEmUso,
+  type AoFalhar,
+} from "@/gateway/openrouter";
+import { registrarIncidente } from "@/chat/incidente";
 import type { TurnoAnterior } from "@/chat/interpretar";
 import { REGRAS_DE_NUMERO } from "@/chat/regras";
 
@@ -47,7 +53,25 @@ export { gatewayConfigurado, modeloEmUso } from "@/gateway/openrouter";
  * modelo degrada a interpretação, que é onde erro vira número errado."*
  */
 const TETO_DE_SAIDA_INTERPRETACAO = 400;
-const TETO_DE_SAIDA_REDACAO = 1200;
+/** Subiu de 1.200 com T-433: dois ou três parágrafos, até doze frases. */
+const TETO_DE_SAIDA_REDACAO = 2000;
+
+/** O registro de uma falha do gateway, com o estágio que a sofreu (T-430). */
+function registrarFalha(
+  estagio: "interpretar" | "redigir" | "corrigir",
+): AoFalhar {
+  return (falha) => {
+    registrarIncidente({
+      tipo: "gateway_falhou",
+      detalhe: {
+        estagio,
+        modelo: modeloEmUso(),
+        status: falha.status,
+        erro: falha.erro,
+      },
+    });
+  };
+}
 
 /* ------------------------------------------------------------------ *
  * Estágio 1 · interpretar
@@ -147,6 +171,7 @@ export async function interpretarComGateway(
       { role: "user", content: `${conversaParaOModelo(historico)}${pergunta}` },
     ],
     TETO_DE_SAIDA_INTERPRETACAO,
+    registrarFalha("interpretar"),
   );
   if (texto === null) return null;
 
@@ -176,7 +201,8 @@ Recebe um resultado JÁ CALCULADO. Sua tarefa é explicar, não calcular.
 Regras que não se negociam:
 ${REGRAS_DE_NUMERO}
 
-A estrutura, nesta ordem, num só parágrafo de até oito frases:
+A estrutura, nesta ordem, em dois ou três parágrafos curtos e até doze
+frases no total, sem lista:
 1. O número e o período: "{metrica} foi {formatado} nos {periodo} até
    {fechamento}". Se "mes" não for nulo, o número é de UM MÊS SÓ: escreva
    "{metrica} foi {formatado} em {mes}", sem "nos {periodo}" e sem "até", e
@@ -193,6 +219,10 @@ A estrutura, nesta ordem, num só parágrafo de até oito frases:
    reais —, traduza em palavras, sem base e sem número novo: "é o faturamento
    mensal que cobre os custos fixos", "são os lançamentos que pedem um olhar
    antes do fechamento".
+2b. Se houver "grafico", um parágrafo sobre o que ele mostra: o pico e o
+   vale pelos "destaques" (rótulo e valor na mesma frase), o último ponto, e
+   a tendência em palavras (subiu, caiu, oscilou, ficou estável) — sem número
+   novo, sem média, sem diferença entre pontos.
 3. Se houver "comparacao", situe o número contra o custo do dinheiro com as
    "leituras": a referência pelo nome e valor ("CDI de 13,9% ao ano") e a
    diferença como está ("-5,6 p.p."; "ganho real de 3,7%"), sempre do ponto
@@ -231,6 +261,48 @@ A tela e o gráfico:
 - Se houver "leituras", são leituras adicionais já feitas para esta pergunta;
   cite-as pelo rótulo e pelo valor formatado, e nada além delas.`;
 
+/**
+ * A única rodada de correção (T-433).
+ *
+ * O verificador continua bloqueando: um texto com número fora do envelope
+ * não vai para a tela. O que muda é que, antes de cair no texto montado, o
+ * modelo recebe o próprio texto, os números recusados e a lista do que pode
+ * citar, e reescreve uma vez. O resultado passa pelo mesmo verificador; se
+ * falhar de novo, fica o montado, e os dois incidentes ficam registrados —
+ * a frequência continua medida.
+ */
+const INSTRUCAO_DE_CORRECAO = `O texto acima foi recusado porque cita números que não existem no
+resultado. Reescreva o texto INTEIRO, na mesma estrutura, citando SOMENTE
+valores da lista de permitidos, exatamente como escritos ali. Ponto de
+gráfico, de série ou de ranking só junto do rótulo, na mesma frase. Um número
+recusado sem equivalente na lista: tire a frase. Não explique a correção;
+devolva só o texto.`;
+
+export async function corrigirComGateway(
+  pergunta: string,
+  resultado: unknown,
+  textoRecusado: string,
+  erradas: readonly string[],
+  permitidos: readonly string[],
+): Promise<string | null> {
+  return conversar(
+    [
+      { role: "system", content: INSTRUCAO_DE_REDACAO },
+      {
+        role: "user",
+        content: `Pergunta: ${pergunta}\n\nResultado:\n${JSON.stringify(resultado, null, 2)}`,
+      },
+      { role: "assistant", content: textoRecusado },
+      {
+        role: "user",
+        content: `${INSTRUCAO_DE_CORRECAO}\n\nNúmeros recusados: ${erradas.join("; ")}\n\nPermitidos: ${permitidos.join(" | ")}`,
+      },
+    ],
+    TETO_DE_SAIDA_REDACAO,
+    registrarFalha("corrigir"),
+  );
+}
+
 /** Pede ao modelo o texto da resposta, a partir do resultado já calculado. */
 export async function redigirComGateway(
   pergunta: string,
@@ -245,5 +317,6 @@ export async function redigirComGateway(
       },
     ],
     TETO_DE_SAIDA_REDACAO,
+    registrarFalha("redigir"),
   );
 }

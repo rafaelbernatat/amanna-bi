@@ -45,6 +45,7 @@ import {
   PORTAS_DO_PRODUTO,
 } from "@/chat/ferramentas/executar";
 import { inspecionarSaida } from "@/chat/ferramentas/inspetor";
+import { fraseDePasso, PASSO_DE_REDACAO } from "@/chat/ferramentas/passos";
 import {
   LIMITE_MS_POR_RODADA,
   MAXIMO_DE_CHAMADAS,
@@ -67,10 +68,15 @@ import { destinoDaMetrica, metricasComDestino } from "@/chat/roteamento";
 import {
   conversarComFerramentas,
   gatewayConfigurado,
+  modeloEmUso,
   type Mensagem,
 } from "@/gateway/openrouter";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
-import type { DimensaoDeRanking, Query } from "@/semantica/contrato";
+import type {
+  DimensaoDeRanking,
+  PanelResponse,
+  Query,
+} from "@/semantica/contrato";
 
 /** O que o laço entrega: a resolução principal, com as leituras, e o texto. */
 export type Composta = {
@@ -78,6 +84,18 @@ export type Composta = {
   readonly resolucao: Resolucao;
   /** O texto que o modelo escreveu no próprio laço; `null` sem modelo. */
   readonly texto: string | null;
+};
+
+/**
+ * O que o laço conta enquanto trabalha (T-434).
+ *
+ * `aoAndamento` recebe uma frase por leitura e uma quando a redação começa.
+ * `aoPrevia` recebe a resolução da primeira leitura que nomeia uma métrica —
+ * é o que põe o número e o gráfico na tela enquanto o modelo ainda escreve.
+ */
+export type EventosDoLaco = {
+  readonly aoAndamento?: (passo: string) => void;
+  readonly aoPrevia?: (resolucao: Resolucao) => void;
 };
 
 /** A recusa útil de uma pergunta composta sem modelo. */
@@ -210,6 +228,36 @@ export function metricaPrincipal(
   return null;
 }
 
+/**
+ * O painel que a resposta composta desenha (T-432).
+ *
+ * Precedência: o gráfico que a pergunta pediu para explicar; senão a série
+ * lida; senão o ranking ou a decomposição, em barras; senão o painel da
+ * métrica principal, que `resolver` já escolheu. É a leitura que a pessoa
+ * pediu, e não a métrica de que ela deriva, que aparece na bolha.
+ */
+export function painelDaComposta(
+  leituras: readonly ResultadoDeFerramenta[],
+): PanelResponse | null {
+  for (const { leitura } of leituras) {
+    if (leitura.tipo === "grafico") return leitura.desenho;
+  }
+  for (const { leitura } of leituras) {
+    if (leitura.tipo === "serie") return leitura.desenho;
+  }
+  for (const { leitura } of leituras) {
+    if (leitura.tipo === "ranking" || leitura.tipo === "decomposicao") {
+      return leitura.desenho;
+    }
+  }
+  return null;
+}
+
+/** A identidade de uma métrica principal, para reaproveitar a prévia. */
+function chaveDe(p: { readonly metrica: string; readonly filtros: Query }) {
+  return `${p.metrica}|${JSON.stringify(p.filtros)}`;
+}
+
 /* ------------------------------------------------------------------ *
  * Sem gateway: o que ainda dá para responder
  * ------------------------------------------------------------------ */
@@ -285,6 +333,7 @@ export async function resolverComposta(
   contexto: ContextoDaTela,
   historico: readonly TurnoAnterior[],
   portas: Portas = PORTAS_DO_PRODUTO,
+  eventos: EventosDoLaco = {},
 ): Promise<Composta | CompostaRecusada | null> {
   const palpite = interpretarLocalmente(pergunta, contexto.filtros);
   const { sinais } = classificar(pergunta, palpite);
@@ -303,12 +352,42 @@ export async function resolverComposta(
     const resolucao = await resolver(principal.metrica, principal.filtros);
     return {
       tipo: "composta",
-      resolucao: { ...resolucao, leituras, caminho: "composto" },
+      resolucao: {
+        ...resolucao,
+        painel: painelDaComposta(leituras) ?? resolucao.painel,
+        leituras,
+        caminho: "composto",
+      },
       texto: null,
     };
   }
 
-  const executor = criarExecutor(contexto, portas);
+  /*
+   * A prévia cedo (T-434): na primeira leitura que nomeia uma métrica, a
+   * resolução principal é montada e entregue — número e gráfico chegam à
+   * tela enquanto o laço continua. Se a principal no fim for a mesma, a
+   * resolução é reaproveitada; senão, resolve-se de novo.
+   */
+  /*
+   * Um portador, e não um `let`: a atribuição acontece dentro do fechamento
+   * de `aoLida`, e a análise de fluxo do TypeScript não a enxerga — depois do
+   * laço ela estreitava a variável para `never`.
+   */
+  const guardada: {
+    previa: { readonly chave: string; readonly resolucao: Resolucao } | null;
+  } = { previa: null };
+  const executor = criarExecutor(contexto, portas, {
+    aoLeitura: (pedido) => eventos.aoAndamento?.(fraseDePasso(pedido)),
+    aoLida: async (resultado) => {
+      if (guardada.previa !== null || eventos.aoPrevia === undefined) return;
+      const primeira = metricaPrincipal([resultado], null, contexto.filtros);
+      if (primeira === null) return;
+      const resolucao = await resolver(primeira.metrica, primeira.filtros);
+      guardada.previa = { chave: chaveDe(primeira), resolucao };
+      eventos.aoPrevia(resolucao);
+    },
+  });
+  const modelo = modeloEmUso("ferramentas");
   const mensagens: readonly Mensagem[] = [
     { role: "system", content: INSTRUCAO_DO_LACO },
     {
@@ -337,6 +416,22 @@ export async function resolverComposta(
         }
         return bloqueio;
       },
+      modelo,
+      aoRodada: (rodada) => {
+        if (rodada > 1) eventos.aoAndamento?.(PASSO_DE_REDACAO);
+      },
+      aoFalhar: (falha, rodada) => {
+        registrarIncidente({
+          tipo: "gateway_falhou",
+          detalhe: {
+            estagio: "ferramentas",
+            modelo,
+            rodada,
+            status: falha.status,
+            erro: falha.erro,
+          },
+        });
+      },
     },
   );
 
@@ -344,6 +439,7 @@ export async function resolverComposta(
     registrarIncidente({
       tipo: "laco_falhou",
       detalhe: {
+        modelo,
         leituras: executor.leituras().length,
         recusadas: executor.recusadas(),
       },
@@ -355,10 +451,18 @@ export async function resolverComposta(
   const principal = metricaPrincipal(leituras, palpite, contexto.filtros);
   if (principal === null) return recusaUtil(palpite, true);
 
-  const resolucao = await resolver(principal.metrica, principal.filtros);
+  const resolucao =
+    guardada.previa !== null && guardada.previa.chave === chaveDe(principal)
+      ? guardada.previa.resolucao
+      : await resolver(principal.metrica, principal.filtros);
   return {
     tipo: "composta",
-    resolucao: { ...resolucao, leituras, caminho: "composto" },
+    resolucao: {
+      ...resolucao,
+      painel: painelDaComposta(leituras) ?? resolucao.painel,
+      leituras,
+      caminho: "composto",
+    },
     texto: resultado.texto,
   };
 }

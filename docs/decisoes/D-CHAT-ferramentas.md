@@ -128,9 +128,10 @@ quando T-324 decidir a retenção.
 
 ## O que fica pendente
 
-- **H-68**: o modelo do laço. A recomendação é um modelo que siga protocolo de
-  ferramentas com disciplina (Claude Sonnet via OpenRouter); o `gpt-4o` já
-  errou escala e inventou benchmark no caminho simples.
+- ~~**H-68**: o modelo do laço.~~ Resolvido em D-CHAT-resposta-completa
+  (2026-09-18): `anthropic/claude-sonnet-5`, e o corpo do laço sem
+  `parallel_tool_calls` — era o parâmetro, e não o modelo, que derrubava o
+  laço com 404.
 - `variacao` só contra o ano anterior: o vocabulário de período não tem "mês
   anterior". Com 2025 carregado (D-DADOS), a variação anual funciona; em
   fixtures, recusa dizendo que o ano não está carregado.

@@ -38,6 +38,7 @@ export const SINAIS = [
   "comparacao",
   "grafico",
   "catalogo",
+  "decomposicao",
   "causa",
 ] as const;
 export type Sinal = (typeof SINAIS)[number];
@@ -57,6 +58,7 @@ const COMPOSTOS: ReadonlySet<Sinal> = new Set<Sinal>([
   "comparacao",
   "grafico",
   "catalogo",
+  "decomposicao",
 ]);
 
 function normalizar(texto: string): string {
@@ -71,9 +73,11 @@ function normalizar(texto: string): string {
 /** Os padrões, sobre o texto sem acento e em minúsculas. */
 const PADROES: Readonly<Record<Sinal, RegExp>> = {
   ranking:
-    /\b(?:top ?\d*|maiores|menores|ranking|rank|principais (?:clientes|fornecedores|areas|centros|contas|segmentos|ufs?|estados)|quais (?:\w+ ){1,3}?(?:mais|menos)|por (?:cliente|fornecedor|centro de custo|centros de custo|area|areas|uf|estado|segmento|conta|linha da dre)s?)\b/,
+    /\b(?:top ?\d*|maiores|menores|ranking|rank|principais (?:clientes|fornecedores|areas|centros|contas|segmentos|ufs?|estados)|quais (?:\w+ ){1,3}?(?:mais|menos)|concentra\w*|participacao d[eo]s?|de cada (?:cliente|fornecedor|area|centro de custo|uf|estado|segmento|conta)s?|por (?:cliente|fornecedor|centro de custo|centros de custo|area|areas|uf|estado|segmento|conta|linha da dre)s?)\b/,
   serie:
-    /\b(?:mes a mes|evolucao|ao longo d[oe]|por mes|pior mes|melhor mes|tendencia|mensalmente|ultimos meses|cada mes|ao longo do ano|serie)\b/,
+    /\b(?:mes a mes|evolu\w+|ao longo d[oe]|por mes|pior mes|melhor mes|tendencia|mensalmente|ultimos meses|cada mes|ao longo do ano|no ano todo|historico|serie)\b/,
+  decomposicao:
+    /\b(?:distribui\w*|composicao|compoe\w*|abre por|quebra por|decomp\w+|por natureza|por linha da dre)\b/,
   variacao:
     /\b(?:cresceu|caiu|crescemos|caimos|crescimento|queda|em relacao a|comparad[oa] (?:com|ao|a)|versus|vs|variou|variacao|ano (?:anterior|passado)|sobre o ano)\b/,
   comparacao: /\b(?:compar\w+|lado a lado)\b/,

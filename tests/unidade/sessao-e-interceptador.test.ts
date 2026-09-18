@@ -249,6 +249,7 @@ const META: Meta = {
     limiteDefasagemHoras: LIMITE_PADRAO_DE_DEFASAGEM_HORAS,
     status: "ok",
   },
+  origem: { fonte: "fixtures", versao: null },
 };
 
 function fonteSimples(): DataSource {

@@ -1,11 +1,24 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { FormularioDeTema } from "@/apresentacao/shell/FormularioDeTema";
+import { EstiloDoTema } from "@/apresentacao/tema/EstiloDoTema";
 import {
+  ATRIBUTO_DO_ALVO_DO_TEMA,
+  ATRIBUTO_DO_TEMA,
   PALETA,
   PALETA_CLARA,
   PALETA_ESCURA,
   PARES_DE_CONTRASTE,
+  seletorDoAlvoDoTema,
+  seletorDoTema,
+  TEMAS,
   TIPOGRAFIA,
+  variavelDoTema,
 } from "@/apresentacao/tema/tema";
 
 /**
@@ -102,6 +115,87 @@ describe("Tema extraido do prototipo", () => {
     for (const par of PARES_DE_CONTRASTE) {
       expect(PALETA[par.frente], par.frente).toBeDefined();
       expect(PALETA[par.fundo], par.fundo).toBeDefined();
+    }
+  });
+});
+
+/**
+ * O atributo do tema e a folha nascem da mesma constante (T-418).
+ *
+ * O defeito que isto guarda: o documento escrevia `data-theme="claro"` e a
+ * folha esperava `"light"`. Nenhum dos dois estava errado sozinho, e o botao
+ * de tema nao fazia nada em nenhuma direcao. Nome e valor agora tem uma
+ * origem so, e estes casos reprovam o valor escrito a mao — nos dois lados.
+ */
+describe("O atributo do tema e a folha (T-418)", () => {
+  const folha = renderToStaticMarkup(createElement(EstiloDoTema, {}));
+
+  it("o seletor escreve o atributo com o proprio nome do tema", () => {
+    expect(ATRIBUTO_DO_TEMA).toBe("data-tema");
+    expect(seletorDoTema("escuro")).toBe('[data-tema="escuro"]');
+    expect(seletorDoAlvoDoTema("claro")).toBe(
+      `[${ATRIBUTO_DO_ALVO_DO_TEMA}="claro"]`,
+    );
+  });
+
+  it("a folha declara a pele escura pelos dois caminhos, com color-scheme", () => {
+    expect(folha).toContain(":root{color-scheme:light}");
+    expect(folha).toContain(
+      `@media (prefers-color-scheme:dark){:root:not(${seletorDoTema("claro")}){color-scheme:dark;`,
+    );
+    expect(folha).toContain(
+      `:root${seletorDoTema("escuro")}{color-scheme:dark;`,
+    );
+    // As 24 variaveis aparecem nos dois blocos, e em mais lugar nenhum.
+    const fundo = `${variavelDoTema("fundo")}:${PALETA_ESCURA.fundo}`;
+    expect(folha.split(fundo)).toHaveLength(3);
+  });
+
+  it("a folha mostra um botao so: o que propoe a outra pele", () => {
+    const propoeClaro = seletorDoAlvoDoTema("claro");
+    const propoeEscuro = seletorDoAlvoDoTema("escuro");
+    expect(folha).toContain(`${propoeClaro}{display:none}`);
+    expect(folha).toContain(
+      `:root${seletorDoTema("escuro")} ${propoeEscuro}{display:none}`,
+    );
+    expect(folha).toContain(
+      `:root${seletorDoTema("escuro")} ${propoeClaro}{display:flex}`,
+    );
+    expect(folha).toContain(
+      `:root:not(${seletorDoTema("claro")}) ${propoeEscuro}{display:none}`,
+    );
+  });
+
+  it("nem o documento nem a folha escrevem o atributo a mao", () => {
+    const layout = readFileSync(join("src", "app", "layout.tsx"), "utf8");
+    expect(layout).toContain("ATRIBUTO_DO_TEMA");
+    expect(layout).not.toMatch(/["']data-t(heme|ema)["']/);
+
+    const estilo = readFileSync(
+      join("src", "apresentacao", "tema", "EstiloDoTema.tsx"),
+      "utf8",
+    );
+    expect(estilo).toContain("seletorDoTema(");
+    expect(estilo).not.toMatch(/["'`]data-tema/);
+    expect(estilo).not.toMatch(/["'](light|dark)["']/);
+  });
+
+  it("cada formulario propoe um tema e leva o caminho de volta com o recorte", () => {
+    for (const alvo of TEMAS) {
+      const html = renderToStaticMarkup(
+        createElement(FormularioDeTema, {
+          alvo,
+          de: "/rh/visao?periodo=dezembro&painel=rh-hc",
+        }),
+      );
+      expect(html).toContain(`${ATRIBUTO_DO_ALVO_DO_TEMA}="${alvo}"`);
+      expect(html).toContain(`name="tema" value="${alvo}"`);
+      expect(html).toContain(
+        'value="/rh/visao?periodo=dezembro&amp;painel=rh-hc"',
+      );
+      expect(html).toContain(`data-teste="trocar-tema-para-${alvo}"`);
+      // O display nao vai inline: e a folha que decide qual dos dois aparece.
+      expect(html).not.toMatch(/<form[^>]*style=/);
     }
   });
 });

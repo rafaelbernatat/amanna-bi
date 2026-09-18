@@ -4,8 +4,9 @@ import type { ReactNode } from "react";
 
 import { EstiloDaMarca } from "@/apresentacao/tema/EstiloDaMarca";
 import { EstiloDoTema } from "@/apresentacao/tema/EstiloDoTema";
+import { ScriptDoTemaDoSistema } from "@/apresentacao/tema/ScriptDoTemaDoSistema";
 import { temaEscolhido } from "@/apresentacao/tema/ativo";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { ATRIBUTO_DO_TEMA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import { lerMarcaAtiva } from "@/marca/leitura";
 
 export const metadata: Metadata = {
@@ -49,8 +50,12 @@ export default async function RootLayout({
      * quem nunca escolheu forcaria o claro e anularia isso. Com escolha, o
      * seletor por atributo vence a consulta de midia, e por isso ele vem
      * depois na folha que `EstiloDoTema` emite.
+     *
+     * O nome do atributo e o valor vem de `tema.ts`, os mesmos que a folha
+     * usa (T-418): escritos a mao aqui e la, os dois divergiram uma vez e o
+     * botao de tema passou a nao fazer nada.
      */
-    <html lang="pt-BR" {...(tema === null ? {} : { "data-theme": tema })}>
+    <html lang="pt-BR" {...(tema === null ? {} : { [ATRIBUTO_DO_TEMA]: tema })}>
       <head>
         {/*
           O tema vem antes da marca: a marca vence o tema, e em CSS quem
@@ -58,6 +63,7 @@ export default async function RootLayout({
           ordem conta a historia certa.
         */}
         <EstiloDoTema {...(nonce === null ? {} : { nonce })} />
+        <ScriptDoTemaDoSistema {...(nonce === null ? {} : { nonce })} />
         <EstiloDaMarca
           cores={marca?.cores ?? null}
           {...(nonce === null ? {} : { nonce })}

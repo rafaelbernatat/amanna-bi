@@ -41,6 +41,7 @@ import {
 } from "@/chat/leitura";
 import type { MesNomeado } from "@/chat/mes";
 import { destinoDaMetrica } from "@/chat/roteamento";
+import { JANELA_DO_GRAFICO, painelDaSerie } from "@/chat/serie";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import type {
   PanelResponse,
@@ -413,14 +414,34 @@ export async function resolver(
     entrada.sentido as Sentido,
   );
 
-  const [valor, painel, apoio, referencias] = await Promise.all([
-    lerMetrica(metrica, consulta),
-    painelId === null ? Promise.resolve(null) : lerPainel(painelId, consulta),
-    lerApoio(metrica, consulta, apoioDe, mes),
-    familia === null || mes !== undefined
-      ? Promise.resolve<readonly TaxaDeReferencia[]>([])
-      : lerReferencias(),
-  ]);
+  /*
+   * O gráfico sintético (T-432): sem cartão na tela, a série mensal da própria
+   * métrica vira painel de linha. Com o período fora dos doze meses, a série
+   * do recorte tem um ponto só, e a métrica é lida de novo na janela de doze
+   * meses — só para o desenho; o valor da resposta é o do recorte pedido.
+   *
+   * Com mês nomeado a consulta já é a de doze meses, e a janela não é relida.
+   */
+  const janela: Query = { ...consulta, periodo: JANELA_DO_GRAFICO };
+  const precisaDaJanela =
+    painelId === null && consulta.periodo !== JANELA_DO_GRAFICO;
+
+  const [valor, painelDoCartao, apoio, referencias, valorDaJanela] =
+    await Promise.all([
+      lerMetrica(metrica, consulta),
+      painelId === null ? Promise.resolve(null) : lerPainel(painelId, consulta),
+      lerApoio(metrica, consulta, apoioDe, mes),
+      familia === null || mes !== undefined
+        ? Promise.resolve<readonly TaxaDeReferencia[]>([])
+        : lerReferencias(),
+      precisaDaJanela ? lerMetrica(metrica, janela) : Promise.resolve(null),
+    ]);
+
+  const painel =
+    painelDoCartao ??
+    (valorDaJanela === null
+      ? painelDaSerie(metrica, valor, consulta)
+      : painelDaSerie(metrica, valorDaJanela, janela));
 
   const doMes =
     mes === undefined ? valor.value : (valor.serie.values[mes.indice] ?? null);
@@ -444,10 +465,13 @@ export async function resolver(
               : "as taxas de referência são ao ano, e este é o número de um mês só",
         };
 
-  // Apoio cujo rótulo já veio como degrau do painel não entra duas vezes. Com
-  // mês nomeado os degraus do painel ficam de fora: são do ano, não do mês.
+  // Apoio cujo rótulo já veio como degrau do painel não entra duas vezes.
+  // Só o painel da tela decompõe; a série sintética não é composição. Com mês
+  // nomeado os degraus ficam de fora: são do ano, não do mês.
   const doPainel =
-    painel === null || mes !== undefined ? [] : consideracoesDo(painel);
+    painelDoCartao === null || mes !== undefined
+      ? []
+      : consideracoesDo(painelDoCartao);
   const rotulosDoPainel = new Set(doPainel.map((c) => c.rotulo));
 
   return {

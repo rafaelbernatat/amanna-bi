@@ -16,7 +16,12 @@ import {
   type PontoDoResumo,
   type ResumoDoPainel,
 } from "@/chat/grafico";
-import type { DimensaoDeRanking, Query, Unidade } from "@/semantica/contrato";
+import type {
+  DimensaoDeRanking,
+  PanelResponse,
+  Query,
+  Unidade,
+} from "@/semantica/contrato";
 
 /** Um valor com a sua forma escrita. */
 export type ValorFormatado = {
@@ -46,6 +51,8 @@ export type LeituraDeSerie = {
   readonly pontos: readonly PontoDoResumo[];
   readonly destaques: ResumoDoPainel["destaques"];
   readonly filtros: Query;
+  /** O envelope lido, para a conversa desenhar sem reler (T-432). */
+  readonly desenho: PanelResponse;
 };
 
 export type LeituraDeComparacao = {
@@ -91,12 +98,16 @@ export type LeituraDeRanking = {
   readonly formula: string;
   readonly asOf: string;
   readonly filtros: Query;
+  /** Os itens como barras horizontais, montadas do que foi lido (T-432). */
+  readonly desenho: PanelResponse;
 };
 
 export type LeituraDeGrafico = {
   readonly tipo: "grafico";
   readonly resumo: ResumoDoPainel;
   readonly filtros: Query;
+  /** O envelope lido, para a conversa desenhar sem reler (T-432). */
+  readonly desenho: PanelResponse;
 };
 
 export type LeituraDeCatalogo = {
