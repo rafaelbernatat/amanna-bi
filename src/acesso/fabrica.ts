@@ -13,10 +13,25 @@
  * substituível sem que ninguém perceba.
  */
 
-import type { DataSource } from "@/semantica/contrato";
+import type { DataSource, OrigemDeDado } from "@/semantica/contrato";
 
-/** Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação. */
-export const FONTES = ["fixtures", "warehouse"] as const;
+/**
+ * Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação.
+ *
+ * É a mesma lista que `Meta.origem` declara (T-419), e o `satisfies` é o que
+ * amarra as duas: um nome fora de `OrigemDeDado` não compila.
+ *
+ * Literal, e não `= ORIGENS_DE_DADO`. Foi assim por uma tarde, e o servidor
+ * de desenvolvimento avaliou este módulo antes de o contrato expor a lista:
+ * `FONTES` chegou indefinido a `lerFonte`, e todo pedido do chat caiu em
+ * "erro de fonte" sem tocar o banco. O build de produção tolerava; o
+ * Turbopack não. Só tipos atravessam esta fronteira em tempo de execução, e
+ * um teste de arquitetura passou a exigir isso.
+ */
+export const FONTES = [
+  "fixtures",
+  "warehouse",
+] as const satisfies readonly OrigemDeDado[];
 export type Fonte = (typeof FONTES)[number];
 
 export class FonteInvalida extends Error {

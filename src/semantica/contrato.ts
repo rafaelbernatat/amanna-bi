@@ -182,7 +182,30 @@ export type Frescor = {
   readonly status: EstadoDeFrescor;
 };
 
-/** O que `getMeta()` devolve: dimensões, catálogo e frescor. */
+/**
+ * De onde os números vieram (T-419).
+ *
+ * É a única parte de `Meta` que **pode** diferir entre os dois modos, e por
+ * isso a suíte de contrato não a compara. Existe para a tela dizer se o que
+ * mostra é a base carregada ou a demonstração — sem isto os dois eram
+ * indistinguíveis, porque a fixture carimba o instante da própria leitura
+ * como último sync.
+ */
+export const ORIGENS_DE_DADO = ["fixtures", "warehouse"] as const;
+export type OrigemDeDado = (typeof ORIGENS_DE_DADO)[number];
+
+export type Origem = {
+  readonly fonte: OrigemDeDado;
+  /** A versão da carga, texto livre de quem carregou; `null` na fixture. */
+  readonly versao: string | null;
+};
+
+/** A origem com o instante do último sync, como o cabeçalho a mostra. */
+export type OrigemDosDados = Origem & {
+  readonly sincronizadoEm: string;
+};
+
+/** O que `getMeta()` devolve: dimensões, catálogo, frescor e origem. */
 export type Meta = {
   /** As dimensões disponíveis — inclusive quais anos existem (D-P8). */
   readonly dimensoes: Dimensoes;
@@ -203,6 +226,8 @@ export type Meta = {
   /** Ids das métricas do catálogo disponíveis nesta instalação. */
   readonly metricas: readonly string[];
   readonly frescor: Frescor;
+  /** De onde os números vieram (T-419). */
+  readonly origem: Origem;
 };
 
 /** Um cartão de KPI. O valor vem daqui e de lugar nenhum mais (RF-07). */

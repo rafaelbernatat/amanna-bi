@@ -36,7 +36,7 @@ const AGORA = new Date("2026-12-31T09:00:00Z");
 
 const META = calcularMeta(
   BASE_DE_FIXTURES,
-  { sincronizadoEm: AGORA.toISOString() },
+  { sincronizadoEm: AGORA.toISOString(), fonte: "fixtures", versao: null },
   AGORA,
 );
 
@@ -236,5 +236,20 @@ describe("falha de fonte devolve erro tipado, nunca dado parcial", () => {
     const resultado = await leitor.ler(AGORA).catch((e: unknown) => e);
     expect(resultado).toBeInstanceOf(MetaIndisponivel);
     expect(resultado).not.toHaveProperty("dimensoes");
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * 5 · A origem
+ * ------------------------------------------------------------------ */
+
+describe("getMeta diz de onde os números vieram (T-419)", () => {
+  it("o motor copia o que o adaptador declarou, sem inventar", () => {
+    expect(META.origem).toEqual({ fonte: "fixtures", versao: null });
+  });
+
+  it("a fonte de fixtures se declara como demonstração, sem versão de carga", async () => {
+    const meta = await criarFonteDeFixtures().getMeta();
+    expect(meta.origem).toEqual({ fonte: "fixtures", versao: null });
   });
 });

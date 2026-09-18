@@ -403,3 +403,26 @@ describe("T-106 · fronteira de camadas", () => {
     expect(infratores).toEqual([]);
   });
 });
+
+/**
+ * A fábrica só importa **tipos** de `semantica` (T-419).
+ *
+ * `export const FONTES = ORIGENS_DE_DADO` compilava, passava em toda suíte e
+ * quebrava no servidor de desenvolvimento: o chunk avaliava a fábrica antes de
+ * o contrato expor a lista, `FONTES` chegava indefinido a `lerFonte`, e cada
+ * pedido do chat caía em "erro de fonte" sem tocar o banco. O build de
+ * produção tolerava a ordem; o Turbopack não. O que atravessa esta fronteira
+ * em tempo de execução é nada — e este caso reprova o dia em que alguém
+ * esquecer.
+ */
+describe("a fábrica não importa valor de semantica", () => {
+  it("toda importação de @/semantica em fabrica.ts é só de tipo", () => {
+    const fonte = readFileSync(join("src", "acesso", "fabrica.ts"), "utf8");
+    const importacoes =
+      fonte.match(/^import [^;]+ from "@\/semantica\/[^"]+";/gm) ?? [];
+    expect(importacoes.length).toBeGreaterThan(0);
+    for (const linha of importacoes) {
+      expect(linha, linha).toMatch(/^import type /);
+    }
+  });
+});

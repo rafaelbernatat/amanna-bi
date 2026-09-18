@@ -206,3 +206,15 @@ test.describe("O shell", () => {
     expect(vazando).toBe(0);
   });
 });
+
+test.describe("A origem dos dados (T-419)", () => {
+  test("o cabecalho diz de onde vem o numero; no arnes, e demonstracao", async ({
+    page,
+  }) => {
+    await page.goto("/rh/visao");
+    const origem = page.locator('[data-teste="origem-dos-dados"]');
+    await expect(origem).toBeVisible();
+    await expect(origem).toHaveAttribute("data-fonte", "fixtures");
+    await expect(origem).toHaveText("Dados de demonstração");
+  });
+});

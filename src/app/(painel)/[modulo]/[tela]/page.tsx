@@ -2,11 +2,15 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
-import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
+import {
+  lerKpisDaTela,
+  lerOrigemDosDados,
+  lerPainelParaTela,
+} from "@/acesso/leitura";
 import { Destaque } from "@/apresentacao/chat/Destaque";
 import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
 import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
-import { peleAtiva } from "@/apresentacao/tema/ativo";
+import { temaAtivo } from "@/apresentacao/tema/ativo";
 import { lerCoresAplicadas } from "@/marca/tela";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
@@ -14,7 +18,7 @@ import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
 import { MODULOS, acharTela } from "@/apresentacao/navegacao/telas";
 import { Cabecalho } from "@/apresentacao/shell/Cabecalho";
 import { lerCabecalhoDaInstalacao } from "@/marca/tela";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import { PALETA, TIPOGRAFIA, paletaDoTema } from "@/apresentacao/tema/tema";
 import type { Query } from "@/semantica/contrato";
 import { COLUNAS_DA_GRADE, paineisDaTela } from "@/semantica/paineis";
 import { PARAMETROS, buscaParaQuery, rotaCom } from "@/semantica/url";
@@ -168,8 +172,13 @@ export default async function Pagina({
    */
   const chaveDaUrl = `${rota}?${busca.toString()}`;
 
-  // Quem entrou e qual a marca da instalacao. A apresentacao recebe pronto.
-  const instalacao = await lerCabecalhoDaInstalacao();
+  // Quem entrou, qual a marca da instalacao, de onde vem o dado e em que
+  // pele desenhar. A apresentacao recebe tudo pronto.
+  const [instalacao, origem, tema] = await Promise.all([
+    lerCabecalhoDaInstalacao(),
+    lerOrigemDosDados(),
+    temaAtivo(),
+  ]);
 
   return (
     <div
@@ -190,6 +199,7 @@ export default async function Pagina({
         conta={instalacao.conta}
         nome={instalacao.nome}
         logo={instalacao.logo}
+        origem={origem}
       />
 
       <main
@@ -237,7 +247,7 @@ export default async function Pagina({
         */}
         <FaixaDeKpis
           kpis={await lerKpisDaTela(rota.slice(1), query)}
-          pele={await peleAtiva()}
+          pele={paletaDoTema(tema)}
         />
 
         {avisos.length > 0 ? (
@@ -324,11 +334,13 @@ async function PaineisDaTela({
     Promise.all(registro.map((p) => lerPainelParaTela(p.id, query))),
     lerCoresAplicadas(),
   ]);
-  const pele = await peleAtiva();
+  const tema = await temaAtivo();
+  const pele = paletaDoTema(tema);
 
   return (
     <div
       data-teste="grade-de-paineis"
+      data-pele={tema}
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${String(COLUNAS_DA_GRADE)}, minmax(0, 1fr))`,

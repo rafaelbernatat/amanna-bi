@@ -60,6 +60,12 @@ describe.skipIf(PASTA === undefined || PASTA === "")(
       expect(meta.frescor.asOf).toBe("2026-12-31");
     });
 
+    it("getMeta se declara como a base carregada, com a versão da carga (T-419)", async () => {
+      const meta = await fonte.getMeta();
+      expect(meta.origem.fonte).toBe("warehouse");
+      expect(typeof meta.origem.versao).toBe("string");
+    });
+
     it.each(Object.entries(DICIONARIO) as [keyof typeof DICIONARIO, number][])(
       "%s de 2026 consolidado bate com o dicionário",
       async (metrica, esperado) => {
