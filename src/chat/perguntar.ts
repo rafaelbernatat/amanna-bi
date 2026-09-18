@@ -42,6 +42,7 @@ import {
   type ContextoDaTela,
 } from "@/chat/contexto";
 import { paraOModeloLeitura } from "@/chat/ferramentas/executar";
+import { mesDaPergunta, pontoDoMes } from "@/chat/mes";
 import { RAIO_DO_ROTULO } from "@/chat/ferramentas/limites";
 import {
   fraseDe,
@@ -49,7 +50,7 @@ import {
   numerosDoResumo,
   type NumeroPermitido,
 } from "@/chat/ferramentas/resultado";
-import { resumirPainel } from "@/chat/grafico";
+import { resumirPainel, variantesDoRotulo } from "@/chat/grafico";
 import { registrarIncidente } from "@/chat/incidente";
 import {
   CONFIANCA_MINIMA,
@@ -276,6 +277,18 @@ function numerosPermitidos(
   guardar(r.valor, r.unidade);
   for (const c of r.consideracoes) guardar(c.valor, c.unidade);
   for (const t of r.referencias) guardar(t.valor, "pct");
+  // O mês que a pergunta nomeou é o número principal da resposta: livre.
+  if (r.pontoPedido !== null)
+    guardar(r.pontoPedido.valor, r.pontoPedido.unidade);
+  // Os demais meses da série, só junto do rótulo, como todo ponto (RF-15).
+  for (const ponto of r.serieMensal) {
+    if (ponto.formatado !== null) {
+      permitir(permitidos, {
+        texto: ponto.formatado,
+        rotulos: variantesDoRotulo(ponto.rotulo),
+      });
+    }
+  }
 
   // O que veio escrito no material: repetir não é inventar.
   const material = [
@@ -411,7 +424,15 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
   if (r.caminho === "degradado") linhas.push(AVISO_DE_DEGRADACAO);
   // As leituras do laço vêm primeiro: são o que a pergunta composta pediu.
   for (const { leitura } of r.leituras) linhas.push(fraseDe(leitura));
-  linhas.push(`${r.rotulo}: ${valor}.`);
+  if (r.pontoPedido === null) {
+    linhas.push(`${r.rotulo}: ${valor}.`);
+  } else {
+    // O mês perguntado abre; o recorte inteiro vem como contexto (T-439).
+    linhas.push(
+      `${r.rotulo} em ${r.pontoPedido.rotulo}: ${r.pontoPedido.formatado ?? "sem dado"}.`,
+    );
+    linhas.push(`${r.rotulo} no recorte inteiro: ${valor}.`);
+  }
 
   const doPainel = r.consideracoes.filter((c) => c.origem === "painel");
   const deApoio = r.consideracoes.filter((c) => c.origem === "apoio");
@@ -789,6 +810,38 @@ export async function resolverPergunta(
   const intencao = await interpretar(pergunta, atuais, historico);
 
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
+    /*
+     * O laço na dúvida (T-436). Nada casou de primeira, mas a pergunta pode
+     * ser sobre o dado com outras palavras — "quanto entrou de caixa em
+     * março?", "quantos clientes novos?". Com gateway, o laço de ferramentas
+     * busca no catálogo (`listar_metricas`) e lê antes de qualquer recusa; a
+     * recusa útil continua sendo o que sai quando nem ele conclui.
+     */
+    if (!degradada && lacoNaDuvidaLigado(process.env) && gatewayConfigurado()) {
+      const tentativa = await resolverComposta(
+        pergunta,
+        contexto,
+        historico,
+        undefined,
+        eventos,
+      );
+      const concluiu = tentativa !== null && tentativa.tipo !== "recusa";
+      registrarIncidente({
+        tipo: "laco_na_duvida",
+        detalhe: { modelo: modeloEmUso("ferramentas"), concluiu },
+      });
+      if (tentativa !== null && tentativa.tipo !== "recusa") {
+        const resolucao = comOMesPedido(tentativa.resolucao, pergunta);
+        return tentativa.texto === null
+          ? { tipo: "resolvida", resolucao }
+          : {
+              tipo: "resolvida",
+              resolucao,
+              redacao: { texto: tentativa.texto, autoria: "modelo" },
+            };
+      }
+    }
+
     // Nada casou (local) ou o modelo recusou: não há métrica para oferecer.
     const recusou = intencao === null || intencao.metrica === "";
     const propria: readonly string[] =
@@ -814,7 +867,10 @@ export async function resolverPergunta(
   }
 
   try {
-    const resolucao = await resolver(intencao.metrica, intencao.filtros);
+    const resolucao = comOMesPedido(
+      await resolver(intencao.metrica, intencao.filtros),
+      pergunta,
+    );
     return {
       tipo: "resolvida",
       resolucao: degradada ? { ...resolucao, caminho: "degradado" } : resolucao,
@@ -833,6 +889,27 @@ export async function resolverPergunta(
     }
     throw erro;
   }
+}
+
+/**
+ * O laço na dúvida vale por padrão quando há gateway; `CHAT_LACO_NA_DUVIDA=0`
+ * desliga, e a pergunta sem métrica recebe a recusa útil direto (T-436).
+ */
+export function lacoNaDuvidaLigado(
+  ambiente: Record<string, string | undefined>,
+): boolean {
+  const valor = ambiente["CHAT_LACO_NA_DUVIDA"]?.trim().toLowerCase();
+  return valor !== "0" && valor !== "nao" && valor !== "false";
+}
+
+/**
+ * A resolução com o ponto do mês que a pergunta nomeou, quando nomeou um e
+ * a série o tem (T-439). Sem mês, a resolução volta como veio.
+ */
+export function comOMesPedido(r: Resolucao, pergunta: string): Resolucao {
+  const pedido = mesDaPergunta(pergunta);
+  if (pedido === null) return r;
+  return { ...r, pontoPedido: pontoDoMes(r.serieMensal, pedido) };
 }
 
 /**
@@ -979,6 +1056,19 @@ export function paraOModelo(r: Resolucao, contexto?: ContextoDaTela): unknown {
     leituras: r.leituras.map((l) => paraOModeloLeitura(l.leitura)),
     metrica: r.rotulo,
     valor: { bruto: r.valor, formatado: formatado(r.valor, r.unidade) },
+    /*
+     * O mês que a pergunta nomeou, e a série mensal da própria métrica
+     * (T-439). Só o formatado: o bruto ao lado é convite para arredondar de
+     * outro jeito.
+     */
+    pontoPedido:
+      r.pontoPedido === null
+        ? null
+        : { rotulo: r.pontoPedido.rotulo, valor: r.pontoPedido.formatado },
+    serieMensal: r.serieMensal.map((ponto) => ({
+      rotulo: ponto.rotulo,
+      valor: ponto.formatado,
+    })),
     periodo: rotuloDe("periodo", r.acoes.filtros.periodo),
     fechamento: formatarMesAno(r.asOf),
     leitura: r.familia,

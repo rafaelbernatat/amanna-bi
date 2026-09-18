@@ -161,3 +161,27 @@ nome da exceção, a mensagem curta e três quadros da pilha. `laco_degradou` e
   não sobe sem `DATA_SOURCE` e `AUTH_PROVIDER` (H-69). Fica com H-68.
 - A taxa de `verificador_recusou` com o texto mais longo é medida em produção
   antes de qualquer afrouxamento; a rodada de correção é a resposta prevista.
+
+## Ajustes depois do primeiro uso em produção (2026-09-18, tarde)
+
+Produto mandou o print de "Quanto faturamos em abril?": a resposta abria com o
+total de doze meses, dizia abril só no parágrafo do gráfico e fechava com
+"retorno sobre a receita líquida de 100,0%, 86,3 p.p. acima da Selic". Três
+correções, cada uma com tarefa:
+
+- **O mês perguntado abre a resposta (T-439).** `mesDaPergunta` reconhece o
+  mês no texto; a resolução carrega a série mensal da própria métrica e o
+  ponto pedido; a instrução manda abrir com ele e o texto montado faz o mesmo.
+  O recorte da URL continua sem "abril" — o gráfico e a tela seguem no período
+  da seção 6.2 —, mas a conversa responde o que foi perguntado.
+- **A comparação com juros só para resultado de verdade (T-440).** A família
+  `resultado` era "reais e maior é melhor", o que incluía a receita — e
+  receita dividida por receita é 100%. Virou lista fechada: lucro, EBITDA,
+  resultado operacional, margem de contribuição em reais. Receita, saldo,
+  patrimônio e caixa gerado ficam sem comparação, com o motivo dito.
+- **O laço na dúvida, ligado por padrão (T-436).** "A IA precisa responder
+  qualquer pergunta relacionada aos dados com números reais": a pergunta que o
+  catálogo não casa de primeira vai ao laço de ferramentas, que busca a métrica
+  e lê, antes de qualquer recusa. Custa uma ida ao modelo do laço por pergunta
+  sem métrica; `CHAT_LACO_NA_DUVIDA=0` desliga. A recusa útil continua sendo o
+  que sai quando nem o laço conclui.

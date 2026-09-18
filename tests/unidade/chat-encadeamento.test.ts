@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import {
   interpretarLocalmente,
@@ -22,6 +30,12 @@ import { QUERY_PADRAO } from "@/semantica/contrato";
 beforeAll(() => {
   process.env["DATA_SOURCE"] = "fixtures";
   process.env["AUTH_PROVIDER"] = "fixtures";
+});
+
+// O laco na duvida (T-436) e de chat-laco-na-duvida.test.ts; aqui a recusa
+// continua sendo recusa, sem ir ao laco.
+beforeEach(() => {
+  vi.stubEnv("CHAT_LACO_NA_DUVIDA", "0");
 });
 
 vi.mock("@/chat/openrouter", () => ({

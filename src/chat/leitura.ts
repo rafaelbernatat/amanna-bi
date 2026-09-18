@@ -17,7 +17,7 @@
  */
 
 import type { TaxaDeReferencia } from "@/acesso/referencias/sgs";
-import type { Sentido, Unidade } from "@/semantica/contrato";
+import type { Unidade } from "@/semantica/contrato";
 
 export type Familia =
   | "resultado"
@@ -28,8 +28,24 @@ export type Familia =
   | "cobertura"
   | "qualidade";
 
-/** As famílias que não saem de unidade + sentido. */
+/**
+ * A família de cada métrica que tem uma.
+ *
+ * `resultado` é lista fechada, e não "valor em reais que é melhor maior":
+ * a regra por unidade e sentido punha a receita aqui, e a leitura saía
+ * "retorno sobre a receita líquida: 100,0%, 86,3 p.p. acima da Selic" — um
+ * número certo numa frase que não diz nada (2026-09-18). Receita é a base do
+ * retorno, não um resultado sobre ela; saldo e patrimônio são estoque; um
+ * valor por colaborador não se lê contra juros; caixa gerado é fluxo, e
+ * "geração operacional 44% acima da Selic" também não diz nada. Resultado é
+ * o que sobra, ou falta, sobre a receita que o gerou.
+ */
 export const FAMILIA: Readonly<Record<string, Familia>> = {
+  lucro_liquido: "resultado",
+  ebitda: "resultado",
+  resultado_operacional_liquido: "resultado",
+  margem_de_contribuicao_valor: "resultado",
+  resultado_com_receita_10_menor: "resultado",
   roe: "retorno",
   roa: "retorno",
   roic: "retorno",
@@ -53,16 +69,8 @@ export const FAMILIA: Readonly<Record<string, Familia>> = {
   movimentacao_com_partes_relacionadas: "qualidade",
 };
 
-export function familiaDe(
-  id: string,
-  unidade: Unidade,
-  sentido: Sentido,
-): Familia | null {
-  const declarada = FAMILIA[id];
-  if (declarada !== undefined) return declarada;
-  // A regra de antes: resultado em reais, e só resultado — não custo.
-  if (unidade === "BRL_mi" && sentido === "maior_melhor") return "resultado";
-  return null;
+export function familiaDe(id: string): Familia | null {
+  return FAMILIA[id] ?? null;
 }
 
 /**

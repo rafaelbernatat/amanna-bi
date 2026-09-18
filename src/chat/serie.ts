@@ -28,6 +28,8 @@
  */
 
 import { mesesDoRecorte } from "@/acesso/calculo/recorte";
+import { formatarValor } from "@/apresentacao/formato/formato";
+import { rotuloDeCategoria, type PontoDoResumo } from "@/chat/grafico";
 import type { LeituraDeRanking } from "@/chat/ferramentas/resultado";
 import { ROTULO_DA_DIMENSAO } from "@/chat/ferramentas/passos";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
@@ -97,6 +99,29 @@ export function painelDaSerie(
     categories: categorias,
     series: [serie],
   };
+}
+
+/**
+ * A série mensal como pontos rotulados ("abr/2026"), um por mês do recorte
+ * (T-439). É de onde sai o mês que a pergunta nomeou, e cada ponto passa no
+ * verificador junto do rótulo. Vazio quando a série não alinha com os meses.
+ */
+export function pontosDaSerie(
+  valor: MetricValue,
+  consulta: Query,
+): readonly PontoDoResumo[] {
+  const categorias = mesesDoRecorte(consulta);
+  const { serie } = valor;
+  if (serie.values.length !== categorias.length) return [];
+  return categorias.map((categoria, i) => {
+    const v = serie.values[i] ?? null;
+    return {
+      rotulo: rotuloDeCategoria(categoria),
+      valor: v,
+      unidade: valor.unit,
+      formatado: v === null ? null : formatarValor(v, valor.unit),
+    };
+  });
 }
 
 /** O ranking lido pelo laço como barras horizontais, item a item. */

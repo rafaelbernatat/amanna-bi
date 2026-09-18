@@ -40,14 +40,10 @@ import {
   type Familia,
 } from "@/chat/leitura";
 import { destinoDaMetrica } from "@/chat/roteamento";
-import { JANELA_DO_GRAFICO, painelDaSerie } from "@/chat/serie";
+import type { PontoDoResumo } from "@/chat/grafico";
+import { JANELA_DO_GRAFICO, painelDaSerie, pontosDaSerie } from "@/chat/serie";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
-import type {
-  PanelResponse,
-  Query,
-  Sentido,
-  Unidade,
-} from "@/semantica/contrato";
+import type { PanelResponse, Query, Unidade } from "@/semantica/contrato";
 
 export type { ComparacaoComJuros, Leitura } from "@/chat/leitura";
 
@@ -98,6 +94,14 @@ export type Resolucao = {
   };
   /** As views que sustentam o número, para auditoria (seção 11). */
   readonly fontes: readonly string[];
+  /**
+   * A série mensal da própria métrica, ponto a ponto, na janela de doze meses
+   * quando o recorte tem menos (T-439). É de onde sai o mês perguntado, e o
+   * verificador aceita cada ponto junto do rótulo.
+   */
+  readonly serieMensal: readonly PontoDoResumo[];
+  /** O ponto do mês que a pergunta nomeou, quando nomeou um e ele existe. */
+  readonly pontoPedido: PontoDoResumo | null;
   /** O envelope do painel citado, que a tela desenha sem reler. */
   readonly painel: PanelResponse | null;
   /**
@@ -265,7 +269,7 @@ async function compararComJuros(
         comparacao: null,
         porque:
           unidade === "BRL_mi"
-            ? "a comparação com juros vale para resultado, e esta métrica é de custo"
+            ? "a comparação com juros vale para resultado (lucro, EBITDA), e esta métrica é receita, saldo, caixa ou custo"
             : "esta métrica não se lê contra juros",
       };
 
@@ -361,11 +365,7 @@ export async function resolver(
 
   const destino = destinoDaMetrica(metrica);
   const painelId = destino?.painel ?? null;
-  const familia = familiaDe(
-    metrica,
-    entrada.unidade,
-    entrada.sentido as Sentido,
-  );
+  const familia = familiaDe(metrica);
 
   /*
    * O gráfico sintético (T-432): sem cartão na tela, a série mensal da própria
@@ -432,6 +432,11 @@ export async function resolver(
       painel: painelId,
     },
     fontes: [entrada.fonte],
+    serieMensal:
+      valorDaJanela === null
+        ? pontosDaSerie(valor, consulta)
+        : pontosDaSerie(valorDaJanela, janela),
+    pontoPedido: null,
     painel,
     leituras: [],
     caminho: "simples",

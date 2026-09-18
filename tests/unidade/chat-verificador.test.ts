@@ -79,6 +79,8 @@ function roe(parcial: Partial<Resolucao> = {}): Resolucao {
       ],
       base: null,
     },
+    serieMensal: [],
+    pontoPedido: null,
     comparacaoIndisponivelPorque: null,
     acoes: { filtros: QUERY_PADRAO, tela: null, painel: null },
     fontes: ["vw_fato_balanco_mes"],
@@ -100,6 +102,8 @@ function liquidez(): Resolucao {
     familia: "liquidez",
     referencias: [],
     comparacao: null,
+    serieMensal: [],
+    pontoPedido: null,
     comparacaoIndisponivelPorque:
       "esta métrica se lê pelo próprio múltiplo, não contra juros",
   });
