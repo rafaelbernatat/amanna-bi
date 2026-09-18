@@ -426,6 +426,8 @@ export const MOTIVOS_DE_ENTRADA = [
   // A porta por senha (src/seguranca/senha.ts): errada, e tentada demais.
   "senha",
   "tentativas",
+  // A plateia do QR pediu uma tela do painel: so a senha abre (T-429).
+  "plateia",
 ] as const;
 export type MotivoDeEntrada = (typeof MOTIVOS_DE_ENTRADA)[number];
 
@@ -547,28 +549,50 @@ export async function decidirAcesso(e: EntradaDaRequisicao): Promise<Acesso> {
       : await verificarSessao(e.cookie, segredo, e.agoraSegundos);
   if (sessao !== null) {
     /*
-     * O publico do QR fica no chat (T-429): tela do painel leva de volta a
-     * conversa, e rota de dados fora da lista e negada. Nao e o controle — o
-     * layout do painel confere de novo, porque o prefetch pula o proxy —, e a
-     * negacao cedo.
+     * O publico do QR fica no chat (T-429). Fora da conversa e do que ela
+     * precisa, a pagina vai para a **entrada por senha**, com o motivo
+     * `plateia` — e nao de volta a conversa. Produto pediu (2026-09-18) que
+     * o endereco do produto mostre a senha a quem apresenta, e o navegador de
+     * quem apresenta pode estar carregando uma sessao de plateia, de um QR
+     * aberto para testar; a tela de entrada oferece o caminho de volta a
+     * conversa para quem e plateia mesmo. Rota de dados fora da lista e
+     * negada. Nao e o controle — o layout do painel confere de novo, porque
+     * o prefetch pula o proxy —, e a negacao cedo.
      */
     if (!ehSessaoDoPublico(sessao) || permitidoAoPublico(e.caminho)) {
       return { tipo: "seguir" };
     }
     if (e.caminho.startsWith("/api/")) return { tipo: "negar" };
-    return { tipo: "redirecionar", para: CAMINHO_DA_CONVERSA };
+    return { tipo: "redirecionar", para: caminhoDaEntrada("plateia", e) };
   }
 
   if (e.caminho.startsWith("/api/")) return { tipo: "negar" };
 
-  const motivo: MotivoDeEntrada = e.cookie === null ? "sem-sessao" : "expirado";
+  return {
+    tipo: "redirecionar",
+    para: caminhoDaEntrada(e.cookie === null ? "sem-sessao" : "expirado", e),
+  };
+}
+
+/**
+ * A URL da tela de entrada com o motivo e, quando ha, o destino pedido —
+ * para a pessoa voltar a tela que queria depois de entrar.
+ */
+export function caminhoDaEntrada(
+  motivo: MotivoDeEntrada,
+  pedido?: Pick<EntradaDaRequisicao, "caminho" | "busca">,
+): string {
   const destino = new URLSearchParams();
   destino.set(PARAMETRO_DE_MOTIVO, motivo);
-  destino.set(
-    PARAMETRO_DE_DESTINO,
-    e.busca === "" ? e.caminho : `${e.caminho}?${e.busca}`,
-  );
-  return { tipo: "redirecionar", para: `/entrar?${destino.toString()}` };
+  if (pedido !== undefined) {
+    destino.set(
+      PARAMETRO_DE_DESTINO,
+      pedido.busca === ""
+        ? pedido.caminho
+        : `${pedido.caminho}?${pedido.busca}`,
+    );
+  }
+  return `/entrar?${destino.toString()}`;
 }
 
 export type Entrada =

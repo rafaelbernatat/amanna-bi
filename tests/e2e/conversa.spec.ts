@@ -283,16 +283,30 @@ test.describe("o convidado do QR (D-CONVIDADO-cadastro)", () => {
     await expect(page.locator('[data-teste="convite-dreamy"]')).toBeVisible();
   });
 
-  test("abrir uma tela do painel no celular volta a conversa", async ({
+  test("abrir uma tela do painel no celular leva a entrada por senha, com a volta a conversa", async ({
     page,
   }) => {
     await entrarPeloQr(page, "rh/visao");
     await cadastrar(page, "Carla Dias", "carla@exemplo.com.br");
     await expect(page.locator('[data-teste="chat"]')).toBeVisible();
 
+    // A sessao do QR nao abre o painel: so a senha abre (T-429). Quem e
+    // plateia mesmo tem o caminho de volta a conversa, e o cadastro fica.
     await page.goto("/rh/visao");
-    await expect(page).toHaveURL(/\/conversa\?/);
+    await expect(page).toHaveURL(/\/entrar\?motivo=plateia/);
+    await expect(page.locator('[data-teste="entrar"]')).toHaveAttribute(
+      "data-motivo",
+      "plateia",
+    );
+    await expect(page.locator('[data-teste="frase-da-entrada"]')).toContainText(
+      "senha",
+    );
+    await page.locator('[data-teste="voltar-a-conversa"]').click();
+    await expect(page).toHaveURL(/\/conversa/);
     await expect(page.locator('[data-teste="chat"]')).toBeVisible();
+    await expect(page.locator('[data-teste="chat-quem"]')).toContainText(
+      "Carla",
+    );
   });
 
   test("quando a sessao vence, o mesmo convite abre pelo relogio", async ({

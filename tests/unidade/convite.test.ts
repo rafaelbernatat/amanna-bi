@@ -9,6 +9,7 @@ import {
   assinarConvite,
   assinarSessao,
   CAMINHO_DA_CONVERSA,
+  caminhoDaEntrada,
   CAMINHOS_DO_PUBLICO,
   CAMINHOS_PUBLICOS,
   decidirAcesso,
@@ -245,7 +246,8 @@ describe("decidirAcesso", () => {
   });
 
   it("com cookie válido de quem apresenta, segue", async () => {
-    // O público do QR não segue para /rh/visao: fica no chat (T-429, abaixo).
+    // O público do QR não segue para /rh/visao: vê a entrada por senha
+    // (T-429, abaixo).
     const cookie = await assinarSessao(
       sessao({ perfil: "diretoria" }),
       SEGREDO,
@@ -670,7 +672,7 @@ describe("o público entra por cinco horas e fica no chat (T-423, T-429)", () =>
     expect(sujeitoDe(sessao({ perfil: "diretoria" }))).toMatch(/^convite:/);
   });
 
-  it("o público fora da conversa volta para ela; /api fora da lista é negada", async () => {
+  it("o público fora da conversa vê a entrada por senha, levando o destino; /api fora da lista é negada", async () => {
     const cookie = await assinarSessao(sessao(), SEGREDO);
     const base = {
       busca: "",
@@ -678,14 +680,28 @@ describe("o público entra por cinco horas e fica no chat (T-423, T-429)", () =>
       ambiente: CONVITE_LIGADO,
       agoraSegundos: AGORA,
     };
+    // Produto (2026-09-18): o endereço do produto mostra a senha a quem
+    // apresenta, mesmo num navegador que carrega uma sessão de plateia.
     expect(await decidirAcesso({ ...base, caminho: "/rh/visao" })).toEqual({
       tipo: "redirecionar",
-      para: CAMINHO_DA_CONVERSA,
+      para: "/entrar?motivo=plateia&ir=%2Frh%2Fvisao",
+    });
+    expect(
+      await decidirAcesso({
+        ...base,
+        caminho: "/fin/caixa",
+        busca: "periodo=dezembro",
+      }),
+    ).toEqual({
+      tipo: "redirecionar",
+      para: "/entrar?motivo=plateia&ir=%2Ffin%2Fcaixa%3Fperiodo%3Ddezembro",
     });
     expect(await decidirAcesso({ ...base, caminho: "/apresentar" })).toEqual({
       tipo: "redirecionar",
-      para: CAMINHO_DA_CONVERSA,
+      para: "/entrar?motivo=plateia&ir=%2Fapresentar",
     });
+    // O layout do painel, que não conhece o caminho, manda só o motivo.
+    expect(caminhoDaEntrada("plateia")).toBe("/entrar?motivo=plateia");
     expect(
       await decidirAcesso({ ...base, caminho: "/api/marca/extrair" }),
     ).toEqual({ tipo: "negar" });
