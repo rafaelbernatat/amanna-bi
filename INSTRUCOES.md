@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 68 itens (5 resolvidos), destravando 128 tarefas do backlog |
+| **Total** | 69 itens (6 resolvidos), destravando 128 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -40,10 +40,10 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Quando | Itens | P0 | Tarefas destravadas |
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
-| Fase 2 · Dado real | 23 | 19 | 59 |
-| Fase 3 · Chat com IA | 10 | 6 | 24 |
+| Fase 2 · Dado real | 23 (1 resolvidos) | 19 | 59 |
+| Fase 3 · Chat com IA | 11 | 7 | 26 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **68** | **35** | **128** |
+| **Total** | **69** | **36** | **128** |
 
 **Por responsável**
 
@@ -52,7 +52,7 @@ Mesmos três status de [TASKS.md](TASKS.md):
 | Produto | 16 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
-| Engenharia | 10 |
+| Engenharia | 11 |
 | Comercial | 5 |
 | Produto, com Controladoria e RH | 2 |
 | Produto, com Engenharia | 2 |
@@ -759,7 +759,7 @@ O ajuste de contraste (D-MARCA) caminha na luminosidade preservando o matiz, e p
 
 Quase tudo aqui depende do cliente. É a fila mais longa e a que costuma atrasar o projeto inteiro — comece cedo.
 
-*23 itens · 19 P0 abertos · 4 P1 abertos*
+*23 itens · 18 P0 abertos · 4 P1 abertos · 1 resolvido*
 
 ### [ ] H-06 · Decidir P2: transferência interna conta como desligamento
 
@@ -1089,7 +1089,7 @@ Contrate um fornecedor de teste de intrusão, ou aloque um time interno independ
 
 ---
 
-### [ ] H-65 · Criar o projeto no Supabase e entregar as duas conexões da base Amanna
+### [X] H-65 · Criar o projeto no Supabase e entregar as duas conexões da base Amanna
 
 `P0` · **Responsável:** Engenharia
 
@@ -1103,11 +1103,37 @@ A base Amanna (`docs/dados`, 82 MB) já carrega e reconcilia num Postgres em pro
 | **Onde o resultado vai** | Painel do projeto Supabase; `.env.local` (fora do versionamento); Settings > Environment Variables na Vercel; Settings > Secrets no GitHub |
 | **Destrava** | Servir dado real em produção (T-270 em produção), o armazém da marca em nuvem (T-274) e o job `contrato-warehouse` (T-271) |
 
+**Resolvido em 2026-09-18.** Projeto criado, `project_ref` `saxbtaonuvvlyodtjfpp`.
+Duas ressalvas que mudam o que estava escrito acima, e ficam registradas porque
+custaram tempo:
+
+- **A região é `us-west-2`, não `sa-east-1`.** O item pedia a mesma região da
+  Vercel; o projeto nasceu na Oregon. Custo medido do Brasil: 211 ms por ida
+  quente, 1,6 s na primeira conexão, e a leitura fria das dezoito views em
+  torno de seis segundos. Depois disso a base vive em memória (TTL de cinco
+  minutos), e a página responde em 0,4 s. Aceitável para a apresentação desde
+  que a primeira tela seja aberta antes da plateia entrar; para produção de
+  verdade, recriar o projeto em `sa-east-1` ou implantar a aplicação em
+  `us-west-2`.
+- **A URL não leva `sslmode`, e a CA vai em `DATABASE_SSL_CA`.** O pooler
+  apresenta a cadeia própria da Supabase (`Supabase Root 2021 CA`), que não
+  está nas raízes do Node: sem a CA a conexão é recusada com
+  `SELF_SIGNED_CERT_IN_CHAIN`. E com `sslmode` na string o driver monta o TLS a
+  partir dela e **ignora** a CA que passamos — por isso a URL vai sem esse
+  parâmetro. A raiz foi baixada do endereço oficial da Supabase e conferida
+  contra a impressão digital que o servidor apresenta (SHA-256
+  `80:70:25:AD:…:CA:FA`); iguais. A verificação continua ligada, como manda o
+  cabeçalho de `src/acesso/postgres/cliente.ts`.
+
+Onde cada valor foi colocado: `DATABASE_URL`, `DATABASE_URL_CARGA` e
+`DATABASE_SSL_CA` no `.env.local` desta máquina. **Nada na Vercel e nada nos
+segredos do GitHub ainda** — ver H-69.
+
 ## Antes da Fase 3 · Chat com IA
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*10 itens · 6 P0 abertos · 4 P1 abertos*
+*11 itens · 7 P0 abertos · 4 P1 abertos*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -1252,6 +1278,20 @@ Com D-CHAT-ferramentas, uma pergunta composta ("os cinco maiores clientes", "o p
 | **Resultado esperado** | O id do modelo do laço gravado em `OPENROUTER_MODEL_FERRAMENTAS` (Production e Preview), e o resultado do roteiro — quantas das dez perguntas saíram com autoria "modelo" — anotado aqui |
 | **Onde o resultado vai** | Settings > Environment Variables na Vercel; este item |
 | **Destrava** | A qualidade do caminho composto (T-350) em produção; a medição de latência de D-CHAT-ferramentas |
+
+### [ ] H-69 · Levar as conexões do Supabase para a Vercel e para o GitHub
+
+`P0` · **Responsável:** Engenharia
+
+**O que fazer**
+
+H-65 criou o projeto e carregou a base, mas os três valores vivem só no `.env.local` de uma máquina. Para produção servir dado real, grave na Vercel (Settings > Environment Variables): `DATABASE_URL` em Preview e Production, `DATABASE_SSL_CA` nas mesmas (é a raiz `Supabase Root 2021 CA`, e sem ela a conexão é recusada), e então `DATA_SOURCE=warehouse` com `MARCA_ARMAZEM=postgres`. `DATABASE_URL_CARGA` **não** vai para a Vercel: a carga roda de uma máquina, e uma conexão em modo sessão na nuvem só amplia a superfície. No GitHub, `DATABASE_URL` e `DATABASE_SSL_CA` como segredos do repositório, que é o que liga o job `contrato-warehouse`. A URL vai **sem `sslmode`** — com esse parâmetro o driver ignora a CA (ver H-65). Registre aqui onde cada valor foi colocado, nunca o valor. Antes de dar por resolvido, abra uma tela e confirme que a receita líquida de 2026 aparece como 1.198,3 e não 1.200,0 — a segunda é a fixture.
+
+| | |
+|---|---|
+| **Resultado esperado** | `DATABASE_URL` e `DATABASE_SSL_CA` na Vercel (Preview e Production) e nos segredos do GitHub; `DATA_SOURCE=warehouse` e `MARCA_ARMAZEM=postgres` em Production; uma tela de produção mostrando 1.198,3 |
+| **Onde o resultado vai** | Settings > Environment Variables na Vercel; Settings > Secrets no GitHub; este item |
+| **Destrava** | Dado real em produção; o job `contrato-warehouse` (T-271); a marca gravada em nuvem (T-274) |
 
 ## Antes da Fase 4 · Escala
 
@@ -1454,8 +1494,8 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-255 | H-17 |
 | T-256 | H-21 |
 | T-270 | H-65 |
-| T-271 | H-65 |
-| T-274 | H-65 |
+| T-271 | H-65, H-69 |
+| T-274 | H-65, H-69 |
 | T-302 | H-28 |
 | T-304 | H-28, H-29 |
 | T-305 | H-28 |

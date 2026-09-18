@@ -71,7 +71,26 @@ types.setTypeParser(OID_TIMESTAMP, (texto: string) => texto);
 
 const MAXIMO_DE_CONEXOES = 3;
 const OCIOSA_MS = 10_000;
-const LIMITE_PARA_CONECTAR_MS = 5_000;
+
+/**
+ * Quanto uma consulta espera por uma conexão livre da piscina.
+ *
+ * Não é o tempo de rede: é o tempo de **fila**. A leitura fria da base dispara
+ * dezoito `SELECT` ao mesmo tempo (`src/acesso/warehouse/leitor.ts`) sobre três
+ * conexões, então a última espera cinco ou seis rodadas antes de começar.
+ *
+ * Com cinco segundos isso não cabia, e o sintoma enganava: o erro era
+ * "timeout exceeded when trying to connect", que se lê como banco inalcançável
+ * quando o banco estava respondendo bem. Medido contra o Supabase em
+ * `us-west-2` a partir do Brasil: 211 ms por ida quente, 1,6 s na primeira
+ * conexão, e de 0,2 a 1,8 s por view. A fila inteira fica na casa dos seis
+ * segundos, e acontece **uma vez por instância** — depois a base vive em
+ * memória, com o TTL de cinco minutos do cache.
+ *
+ * Vinte segundos é folga para essa fila sem virar espera indefinida. Se passar
+ * disso, o problema é outro, e um teto maior só esconderia.
+ */
+const LIMITE_PARA_CONECTAR_MS = 20_000;
 
 export type OpcoesDoCliente = {
   readonly max?: number;
