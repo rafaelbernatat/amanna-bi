@@ -14,7 +14,7 @@
  */
 
 import { luminancia, matizDe } from "@/apresentacao/tema/contraste";
-import { PALETA, type CoresDaMarca } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA, type CoresDaMarca } from "@/apresentacao/tema/tema";
 import type { AutoriaDaExtracao } from "@/marca/documento";
 import type {
   CandidatoDeCor,
@@ -106,11 +106,11 @@ export function escolherSemModelo(candidatos: Candidatos): Escolha {
   if (principal === undefined) {
     return {
       cores: {
-        marca: PALETA.marca,
-        marcaEscura: PALETA.marcaEscura,
-        destaque: PALETA.destaque,
-        destaqueSuave: PALETA.destaqueSuave,
-        barraLateral: PALETA.barraLateral,
+        marca: PALETA_CLARA.marca,
+        marcaEscura: PALETA_CLARA.marcaEscura,
+        destaque: PALETA_CLARA.destaque,
+        destaqueSuave: PALETA_CLARA.destaqueSuave,
+        barraLateral: PALETA_CLARA.barraLateral,
       },
       logo: melhorLogo(candidatos.logos),
       autoria: "deterministica",
@@ -140,7 +140,7 @@ export function escolherSemModelo(candidatos: Candidatos): Escolha {
   const porLuminancia = [...outras].sort(
     (a, b) => luminancia(a.cor) - luminancia(b.cor),
   );
-  const marcaEscura = reservar(porLuminancia[0]?.cor, PALETA.marcaEscura);
+  const marcaEscura = reservar(porLuminancia[0]?.cor, PALETA_CLARA.marcaEscura);
 
   // A de matiz mais distante: é o que dá contraste de cor, não de luz.
   const maisDistante = [...outras]
@@ -153,12 +153,12 @@ export function escolherSemModelo(candidatos: Candidatos): Escolha {
   const destaque =
     maisDistante !== undefined &&
     distanciaDeMatiz(maisDistante.cor, marca) >= DISTANCIA_DE_MATIZ
-      ? reservar(maisDistante.cor, PALETA.destaque)
-      : PALETA.destaque;
+      ? reservar(maisDistante.cor, PALETA_CLARA.destaque)
+      : PALETA_CLARA.destaque;
 
   const destaqueSuave = reservar(
     outras.find((c) => !usadas.has(c.cor))?.cor,
-    PALETA.destaqueSuave,
+    PALETA_CLARA.destaqueSuave,
   );
 
   /*
@@ -174,7 +174,7 @@ export function escolherSemModelo(candidatos: Candidatos): Escolha {
     maisEscura !== undefined &&
     luminancia(maisEscura.cor) <= LUMINANCIA_DE_BARRA
       ? maisEscura.cor
-      : PALETA.barraLateral;
+      : PALETA_CLARA.barraLateral;
 
   return {
     cores: { marca, marcaEscura, destaque, destaqueSuave, barraLateral },
@@ -215,11 +215,11 @@ export function aplicarEscolha(
 
   return {
     cores: {
-      marca: cor(bruta.marca, PALETA.marca),
-      marcaEscura: cor(bruta.marcaEscura, PALETA.marcaEscura),
-      destaque: cor(bruta.destaque, PALETA.destaque),
-      destaqueSuave: cor(bruta.destaqueSuave, PALETA.destaqueSuave),
-      barraLateral: cor(bruta.barraLateral, PALETA.barraLateral),
+      marca: cor(bruta.marca, PALETA_CLARA.marca),
+      marcaEscura: cor(bruta.marcaEscura, PALETA_CLARA.marcaEscura),
+      destaque: cor(bruta.destaque, PALETA_CLARA.destaque),
+      destaqueSuave: cor(bruta.destaqueSuave, PALETA_CLARA.destaqueSuave),
+      barraLateral: cor(bruta.barraLateral, PALETA_CLARA.barraLateral),
     },
     logo:
       bruta.logo === null

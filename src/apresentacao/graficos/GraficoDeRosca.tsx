@@ -1,4 +1,10 @@
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  PALETA_CLARA,
+  TIPOGRAFIA,
+  type ChaveDePaletaClara,
+} from "@/apresentacao/tema/tema";
+
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
 
 /**
  * Primitiva `rosca` (T-164).
@@ -57,9 +63,18 @@ export type FatiaDeRosca = {
 };
 
 export function GraficoDeRosca({
+  pele = PALETA_CLARA,
   fatias,
   centro,
 }: {
+  /**
+   * A pele ativa, em valor literal.
+   *
+   * Literal porque isto vira **atributo de SVG**, e `var()` nao pinta
+   * atributo: a linha simplesmente some. Quem resolve o tema e a pagina, no
+   * servidor; aqui ele chega pronto (T-372).
+   */
+  readonly pele?: Pele;
   readonly fatias: readonly FatiaDeRosca[];
   readonly centro: { readonly texto: string; readonly rotulo: string };
 }) {
@@ -106,7 +121,7 @@ export function GraficoDeRosca({
           cy={CENTRO}
           r={RAIO}
           fill="none"
-          stroke={PALETA.grade}
+          stroke={pele.grade}
           strokeWidth={ESPESSURA}
         />
         {arcos.map((arco) => (
@@ -126,7 +141,7 @@ export function GraficoDeRosca({
         <text
           x={CENTRO}
           y={CENTRO}
-          fill={PALETA.texto}
+          fill={pele.texto}
           fontSize={19}
           fontWeight="600"
           fontFamily={TIPOGRAFIA.mono}
@@ -138,7 +153,7 @@ export function GraficoDeRosca({
           x={CENTRO}
           y={CENTRO}
           dy={16}
-          fill={PALETA.textoTerciario}
+          fill={pele.textoTerciario}
           fontSize={9.5}
           fontWeight="500"
           fontFamily={TIPOGRAFIA.texto}
@@ -169,7 +184,7 @@ export function GraficoDeRosca({
               alignItems: "center",
               gap: 6,
               font: `400 10px/1.3 ${TIPOGRAFIA.texto}`,
-              color: PALETA.textoSecundario,
+              color: pele.textoSecundario,
               overflow: "hidden",
               whiteSpace: "nowrap",
             }}
@@ -190,7 +205,7 @@ export function GraficoDeRosca({
               style={{
                 marginLeft: "auto",
                 font: `600 10px/1.3 ${TIPOGRAFIA.mono}`,
-                color: PALETA.texto,
+                color: pele.texto,
               }}
             >
               {fatia.texto}

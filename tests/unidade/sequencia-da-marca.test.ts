@@ -14,7 +14,7 @@ import {
   SEQUENCIA_CATEGORICA,
   sequenciaCategorica,
 } from "@/apresentacao/tema/sequencia";
-import { PALETA, type CoresDaMarca } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA, type CoresDaMarca } from "@/apresentacao/tema/tema";
 
 /**
  * A rampa dos gráficos segue a marca (T-370).
@@ -47,7 +47,7 @@ describe("a rampa categórica com marca aplicada", () => {
   it("sem marca, é exatamente a de sempre", () => {
     expect(sequenciaCategorica(null)).toEqual(SEQUENCIA_CATEGORICA);
     expect(sequenciaCategorica(undefined)).toEqual(SEQUENCIA_CATEGORICA);
-    expect(corDaCategoria(0)).toBe(PALETA.marca);
+    expect(corDaCategoria(0)).toBe(PALETA_CLARA.marca);
   });
 
   it("com marca, as quatro entradas de marca passam a ser as da empresa", () => {
@@ -68,10 +68,10 @@ describe("a rampa categórica com marca aplicada", () => {
    */
   it("as cores de sentido não mudam com a marca", () => {
     const rampa = sequenciaCategorica(AZUIS);
-    expect(rampa[2]).toBe(PALETA.comparacao);
-    expect(rampa[5]).toBe(PALETA.positivo);
-    expect(rampa[6]).toBe(PALETA.neutro);
-    expect(rampa[7]).toBe(PALETA.meta);
+    expect(rampa[2]).toBe(PALETA_CLARA.comparacao);
+    expect(rampa[5]).toBe(PALETA_CLARA.positivo);
+    expect(rampa[6]).toBe(PALETA_CLARA.neutro);
+    expect(rampa[7]).toBe(PALETA_CLARA.meta);
   });
 
   it("uma marca de cinco tons iguais não vira fatias indistinguíveis", () => {

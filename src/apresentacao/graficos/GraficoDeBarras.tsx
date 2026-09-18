@@ -13,7 +13,13 @@ import {
 } from "recharts";
 
 import type { ConfiguracaoDeEixo } from "@/apresentacao/graficos/nucleo";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  PALETA_CLARA,
+  TIPOGRAFIA,
+  type ChaveDePaletaClara,
+} from "@/apresentacao/tema/tema";
+
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
 
 /**
  * Primitiva `barras`, com eixo secundario opcional (T-130).
@@ -41,13 +47,22 @@ export type SerieDeLinha = {
   readonly valores: readonly (number | null)[];
 };
 
-const EIXO = {
-  fill: PALETA.textoFraco,
-  fontSize: 9.5,
-  fontFamily: TIPOGRAFIA.mono,
-} as const;
+/**
+ * O estilo do eixo depende da pele, entao e funcao e nao constante.
+ *
+ * Uma constante de modulo congela a cor no carregamento, e com dois temas a
+ * cor certa so se sabe no render.
+ */
+function estiloDoEixo(pele: Pele) {
+  return {
+    fill: pele.textoFraco,
+    fontSize: 9.5,
+    fontFamily: TIPOGRAFIA.mono,
+  } as const;
+}
 
 export function GraficoDeBarras({
+  pele = PALETA_CLARA,
   categorias,
   barras,
   eixo,
@@ -55,6 +70,14 @@ export function GraficoDeBarras({
   eixoSecundario,
   comLegenda = false,
 }: {
+  /**
+   * A pele ativa, em valor literal.
+   *
+   * Literal porque isto vira **atributo de SVG**, e `var()` nao pinta
+   * atributo: a linha simplesmente some. Quem resolve o tema e a pagina, no
+   * servidor; aqui ele chega pronto (T-372).
+   */
+  readonly pele?: Pele;
   readonly categorias: readonly string[];
   readonly barras: readonly SerieDeBarras[];
   readonly eixo: ConfiguracaoDeEixo;
@@ -92,7 +115,7 @@ export function GraficoDeBarras({
         }}
       >
         <CartesianGrid
-          stroke={PALETA.grade}
+          stroke={pele.grade}
           strokeWidth={0.75}
           vertical={false}
         />
@@ -100,8 +123,8 @@ export function GraficoDeBarras({
           dataKey="categoria"
           interval={eixo.intervaloDeRotulo}
           tickLine={false}
-          axisLine={{ stroke: PALETA.bordaForte }}
-          tick={EIXO}
+          axisLine={{ stroke: pele.bordaForte }}
+          tick={estiloDoEixo(pele)}
         />
         <YAxis
           yAxisId="esquerdo"
@@ -110,7 +133,7 @@ export function GraficoDeBarras({
           tickLine={false}
           axisLine={false}
           width={44}
-          tick={EIXO}
+          tick={estiloDoEixo(pele)}
         />
         {eixoSecundario !== undefined ? (
           <YAxis
@@ -121,7 +144,7 @@ export function GraficoDeBarras({
             tickLine={false}
             axisLine={false}
             width={44}
-            tick={EIXO}
+            tick={estiloDoEixo(pele)}
           />
         ) : null}
 
@@ -129,7 +152,7 @@ export function GraficoDeBarras({
           <ReferenceLine
             yAxisId="esquerdo"
             y={0}
-            stroke={PALETA.textoFraco}
+            stroke={pele.textoFraco}
             strokeWidth={1}
           />
         ) : null}
@@ -143,7 +166,7 @@ export function GraficoDeBarras({
             iconSize={8}
             wrapperStyle={{
               font: `500 9.5px ${TIPOGRAFIA.mono}`,
-              color: PALETA.textoTerciario,
+              color: pele.textoTerciario,
             }}
           />
         ) : null}

@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { EstiloDaMarca } from "@/apresentacao/tema/EstiloDaMarca";
+import { EstiloDoTema } from "@/apresentacao/tema/EstiloDoTema";
+import { temaEscolhido } from "@/apresentacao/tema/ativo";
 import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import { lerMarcaAtiva } from "@/marca/leitura";
 
@@ -36,10 +38,26 @@ export default async function RootLayout({
    */
   const [marca, cabecalhos] = await Promise.all([lerMarcaAtiva(), headers()]);
   const nonce = cabecalhos.get("x-nonce");
+  const tema = await temaEscolhido();
 
   return (
-    <html lang="pt-BR">
+    /*
+     * O atributo carrega a escolha da pessoa, e so quando ela escolheu.
+     *
+     * Sem escolha nao se emite nada, e vale a preferencia do sistema
+     * operacional — que e o que a maioria quer sem pedir. Emitir "claro" para
+     * quem nunca escolheu forcaria o claro e anularia isso. Com escolha, o
+     * seletor por atributo vence a consulta de midia, e por isso ele vem
+     * depois na folha que `EstiloDoTema` emite.
+     */
+    <html lang="pt-BR" {...(tema === null ? {} : { "data-theme": tema })}>
       <head>
+        {/*
+          O tema vem antes da marca: a marca vence o tema, e em CSS quem
+          vence e a cadeia de var(), nao a ordem da folha — mas ler nesta
+          ordem conta a historia certa.
+        */}
+        <EstiloDoTema {...(nonce === null ? {} : { nonce })} />
         <EstiloDaMarca
           cores={marca?.cores ?? null}
           {...(nonce === null ? {} : { nonce })}

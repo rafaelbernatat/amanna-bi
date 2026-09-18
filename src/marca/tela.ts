@@ -19,7 +19,8 @@ import { lerMarcaAtiva } from "@/marca/leitura";
 import { podeConfigurarMarca } from "@/marca/permissao";
 import { personalizacaoLigada } from "@/marca/armazem";
 import { podeApresentar } from "@/seguranca/convite";
-import type { CoresDaMarca } from "@/apresentacao/tema/tema";
+import { temaAtivo } from "@/apresentacao/tema/ativo";
+import type { CoresDaMarca, Tema } from "@/apresentacao/tema/tema";
 import type { Perfil } from "@/seguranca/identidade";
 
 export { hospedeiroDe };
@@ -36,6 +37,8 @@ export type CabecalhoDaInstalacao = {
     readonly podeConfigurar: boolean;
     /** Há apresentação em curso, e este perfil a abre (D-CONVITE). */
     readonly podeApresentar: boolean;
+    /** O tema em vigor, para o botao de troca propor o outro (T-372). */
+    readonly tema: Tema;
   };
   /** O nome escrito no cabeçalho: o da marca, ou o padrão. */
   readonly nome: string;
@@ -102,6 +105,7 @@ export async function lerCabecalhoDaInstalacao(): Promise<CabecalhoDaInstalacao>
       // Sem sala aberta não há QR para gerar: o botão não aparece.
       podeApresentar:
         apresentacao !== null && podeApresentar(identidade.perfil),
+      tema: await temaAtivo(),
     },
     nome: marca?.nome ?? NOME_PADRAO_DA_INSTALACAO,
     logo,

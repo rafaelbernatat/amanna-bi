@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import { contrasteSuficiente } from "@/apresentacao/tema/contraste";
-import { CHAVES_DE_MARCA, PALETA } from "@/apresentacao/tema/tema";
+import { CHAVES_DE_MARCA, PALETA_CLARA } from "@/apresentacao/tema/tema";
 import { TETO_DO_NOME, VERSAO_DA_MARCA, type Marca } from "@/marca/documento";
 import {
   coresIniciais,
@@ -151,12 +151,12 @@ describe("montarPropostaManual", () => {
     );
     if (!montada.ok) throw new Error("devia montar");
     const { proposta } = montada;
-    expect(contrasteSuficiente("#ffcc00", PALETA.superficie)).toBe(false);
+    expect(contrasteSuficiente("#ffcc00", PALETA_CLARA.superficie)).toBe(false);
     expect(proposta.coresOriginais.marca).toBe("#ffcc00");
     expect(proposta.cores.marca).not.toBe("#ffcc00");
-    expect(contrasteSuficiente(proposta.cores.marca, PALETA.superficie)).toBe(
-      true,
-    );
+    expect(
+      contrasteSuficiente(proposta.cores.marca, PALETA_CLARA.superficie),
+    ).toBe(true);
     expect(proposta.extracao.ajustes.map((a) => a.papel)).toEqual(["marca"]);
     expect(proposta.extracao.ajustes[0]?.original).toBe("#ffcc00");
   });
@@ -241,7 +241,7 @@ describe("coresIniciais", () => {
   it("sem marca, as cinco cores de hoje", () => {
     const iniciais = coresIniciais(null);
     for (const chave of CHAVES_DE_MARCA) {
-      expect(iniciais[chave]).toBe(PALETA[chave]);
+      expect(iniciais[chave]).toBe(PALETA_CLARA[chave]);
     }
   });
 

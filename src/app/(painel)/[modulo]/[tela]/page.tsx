@@ -6,6 +6,7 @@ import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
 import { Destaque } from "@/apresentacao/chat/Destaque";
 import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
 import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
+import { peleAtiva } from "@/apresentacao/tema/ativo";
 import { lerCoresAplicadas } from "@/marca/tela";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
@@ -234,7 +235,10 @@ export default async function Pagina({
           o recorte por perfil e aplicado no servidor, antes de qualquer
           leitura. `lerKpisDaTela` e o unico ponto onde essa cadeia se monta.
         */}
-        <FaixaDeKpis kpis={await lerKpisDaTela(rota.slice(1), query)} />
+        <FaixaDeKpis
+          kpis={await lerKpisDaTela(rota.slice(1), query)}
+          pele={await peleAtiva()}
+        />
 
         {avisos.length > 0 ? (
           <p
@@ -320,6 +324,7 @@ async function PaineisDaTela({
     Promise.all(registro.map((p) => lerPainelParaTela(p.id, query))),
     lerCoresAplicadas(),
   ]);
+  const pele = await peleAtiva();
 
   return (
     <div
@@ -347,7 +352,12 @@ async function PaineisDaTela({
             destacado={painelDestacado === p.id}
             subtitulo={subtituloSobRecorte(query)}
             desenhar={(carga) => (
-              <DesenhoDePainel painel={carga} span={p.span} cores={cores} />
+              <DesenhoDePainel
+                painel={carga}
+                span={p.span}
+                cores={cores}
+                pele={pele}
+              />
             )}
           />
         </div>

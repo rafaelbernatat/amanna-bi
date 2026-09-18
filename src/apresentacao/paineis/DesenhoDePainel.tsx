@@ -23,11 +23,18 @@ import {
 import { SemDado } from "@/apresentacao/graficos/SemDado";
 import {
   corDaCategoria,
-  COR_DO_SENTIDO,
+  corDoSentido,
   corPrincipal,
   corSecundaria,
 } from "@/apresentacao/tema/sequencia";
-import { PALETA, type CoresDaMarca } from "@/apresentacao/tema/tema";
+import {
+  PALETA,
+  PALETA_CLARA,
+  type ChaveDePaletaClara,
+  type CoresDaMarca,
+} from "@/apresentacao/tema/tema";
+
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
 import type { PanelResponse, Serie, Unidade } from "@/semantica/contrato";
 import type { Forma } from "@/semantica/painel";
 
@@ -232,6 +239,7 @@ export function DesenhoDePainel({
   painel,
   span,
   cores = null,
+  pele = PALETA_CLARA,
 }: {
   readonly painel: PanelResponse;
   /**
@@ -243,6 +251,13 @@ export function DesenhoDePainel({
    * de sempre.
    */
   readonly cores?: CoresDaMarca | null;
+  /**
+   * A pele ativa, em valor literal.
+   *
+   * Os quatro desenhos em SVG recebem dela a cor de eixo, grade e serie;
+   *  nao pinta atributo de SVG (T-372).
+   */
+  readonly pele?: Pele;
   /**
    * Colunas da grade de 12 que o painel ocupa (seção 5).
    *
@@ -277,6 +292,7 @@ export function DesenhoDePainel({
       return (
         <Desenhado painel={painel} forma={painel.forma}>
           <GraficoDeBarras
+            pele={pele}
             categorias={categorias}
             eixo={configuracaoDeEixo({
               valores: finitos(barras.flatMap((s) => [...s.values])),
@@ -287,7 +303,7 @@ export function DesenhoDePainel({
             comLegenda={barras.length > 1 || linha !== undefined}
             barras={barras.map((s, i) => ({
               nome: s.name,
-              cor: corDaCategoria(i, cores),
+              cor: corDaCategoria(i, cores, pele),
               valores: s.values,
             }))}
             {...(linha === undefined
@@ -298,7 +314,7 @@ export function DesenhoDePainel({
                     cor:
                       linha.papel === "referencia"
                         ? PALETA.comparacao
-                        : corSecundaria(cores),
+                        : corSecundaria(cores, pele),
                     valores: linha.values,
                   },
                 })}
@@ -350,6 +366,7 @@ export function DesenhoDePainel({
       return (
         <Desenhado painel={painel} forma={painel.forma}>
           <GraficoDeLinha
+            pele={pele}
             pontos={pontos}
             nome={principal.name}
             eixo={configuracaoDeEixo({
@@ -365,7 +382,7 @@ export function DesenhoDePainel({
               : {
                   linhas: adicionais.map((s, i) => ({
                     nome: s.name,
-                    cor: corDaCategoria(i + 1, cores),
+                    cor: corDaCategoria(i + 1, cores, pele),
                     valores: s.values,
                   })),
                 })}
@@ -403,7 +420,7 @@ export function DesenhoDePainel({
               rotulo: rotuloDeCategoria(categoria),
               fracao: valor === null ? null : Math.abs(valor) / maximo,
               texto: texto(valor, painel.unit),
-              cor: corPrincipal(cores),
+              cor: corPrincipal(cores, pele),
               ...(referida === null
                 ? {}
                 : { marca: Math.abs(referida) / maximo }),
@@ -433,6 +450,7 @@ export function DesenhoDePainel({
       return (
         <Desenhado painel={painel} forma={painel.forma}>
           <GraficoDeBarrasEmpilhadas
+            pele={pele}
             categorias={categorias}
             horizontal={!temporal}
             eixo={configuracaoDeEixo({
@@ -445,7 +463,7 @@ export function DesenhoDePainel({
             })}
             faixas={faixas.map((s, i) => ({
               nome: s.name,
-              cor: corDaCategoria(i, cores),
+              cor: corDaCategoria(i, cores, pele),
               valores: s.values,
             }))}
           />
@@ -482,7 +500,7 @@ export function DesenhoDePainel({
                 nome: rotuloDeCategoria(parte.nome),
                 fracao: soma === ZERO ? ZERO : parte.valor / soma,
                 texto: texto(parte.valor, painel.unit),
-                cor: corDaCategoria(i, cores),
+                cor: corDaCategoria(i, cores, pele),
               })),
             };
           })}
@@ -505,7 +523,7 @@ export function DesenhoDePainel({
             rotulo: e.rotulo,
             texto: texto(e.valor, e.unidade),
             rodape: e.rodape === null ? null : rotuloDeCategoria(e.rodape),
-            cor: COR_DO_SENTIDO[e.sentido],
+            cor: corDoSentido(e.sentido, pele),
           }))}
         />
       );
@@ -526,7 +544,7 @@ export function DesenhoDePainel({
               painel.passos[i - 1]?.valor ?? null,
               i === ZERO,
             ),
-            cor: corDaCategoria(i, cores),
+            cor: corDaCategoria(i, cores, pele),
           }))}
         />
       );
@@ -552,6 +570,7 @@ export function DesenhoDePainel({
       return (
         <Desenhado painel={painel} forma={painel.forma}>
           <GraficoDeRosca
+            pele={pele}
             centro={{
               texto: texto(painel.centro.valor, painel.unit),
               rotulo: painel.centro.rotulo,
@@ -560,7 +579,7 @@ export function DesenhoDePainel({
               nome: rotuloDeCategoria(fatia.nome),
               fracao: fatia.valor / soma,
               texto: texto(fatia.valor, painel.unit),
-              cor: corDaCategoria(i, cores),
+              cor: corDaCategoria(i, cores, pele),
             }))}
           />
         </Desenhado>
@@ -593,7 +612,7 @@ export function DesenhoDePainel({
           ate,
           texto: formatarValor(passo.valor, painel.unit),
           cor: passo.ehTotal
-            ? corPrincipal(cores)
+            ? corPrincipal(cores, pele)
             : passo.valor >= ZERO
               ? PALETA.positivo
               : PALETA.negativo,
@@ -649,7 +668,7 @@ export function DesenhoDePainel({
                 : DIAMETRO_MINIMO +
                   (Math.abs(ponto.tamanho) / maiorTamanho) *
                     (DIAMETRO_MAXIMO - DIAMETRO_MINIMO),
-            cor: corDaCategoria(i, cores),
+            cor: corDaCategoria(i, cores, pele),
           }))}
         />
       );
@@ -670,7 +689,7 @@ export function DesenhoDePainel({
             inicio: faixa.de / limite,
             fim: faixa.ate / limite,
             texto: duracaoDaFaixa(faixa.de, faixa.ate, painel.unit),
-            cor: COR_DO_SENTIDO[faixa.sentido],
+            cor: corDoSentido(faixa.sentido, pele),
           }))}
           marcos={painel.marcos.map((marco) => ({
             rotulo: marco.rotulo,

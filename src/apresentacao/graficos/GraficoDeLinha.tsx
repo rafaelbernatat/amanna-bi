@@ -12,7 +12,13 @@ import {
 } from "recharts";
 
 import type { ConfiguracaoDeEixo } from "@/apresentacao/graficos/nucleo";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  PALETA_CLARA,
+  TIPOGRAFIA,
+  type ChaveDePaletaClara,
+} from "@/apresentacao/tema/tema";
+
+type Pele = Readonly<Record<ChaveDePaletaClara, string>>;
 
 /**
  * Primitiva `linha` (T-129 monta, T-130 completa).
@@ -50,12 +56,21 @@ export type SerieDeLinhaAdicional = {
 };
 
 export function GraficoDeLinha({
+  pele = PALETA_CLARA,
   pontos,
   eixo,
   referencia,
   nome,
   linhas,
 }: {
+  /**
+   * A pele ativa, em valor literal.
+   *
+   * Literal porque isto vira **atributo de SVG**, e `var()` nao pinta
+   * atributo: a linha simplesmente some. Quem resolve o tema e a pagina, no
+   * servidor; aqui ele chega pronto (T-372).
+   */
+  readonly pele?: Pele;
   readonly pontos: readonly PontoDeSerie[];
   readonly eixo: ConfiguracaoDeEixo;
   /** Traço de meta, quando a métrica tem meta declarada no catálogo. */
@@ -94,7 +109,7 @@ export function GraficoDeLinha({
         margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
       >
         <CartesianGrid
-          stroke={PALETA.grade}
+          stroke={pele.grade}
           strokeWidth={0.75}
           vertical={false}
         />
@@ -102,9 +117,9 @@ export function GraficoDeLinha({
           dataKey="categoria"
           interval={eixo.intervaloDeRotulo}
           tickLine={false}
-          axisLine={{ stroke: PALETA.bordaForte }}
+          axisLine={{ stroke: pele.bordaForte }}
           tick={{
-            fill: PALETA.textoFraco,
+            fill: pele.textoFraco,
             fontSize: 9.5,
             fontFamily: TIPOGRAFIA.mono,
           }}
@@ -116,23 +131,23 @@ export function GraficoDeLinha({
           axisLine={false}
           width={44}
           tick={{
-            fill: PALETA.textoFraco,
+            fill: pele.textoFraco,
             fontSize: 9.5,
             fontFamily: TIPOGRAFIA.mono,
           }}
         />
         {eixo.temLinhaDeZero ? (
-          <ReferenceLine y={0} stroke={PALETA.textoFraco} strokeWidth={1} />
+          <ReferenceLine y={0} stroke={pele.textoFraco} strokeWidth={1} />
         ) : null}
         {referencia !== undefined ? (
           <ReferenceLine
             y={referencia.valor}
-            stroke={PALETA.comparacao}
+            stroke={pele.comparacao}
             strokeDasharray="4 3"
             label={{
               value: referencia.rotulo,
               position: "insideTopRight",
-              fill: PALETA.comparacao,
+              fill: pele.comparacao,
               fontSize: 9,
               fontFamily: TIPOGRAFIA.mono,
             }}
@@ -147,14 +162,14 @@ export function GraficoDeLinha({
             iconSize={10}
             wrapperStyle={{
               font: `500 9.5px ${TIPOGRAFIA.mono}`,
-              color: PALETA.textoTerciario,
+              color: pele.textoTerciario,
             }}
           />
         )}
         <Line
           type="monotone"
           dataKey={nomeDaPrincipal}
-          stroke={PALETA.marca}
+          stroke={pele.marca}
           strokeWidth={2}
           dot={false}
           isAnimationActive={false}

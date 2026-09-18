@@ -23,35 +23,33 @@
  */
 
 /** As 24 chaves da paleta, por papel na tela. */
-export const PALETA = {
-  // Superficies
+/**
+ * As 24 chaves da pele clara, em valor literal.
+ *
+ * Literal, e nao propriedade CSS, porque tres coisas precisam do numero: a
+ * conta de contraste, o teste que a fixa, e o **grafico** — `var()` nao pinta
+ * atributo de SVG, e um SVG serializado perde o `:root` junto.
+ */
+export const PALETA_CLARA = {
   fundo: "#f7f8f8",
   superficie: "#ffffff",
   superficieAlta: "#f3f5f5",
   superficieSuave: "#eef0f1",
   barraLateral: "#0b0b0c",
   barraLateralBorda: "#292d31",
-
-  // Texto
   texto: "#101113",
   textoSecundario: "#575c61",
   textoTerciario: "#6b7075",
   textoFraco: "#a0a5aa",
   textoEmBarra: "#e8eaea",
   textoEmBarraFraco: "#8b9196",
-
-  // Bordas e linhas de grade
   borda: "#e1e4e6",
   bordaForte: "#cfd4d8",
   grade: "#e6e9eb",
-
-  // Marca e destaque da IA
   marca: "#0f7c47",
   marcaEscura: "#0a5531",
   destaque: "#0071e3",
   destaqueSuave: "#2bb463",
-
-  // Sentido do numero (PRD secao 13: cor nunca e o unico sinal)
   positivo: "#12844b",
   negativo: "#c4271f",
   neutro: "#7a8085",
@@ -59,17 +57,107 @@ export const PALETA = {
   meta: "#b0790a",
 } as const;
 
-/** As tres familias tipograficas carregadas pelo prototipo. */
-export const TIPOGRAFIA = {
-  /** Corpo, rotulos e numeros de painel. */
-  texto: '"IBM Plex Sans", system-ui, sans-serif',
-  /** Rotulo de secao, unidade e eixo — sempre em caixa alta espacada. */
-  mono: '"IBM Plex Mono", ui-monospace, monospace',
-  /** Titulo de tela e de painel. */
-  titulo: "Newsreader, Georgia, serif",
+/**
+ * A mesma tabela na pele escura, tirada dos tokens do painel de referencia.
+ *
+ * Nao e a pele clara invertida: o referencia sobe a luminosidade das series
+ * (o verde escuro vira claro) e baixa a das superficies, porque sobre fundo
+ * escuro a cor saturada some e a clara canta. Por isso cada valor e escolhido,
+ * e nao calculado.
+ */
+export const PALETA_ESCURA: Readonly<Record<ChaveDePaletaClara, string>> = {
+  fundo: "#0b0b0c",
+  superficie: "#16181a",
+  superficieAlta: "#22262a",
+  superficieSuave: "#1e2124",
+  barraLateral: "#22262a",
+  barraLateralBorda: "#3a3f44",
+  texto: "#f5f6f6",
+  textoSecundario: "#a7abaf",
+  textoTerciario: "#8f9499",
+  textoFraco: "#70757a",
+  textoEmBarra: "#e3e6e8",
+  textoEmBarraFraco: "#9aa0a5",
+  borda: "#292d31",
+  bordaForte: "#3a3f44",
+  grade: "#2b2f33",
+  marca: "#2bb463",
+  marcaEscura: "#1c8f4c",
+  destaque: "#4da3ff",
+  destaqueSuave: "#6bfa9c",
+  positivo: "#37d66d",
+  negativo: "#ff6f62",
+  neutro: "#8f9499",
+  comparacao: "#b6bcc1",
+  meta: "#e0a92a",
 } as const;
 
-export type ChaveDePaleta = keyof typeof PALETA;
+export type ChaveDePaletaClara = keyof typeof PALETA_CLARA;
+
+/** O nome da propriedade CSS daquele papel, na camada de tema. */
+export function variavelDoTema(chave: ChaveDePaletaClara): string {
+  return `--bi-t-${chave}`;
+}
+
+/**
+ * A paleta que a **moldura** le, em propriedade CSS.
+ *
+ * Cada valor e um `var()` de tres degraus: a marca da empresa vence, depois o
+ * tema ativo, e o recuo e a pele clara escrita aqui. E o que faz uma tela
+ * inteira mudar de pele sem que nenhum dos 369 pontos que pintam saiba disso.
+ *
+ * O **grafico nao usa esta tabela**: ele recebe `PALETA_CLARA` ou
+ * `PALETA_ESCURA` resolvida por propriedade, porque SVG nao resolve `var()`.
+ */
+export const PALETA = Object.freeze(
+  Object.fromEntries(
+    Object.entries(PALETA_CLARA).map(([chave, recuo]) => [
+      chave,
+      `var(--bi-${chave}, var(--bi-t-${chave}, ${recuo}))`,
+    ]),
+  ) as Record<ChaveDePaletaClara, string>,
+);
+
+/** Os dois temas, pelo nome que o cookie e o atributo do documento usam. */
+export const TEMAS = ["claro", "escuro"] as const;
+export type Tema = (typeof TEMAS)[number];
+
+export function temaValido(candidato: string): candidato is Tema {
+  return (TEMAS as readonly string[]).includes(candidato);
+}
+
+/** A tabela literal daquele tema, para o grafico e para a conta de contraste. */
+export function paletaDoTema(
+  tema: Tema,
+): Readonly<Record<ChaveDePaletaClara, string>> {
+  return tema === "escuro" ? PALETA_ESCURA : PALETA_CLARA;
+}
+
+/** As tres familias tipograficas carregadas pelo prototipo. */
+export const TIPOGRAFIA = {
+  /**
+   * Corpo, rotulos e numeros de painel.
+   *
+   * Pilha de sistema, e nao fonte baixada: e o que o painel de referencia usa,
+   * e a diferenca e concreta. Nenhum arquivo para servir, nenhuma requisicao
+   * antes do primeiro texto aparecer, e nada que dependa de rede na hora de
+   * uma apresentacao. O primeiro nome que existir na maquina vence, e todos os
+   * sistemas alvo tem um.
+   *
+   * O tema anterior nomeava IBM Plex e Newsreader sem nunca as carregar — nao
+   * havia `@font-face` nem link —, entao a rigor o produto ja rodava em fonte
+   * de sistema, so que sem escolher qual.
+   */
+  texto:
+    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif',
+  /** Rotulo de secao, unidade e eixo — sempre em caixa alta espacada. */
+  mono: 'ui-monospace, "SF Mono", SFMono-Regular, Menlo, "Roboto Mono", monospace',
+  /** Titulo de tela e de painel. */
+  titulo:
+    '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Tight", "Inter", system-ui, sans-serif',
+} as const;
+
+export type ChaveDePaleta = ChaveDePaletaClara;
 export type ChaveDeTipografia = keyof typeof TIPOGRAFIA;
 
 /* ------------------------------------------------------------------ *
@@ -130,12 +218,24 @@ export function variavelDaMarca(chave: ChaveDeMarca): string {
  * cliente nunca entra no pacote JavaScript**. Resolver a cor no servidor e
  * congela-la aqui perderia as duas coisas.
  */
+/*
+ * Desde T-372 estes cinco coincidem com `PALETA`.
+ *
+ * A cadeia de `PALETA` ja comeca pela variavel da marca — `var(--bi-marca,
+ * var(--bi-t-marca, claro))` —, entao repetir a camada aqui produziria um
+ * `var()` dentro do outro sem mudar o resultado.
+ *
+ * O nome continua existindo porque o que a arquitetura fixa e a **regra**, nao
+ * o valor: moldura le `MARCA`, grafico le a pele literal que recebe por
+ * propriedade. Um dia a marca pode ganhar comportamento proprio por tema, e
+ * entao os dois deixam de coincidir sem que nenhum componente mude.
+ */
 export const MARCA: CoresDaMarca = {
-  marca: `var(${variavelDaMarca("marca")}, ${PALETA.marca})`,
-  marcaEscura: `var(${variavelDaMarca("marcaEscura")}, ${PALETA.marcaEscura})`,
-  destaque: `var(${variavelDaMarca("destaque")}, ${PALETA.destaque})`,
-  destaqueSuave: `var(${variavelDaMarca("destaqueSuave")}, ${PALETA.destaqueSuave})`,
-  barraLateral: `var(${variavelDaMarca("barraLateral")}, ${PALETA.barraLateral})`,
+  marca: PALETA.marca,
+  marcaEscura: PALETA.marcaEscura,
+  destaque: PALETA.destaque,
+  destaqueSuave: PALETA.destaqueSuave,
+  barraLateral: PALETA.barraLateral,
 };
 
 /**

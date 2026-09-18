@@ -33,7 +33,7 @@
 import { normalizarCor } from "@/apresentacao/tema/contraste";
 import {
   CHAVES_DE_MARCA,
-  PALETA,
+  PALETA_CLARA,
   type ChaveDeMarca,
   type CoresDaMarca,
 } from "@/apresentacao/tema/tema";
@@ -116,7 +116,7 @@ export async function lerEntradaManual(
 export function coresIniciais(marca: Marca | null): CoresDaMarca {
   if (marca !== null) return marca.cores;
   return Object.fromEntries(
-    CHAVES_DE_MARCA.map((chave) => [chave, PALETA[chave]]),
+    CHAVES_DE_MARCA.map((chave) => [chave, PALETA_CLARA[chave]]),
   ) as Record<ChaveDeMarca, string>;
 }
 

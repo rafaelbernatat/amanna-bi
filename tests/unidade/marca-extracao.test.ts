@@ -7,7 +7,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { contrasteSuficiente } from "@/apresentacao/tema/contraste";
-import { PALETA } from "@/apresentacao/tema/tema";
+import { PALETA_CLARA } from "@/apresentacao/tema/tema";
 import {
   ORIGENS_DE_COR,
   reunirCandidatos,
@@ -207,7 +207,7 @@ describe("o verificador da escolha", () => {
     const declaradas = new Set(candidatos.cores.map((c) => c.cor));
     expect(declaradas.has(escolhida.cores.marca)).toBe(true);
     // Papel em branco fica com o token de hoje, e não com cor derivada.
-    expect(escolhida.cores.destaque).toBe(PALETA.destaque);
+    expect(escolhida.cores.destaque).toBe(PALETA_CLARA.destaque);
   });
 });
 
@@ -231,8 +231,8 @@ describe("a escolha determinística", () => {
   it("sem candidato nenhum, fica com o tema padrão inteiro", async () => {
     const candidatos = await candidatosDe("https://sem-marca.com.br/");
     const escolha = escolherSemModelo(candidatos);
-    expect(escolha.cores.marca).toBe(PALETA.marca);
-    expect(escolha.cores.barraLateral).toBe(PALETA.barraLateral);
+    expect(escolha.cores.marca).toBe(PALETA_CLARA.marca);
+    expect(escolha.cores.barraLateral).toBe(PALETA_CLARA.barraLateral);
   });
 });
 
@@ -243,36 +243,38 @@ describe("a escolha determinística", () => {
 describe("a conferência de contraste", () => {
   it("não mexe no que já passa", () => {
     const { cores, ajustes } = conferirContraste({
-      marca: PALETA.marca,
-      marcaEscura: PALETA.marcaEscura,
-      destaque: PALETA.destaque,
-      destaqueSuave: PALETA.destaqueSuave,
-      barraLateral: PALETA.barraLateral,
+      marca: PALETA_CLARA.marca,
+      marcaEscura: PALETA_CLARA.marcaEscura,
+      destaque: PALETA_CLARA.destaque,
+      destaqueSuave: PALETA_CLARA.destaqueSuave,
+      barraLateral: PALETA_CLARA.barraLateral,
     });
     expect(ajustes).toEqual([]);
-    expect(cores.marca).toBe(PALETA.marca);
+    expect(cores.marca).toBe(PALETA_CLARA.marca);
   });
 
   it("ajusta o que reprova, e o resultado passa", () => {
     const { cores, ajustes } = conferirContraste({
       // Um azul claro de marca: bonito no site, ilegível como botão.
       marca: "#59b0ff",
-      marcaEscura: PALETA.marcaEscura,
-      destaque: PALETA.destaque,
-      destaqueSuave: PALETA.destaqueSuave,
-      barraLateral: PALETA.barraLateral,
+      marcaEscura: PALETA_CLARA.marcaEscura,
+      destaque: PALETA_CLARA.destaque,
+      destaqueSuave: PALETA_CLARA.destaqueSuave,
+      barraLateral: PALETA_CLARA.barraLateral,
     });
     expect(ajustes.map((a) => a.papel)).toContain("marca");
-    expect(contrasteSuficiente(cores.marca, PALETA.superficie)).toBe(true);
+    expect(contrasteSuficiente(cores.marca, PALETA_CLARA.superficie)).toBe(
+      true,
+    );
   });
 
   it("cada ajuste carrega o antes, o depois e as duas razões", () => {
     const { ajustes } = conferirContraste({
       marca: "#59b0ff",
-      marcaEscura: PALETA.marcaEscura,
-      destaque: PALETA.destaque,
-      destaqueSuave: PALETA.destaqueSuave,
-      barraLateral: PALETA.barraLateral,
+      marcaEscura: PALETA_CLARA.marcaEscura,
+      destaque: PALETA_CLARA.destaque,
+      destaqueSuave: PALETA_CLARA.destaqueSuave,
+      barraLateral: PALETA_CLARA.barraLateral,
     });
     const ajuste = ajustes[0];
     expect(ajuste?.original).toBe("#59b0ff");
@@ -312,7 +314,7 @@ describe("extrairMarca, do endereço à proposta", () => {
     const feita = await extrairMarca("https://sem-marca.com.br/", AMBIENTE);
     expect(feita.ok).toBe(true);
     if (!feita.ok) return;
-    expect(feita.proposta.cores.marca).toBe(PALETA.marca);
+    expect(feita.proposta.cores.marca).toBe(PALETA_CLARA.marca);
     expect(feita.proposta.avisos.length).toBeGreaterThan(0);
   });
 
@@ -373,8 +375,8 @@ describe("a escolha deterministica nao repete cor entre papeis", () => {
     const candidatos = await candidatosDe("https://industria-fosca.com.br/");
     const { cores } = escolherSemModelo(candidatos);
     expect(cores.marca).toBe("#7a1f2b");
-    expect(cores.marcaEscura).toBe(PALETA.marcaEscura);
-    expect(cores.destaque).toBe(PALETA.destaque);
-    expect(cores.destaqueSuave).toBe(PALETA.destaqueSuave);
+    expect(cores.marcaEscura).toBe(PALETA_CLARA.marcaEscura);
+    expect(cores.destaque).toBe(PALETA_CLARA.destaque);
+    expect(cores.destaqueSuave).toBe(PALETA_CLARA.destaqueSuave);
   });
 });
