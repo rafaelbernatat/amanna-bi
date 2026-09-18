@@ -153,6 +153,12 @@ export default defineConfig({
        * variavel que so uma maquina tem.
        */
       CONVITE_SEGREDO: "arnes-de-teste-do-amanna-bi-32-ou-mais",
+      /*
+       * A porta por senha ligada, para o arnes cobrir o caminho de quem
+       * apresenta: abrir o endereco, digitar, entrar. Valor de arnes, como o
+       * segredo acima.
+       */
+      SENHA_DO_PAINEL: "senha-do-arnes-de-teste",
     },
     url: BASE_URL,
     reuseExistingServer: !process.env["CI"],
