@@ -28,6 +28,46 @@ sessão se chama `convite:<sala>:<dispositivo>`, e quem ler a trilha vê isso.
 Isto **não substitui o OIDC** para um cliente de verdade. É o que permite uma
 demonstração com dado real sem inventar um cadastro.
 
+### Duas portas, uma sessão
+
+Quem apresenta digita uma senha; a plateia aponta a câmera. As duas portas
+emitem **o mesmo envelope** de sessão, e daí para a frente o produto não sabe
+por qual delas a pessoa entrou.
+
+A porta por senha nasceu depois, de um problema concreto. Enquanto a única
+entrada era o link assinado, quem apresenta precisava de um terminal para
+gerar o link, o token viajava na barra de endereços — que a entrada tinha que
+apagar em seguida — e, o pior, `CONVITE_SEGREDO` tinha que ser **idêntico** na
+máquina que assinava e no servidor que conferia. Essa igualdade entre dois
+lugares foi a origem de todo erro de configuração da primeira publicação:
+segredo gravado vazio, segredo diferente, segredo certo mas sem novo build.
+
+Com a senha, o segredo volta a ser o que deveria ter sido desde o começo: uma
+chave que o servidor usa **consigo mesmo**. Ninguém de fora precisa conhecê-la,
+e o que uma pessoa precisa saber é algo que ela mesma escolheu.
+
+`SENHA_DO_PAINEL` liga a porta. Sem ela, a tela de entrada volta a ser só o
+cartão do QR.
+
+**A comparação é de tempo constante.** `===` vaza o tamanho do prefixo
+acertado pelo tempo de resposta, e com pedidos suficientes isso reconstrói a
+senha caractere a caractere. As duas entram em SHA-256 e a comparação soma as
+diferenças de todos os bytes antes de decidir.
+
+**Seis tentativas por endereço por minuto**, o que transforma "oito
+caracteres" em algo defensável. Não cobre um adversário com muitos endereços,
+e não pretende: contra isso valem o tamanho da senha e o prazo da
+apresentação. Acertar zera a contagem, senão quem digita errado cinco vezes
+fica trancado do lado de dentro.
+
+**Senha errada e senha vazia saem com o mesmo motivo.** Distinguir as duas
+entrega um oráculo de graça a quem está chutando.
+
+**O que isto não é.** Não é identidade: uma senha compartilhada diz que alguém
+a conhece, não quem é. Não há trilha por pessoa, não há revogação individual, e
+quem sai da empresa continua sabendo a senha. Para um cliente de verdade o
+provedor é o OIDC (T-221).
+
 ### Apresentar não é entrar
 
 O painel abre do jeito que a instalação escolheu. O QR é um botão dentro dele.

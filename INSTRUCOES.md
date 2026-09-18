@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 69 itens (6 resolvidos), destravando 128 tarefas do backlog |
+| **Total** | 70 itens (6 resolvidos), destravando 128 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -41,15 +41,15 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
 | Fase 2 · Dado real | 23 (1 resolvidos) | 19 | 59 |
-| Fase 3 · Chat com IA | 11 | 7 | 26 |
+| Fase 3 · Chat com IA | 12 | 8 | 26 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **69** | **36** | **128** |
+| **Total** | **70** | **37** | **128** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
-| Produto | 16 |
+| Produto | 17 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
 | Engenharia | 11 |
@@ -1133,7 +1133,7 @@ segredos do GitHub ainda** — ver H-69.
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*11 itens · 7 P0 abertos · 4 P1 abertos*
+*12 itens · 8 P0 abertos · 4 P1 abertos*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -1292,6 +1292,22 @@ H-65 criou o projeto e carregou a base, mas os três valores vivem só no `.env.
 | **Resultado esperado** | `DATABASE_URL` e `DATABASE_SSL_CA` na Vercel (Preview e Production) e nos segredos do GitHub; `DATA_SOURCE=warehouse` e `MARCA_ARMAZEM=postgres` em Production; uma tela de produção mostrando 1.198,3 |
 | **Onde o resultado vai** | Settings > Environment Variables na Vercel; Settings > Secrets no GitHub; este item |
 | **Destrava** | Dado real em produção; o job `contrato-warehouse` (T-271); a marca gravada em nuvem (T-274) |
+
+### [ ] H-70 · Escolher a senha do painel e grava-la na Vercel
+
+`P0` · **Responsável:** Produto
+
+**O que fazer**
+
+Com T-369 o painel tem porta por senha: quem apresenta abre o endereço do produto, digita e entra — sem terminal, sem link gerado, sem token na barra de endereços. Escolha uma senha de no mínimo 8 caracteres, que caiba na cabeça de quem vai apresentar, e grave em `SENHA_DO_PAINEL` (Production, e Preview se quiser testar lá). É valor que uma pessoa digita, então prefira algo pronunciável a algo aleatório — o que segura uma senha curta aqui é o limite de seis tentativas por endereço por minuto, não o tamanho. Depois de gravar, **publique de novo**: variável na Vercel só vale no build seguinte. Confirme abrindo o endereço numa aba anônima: o campo tem de aparecer, a senha errada tem de voltar dizendo "Senha incorreta", e a certa tem de abrir o painel com o ícone de QR no cabeçalho. Registre aqui que foi feito e onde; nunca o valor.
+
+Uma senha compartilhada não é identidade: diz que alguém a conhece, não quem é. Não há trilha por pessoa nem revogação individual. Trocá-la derruba quem estiver com a aba aberta, e é o botão de pânico se ela vazar. Para cliente de verdade, o provedor continua sendo o OIDC (T-221).
+
+| | |
+|---|---|
+| **Resultado esperado** | `SENHA_DO_PAINEL` gravada em Production, novo deploy publicado, e o caminho conferido numa aba anônima |
+| **Onde o resultado vai** | Settings > Environment Variables na Vercel; este item |
+| **Destrava** | Quem apresenta entrar sem gerar link; a apresentação com dado real |
 
 ## Antes da Fase 4 · Escala
 

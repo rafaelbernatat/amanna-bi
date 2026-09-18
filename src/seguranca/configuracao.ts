@@ -30,6 +30,7 @@ import {
 } from "@/marca/configuracao";
 import { FONTES_DE_SITE } from "@/marca/site/fonte";
 import { PROVEDORES } from "@/acesso/sessao";
+import { TAMANHO_MINIMO_DA_SENHA } from "@/seguranca/senha";
 import { TAMANHO_MINIMO_DO_SEGREDO } from "@/seguranca/convite";
 
 /** O que uma variável precisa satisfazer. */
@@ -145,6 +146,26 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     obrigatoria: false,
     segredo: true,
     conferir: comprimentoMinimo(TAMANHO_MINIMO_DO_SEGREDO),
+  },
+  {
+    /*
+     * A senha da porta do painel.
+     *
+     * Diferente de `CONVITE_SEGREDO` em natureza, não só em uso: aquele é uma
+     * chave que o servidor usa consigo mesmo e ninguém precisa saber de cor;
+     * esta é escolhida por uma pessoa e digitada por ela. Por isso o mínimo é
+     * menor — o que segura uma senha curta é o limite de tentativas da rota,
+     * e um mínimo alto demais empurra para o papel colado no monitor.
+     *
+     * Sem ela, a instalação simplesmente não tem porta por senha, e quem
+     * apresenta entra pelo link assinado.
+     */
+    nome: "SENHA_DO_PAINEL",
+    proposito:
+      "a senha de quem apresenta, na tela de entrada (D-CONVITE-apresentacao)",
+    obrigatoria: false,
+    segredo: true,
+    conferir: comprimentoMinimo(TAMANHO_MINIMO_DA_SENHA),
   },
   {
     /*

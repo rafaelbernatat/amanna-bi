@@ -178,10 +178,12 @@ describe("a mensagem de erro nunca carrega o valor do segredo", () => {
      * senha como a de transação. A credencial de blob que D-MARCA previu saiu
      * junto com o modo — a marca mora no Postgres. A quinta entrou com
      * D-CONVITE-apresentacao: o segredo que assina o QR e o cookie da
-     * apresentação, e cuja rotação derruba todas as sessões de uma vez. A
-     * lista escrita é o que
-     * obriga uma chave nova a passar por aqui — uma variável que vira segredo
-     * sem revisão é uma que pode acabar num log.
+     * apresentação, e cuja rotação derruba todas as sessões de uma vez. A sexta
+     * entrou com T-369: a senha de quem apresenta, que é segredo de natureza
+     * diferente das outras — uma pessoa a escolhe e a digita —, mas segredo do
+     * mesmo jeito, e por isso nunca sai numa mensagem de erro. A lista escrita
+     * é o que obriga uma chave nova a passar por aqui: uma variável que vira
+     * segredo sem revisão é uma que pode acabar num log.
      */
     expect([...NOMES_DE_SEGREDO].sort()).toEqual([
       "ANTHROPIC_API_KEY",
@@ -189,6 +191,7 @@ describe("a mensagem de erro nunca carrega o valor do segredo", () => {
       "DATABASE_URL",
       "DATABASE_URL_CARGA",
       "OPENROUTER_API_KEY",
+      "SENHA_DO_PAINEL",
     ]);
     // E toda regra de segredo tem uma conferência: uma variável marcada como
     // segredo mas sem validação passaria qualquer texto adiante.

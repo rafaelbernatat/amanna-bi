@@ -78,6 +78,8 @@ export function podeApresentar(perfil: Perfil): boolean {
  */
 export const CAMINHOS_PUBLICOS: readonly string[] = [
   "/entrar",
+  // A porta por senha: o formulario de /entrar posta aqui, sem sessao ainda.
+  "/api/entrar",
   "/api/marca/logo",
   "/favicon.ico",
 ];
@@ -381,6 +383,9 @@ export const MOTIVOS_DE_ENTRADA = [
   "expirado",
   "invalido",
   "desligado",
+  // A porta por senha (src/seguranca/senha.ts): errada, e tentada demais.
+  "senha",
+  "tentativas",
 ] as const;
 export type MotivoDeEntrada = (typeof MOTIVOS_DE_ENTRADA)[number];
 
