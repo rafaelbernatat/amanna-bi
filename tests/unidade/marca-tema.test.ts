@@ -201,6 +201,7 @@ describe("a moldura lê a camada viva", () => {
     join("src", "apresentacao", "shell", "BotaoDeConta.tsx"),
     join("src", "apresentacao", "filtros", "BarraDeFiltros.tsx"),
     join("src", "apresentacao", "filtros", "BannerDeRecorte.tsx"),
+    join("src", "apresentacao", "navegacao", "MenuLateral.tsx"),
     join("src", "apresentacao", "paineis", "Painel.tsx"),
     join("src", "apresentacao", "chat", "Chat.tsx"),
     join("src", "app", "not-found.tsx"),

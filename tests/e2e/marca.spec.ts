@@ -107,9 +107,11 @@ test.describe("o fluxo inteiro", () => {
   test("informar o site, ver a proposta, aplicar, e o painel muda", async ({
     page,
   }) => {
-    // A cor de hoje, medida na tela: é contra ela que a mudança se prova.
+    // A cor de hoje, medida na tela — no avatar do perfil, um círculo na cor
+    // da marca (o botão Aplicar dos filtros saiu em T-420): é contra ela que
+    // a mudança se prova.
     await page.goto("/rh/visao");
-    const antes = await corDeFundo(page, '[data-teste="aplicar-filtros"]');
+    const antes = await corDeFundo(page, '[data-teste="avatar-do-perfil"]');
     expect(antes).not.toBe(COR_DO_SITE);
 
     await page.goto("/configuracoes/marca");
@@ -137,7 +139,7 @@ test.describe("o fluxo inteiro", () => {
 
     // Nada foi aplicado ainda: o painel continua como estava.
     await page.goto("/rh/visao");
-    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).toBe(
+    expect(await corDeFundo(page, '[data-teste="avatar-do-perfil"]')).toBe(
       antes,
     );
 
@@ -155,7 +157,7 @@ test.describe("o fluxo inteiro", () => {
 
     await page.goto("/rh/visao");
     await expect(page.locator('[data-teste="estilo-da-marca"]')).toHaveCount(1);
-    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).toBe(
+    expect(await corDeFundo(page, '[data-teste="avatar-do-perfil"]')).toBe(
       COR_DO_SITE,
     );
 
@@ -165,7 +167,7 @@ test.describe("o fluxo inteiro", () => {
 
     // A marca é da instalação: vale em qualquer tela, não só na que aplicou.
     await page.goto("/fin/caixa");
-    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).toBe(
+    expect(await corDeFundo(page, '[data-teste="avatar-do-perfil"]')).toBe(
       COR_DO_SITE,
     );
   });
@@ -198,7 +200,7 @@ test.describe("o fluxo inteiro", () => {
     await page.locator('[data-teste="aplicar-marca"]').click();
 
     await page.goto("/rh/visao");
-    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).toBe(
+    expect(await corDeFundo(page, '[data-teste="avatar-do-perfil"]')).toBe(
       COR_DO_SITE,
     );
 
@@ -211,7 +213,7 @@ test.describe("o fluxo inteiro", () => {
 
     await page.goto("/rh/visao");
     await expect(page.locator('[data-teste="estilo-da-marca"]')).toHaveCount(0);
-    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).not.toBe(
+    expect(await corDeFundo(page, '[data-teste="avatar-do-perfil"]')).not.toBe(
       COR_DO_SITE,
     );
   });
@@ -283,7 +285,7 @@ test.describe("o caminho manual", () => {
     /* --- o painel --- */
 
     await page.goto("/rh/visao");
-    expect(await corDeFundo(page, '[data-teste="aplicar-filtros"]')).toBe(
+    expect(await corDeFundo(page, '[data-teste="avatar-do-perfil"]')).toBe(
       COR_DO_SITE,
     );
     const logo = page.locator('[data-teste="logo-da-marca"]');

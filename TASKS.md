@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 275 tarefas: 177 pendentes e 98 já concluídas (5 no protótipo) |
+| **Total** | 305 tarefas: 179 pendentes e 126 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 42 de 93 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 44 de 93 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **305** | **154** | **119** | **27** | **124 de 305** |
+| **Total** | **305** | **154** | **119** | **27** | **126 de 305** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -57,7 +57,7 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    75 tarefas         63 tarefas
+    75 tarefas         93 tarefas
          |               |
          +-------+-------+
                  |
@@ -693,7 +693,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 
 > **Critério de saída:** O conjunto de 100 perguntas atinge as metas da seção 7.7, com zero número inventado.
 
-*63 tarefas · 38 P0 · 21 P1 · 4 P2*
+*93 tarefas · 52 P0 · 34 P1 · 7 P2*
 
 - [ ] **T-301** `P0` `M` `chat` Definir os contratos Intent e Answer com JSON Schema gerado
   · **Aceite:** Existem os tipos Intent e Answer da seção 7.2 e schemas derivados com additionalProperties false e required completo; o teste rejeita 10 payloads inválidos (métrica ausente, breakdown fora do enum, confidence fora de 0..1, undo sem view) e aceita 5 válidos.
@@ -917,10 +917,10 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-419** `P1` `S` `dados` O cabecalho diz de onde vem os numeros: base carregada ou demonstracao
   · **Aceite:** `Meta` ganha `origem` (fonte e versao da carga), preenchida pelos dois adaptadores e copiada pelo motor, sem numero novo; a suite de contrato segue identica nos dois modos porque so le o que nao muda; sob o breadcrumb aparece "Base Amanna · carga de dd/mm/aaaa as hh:mm" no warehouse e "Dados de demonstracao" nas fixtures, formatado so por `formatarInstante`, com `data-fonte` para o e2e; fonte fora do ar nao derruba a tela.
   · **PRD:** secao 10.2, RF-10, RF-20, RF-21 · **Depende de:** T-149, T-270
-- [ ] **T-420** `P1` `M` `paineis` Filtros vivos: trocar um controle aplica o recorte, sem botao Aplicar
+- [X] **T-420** `P1` `M` `paineis` Filtros vivos: trocar um controle aplica o recorte, sem botao Aplicar
   · **Aceite:** trocar qualquer dos cinco controles navega para a URL canonica do novo recorte apos 300 ms de silencio, preservando o painel destacado; setas seguidas no mesmo `<select>` viram uma navegacao so e o foco continua no controle depois dela, medido no e2e; a barra indica que esta aplicando sem deslocar nada; sem JavaScript o formulario ainda envia por um botao em `noscript`; `marca.spec` le a cor da marca de um elemento que continua existindo; `BarraDeFiltros` entra na lista nomeada de fronteira de cliente e o README diz por que.
   · **PRD:** secao 6.2, secao 6.6, secao 13, RF-01 · **Depende de:** T-128, T-372
-- [ ] **T-421** `P1` `M` `paineis` As telas do modulo num menu lateral recolhivel; os modulos continuam abas
+- [X] **T-421** `P1` `M` `paineis` As telas do modulo num menu lateral recolhivel; os modulos continuam abas
   · **Aceite:** um `nav` "Telas de ..." a esquerda lista as telas do modulo ativo com `aria-current`, links que carregam o recorte (6.2) e `data-teste` por tela; recolhido vira uma faixa de 44 px so com o botao, e o estado vive em cookie lido no servidor — o primeiro quadro ja sai certo e o CLS segue zero com e sem cookie; com menos de 900 px para a tela (conversa aberta em 1280) o menu recolhe por consulta de conteiner, sem medir nada em JS; a tira de telas sai do cabecalho; `shell.spec` e reescrito para a nova geometria e nada vaza da viewport em 1280 e 1440 com a conversa aberta; `MenuLateral` entra na lista nomeada de fronteira de cliente.
   · **PRD:** secao 6.1, secao 6.2, secao 13 · **Depende de:** T-126, T-420
 - [X] **T-422** `P1` `S` `paineis` Os graficos seguem o tema do sistema a partir da segunda tela

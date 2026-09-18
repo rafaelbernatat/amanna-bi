@@ -66,6 +66,25 @@ test.describe("Deslocamento de layout do desenho servido", () => {
     }
   }
 
+  /*
+   * O menu lateral recolhido por cookie (T-421): o servidor ja pinta a faixa
+   * de 44 px, e nada se move quando o cliente monta.
+   */
+  for (const largura of [1280, 1920]) {
+    test(`CLS e zero em ${String(largura)} px em /rh/visao com o menu recolhido`, async ({
+      page,
+      baseURL,
+    }) => {
+      await page
+        .context()
+        .addCookies([
+          { name: "amanna-bi.menu", value: "recolhido", url: String(baseURL) },
+        ]);
+      await page.setViewportSize({ width: largura, height: 900 });
+      expect(await medirCls(page, "/rh/visao")).toBe(0);
+    });
+  }
+
   test("a galeria desenha todas as formas e os quatro estados vazios", async ({
     page,
   }) => {

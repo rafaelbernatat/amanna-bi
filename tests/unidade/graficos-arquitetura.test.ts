@@ -20,12 +20,22 @@ import { describe, expect, it } from "vitest";
  * O que continua valendo para ele e o mesmo que vale para os graficos: nao le
  * dado, nao calcula, nao importa recharts. O numero nasce na rota, no
  * servidor, e o chat so desenha o que volta.
+ *
+ * Em 2026-09-18 entraram dois **arquivos** nomeados, e nao uma pasta
+ * (D-NAVEGACAO-menu-lateral-e-filtros-vivos): a barra de filtros, que navega
+ * a cada troca de controle, e o menu lateral, que recolhe num clique. A lista
+ * e a fronteira; crescer nela e decisao escrita, nao conveniencia.
  */
 
 const RAIZ = process.cwd();
 const APRESENTACAO = join(RAIZ, "src", "apresentacao");
 const GRAFICOS = join("src", "apresentacao", "graficos");
 const CHAT = join("src", "apresentacao", "chat");
+/** Os arquivos de cliente fora dessas pastas, um a um (T-420, T-421). */
+const ARQUIVOS_DE_CLIENTE = [
+  join("src", "apresentacao", "filtros", "BarraDeFiltros.tsx"),
+  join("src", "apresentacao", "navegacao", "MenuLateral.tsx"),
+];
 
 function varrer(pasta: string): string[] {
   const achados: string[] = [];
@@ -52,9 +62,12 @@ function codigoSemComentarios(caminho: string): string {
 const ARQUIVOS = varrer(APRESENTACAO).map((c) => relative(RAIZ, c));
 const DE_GRAFICO = ARQUIVOS.filter((c) => c.startsWith(GRAFICOS + sep));
 const FORA_DE_GRAFICO = ARQUIVOS.filter((c) => !c.startsWith(GRAFICOS + sep));
-/** Os dois lugares onde `"use client"` e permitido: graficos e chat. */
+/** Onde `"use client"` e permitido: graficos, chat e os arquivos nomeados. */
 const FORA_DA_FRONTEIRA_DE_CLIENTE = ARQUIVOS.filter(
-  (c) => !c.startsWith(GRAFICOS + sep) && !c.startsWith(CHAT + sep),
+  (c) =>
+    !c.startsWith(GRAFICOS + sep) &&
+    !c.startsWith(CHAT + sep) &&
+    !ARQUIVOS_DE_CLIENTE.includes(c),
 );
 
 describe("A fronteira de cliente fica contida nos graficos e no chat", () => {
@@ -64,12 +77,23 @@ describe("A fronteira de cliente fica contida nos graficos e no chat", () => {
     expect(ARQUIVOS.some((c) => c.startsWith(CHAT + sep))).toBe(true);
   });
 
-  it("nenhum arquivo fora de graficos e do chat declara 'use client'", () => {
+  it("nenhum arquivo fora de graficos, do chat e dos nomeados declara 'use client'", () => {
     const vazando = FORA_DA_FRONTEIRA_DE_CLIENTE.filter((c) =>
       /^\s*["']use client["']/m.test(readFileSync(join(RAIZ, c), "utf8")),
     );
     expect(vazando).toEqual([]);
   });
+
+  it.each(ARQUIVOS_DE_CLIENTE)(
+    "%s declara 'use client' e nao le cabecalho nem cookie do servidor",
+    (caminho) => {
+      const fonte = readFileSync(join(RAIZ, caminho), "utf8");
+      expect(/^\s*["']use client["']/m.test(fonte)).toBe(true);
+      expect(codigoSemComentarios(caminho)).not.toMatch(
+        /from\s+["']next\/headers["']/,
+      );
+    },
+  );
 
   it("nenhum arquivo fora de graficos importa recharts", () => {
     const vazando = FORA_DE_GRAFICO.filter((c) =>

@@ -1,9 +1,11 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { lerCoresAplicadas } from "@/marca/tela";
 
 import { lerVisitante } from "@/acesso/leitura";
 import { Chat } from "@/apresentacao/chat/Chat";
+import { EstiloDoMenu } from "@/apresentacao/navegacao/EstiloDoMenu";
 import { PALETA } from "@/apresentacao/tema/tema";
 import { ROTA_DA_CONVERSA } from "@/semantica/url";
 
@@ -21,6 +23,16 @@ import { ROTA_DA_CONVERSA } from "@/semantica/url";
  * Ele existe para que este layout envolva só as telas do produto. A galeria
  * de verificação e a página de 404 ficam de fora, e sem conversa.
  *
+ * ## O menu de telas nao mora aqui, e a folha dele sim (T-421)
+ *
+ * O menu lateral e da **pagina**: ela conhece o modulo, a tela e o recorte
+ * que cada link carrega, e o servidor os poe no HTML inicial. Um layout nao
+ * recebe a busca da URL, e le-la por gancho no navegador faria o menu chegar
+ * depois do shell — foi medido: a tela inteira se deslocava quando ele
+ * chegava. O que fica aqui e a unica regra de folha que o menu precisa (a
+ * consulta de conteiner que o recolhe quando a tela e estreita), porque ela
+ * leva o nonce da resposta, como a folha do tema.
+ *
  * ## A conversa encosta, não sobrepõe
  *
  * Aberta, ela é uma coluna própria e a tela encolhe para caber ao lado. Uma
@@ -36,9 +48,10 @@ export default async function LayoutDoPainel({
    * Por propriedade, e nao por `var()`: o chat e componente de cliente e o
    * SVG nao resolve propriedade CSS (ver `DesenhoDePainel`).
    */
-  const [cores, visitante] = await Promise.all([
+  const [cores, visitante, cabecalhos] = await Promise.all([
     lerCoresAplicadas(),
     lerVisitante(),
+    headers(),
   ]);
 
   /*
@@ -47,6 +60,8 @@ export default async function LayoutDoPainel({
    * `fixtures` ele segue tudo. Esta e a conferencia que vale.
    */
   if (visitante !== null) redirect(ROTA_DA_CONVERSA);
+
+  const nonce = cabecalhos.get("x-nonce");
 
   return (
     <div
@@ -58,6 +73,7 @@ export default async function LayoutDoPainel({
         background: PALETA.fundo,
       }}
     >
+      <EstiloDoMenu {...(nonce === null ? {} : { nonce })} />
       <div
         style={{
           flex: "1 1 auto",
