@@ -6,6 +6,7 @@ import { lerKpisDaTela, lerPainelParaTela } from "@/acesso/leitura";
 import { Destaque } from "@/apresentacao/chat/Destaque";
 import { FaixaDeKpis } from "@/apresentacao/paineis/CartaoDeKpi";
 import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
+import { lerCoresAplicadas } from "@/marca/tela";
 import { PainelEmEstado } from "@/apresentacao/paineis/PainelEmEstado";
 import { BannerDeRecorte } from "@/apresentacao/filtros/BannerDeRecorte";
 import { subtituloSobRecorte } from "@/apresentacao/filtros/recorte-ativo";
@@ -308,9 +309,17 @@ async function PaineisDaTela({
   const registro = paineisDaTela(tela);
   if (registro.length === 0) return null;
 
-  const estados = await Promise.all(
-    registro.map((p) => lerPainelParaTela(p.id, query)),
-  );
+  /*
+   * As cores da marca viajam com os paineis, ja resolvidas em valor literal.
+   *
+   * O grafico nao pode ler propriedade CSS — `var()` nao pinta atributo de
+   * SVG, e um SVG serializado perde o `:root` (ver o cabecalho de `tema.ts`).
+   * Entao quem le a marca e a pagina, e o desenho recebe a cor pronta.
+   */
+  const [estados, cores] = await Promise.all([
+    Promise.all(registro.map((p) => lerPainelParaTela(p.id, query))),
+    lerCoresAplicadas(),
+  ]);
 
   return (
     <div
@@ -338,7 +347,7 @@ async function PaineisDaTela({
             destacado={painelDestacado === p.id}
             subtitulo={subtituloSobRecorte(query)}
             desenhar={(carga) => (
-              <DesenhoDePainel painel={carga} span={p.span} />
+              <DesenhoDePainel painel={carga} span={p.span} cores={cores} />
             )}
           />
         </div>

@@ -21,8 +21,13 @@ import {
   larguraDoSpan,
 } from "@/apresentacao/graficos/nucleo";
 import { SemDado } from "@/apresentacao/graficos/SemDado";
-import { corDaCategoria, COR_DO_SENTIDO } from "@/apresentacao/tema/sequencia";
-import { PALETA } from "@/apresentacao/tema/tema";
+import {
+  corDaCategoria,
+  COR_DO_SENTIDO,
+  corPrincipal,
+  corSecundaria,
+} from "@/apresentacao/tema/sequencia";
+import { PALETA, type CoresDaMarca } from "@/apresentacao/tema/tema";
 import type { PanelResponse, Serie, Unidade } from "@/semantica/contrato";
 import type { Forma } from "@/semantica/painel";
 
@@ -226,8 +231,18 @@ const FOLGA_MINIMA = 1;
 export function DesenhoDePainel({
   painel,
   span,
+  cores = null,
 }: {
   readonly painel: PanelResponse;
+  /**
+   * As cores da marca aplicada, ja resolvidas em valor literal.
+   *
+   * Literal, e nao propriedade CSS: `var()` nao pinta atributo de SVG, e um
+   * SVG serializado perde o `:root` (ver o cabecalho de `tema.ts`). Quem le a
+   * marca e a pagina; aqui ela chega pronta. Sem marca, `null`, e a rampa e a
+   * de sempre.
+   */
+  readonly cores?: CoresDaMarca | null;
   /**
    * Colunas da grade de 12 que o painel ocupa (seção 5).
    *
@@ -272,7 +287,7 @@ export function DesenhoDePainel({
             comLegenda={barras.length > 1 || linha !== undefined}
             barras={barras.map((s, i) => ({
               nome: s.name,
-              cor: corDaCategoria(i),
+              cor: corDaCategoria(i, cores),
               valores: s.values,
             }))}
             {...(linha === undefined
@@ -283,7 +298,7 @@ export function DesenhoDePainel({
                     cor:
                       linha.papel === "referencia"
                         ? PALETA.comparacao
-                        : PALETA.marcaEscura,
+                        : corSecundaria(cores),
                     valores: linha.values,
                   },
                 })}
@@ -350,7 +365,7 @@ export function DesenhoDePainel({
               : {
                   linhas: adicionais.map((s, i) => ({
                     nome: s.name,
-                    cor: corDaCategoria(i + 1),
+                    cor: corDaCategoria(i + 1, cores),
                     valores: s.values,
                   })),
                 })}
@@ -388,7 +403,7 @@ export function DesenhoDePainel({
               rotulo: rotuloDeCategoria(categoria),
               fracao: valor === null ? null : Math.abs(valor) / maximo,
               texto: texto(valor, painel.unit),
-              cor: PALETA.marca,
+              cor: corPrincipal(cores),
               ...(referida === null
                 ? {}
                 : { marca: Math.abs(referida) / maximo }),
@@ -430,7 +445,7 @@ export function DesenhoDePainel({
             })}
             faixas={faixas.map((s, i) => ({
               nome: s.name,
-              cor: corDaCategoria(i),
+              cor: corDaCategoria(i, cores),
               valores: s.values,
             }))}
           />
@@ -467,7 +482,7 @@ export function DesenhoDePainel({
                 nome: rotuloDeCategoria(parte.nome),
                 fracao: soma === ZERO ? ZERO : parte.valor / soma,
                 texto: texto(parte.valor, painel.unit),
-                cor: corDaCategoria(i),
+                cor: corDaCategoria(i, cores),
               })),
             };
           })}
@@ -511,7 +526,7 @@ export function DesenhoDePainel({
               painel.passos[i - 1]?.valor ?? null,
               i === ZERO,
             ),
-            cor: corDaCategoria(i),
+            cor: corDaCategoria(i, cores),
           }))}
         />
       );
@@ -545,7 +560,7 @@ export function DesenhoDePainel({
               nome: rotuloDeCategoria(fatia.nome),
               fracao: fatia.valor / soma,
               texto: texto(fatia.valor, painel.unit),
-              cor: corDaCategoria(i),
+              cor: corDaCategoria(i, cores),
             }))}
           />
         </Desenhado>
@@ -578,7 +593,7 @@ export function DesenhoDePainel({
           ate,
           texto: formatarValor(passo.valor, painel.unit),
           cor: passo.ehTotal
-            ? PALETA.marca
+            ? corPrincipal(cores)
             : passo.valor >= ZERO
               ? PALETA.positivo
               : PALETA.negativo,
@@ -634,7 +649,7 @@ export function DesenhoDePainel({
                 : DIAMETRO_MINIMO +
                   (Math.abs(ponto.tamanho) / maiorTamanho) *
                     (DIAMETRO_MAXIMO - DIAMETRO_MINIMO),
-            cor: corDaCategoria(i),
+            cor: corDaCategoria(i, cores),
           }))}
         />
       );

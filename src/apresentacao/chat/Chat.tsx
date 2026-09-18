@@ -36,7 +36,12 @@ import {
 } from "@/apresentacao/chat/RespostaDoChat";
 import { formatarValor } from "@/apresentacao/formato/formato";
 import { acharTela } from "@/apresentacao/navegacao/telas";
-import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  type CoresDaMarca,
+  MARCA,
+  PALETA,
+  TIPOGRAFIA,
+} from "@/apresentacao/tema/tema";
 import type { LinhaDoFluxo, PedidoDeChat, Previa } from "@/chat/protocolo";
 import { sugestoesDaTela } from "@/chat/sugestoes";
 import { QUERY_PADRAO } from "@/semantica/contrato";
@@ -94,11 +99,40 @@ const ROTA_DA_API = "/api/chat";
 /** Onde o chat está desenhado. Ver o cabeçalho do módulo. */
 export type ModoDoChat = "coluna" | "cheio";
 
+/**
+ * Quanto a tipografia cresce no celular.
+ *
+ * A escala da conversa foi desenhada para a coluna de 392 px ao lado do
+ * painel, lida a meio metro de distancia. No celular a largura e quase a
+ * mesma, mas a distancia de leitura e maior e a tela e menor — e ali 9,5 px
+ * viram um texto que ninguem le numa plateia. Um quarto a mais resolve sem
+ * refazer o desenho, e sem tocar o modo coluna, onde a escala continua a de
+ * sempre.
+ *
+ * Um numero, e nao uma folha de estilo: os tamanhos moram em objetos de estilo
+ * em linha (T-124), e um `!important` para vencê-los seria pior.
+ */
+const ESCALA_NO_CELULAR = 1.28;
+
+/** O tamanho de fonte daquele papel, no modo em que o chat esta. */
+function px(base: number, cheio: boolean): string {
+  return `${cheio ? Math.round(base * ESCALA_NO_CELULAR * 10) / 10 : base}px`;
+}
+
 export function Chat({
   modo = "coluna",
+  cores = null,
   tela,
 }: {
   readonly modo?: ModoDoChat;
+  /**
+   * As cores da marca, resolvidas no servidor.
+   *
+   * Chegam por propriedade porque o chat e componente de cliente e o grafico
+   * precisa de valor literal (ver `DesenhoDePainel`). Quem le a marca e a
+   * pagina que monta o chat.
+   */
+  readonly cores?: CoresDaMarca | null;
   /** Em `cheio`, a tela de que a conversa fala, como `modulo/tela`. */
   readonly tela?: string;
 } = {}) {
@@ -106,16 +140,18 @@ export function Chat({
   // Next desta versão). A tela é dinâmica, então o fallback nunca aparece.
   return (
     <Suspense fallback={null}>
-      <ChatNaTela modo={modo} tela={tela ?? null} />
+      <ChatNaTela modo={modo} tela={tela ?? null} cores={cores} />
     </Suspense>
   );
 }
 
 function ChatNaTela({
   modo,
+  cores,
   tela,
 }: {
   readonly modo: ModoDoChat;
+  readonly cores: CoresDaMarca | null;
   readonly tela: string | null;
 }) {
   const caminho = usePathname();
@@ -341,7 +377,7 @@ function ChatNaTela({
             color: PALETA.textoSecundario,
             borderRadius: 999,
             padding: "10px 16px",
-            font: `500 11.5px/1.2 ${TIPOGRAFIA.texto}`,
+            font: `500 ${px(11.5, cheio)}/1.2 ${TIPOGRAFIA.texto}`,
             cursor: "pointer",
             boxShadow: `0 6px 18px color-mix(in srgb, ${MARCA.barraLateral} 14%, transparent)`,
             whiteSpace: "nowrap",
@@ -363,7 +399,7 @@ function ChatNaTela({
             borderRadius: "50%",
             cursor: "pointer",
             boxShadow: `0 14px 34px -8px color-mix(in srgb, ${MARCA.barraLateral} 45%, transparent)`,
-            font: `600 14px/1 ${TIPOGRAFIA.mono}`,
+            font: `600 ${px(14, cheio)}/1 ${TIPOGRAFIA.mono}`,
             letterSpacing: ".02em",
           }}
         >
@@ -456,7 +492,7 @@ function ChatNaTela({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              font: `600 10px/1 ${TIPOGRAFIA.mono}`,
+              font: `600 ${px(10, cheio)}/1 ${TIPOGRAFIA.mono}`,
               flex: "none",
             }}
           >
@@ -465,7 +501,7 @@ function ChatNaTela({
           <div style={{ flex: "1 1 auto", minWidth: 0 }}>
             <div
               style={{
-                font: `600 12px/1.2 ${TIPOGRAFIA.texto}`,
+                font: `600 ${px(12, cheio)}/1.2 ${TIPOGRAFIA.texto}`,
                 color: PALETA.texto,
               }}
             >
@@ -473,7 +509,7 @@ function ChatNaTela({
             </div>
             <div
               style={{
-                font: `400 9.5px/1.3 ${TIPOGRAFIA.texto}`,
+                font: `400 ${px(9.5, cheio)}/1.3 ${TIPOGRAFIA.texto}`,
                 color: PALETA.textoFraco,
               }}
             >
@@ -492,7 +528,7 @@ function ChatNaTela({
                 color: PALETA.textoTerciario,
                 borderRadius: 999,
                 padding: "6px 10px",
-                font: `500 10px/1 ${TIPOGRAFIA.texto}`,
+                font: `500 ${px(10, cheio)}/1 ${TIPOGRAFIA.texto}`,
                 cursor: ocupado ? "default" : "pointer",
                 flex: "none",
               }}
@@ -513,7 +549,7 @@ function ChatNaTela({
                 borderRadius: 999,
                 width: 27,
                 height: 27,
-                font: `600 12px/1 ${TIPOGRAFIA.texto}`,
+                font: `600 ${px(12, cheio)}/1 ${TIPOGRAFIA.texto}`,
                 cursor: "pointer",
                 flex: "none",
               }}
@@ -542,7 +578,7 @@ function ChatNaTela({
           }}
         >
           {conversa.turnos.length === 0 ? (
-            <Bolha>
+            <Bolha cheio={cheio}>
               <p style={{ margin: 0 }}>
                 Pergunte aos dados desta tela ou de qualquer outra. A resposta
                 traz o número, o que entrou na conta e a fórmula — e abre o
@@ -552,6 +588,7 @@ function ChatNaTela({
           ) : (
             conversa.turnos.map((turno) => (
               <TurnoNaTela
+                cores={cores}
                 key={turno.id}
                 turno={turno}
                 rota={rota}
@@ -583,7 +620,7 @@ function ChatNaTela({
               >
                 <span
                   style={{
-                    font: `600 8.5px/1.2 ${TIPOGRAFIA.mono}`,
+                    font: `600 ${px(8.5, cheio)}/1.2 ${TIPOGRAFIA.mono}`,
                     color: MARCA.destaque,
                     textTransform: "uppercase",
                     letterSpacing: ".1em",
@@ -624,7 +661,7 @@ function ChatNaTela({
                       color: MARCA.marca,
                       borderRadius: 999,
                       padding: "6px 11px",
-                      font: `400 10px/1.3 ${TIPOGRAFIA.texto}`,
+                      font: `400 ${px(10, cheio)}/1.3 ${TIPOGRAFIA.texto}`,
                       cursor: ocupado ? "default" : "pointer",
                       textAlign: "left",
                     }}
@@ -660,7 +697,7 @@ function ChatNaTela({
                 background: PALETA.superficie,
                 borderRadius: 14,
                 padding: "9px 12px",
-                font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
+                font: `400 ${px(11.5, cheio)}/1.5 ${TIPOGRAFIA.texto}`,
                 color: ocupado ? PALETA.textoTerciario : PALETA.texto,
               }}
             />
@@ -675,7 +712,7 @@ function ChatNaTela({
                 borderRadius: 999,
                 padding: "0 17px",
                 height: 40,
-                font: `500 11px/1 ${TIPOGRAFIA.texto}`,
+                font: `500 ${px(11, cheio)}/1 ${TIPOGRAFIA.texto}`,
                 cursor: ocupado ? "progress" : "pointer",
                 flex: "none",
               }}
@@ -686,7 +723,7 @@ function ChatNaTela({
           <p
             style={{
               margin: "7px 0 0",
-              font: `400 9px/1.4 ${TIPOGRAFIA.texto}`,
+              font: `400 ${px(9, cheio)}/1.4 ${TIPOGRAFIA.texto}`,
               color: PALETA.textoFraco,
             }}
           >
@@ -707,11 +744,13 @@ function TurnoNaTela({
   turno,
   rota,
   cheio,
+  cores,
   aoPerguntar,
 }: {
   readonly turno: Turno;
   readonly rota: string;
   readonly cheio: boolean;
+  readonly cores: CoresDaMarca | null;
   readonly aoPerguntar: (pergunta: string) => void;
 }) {
   return (
@@ -725,7 +764,7 @@ function TurnoNaTela({
           color: PALETA.textoEmBarra,
           borderRadius: "16px 16px 4px 16px",
           padding: "9px 12px",
-          font: `400 11.5px/1.5 ${TIPOGRAFIA.texto}`,
+          font: `400 ${px(11.5, cheio)}/1.5 ${TIPOGRAFIA.texto}`,
           whiteSpace: "pre-line",
           overflowWrap: "anywhere",
         }}
@@ -744,6 +783,7 @@ function TurnoNaTela({
         }}
       >
         <CorpoDoTurno
+          cores={cores}
           turno={turno}
           rota={rota}
           cheio={cheio}
@@ -758,17 +798,19 @@ function CorpoDoTurno({
   turno,
   rota,
   cheio,
+  cores,
   aoPerguntar,
 }: {
   readonly turno: Turno;
   readonly rota: string;
   readonly cheio: boolean;
+  readonly cores: CoresDaMarca | null;
   readonly aoPerguntar: (pergunta: string) => void;
 }) {
   switch (turno.estado) {
     case "consultando":
       return (
-        <Bolha>
+        <Bolha cheio={cheio}>
           <p role="status" data-teste="chat-pendente" style={{ margin: 0 }}>
             Lendo os dados…
           </p>
@@ -779,18 +821,22 @@ function CorpoDoTurno({
       const previa = turno.previa;
       return (
         <>
-          <Bolha>
+          <Bolha cheio={cheio}>
             {previa === null ? null : (
               <p
                 data-teste="chat-previa"
                 style={{
                   margin: "0 0 4px",
-                  font: `500 12px/1.5 ${TIPOGRAFIA.texto}`,
+                  font: `500 ${px(12, cheio)}/1.5 ${TIPOGRAFIA.texto}`,
                   color: PALETA.texto,
                 }}
               >
                 {previa.rotulo}:{" "}
-                <span style={{ font: `600 12px/1.5 ${TIPOGRAFIA.mono}` }}>
+                <span
+                  style={{
+                    font: `600 ${px(12, cheio)}/1.5 ${TIPOGRAFIA.mono}`,
+                  }}
+                >
                   {previa.valor === null
                     ? "sem dado neste recorte"
                     : formatarValor(previa.valor, previa.unidade)}
@@ -808,7 +854,7 @@ function CorpoDoTurno({
           {/* O gráfico aparece com o número, antes do texto: é o que a
               pessoa vê enquanto o modelo escreve. */}
           {previa?.painel == null ? null : (
-            <GraficoNoChat painel={previa.painel} />
+            <GraficoNoChat painel={previa.painel} cores={cores} />
           )}
           {previa === null ? null : (
             <AcoesAplicadas
@@ -827,12 +873,12 @@ function CorpoDoTurno({
       if (resposta === null) return null;
       return (
         <>
-          <Bolha>
+          <Bolha cheio={cheio}>
             <RespostaDoChat resposta={resposta} aoPerguntar={aoPerguntar} />
           </Bolha>
           {resposta.tipo === "resposta" &&
           resposta.resolucao.painel !== null ? (
-            <GraficoNoChat painel={resposta.resolucao.painel} />
+            <GraficoNoChat painel={resposta.resolucao.painel} cores={cores} />
           ) : null}
           {resposta.tipo === "resposta" ? (
             <AcoesAplicadas
@@ -848,7 +894,7 @@ function CorpoDoTurno({
 
     case "falhou":
       return (
-        <Bolha>
+        <Bolha cheio={cheio}>
           <div
             data-teste="chat-falha"
             data-motivo={turno.falha ?? ""}
@@ -935,7 +981,7 @@ function AcoesAplicadas({
               border: `1px solid ${PALETA.bordaForte}`,
               borderRadius: 999,
               padding: "4px 10px",
-              font: `500 9.5px/1.3 ${TIPOGRAFIA.texto}`,
+              font: `500 ${px(9.5, cheio)}/1.3 ${TIPOGRAFIA.texto}`,
               color: PALETA.textoSecundario,
             }}
           >
@@ -958,7 +1004,7 @@ function AcoesAplicadas({
               color: PALETA.textoEmBarra,
               borderRadius: 999,
               padding: "6px 12px",
-              font: `500 10px/1 ${TIPOGRAFIA.texto}`,
+              font: `500 ${px(10, cheio)}/1 ${TIPOGRAFIA.texto}`,
               textDecoration: "none",
             }}
           >
@@ -974,7 +1020,7 @@ function AcoesAplicadas({
             color: MARCA.marca,
             borderRadius: 999,
             padding: "5px 12px",
-            font: `500 10px/1 ${TIPOGRAFIA.texto}`,
+            font: `500 ${px(10, cheio)}/1 ${TIPOGRAFIA.texto}`,
             textDecoration: "none",
           }}
         >
@@ -986,7 +1032,13 @@ function AcoesAplicadas({
 }
 
 /** A bolha da resposta: fundo claro, à esquerda, com a largura toda. */
-function Bolha({ children }: { readonly children: ReactNode }) {
+function Bolha({
+  children,
+  cheio,
+}: {
+  readonly children: ReactNode;
+  readonly cheio: boolean;
+}) {
   return (
     <div
       style={{
@@ -996,7 +1048,7 @@ function Bolha({ children }: { readonly children: ReactNode }) {
         border: `1px solid ${PALETA.borda}`,
         borderRadius: "4px 16px 16px 16px",
         padding: "10px 12px",
-        font: `400 11.5px/1.55 ${TIPOGRAFIA.texto}`,
+        font: `400 ${px(11.5, cheio)}/1.55 ${TIPOGRAFIA.texto}`,
         color: PALETA.textoSecundario,
       }}
     >

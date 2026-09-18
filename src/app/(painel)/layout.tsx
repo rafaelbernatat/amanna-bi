@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { lerCoresAplicadas } from "@/marca/tela";
 
 import { Chat } from "@/apresentacao/chat/Chat";
 import { PALETA } from "@/apresentacao/tema/tema";
@@ -23,9 +24,17 @@ import { PALETA } from "@/apresentacao/tema/tema";
  * sobreposição cobriria o painel que a resposta acabou de destacar — o gráfico
  * ficaria atrás da conversa que fala dele.
  */
-export default function LayoutDoPainel({
+export default async function LayoutDoPainel({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  /*
+   * As cores da marca descem ate o grafico dentro da conversa.
+   *
+   * Por propriedade, e nao por `var()`: o chat e componente de cliente e o
+   * SVG nao resolve propriedade CSS (ver `DesenhoDePainel`).
+   */
+  const cores = await lerCoresAplicadas();
+
   return (
     <div
       data-teste="quadro"
@@ -48,7 +57,7 @@ export default function LayoutDoPainel({
       >
         {children}
       </div>
-      <Chat />
+      <Chat cores={cores} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { lerCoresAplicadas } from "@/marca/tela";
 import type { Metadata } from "next";
 
 import { lerIdentidade } from "@/acesso/leitura";
@@ -81,5 +82,5 @@ export default async function Pagina({
    * chat; um redirecionamento a cada carga faria o celular navegar duas vezes
    * por pergunta. O leitor já é tolerante: o que não casa cai no padrão.
    */
-  return <Chat modo="cheio" tela={tela} />;
+  return <Chat modo="cheio" tela={tela} cores={await lerCoresAplicadas()} />;
 }
