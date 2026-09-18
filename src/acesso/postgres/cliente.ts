@@ -140,6 +140,28 @@ function clienteDaConexao(conexao: PoolClient): ClientePostgres {
   );
 }
 
+/**
+ * A autoridade certificadora do ambiente, com as quebras de linha de volta.
+ *
+ * Um PEM tem quebras de linha, e quase nenhum painel de nuvem lida bem com
+ * isso: o CLI da Vercel recusa `--value` com valor de várias linhas
+ * ("option requires argument"), e caixas de texto de painel costumam comer a
+ * formatação. O costume da indústria é guardar o certificado numa linha só,
+ * com `
+` escrito literalmente, e desescapar na leitura — é o que se faz com
+ * chave de serviço em toda plataforma que só aceita valor de uma linha.
+ *
+ * Os dois formatos são aceitos: quem puder gravar o PEM com quebras de
+ * verdade (um `.env.local`, um cofre decente) não precisa escapar nada.
+ */
+export function caDoAmbiente(
+  ambiente: Record<string, string | undefined> = process.env,
+): string | undefined {
+  const bruta = ambiente["DATABASE_SSL_CA"];
+  if (bruta === undefined || bruta.trim() === "") return undefined;
+  return bruta.includes("\\n") ? bruta.replace(/\\n/g, "\n") : bruta;
+}
+
 /** Um cliente sobre uma URL. A carga e o teste usam; o produto usa o do processo. */
 export function criarCliente(
   url: string,
@@ -227,7 +249,7 @@ export function clienteDoProcesso(
   const atual = guardado();
   if (atual !== null && atual.url === url) return atual.cliente;
 
-  const ca = ambiente["DATABASE_SSL_CA"];
+  const ca = caDoAmbiente(ambiente);
   const cliente = criarCliente(url, ca === undefined ? {} : { ca });
   guardar({ url, cliente });
   return cliente;

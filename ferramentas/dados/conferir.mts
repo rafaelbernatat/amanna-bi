@@ -5,7 +5,10 @@
  * código 1 se alguma divergir acima da tolerância. Ver conferencia.ts.
  */
 
-import { criarCliente } from "../../src/acesso/postgres/cliente.ts";
+import {
+  caDoAmbiente,
+  criarCliente,
+} from "../../src/acesso/postgres/cliente.ts";
 import { conferirBase, relatorioDeConferencia } from "./conferencia.ts";
 
 const url = process.env["DATABASE_URL_CARGA"] ?? process.env["DATABASE_URL"];
@@ -25,10 +28,10 @@ if (url === undefined || url.trim() === "") {
  * A URL nao deve levar `sslmode`: com ele presente o driver monta o TLS a
  * partir da string e ignora esta CA.
  */
-const ca = process.env["DATABASE_SSL_CA"];
+const ca = caDoAmbiente();
 const cliente = criarCliente(url, {
   max: 1,
-  ...(ca === undefined || ca.trim() === "" ? {} : { ca }),
+  ...(ca === undefined ? {} : { ca }),
 });
 try {
   const lista = await conferirBase(cliente);
