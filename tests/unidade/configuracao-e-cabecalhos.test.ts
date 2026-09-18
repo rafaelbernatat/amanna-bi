@@ -8,6 +8,8 @@
 
 import { describe, expect, it } from "vitest";
 
+import { caDoAmbiente } from "@/acesso/postgres/cliente";
+
 import {
   CABECALHOS_FIXOS,
   gerarNonce,
@@ -299,5 +301,41 @@ describe("o nonce", () => {
   it("tem ao menos 128 bits de entropia", () => {
     // 16 bytes em base64 dão 24 caracteres com preenchimento.
     expect(gerarNonce()).toMatch(/^[A-Za-z0-9+/]{22}==$/);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * T-368 · a CA do banco, nos dois formatos
+ * ------------------------------------------------------------------ */
+
+describe("caDoAmbiente", () => {
+  const PEM =
+    "-----BEGIN CERTIFICATE-----" +
+    "@" +
+    "MIIabc" +
+    "@" +
+    "-----END CERTIFICATE-----";
+  const COM_QUEBRAS = PEM.split("@").join("\n");
+  const EM_UMA_LINHA = PEM.split("@").join("\\n");
+
+  it("aceita o PEM com quebras de verdade, sem mexer nele", () => {
+    expect(caDoAmbiente({ DATABASE_SSL_CA: COM_QUEBRAS })).toBe(COM_QUEBRAS);
+  });
+
+  /**
+   * O formato de uma linha so existe por causa dos paineis de nuvem.
+   *
+   * O CLI da Vercel recusa `--value` com valor de varias linhas, e caixa de
+   * texto de painel costuma comer a formatacao. Guardar com a barra escrita e
+   * desescapar na leitura e o costume da industria para chave e certificado.
+   */
+  it("restaura as quebras quando vem numa linha so", () => {
+    expect(caDoAmbiente({ DATABASE_SSL_CA: EM_UMA_LINHA })).toBe(COM_QUEBRAS);
+  });
+
+  it("ausente ou vazia nao vira CA nenhuma", () => {
+    expect(caDoAmbiente({})).toBeUndefined();
+    expect(caDoAmbiente({ DATABASE_SSL_CA: "" })).toBeUndefined();
+    expect(caDoAmbiente({ DATABASE_SSL_CA: "   " })).toBeUndefined();
   });
 });
