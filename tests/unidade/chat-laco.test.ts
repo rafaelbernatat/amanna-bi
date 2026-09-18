@@ -1,9 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { contextoDe } from "@/chat/contexto";
+import { PASSO_DE_REDACAO } from "@/chat/ferramentas/passos";
 import {
   INSTRUCAO_DO_LACO,
   metricaDoPainel,
+  painelDaComposta,
   resolverComposta,
 } from "@/chat/laco";
 import { redigirResposta, resolverPergunta } from "@/chat/perguntar";
@@ -398,5 +400,110 @@ describe("resolverComposta", () => {
     );
     if (resposta.tipo !== "resposta") throw new Error("esperava resposta");
     expect(resposta.texto).toMatch(/parte composta/);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * O que o laço desenha e conta (T-432, T-434)
+ * ------------------------------------------------------------------ */
+
+describe("o que o laço desenha e conta", () => {
+  const CONTEXTO = contextoDe("fin/visao", "painel=fin-dre", ["2026"]);
+  const PERGUNTA = "Top 3 clientes por receita";
+
+  /** O modelo pede um ranking e, com ele na mão, escreve sem número. */
+  function rankingFalso() {
+    vi.stubGlobal("fetch", async (_u: string, init: { body: string }) => {
+      const corpo = JSON.parse(init.body) as { messages: { role: string }[] };
+      const message = corpo.messages.some((m) => m.role === "tool")
+        ? { content: "Os maiores clientes estão listados. Quer o segundo?" }
+        : {
+            content: null,
+            tool_calls: [
+              {
+                id: "r1",
+                type: "function",
+                function: {
+                  name: "ranking",
+                  arguments: JSON.stringify({
+                    metrica: "receita_liquida",
+                    dimensao: "cliente",
+                    topN: 3,
+                  }),
+                },
+              },
+            ],
+          };
+      return new Response(JSON.stringify({ choices: [{ message }] }), {
+        status: 200,
+      });
+    });
+  }
+
+  it("o ranking lido vira o gráfico da resposta, em barras, e vence o painel da métrica", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    rankingFalso();
+    const r = await resolverComposta(PERGUNTA, CONTEXTO, []);
+    if (r?.tipo !== "composta") throw new Error("esperava composta");
+    expect(r.resolucao.painel?.id).toBe("chat-ranking-receita_liquida-cliente");
+    expect(r.resolucao.painel?.forma).toBe("barras-horizontais");
+    if (r.resolucao.painel?.forma !== "barras-horizontais") return;
+    expect(r.resolucao.painel.categories).toHaveLength(3);
+    expect(r.resolucao.painel.series[0]?.values).toHaveLength(3);
+    expect(painelDaComposta([])).toBeNull();
+  });
+
+  it("cada leitura vira um passo, a redação vira outro, e a prévia sai antes do texto", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    rankingFalso();
+    const passos: string[] = [];
+    const previas: string[] = [];
+    const ordem: string[] = [];
+    const r = await resolverComposta(PERGUNTA, CONTEXTO, [], undefined, {
+      aoAndamento: (passo) => {
+        passos.push(passo);
+        ordem.push("passo");
+      },
+      aoPrevia: (resolucao) => {
+        previas.push(resolucao.metrica);
+        ordem.push("previa");
+      },
+    });
+    expect(passos).toEqual([
+      "Lendo Receita líquida por cliente…",
+      PASSO_DE_REDACAO,
+    ]);
+    expect(previas).toEqual(["receita_liquida"]);
+    expect(ordem).toEqual(["passo", "previa", "passo"]);
+    if (r?.tipo !== "composta") throw new Error("esperava composta");
+    expect(r.resolucao.metrica).toBe("receita_liquida");
+  });
+
+  it("um gateway que responde erro registra estágio, modelo, rodada e status", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    const aviso = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.stubGlobal(
+      "fetch",
+      async () =>
+        new Response(
+          JSON.stringify({ error: { message: "No endpoints found" } }),
+          { status: 404 },
+        ),
+    );
+    const r = await resolverComposta(PERGUNTA, CONTEXTO, []);
+    expect(r).toBeNull();
+    const linha = aviso.mock.calls
+      .map((c) => String(c[0]))
+      .find((l) => l.includes("chat.gateway_falhou"));
+    expect(linha).toBeDefined();
+    const registro = JSON.parse(linha ?? "{}") as Record<string, unknown>;
+    expect(registro).toMatchObject({
+      estagio: "ferramentas",
+      rodada: 1,
+      status: 404,
+    });
+    expect(typeof registro["modelo"]).toBe("string");
+    expect(String(registro["erro"])).toContain("No endpoints found");
+    aviso.mockRestore();
   });
 });

@@ -182,7 +182,7 @@ export function RespostaDoChat({
         }}
       >
         {r.formula} · fechamento {r.asOf} · fonte {r.fontes.join(", ")} ·{" "}
-        {autoriaEmTexto(resposta.autoria)}
+        {autoriaEmTexto(resposta.autoria)} · caminho {r.caminho}
         {r.leituras.length === 0
           ? ""
           : ` · leituras: ${r.leituras.map((l) => l.ferramenta).join(", ")}`}
@@ -497,6 +497,8 @@ function autoriaEmTexto(autoria: Autoria): string {
   switch (autoria) {
     case "modelo":
       return "redigido pelo modelo, números conferidos contra o envelope";
+    case "modelo-corrigido":
+      return "redigido pelo modelo e corrigido uma vez; números conferidos contra o envelope";
     case "modelo-recusado":
       return "redação do modelo recusada pelo verificador; texto montado do resultado";
     case "gateway-indisponivel":

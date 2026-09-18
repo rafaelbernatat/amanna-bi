@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { lerPedido } from "@/chat/pedido";
 import {
@@ -227,5 +227,70 @@ describe("POST /api/chat", () => {
     const [previa] = await linhasDe(resposta);
     if (previa?.fase !== "previa") return;
     expect(previa.previa.acoes.filtros.periodo).toBe("12-meses");
+  });
+});
+
+describe("as fases com o laço (T-434)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it("o andamento e a prévia chegam antes da resposta, e o gráfico é o ranking lido", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    vi.stubGlobal("fetch", async (_u: string, init: { body: string }) => {
+      const corpo = JSON.parse(init.body) as { messages: { role: string }[] };
+      const message = corpo.messages.some((m) => m.role === "tool")
+        ? { content: "Os maiores clientes estão listados. Quer o segundo?" }
+        : {
+            content: null,
+            tool_calls: [
+              {
+                id: "r1",
+                type: "function",
+                function: {
+                  name: "ranking",
+                  arguments: JSON.stringify({
+                    metrica: "receita_liquida",
+                    dimensao: "cliente",
+                    topN: 3,
+                  }),
+                },
+              },
+            ],
+          };
+      return new Response(JSON.stringify({ choices: [{ message }] }), {
+        status: 200,
+      });
+    });
+
+    const resposta = await POST(
+      pedido({
+        pergunta: "Top 3 clientes por receita",
+        tela: "fin/visao",
+        busca: "",
+      }),
+    );
+    const linhas = await linhasDe(resposta);
+    expect(linhas.map((l) => l.fase)).toEqual([
+      "andamento",
+      "previa",
+      "andamento",
+      "previa",
+      "resposta",
+    ]);
+    const previas = linhas.filter((l) => l.fase === "previa");
+    expect(
+      previas.at(-1)?.fase === "previa" && previas.at(-1)?.previa.painel?.id,
+    ).toBe("chat-ranking-receita_liquida-cliente");
+    const final = linhas.at(-1);
+    if (final?.fase !== "resposta" || final.resposta.tipo !== "resposta") {
+      throw new Error("esperava resposta");
+    }
+    expect(final.resposta.autoria).toBe("modelo");
+    expect(final.resposta.resolucao.caminho).toBe("composto");
+    expect(final.resposta.resolucao.painel?.id).toBe(
+      "chat-ranking-receita_liquida-cliente",
+    );
   });
 });

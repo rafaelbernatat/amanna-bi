@@ -17,7 +17,11 @@ export type TipoDeIncidente =
   | "inspetor_bloqueou"
   | "laco_falhou"
   | "laco_degradou"
-  | "ferramenta_recusada";
+  | "ferramenta_recusada"
+  /** O gateway não respondeu ou respondeu erro: estágio, modelo, status (T-430). */
+  | "gateway_falhou"
+  /** A leitura do dado lançou: o nome da exceção e a mensagem, curta (T-430). */
+  | "fonte_falhou";
 
 export type Incidente = {
   readonly tipo: TipoDeIncidente;

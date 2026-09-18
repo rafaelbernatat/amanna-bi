@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 28 de 93 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 35 de 93 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **305** | **154** | **119** | **27** | **110 de 305** |
+| **Total** | **305** | **154** | **119** | **27** | **117 de 305** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -947,28 +947,28 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [ ] **T-429** `P0` `S` `seguranca` O convidado do QR fica no chat: tela do painel leva de volta a conversa
   · **Aceite:** com sessao valida de perfil `auditor` entrada por convite, `decidirAcesso` redireciona pagina fora de `/conversa` (e do que ela precisa) para `/conversa` e nega `/api/*` fora da lista; o layout do painel confere a mesma coisa no servidor, porque prefetch pula o proxy e o arnes `fixtures` o deixa seguir; quem apresenta continua navegando; o e2e escaneia, cadastra, abre `/rh/visao` no celular e volta a conversa.
   · **PRD:** secao 11, D-CONVITE-apresentacao, D-CONVIDADO-cadastro · **Depende de:** T-357, T-425
-- [ ] **T-430** `P0` `S` `chat` Registrar status e erro do gateway nos incidentes, e o caminho na linha de auditoria
+- [X] **T-430** `P0` `S` `chat` Registrar status e erro do gateway nos incidentes, e o caminho na linha de auditoria
   · **Aceite:** `chamarGateway` devolve falha com status e os primeiros 200 caracteres do erro, sem cabecalho nem chave; `gateway_falhou` sai com estagio, modelo, rodada e status; `laco_falhou` traz parada e rodadas; a linha de auditoria da bolha mostra o caminho (simples, composto, degradado); a rota declara `maxDuration`.
   · **PRD:** secao 7.7, secao 13, secao 14, D-CHAT-ferramentas · **Depende de:** T-352
-- [ ] **T-431** `P0` `S` `plataforma` Escolher e gravar o modelo do laco (H-68) com o roteiro de seis perguntas
+- [X] **T-431** `P0` `S` `plataforma` Escolher e gravar o modelo do laco (H-68) com o roteiro de seis perguntas
   · **Aceite:** as seis perguntas do roteiro respondem em producao com autoria "modelo" e caminho "composto" onde compostas; `OPENROUTER_MODEL_FERRAMENTAS` gravado em Production e Preview; id, resultado e custo anotados em H-68.
   · **PRD:** secao 7.3, secao 13, D-CHAT-ferramentas · **Depende de:** T-430
-- [ ] **T-432** `P0` `M` `chat` Um grafico para toda resposta: serie de 12 meses da propria metrica e precedencia no laco
+- [X] **T-432** `P0` `M` `chat` Um grafico para toda resposta: serie de 12 meses da propria metrica e precedencia no laco
   · **Aceite:** metrica sem painel na tela responde com painel `chat-serie-<id>` montado de `MetricValue.serie` e `mesesDoRecorte`, 12 meses mesmo com periodo dezembro, nulo quando toda a serie e nula; no laco, `Resolucao.painel` segue grafico em foco > serie > ranking > metrica; os pontos so passam no verificador com o rotulo; e2e cobre "Qual o ROE?".
   · **PRD:** secao 6.5, secao 7.2, RF-13, RF-15, D-CHAT-ferramentas · **Depende de:** T-351
-- [ ] **T-433** `P0` `M` `chat` Redacao com profundidade e uma rodada de correcao verificada
+- [X] **T-433** `P0` `M` `chat` Redacao com profundidade e uma rodada de correcao verificada
   · **Aceite:** as instrucoes pedem abertura, o que o grafico mostra, o que explica e uma comparacao, ate doze frases; tetos `TETO_DE_SAIDA_REDACAO` 2000 e `TETO_DE_SAIDA_COMPOSTA` 2400; texto recusado ganha uma reescrita com a lista de permitidos e passa de novo pelo verificador; `modelo-corrigido` aparece na tela; recusa dupla cai no montado com dois incidentes; a taxa de recusa das 33 perguntas de CFO nao sobe.
   · **PRD:** secao 7.1, secao 7.7, RF-15, D-CHAT-perguntas-cfo · **Depende de:** T-431
-- [ ] **T-434** `P1` `S` `chat` Andamento e previa cedo no laco
+- [X] **T-434** `P1` `S` `chat` Andamento e previa cedo no laco
   · **Aceite:** a rota emite `{fase: "andamento", passo}` por leitura do laco com frase deterministica, e a previa na primeira leitura que nomeia metrica; a bolha mostra o passo; sem gateway as fases continuam previa e resposta.
   · **PRD:** secao 6.4, secao 13, D-CHAT-ferramentas · **Depende de:** T-430
-- [ ] **T-435** `P1` `S` `chat` Sinais a mais no classificador e a continuacao composta
+- [X] **T-435** `P1` `S` `chat` Sinais a mais no classificador e a continuacao composta
   · **Aceite:** decomposicao, concentracao e "ultimos N meses" levam ao laco; "E por cliente?" apos uma resposta com metrica vira ranking herdado; as 39 sugestoes e as continuacoes de recorte continuam simples por teste.
   · **PRD:** secao 7.1, secao 7.5, D-CHAT-ferramentas · **Depende de:** T-350
 - [ ] **T-436** `P2` `M` `chat` Laco na duvida, atras de variavel, com a evidencia de T-431
   · **Aceite:** com `CHAT_LACO_NA_DUVIDA=1`, pergunta sem palpite local confiante e sem continuacao vai ao laco com `listar_metricas`; desligada, nada muda; o conjunto de avaliacao compara recusa e acerto nos dois modos.
   · **PRD:** secao 7.5, secao 7.7, RF-16 · **Depende de:** T-431, T-435
-- [ ] **T-437** `P1` `S` `chat` Teste vivo com chave, decisao D-CHAT-resposta-completa e H-68 resolvido
+- [X] **T-437** `P1` `S` `chat` Teste vivo com chave, decisao D-CHAT-resposta-completa e H-68 resolvido
   · **Aceite:** `chat-vivo.test.ts` pula sem chave e, com ela, afirma autoria modelo e painel presente em tres perguntas; a decisao registra laco por sinal, grafico para toda resposta, correcao unica, modelo e custo; H-68 marcado resolvido e `npm run instrucoes` verde.
   · **PRD:** secao 7.7, secao 9.4, D-CHAT-ferramentas · **Depende de:** T-432, T-433, T-434
 - [ ] **T-438** `P2` `S` `chat` Cache de prompt para instrucao e ferramentas do laco

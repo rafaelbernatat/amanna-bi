@@ -16,8 +16,13 @@ export const MAXIMO_DE_RODADAS = 3;
 /** Quanto se espera por uma rodada do gateway. */
 export const LIMITE_MS_POR_RODADA = 20_000;
 
-/** O texto final da resposta composta cabe nisto. */
-export const TETO_DE_SAIDA_COMPOSTA = 1600;
+/**
+ * O texto final da resposta composta cabe nisto.
+ *
+ * Subiu de 1.600 com T-433: a redação passou a ter dois ou três parágrafos —
+ * o número, o que as leituras mostram, o que explica.
+ */
+export const TETO_DE_SAIDA_COMPOSTA = 2400;
 
 /** Quantos itens um ranking traz quando o modelo não diz. */
 export const TOP_N_PADRAO = 5;

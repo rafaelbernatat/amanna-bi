@@ -2,9 +2,11 @@ import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { lerIdentidade } from "@/acesso/leitura";
 import { contextoDe } from "@/chat/contexto";
 import { controleDoProcesso, type MotivoDeLimite } from "@/chat/limite";
+import { registrarIncidente } from "@/chat/incidente";
 import { lerPedido, previaDe } from "@/chat/pedido";
 import { redigirResposta, resolverPergunta } from "@/chat/perguntar";
-import type { LinhaDoFluxo } from "@/chat/protocolo";
+import type { LinhaDoFluxo, Previa } from "@/chat/protocolo";
+import type { Resolucao } from "@/chat/resolver";
 import { tokensDoProcesso } from "@/gateway/openrouter";
 import { SessaoAusente } from "@/seguranca/convite";
 import { GraoProibido } from "@/seguranca/grao";
@@ -44,6 +46,36 @@ import { origemPropria } from "@/seguranca/origem";
  */
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Quanto a função pode levar, em segundos (T-430).
+ *
+ * Uma pergunta composta faz até três rodadas de 20 s no laço, mais a redação
+ * e uma rodada de correção de 30 s cada. Sem isto, a plataforma encerrava a
+ * função no meio e a conversa via "não consegui falar com o servidor" — que
+ * é a frase de rede, não a de um laço longo.
+ */
+export const maxDuration = 120;
+
+/** Quanto da mensagem de uma exceção vai para o registro. */
+const TAMANHO_DO_ERRO_REGISTRADO = 200;
+
+/** Os primeiros quadros da pilha, para o log apontar o arquivo. */
+const QUADROS_REGISTRADOS = 3;
+function pilhaDoErro(erro: unknown): string {
+  const pilha = erro instanceof Error ? (erro.stack ?? "") : "";
+  return pilha
+    .split("\n")
+    .slice(1, 1 + QUADROS_REGISTRADOS)
+    .map((l) => l.trim())
+    .join(" | ");
+}
+
+/** A mensagem de uma exceção, curta e sem quebra: só para o log. */
+function resumoDoErro(erro: unknown): string {
+  const mensagem = erro instanceof Error ? erro.message : String(erro);
+  return mensagem.replace(/\s+/g, " ").slice(0, TAMANHO_DO_ERRO_REGISTRADO);
+}
 
 /** Uma resposta curta de erro, sem corpo que diga mais que o status. */
 function recusar(status: number, erro: string): Response {
@@ -153,16 +185,38 @@ export async function POST(requisicao: Request): Promise<Response> {
         controlador.enqueue(codificador.encode(`${JSON.stringify(linha)}\n`));
       };
       try {
+        /*
+         * A prévia sai na primeira leitura do laço que nomeia uma métrica
+         * (T-434), e de novo no fim só se o painel mudou — o ranking que a
+         * pergunta pediu vence a métrica de que ele deriva (T-432).
+         */
+        let previaEmitida: Previa | null = null;
+        const emitirPrevia = (resolucao: Resolucao) => {
+          const previa = previaDe(resolucao);
+          if (
+            previaEmitida !== null &&
+            previaEmitida.metrica === previa.metrica &&
+            previaEmitida.painel?.id === previa.painel?.id
+          ) {
+            return;
+          }
+          previaEmitida = previa;
+          emitir({ fase: "previa", previa });
+        };
         const resolvida = await resolverPergunta(
           pedido.pergunta,
           contexto,
           pedido.historico,
+          {
+            aoAndamento: (passo) => emitir({ fase: "andamento", passo }),
+            aoPrevia: emitirPrevia,
+          },
         );
         if (resolvida.tipo === "recusa") {
           emitir({ fase: "resposta", resposta: resolvida });
           return;
         }
-        emitir({ fase: "previa", previa: previaDe(resolvida.resolucao) });
+        emitirPrevia(resolvida.resolucao);
         const resposta = await redigirResposta(
           pedido.pergunta,
           resolvida.resolucao,
@@ -172,13 +226,24 @@ export async function POST(requisicao: Request): Promise<Response> {
         emitir({ fase: "resposta", resposta });
       } catch (erro) {
         // Mesma tradução de `lerPainelParaTela`: fora do perfil é estado, e
-        // qualquer outra coisa é a fonte. O detalhe fica no servidor.
+        // qualquer outra coisa é a fonte. O detalhe fica no servidor — e
+        // fica mesmo, registrado (T-430): um erro de fonte sem nome no log
+        // custou uma tarde inteira de "o chat responde genérico".
+        const semPermissao =
+          erro instanceof ForaDoEscopo || erro instanceof GraoProibido;
+        if (!semPermissao) {
+          registrarIncidente({
+            tipo: "fonte_falhou",
+            detalhe: {
+              nome: erro instanceof Error ? erro.name : "desconhecido",
+              erro: resumoDoErro(erro),
+              pilha: pilhaDoErro(erro),
+            },
+          });
+        }
         emitir({
           fase: "falha",
-          motivo:
-            erro instanceof ForaDoEscopo || erro instanceof GraoProibido
-              ? "sem_permissao"
-              : "erro_de_fonte",
+          motivo: semPermissao ? "sem_permissao" : "erro_de_fonte",
         });
       } finally {
         const depois = tokensDoProcesso();

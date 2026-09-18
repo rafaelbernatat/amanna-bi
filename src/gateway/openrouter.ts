@@ -177,13 +177,47 @@ function tokensDe(corpo: RespostaDoGateway): Tokens {
   return lidos;
 }
 
-/** Uma ida ao gateway. `null` quando não deu, por qualquer razão. */
+/**
+ * Por que uma ida ao gateway não deu (T-430).
+ *
+ * `status` é o HTTP quando houve resposta, `null` quando nem isso — rede,
+ * tempo esgotado. `erro` são os primeiros caracteres do corpo, ou o nome da
+ * exceção. Nunca um cabeçalho, nunca a chave: o que sai daqui vai para o log.
+ */
+export type FalhaDoGateway = {
+  readonly status: number | null;
+  readonly erro: string;
+};
+
+/** Quem quer saber da falha. O laço registra com estágio, modelo e rodada. */
+export type AoFalhar = (falha: FalhaDoGateway) => void;
+
+/** Quanto do corpo de erro vai para o registro. */
+const TAMANHO_DO_ERRO_REGISTRADO = 200;
+
+type IdaAoGateway =
+  | { readonly ok: true; readonly corpo: RespostaDoGateway }
+  | { readonly ok: false; readonly falha: FalhaDoGateway };
+
+function resumirErro(texto: string): string {
+  return texto.replace(/\s+/g, " ").trim().slice(0, TAMANHO_DO_ERRO_REGISTRADO);
+}
+
+/**
+ * Uma ida ao gateway.
+ *
+ * Um corpo 200 sem `choices` também é falha: o OpenRouter devolve erro de
+ * provedor assim, com `error.message` no corpo, e antes disto ele passava
+ * como "resposta vazia" sem ninguém saber o motivo.
+ */
 async function chamarGateway(
   corpo: Readonly<Record<string, unknown>>,
   limiteMs: number,
-): Promise<RespostaDoGateway | null> {
+): Promise<IdaAoGateway> {
   const autorizacao = chave();
-  if (autorizacao === null) return null;
+  if (autorizacao === null) {
+    return { ok: false, falha: { status: null, erro: "sem chave" } };
+  }
   try {
     const resposta = await fetch(ENDERECO, {
       method: "POST",
@@ -194,10 +228,37 @@ async function chamarGateway(
       },
       body: JSON.stringify(corpo),
     });
-    if (!resposta.ok) return null;
-    return (await resposta.json()) as RespostaDoGateway;
-  } catch {
-    return null;
+    const texto = await resposta.text();
+    if (!resposta.ok) {
+      return {
+        ok: false,
+        falha: { status: resposta.status, erro: resumirErro(texto) },
+      };
+    }
+    const lido = JSON.parse(texto) as RespostaDoGateway & {
+      readonly error?: { readonly message?: unknown };
+    };
+    if (!Array.isArray(lido.choices) || lido.choices.length === 0) {
+      const mensagem = lido.error?.message;
+      return {
+        ok: false,
+        falha: {
+          status: resposta.status,
+          erro: resumirErro(
+            typeof mensagem === "string" ? mensagem : "resposta sem choices",
+          ),
+        },
+      };
+    }
+    return { ok: true, corpo: lido };
+  } catch (erro) {
+    return {
+      ok: false,
+      falha: {
+        status: null,
+        erro: erro instanceof Error ? erro.name : "falha desconhecida",
+      },
+    };
   }
 }
 
@@ -215,23 +276,34 @@ export async function conversarComUso(
   mensagens: readonly Mensagem[],
   tetoDeSaida: number,
   modelo: string = modeloEmUso(),
+  aoFalhar?: AoFalhar,
 ): Promise<{ readonly texto: string; readonly tokens: Tokens } | null> {
-  const corpo = await chamarGateway(
+  const ida = await chamarGateway(
     { model: modelo, max_tokens: tetoDeSaida, messages: mensagens },
     LIMITE_MS,
   );
-  if (corpo === null) return null;
-  const texto = corpo.choices?.[0]?.message?.content;
-  if (typeof texto !== "string" || texto.trim() === "") return null;
-  return { texto, tokens: tokensDe(corpo) };
+  if (!ida.ok) {
+    aoFalhar?.(ida.falha);
+    return null;
+  }
+  const texto = ida.corpo.choices?.[0]?.message?.content;
+  if (typeof texto !== "string" || texto.trim() === "") {
+    aoFalhar?.({ status: null, erro: "texto vazio" });
+    return null;
+  }
+  return { texto, tokens: tokensDe(ida.corpo) };
 }
 
 /** Uma chamada ao gateway. Devolve o texto, ou `null` se não deu. */
 export async function conversar(
   mensagens: readonly Mensagem[],
   tetoDeSaida: number,
+  aoFalhar?: AoFalhar,
 ): Promise<string | null> {
-  return (await conversarComUso(mensagens, tetoDeSaida))?.texto ?? null;
+  return (
+    (await conversarComUso(mensagens, tetoDeSaida, modeloEmUso(), aoFalhar))
+      ?.texto ?? null
+  );
 }
 
 /* ------------------------------------------------------------------ *
@@ -313,7 +385,14 @@ export async function conversarComFerramentas(
   ferramentas: readonly FerramentaDoGateway[],
   executar: Executor,
   limites: LimitesDoLaco,
-  opcoes: { readonly inspetor?: Inspetor; readonly modelo?: string } = {},
+  opcoes: {
+    readonly inspetor?: Inspetor;
+    readonly modelo?: string;
+    /** Chamado com a rodada em que o gateway falhou (T-430). */
+    readonly aoFalhar?: (falha: FalhaDoGateway, rodada: number) => void;
+    /** Chamado quando uma rodada vai sair; a segunda em diante é redação (T-434). */
+    readonly aoRodada?: (rodada: number) => void;
+  } = {},
 ): Promise<ResultadoDoLaco | null> {
   const modelo = opcoes.modelo ?? modeloEmUso("ferramentas");
   const tools = ferramentas.map((f) => ({
@@ -336,30 +415,51 @@ export async function conversarComFerramentas(
     if (opcoes.inspetor !== undefined && opcoes.inspetor(conversa) !== null) {
       return null;
     }
+    opcoes.aoRodada?.(rodada);
 
-    const corpo = await chamarGateway(
+    const ida = await chamarGateway(
       {
         model: modelo,
         max_tokens: limites.tetoDeSaida,
         messages: conversa,
         tools,
         tool_choice: escolha,
-        parallel_tool_calls: true,
+        /*
+         * Sem `parallel_tool_calls` (T-430). O OpenRouter nao lista esse
+         * parametro para modelo nenhum — nem gpt-4o, nem Sonnet — e, com
+         * `require_parameters`, recusa a chamada inteira com 404 "No endpoints
+         * found that can handle the requested parameters". Foi por isso que
+         * toda pergunta composta degradava em silencio. Os dois provedores
+         * ja executam chamadas em paralelo por padrao.
+         */
         provider: { require_parameters: true },
       },
       limites.limiteMsPorRodada,
     );
-    if (corpo === null) return null;
+    if (!ida.ok) {
+      opcoes.aoFalhar?.(ida.falha, rodada);
+      return null;
+    }
+    const corpo = ida.corpo;
     tokens = somar(tokens, tokensDe(corpo));
 
     const mensagem = corpo.choices?.[0]?.message;
-    if (mensagem === undefined) return null;
+    if (mensagem === undefined) {
+      opcoes.aoFalhar?.(
+        { status: null, erro: "resposta sem mensagem" },
+        rodada,
+      );
+      return null;
+    }
     const pedidas = lerChamadas(mensagem.tool_calls);
     const texto =
       typeof mensagem.content === "string" ? mensagem.content : null;
 
     if (pedidas.length === 0 || ultima) {
-      if (texto === null || texto.trim() === "") return null;
+      if (texto === null || texto.trim() === "") {
+        opcoes.aoFalhar?.({ status: null, erro: "texto vazio" }, rodada);
+        return null;
+      }
       return {
         texto,
         chamadas,

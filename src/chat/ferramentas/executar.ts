@@ -50,6 +50,7 @@ import {
 } from "@/chat/ferramentas/validar";
 import { resumirPainel } from "@/chat/grafico";
 import { destinoDaMetrica } from "@/chat/roteamento";
+import { painelDoRanking } from "@/chat/serie";
 import type { Chamada, Executor } from "@/gateway/openrouter";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import type {
@@ -146,6 +147,7 @@ async function serieLida(
     pontos: resumo.pontos,
     destaques: resumo.destaques,
     filtros,
+    desenho: painel,
   };
 }
 
@@ -265,7 +267,7 @@ async function rankingLido(
     outros = { ...outros, formatado: formatado(outros.valor, r.unit) ?? "" };
   }
 
-  return {
+  const lida: Omit<LeituraDeRanking, "desenho"> = {
     tipo: pedido.nome === "ranking" ? "ranking" : "decomposicao",
     metrica: pedido.metrica,
     rotulo: CATALOGO_GERADO[pedido.metrica]?.rotulo ?? pedido.metrica,
@@ -280,6 +282,8 @@ async function rankingLido(
     asOf: r.asOf,
     filtros: pedido.filtros,
   };
+  // As barras saem dos mesmos itens que o modelo leu: montagem, não leitura.
+  return { ...lida, desenho: painelDoRanking(lida) };
 }
 
 function semAcento(texto: string): string {
@@ -332,6 +336,7 @@ export async function executarPedido(
         tipo: "grafico",
         resumo: resumirPainel(painel),
         filtros: pedido.filtros,
+        desenho: painel,
       };
     }
     case "listar_metricas":
@@ -441,6 +446,19 @@ export type ExecutorComMemoria = {
 };
 
 /**
+ * O que o executor conta enquanto trabalha (T-434).
+ *
+ * `aoLeitura` sai antes de executar, com o pedido validado: é a frase de
+ * andamento. `aoLida` sai depois, com o resultado: é o que deixa o laço
+ * emitir a prévia na primeira leitura que nomeia uma métrica, sem esperar o
+ * texto.
+ */
+export type EventosDoExecutor = {
+  readonly aoLeitura?: (pedido: PedidoValidado) => void;
+  readonly aoLida?: (resultado: ResultadoDeFerramenta) => Promise<void>;
+};
+
+/**
  * Cria o executor de uma pergunta.
  *
  * Valida, executa, acumula, devolve JSON. Acima de `MAXIMO_DE_CHAMADAS`, toda
@@ -451,6 +469,7 @@ export type ExecutorComMemoria = {
 export function criarExecutor(
   contexto: ContextoDaTela,
   portas: Portas = PORTAS_DO_PRODUTO,
+  eventos: EventosDoExecutor = {},
 ): ExecutorComMemoria {
   const leituras: ResultadoDeFerramenta[] = [];
   let feitas = 0;
@@ -474,9 +493,12 @@ export function criarExecutor(
       });
     }
     feitas += 1;
+    eventos.aoLeitura?.(validacao.pedido);
     try {
       const leitura = await executarPedido(validacao.pedido, contexto, portas);
-      leituras.push({ ferramenta: validacao.pedido.nome, leitura });
+      const resultado = { ferramenta: validacao.pedido.nome, leitura };
+      leituras.push(resultado);
+      await eventos.aoLida?.(resultado);
       return JSON.stringify(paraOModeloLeitura(leitura));
     } catch (erro) {
       if (erro instanceof LeituraRecusada) {
