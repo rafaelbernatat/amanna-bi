@@ -8,49 +8,55 @@
  *
  * Este e o unico lugar do codigo onde um literal hexadecimal e permitido.
  *
- * AVISO DE CONTRASTE (PRD secao 13, verificado por T-183): tres tokens de texto
- * do prototipo ficam abaixo do minimo de 4.5:1 exigido pelo PRD —
- * `textoTerciario` (3,91:1), `textoFraco` (2,69:1 sobre superficie) e
- * `textoEmBarraFraco` (4,36:1 sobre a barra lateral). Os valores foram mantidos
- * fieis ao prototipo porque alterar a paleta e decisao de Produto, nao de
- * Engenharia; a decisao esta pedida no item H-43 de INSTRUCOES.md.
+ * A PELE ATUAL (T-371) vem do painel de referencia que Produto entregou:
+ * cinza neutro no lugar do sepia, e verde onde antes havia marrom. Os valores
+ * saem dos tokens daquele arquivo, um a um; o que nao mudou foi o **papel** de
+ * cada chave, e por isso os 369 pontos que pintam tela continuam iguais.
+ *
+ * AVISO DE CONTRASTE (PRD secao 13, verificado por T-183): a pele nova resolve
+ * duas das tres dividas que o prototipo sepia carregava. Medidos agora:
+ * `textoTerciario` 5,00:1 (era 3,91) e `textoEmBarraFraco` 6,17:1 (era 4,36)
+ * **passam**. Continua abaixo do minimo de 4,5:1 apenas `textoFraco`, com
+ * 2,48:1 sobre superficie — e ele e, por papel, o texto de dica e de campo
+ * vazio, onde a fraqueza e o ponto. A decisao sobre ele segue pedida em H-43;
+ * o que mudou e o tamanho da divida, nao a natureza dela.
  */
 
 /** As 24 chaves da paleta, por papel na tela. */
 export const PALETA = {
   // Superficies
-  fundo: "#f2eee7",
+  fundo: "#f7f8f8",
   superficie: "#ffffff",
-  superficieAlta: "#fffdfa",
-  superficieSuave: "#faf7f1",
-  barraLateral: "#1a1510",
-  barraLateralBorda: "#2b231a",
+  superficieAlta: "#f3f5f5",
+  superficieSuave: "#eef0f1",
+  barraLateral: "#0b0b0c",
+  barraLateralBorda: "#292d31",
 
   // Texto
-  texto: "#17130f",
-  textoSecundario: "#4a423a",
-  textoTerciario: "#8a7f74",
-  textoFraco: "#a89c8e",
-  textoEmBarra: "#f7f2e8",
-  textoEmBarraFraco: "#8a7a66",
+  texto: "#101113",
+  textoSecundario: "#575c61",
+  textoTerciario: "#6b7075",
+  textoFraco: "#a0a5aa",
+  textoEmBarra: "#e8eaea",
+  textoEmBarraFraco: "#8b9196",
 
   // Bordas e linhas de grade
-  borda: "#efe8de",
-  bordaForte: "#e5ddd2",
-  grade: "#ece5da",
+  borda: "#e1e4e6",
+  bordaForte: "#cfd4d8",
+  grade: "#e6e9eb",
 
   // Marca e destaque da IA
-  marca: "#6b4a2f",
-  marcaEscura: "#3d2b1d",
-  destaque: "#8f6b45",
-  destaqueSuave: "#b8853a",
+  marca: "#0f7c47",
+  marcaEscura: "#0a5531",
+  destaque: "#0071e3",
+  destaqueSuave: "#2bb463",
 
   // Sentido do numero (PRD secao 13: cor nunca e o unico sinal)
-  positivo: "#4d7a52",
-  negativo: "#a8402f",
-  neutro: "#6d5f4e",
-  comparacao: "#3f5f8a",
-  meta: "#b39069",
+  positivo: "#12844b",
+  negativo: "#c4271f",
+  neutro: "#7a8085",
+  comparacao: "#4a5056",
+  meta: "#b0790a",
 } as const;
 
 /** As tres familias tipograficas carregadas pelo prototipo. */

@@ -68,20 +68,22 @@ describe("razão de contraste", () => {
   });
 
   /**
-   * As três razões que o cabeçalho de `tema.ts` declara, medidas fora daqui.
+   * As razoes que o cabecalho de `tema.ts` declara, medidas fora dali.
    *
-   * São também os três tokens que H-43 precisa decidir. Enquanto a decisão não
-   * vem, este caso é o que impede alguém de "arrumar" a paleta sem passar por
-   * ela: mexer numa dessas cores deixa o teste vermelho com o número na mão.
+   * Com a pele de T-371 duas das tres dividas de H-43 sumiram: `textoTerciario`
+   * e `textoEmBarraFraco` passaram a cumprir o minimo. Este caso continua
+   * existindo pela mesma razao de antes — impedir que alguem "arrume" a paleta
+   * sem passar por Produto —, so que agora ele guarda tambem o que **melhorou**,
+   * para que uma pele futura nao devolva a divida em silencio.
    */
   it.each([
-    ["textoTerciario sobre superfície", "textoTerciario", "superficie", 3.91],
-    ["textoFraco sobre superfície", "textoFraco", "superficie", 2.69],
+    ["textoTerciario sobre superfície", "textoTerciario", "superficie", 5.0],
+    ["textoFraco sobre superfície", "textoFraco", "superficie", 2.48],
     [
       "textoEmBarraFraco sobre a barra",
       "textoEmBarraFraco",
       "barraLateral",
-      4.36,
+      6.17,
     ],
   ] as const)(
     "%s dá %s:1, como o tema anotou",
@@ -101,13 +103,23 @@ describe("razão de contraste", () => {
     );
   });
 
-  it("e os três que não passam continuam não passando", () => {
-    expect(contrasteSuficiente(PALETA.textoTerciario, PALETA.superficie)).toBe(
-      false,
-    );
+  /**
+   * O que sobrou da divida de H-43.
+   *
+   * `textoFraco` e, por papel, o texto de dica e de campo vazio: a fraqueza e o
+   * ponto dele. Os outros dois que reprovavam no sepia passaram com a pele de
+   * T-371, e estao no caso acima com o numero medido.
+   */
+  it("só textoFraco continua abaixo do mínimo", () => {
     expect(contrasteSuficiente(PALETA.textoFraco, PALETA.superficie)).toBe(
       false,
     );
+    expect(contrasteSuficiente(PALETA.textoTerciario, PALETA.superficie)).toBe(
+      true,
+    );
+    expect(
+      contrasteSuficiente(PALETA.textoEmBarraFraco, PALETA.barraLateral),
+    ).toBe(true);
   });
 });
 
@@ -115,10 +127,10 @@ describe("normalizar a cor que vem de um site", () => {
   it.each([
     ["#FFF", BRANCO],
     ["#fff", BRANCO],
-    ["  #6B4A2F  ", PALETA.marca],
-    ["rgb(107, 74, 47)", PALETA.marca],
-    ["rgb(107 74 47)", PALETA.marca],
-    ["rgba(107, 74, 47, 1)", PALETA.marca],
+    ["  #0F7C47  ", PALETA.marca],
+    ["rgb(15, 124, 71)", PALETA.marca],
+    ["rgb(15 124 71)", PALETA.marca],
+    ["rgba(15, 124, 71, 1)", PALETA.marca],
   ])("aceita %s", (bruta, esperada) => {
     expect(normalizarCor(bruta)).toBe(esperada);
   });
@@ -184,16 +196,25 @@ describe("ajustar para o mínimo", () => {
     );
   });
 
+  /**
+   * A amostra e literal, e isso e proposital.
+   *
+   * Este caso mede o **algoritmo**, nao a paleta. Usar um token do tema como
+   * amostra amarrava um ao outro: quando a pele de T-371 melhorou o contraste
+   * de `textoEmBarraFraco`, o caso quebrou sem que nada do ajuste tivesse
+   * mudado. Uma cor escrita aqui nao depende de decisao de Produto.
+   */
   it("clareia o que reprova sobre fundo escuro", () => {
+    const CINZA_QUE_REPROVA = "#2b2f33";
     const ajuste = ajustarParaContraste(
       "textoEmBarraFraco",
-      PALETA.textoEmBarraFraco,
+      CINZA_QUE_REPROVA,
       PALETA.barraLateral,
     );
     expect(ajuste.razaoAntes).toBeLessThan(CONTRASTE_MINIMO);
     expect(ajuste.razaoDepois).toBeGreaterThanOrEqual(CONTRASTE_MINIMO);
     expect(luminancia(ajuste.ajustada)).toBeGreaterThan(
-      luminancia(PALETA.textoEmBarraFraco),
+      luminancia(CINZA_QUE_REPROVA),
     );
   });
 
@@ -215,9 +236,12 @@ describe("ajustar para o mínimo", () => {
   });
 
   it("preserva o matiz da cor original", () => {
+    // Amostra literal, pela mesma razao do caso acima: o que se mede e o
+    // ajuste, e um alaranjado deixa o matiz visivel no canal vermelho.
+    const LARANJA = "#b8853a";
     const ajuste = ajustarParaContraste(
       "destaqueSuave",
-      PALETA.destaqueSuave,
+      LARANJA,
       PALETA.superficie,
     );
     // O canal vermelho continua sendo o mais forte, como no original: o ajuste
@@ -230,8 +254,15 @@ describe("ajustar para o mínimo", () => {
   });
 
   it("diz quando nem o extremo alcança o mínimo, em vez de fingir", () => {
-    // Fundo de luminância intermediária: nenhuma cor chega a 4,5:1 sobre ele.
-    const ajuste = ajustarParaContraste("marca", PALETA.marca, PALETA.neutro);
+    /*
+     * Fundo de luminancia intermediaria, escrito aqui: nenhuma cor chega a
+     * 4,5:1 sobre ele, nem preto nem branco. Literal pela mesma razao dos
+     * casos acima — o que se mede e o ajuste, e amarrar a amostra a um token
+     * do tema faz o caso quebrar quando Produto troca a pele.
+     */
+    const CINZA_MEDIO = "#7c7c7c";
+    const AMBAR = "#b0790a";
+    const ajuste = ajustarParaContraste("marca", AMBAR, CINZA_MEDIO);
     expect(ajuste.alcancou).toBe(false);
     expect(ajuste.razaoDepois).toBeLessThan(CONTRASTE_MINIMO);
   });
