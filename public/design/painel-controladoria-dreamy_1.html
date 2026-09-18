@@ -1,0 +1,1164 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0}</style></head><body><title>Controladoria Dreamy</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f7f8f8; --surface:#ffffff; --soft:#eef0f1; --soft-2:#f3f5f5;
+  --border:#e1e4e6; --border-2:#cfd4d8; --grid:#e6e9eb;
+  --ink:#0b0b0c; --muted:#575c61; --subtle:#6b7075; --faint:#a0a5aa;
+  --bar-bg:#0b0b0c; --bar-ink:#e8eaea; --bar-active-bg:#ffffff; --bar-active-ink:#0b0b0c;
+  --pill-bg:#eef0f1; --pill-ink:#6b7075; --pill-active-bg:#ffffff; --pill-active-ink:#0b0b0c;
+  --s1:#0f7c47; --s2:#2bb463; --s3:#0071e3; --s4:#b0790a; --ink-line:#0b0b0c;
+  --pos:#0f7c47; --neg:#c4271f; --neu:#6b7075; --meta:#b0790a;
+  --brand:#46eb7e; --brand-soft:#e4fbec; --brand-strong:#0f7c47;
+  --on-fill:#ffffff;
+  --btn-bg:#0b0b0c; --btn-ink:#ffffff;
+  --focus:#0f7c47;
+  --r-card:18px; --r-tile:14px; --r-chip:10px;
+  --shadow-panel:0 30px 70px -28px rgba(11,11,12,.28), 0 2px 6px rgba(11,11,12,.05);
+  --font-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter Tight","Inter",system-ui,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Roboto Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0b0c; --surface:#16181a; --soft:#1e2124; --soft-2:#22262a;
+    --border:#292d31; --border-2:#3a3f44; --grid:#2b2f33;
+    --ink:#f5f6f6; --muted:#a7abaf; --subtle:#8f9499; --faint:#70757a;
+    --bar-bg:#22262a; --bar-ink:#a7abaf; --bar-active-bg:#46eb7e; --bar-active-ink:#08130c;
+    --pill-bg:#1e2124; --pill-ink:#8f9499; --pill-active-bg:#2e3338; --pill-active-ink:#f5f6f6;
+    --s1:#2bb463; --s2:#6bfa9c; --s3:#4da3ff; --s4:#e0a92a; --ink-line:#f5f6f6;
+    --pos:#37d66d; --neg:#ff6f62; --neu:#8f9499; --meta:#e0a92a;
+    --brand:#46eb7e; --brand-soft:#12291c; --brand-strong:#46eb7e;
+    --on-fill:#08130c;
+    --btn-bg:#46eb7e; --btn-ink:#08130c;
+    --focus:#46eb7e;
+    --shadow-panel:0 30px 70px -28px rgba(0,0,0,.65), 0 2px 6px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0b0c; --surface:#16181a; --soft:#1e2124; --soft-2:#22262a;
+  --border:#292d31; --border-2:#3a3f44; --grid:#2b2f33;
+  --ink:#f5f6f6; --muted:#a7abaf; --subtle:#8f9499; --faint:#70757a;
+  --bar-bg:#22262a; --bar-ink:#a7abaf; --bar-active-bg:#46eb7e; --bar-active-ink:#08130c;
+  --pill-bg:#1e2124; --pill-ink:#8f9499; --pill-active-bg:#2e3338; --pill-active-ink:#f5f6f6;
+  --s1:#2bb463; --s2:#6bfa9c; --s3:#4da3ff; --s4:#e0a92a; --ink-line:#f5f6f6;
+  --pos:#37d66d; --neg:#ff6f62; --neu:#8f9499; --meta:#e0a92a;
+  --brand:#46eb7e; --brand-soft:#12291c; --brand-strong:#46eb7e;
+  --on-fill:#08130c;
+  --btn-bg:#46eb7e; --btn-ink:#08130c;
+  --focus:#46eb7e;
+  --shadow-panel:0 30px 70px -28px rgba(0,0,0,.65), 0 2px 6px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);overflow:hidden;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.quadro{display:flex;height:100vh;overflow:hidden;background:var(--bg)}
+.coluna{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.cabecalho{background:var(--bg);border-bottom:1px solid var(--border-2);padding:14px 28px;flex:none;z-index:5}
+.topo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:16px}
+.marca-nome{font:600 15px/1.1 var(--font-display);letter-spacing:-.01em;color:var(--ink)}
+.marca-sub{font:500 8px/1.2 var(--font-mono);color:var(--faint);text-transform:uppercase;letter-spacing:.14em;margin-top:3px}
+.topo-fim{display:flex;justify-content:flex-end;gap:6px}
+.grupo-pilulas{display:flex;gap:2px;background:var(--bar-bg);border-radius:999px;padding:4px;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.grupo-pilulas::-webkit-scrollbar{display:none}
+.pilula{white-space:nowrap;padding:8px 18px;border-radius:999px;background:transparent;color:var(--bar-ink);font:500 12px/1.2 var(--font-ui);text-decoration:none;border:0;cursor:pointer;transition:background .16s cubic-bezier(.22,1,.36,1),color .16s}
+.pilula[aria-current="page"]{background:var(--bar-active-bg);color:var(--bar-active-ink);font-weight:600}
+.pilula:not([aria-current]):hover{color:var(--ink);background:color-mix(in srgb,var(--bar-active-bg) 16%,transparent)}
+.eyebrow{font:500 9px/1.2 var(--font-mono);color:var(--faint);text-transform:uppercase;letter-spacing:.13em}
+h1.titulo{margin:6px 0 0;font:600 32px/1.06 var(--font-display);letter-spacing:-.028em;color:var(--ink);text-wrap:balance}
+.filtros{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap;margin:14px 0 0}
+.campo{display:flex;flex-direction:column;gap:4px}
+.campo>span{font:500 8px/1.2 var(--font-mono);color:var(--faint);text-transform:uppercase;letter-spacing:.1em}
+.campo select{appearance:none;background:var(--surface) no-repeat right 12px center;background-image:linear-gradient(45deg,transparent 50%,var(--subtle) 50%),linear-gradient(135deg,var(--subtle) 50%,transparent 50%);background-size:5px 5px,5px 5px;background-position:calc(100% - 15px) 51%,calc(100% - 10px) 51%;background-repeat:no-repeat;border:1px solid var(--border-2);border-radius:999px;padding:7px 30px 7px 14px;font:500 11.5px/1.2 var(--font-ui);color:var(--ink);cursor:pointer;min-width:114px}
+.btn-forte{border:0;background:var(--btn-bg);color:var(--btn-ink);border-radius:999px;padding:8px 20px;font:600 11.5px/1.2 var(--font-ui);cursor:pointer}
+.btn-leve{border:1px solid var(--border-2);background:var(--surface);color:var(--muted);border-radius:999px;padding:7px 18px;font:500 11.5px/1.2 var(--font-ui);cursor:pointer;text-decoration:none}
+.abas{display:flex;gap:2px;margin:18px 0 0;background:var(--pill-bg);border-radius:999px;padding:4px;width:fit-content;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.abas::-webkit-scrollbar{display:none}
+.aba{white-space:nowrap;padding:7px 14px;border-radius:999px;background:transparent;color:var(--pill-ink);font:500 11.5px/1.2 var(--font-ui);border:0;cursor:pointer}
+.aba[aria-current="page"]{background:var(--pill-active-bg);color:var(--pill-active-ink);font-weight:600}
+.aba:not([aria-current]):hover{color:var(--ink)}
+.conteudo{flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;padding:16px 28px 28px;scroll-behavior:smooth}
+
+/* ---------- kpis ---------- */
+.faixa-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:13px;margin-bottom:18px}
+.kpi{min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:14px 15px 13px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.kpi-topo{display:flex;align-items:center;gap:6px}
+.ponto{width:5px;height:5px;border-radius:50%;flex:none}
+.kpi-rot{font:500 9.5px/1.2 var(--font-ui);color:var(--subtle);letter-spacing:.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpi-val{font:600 28px/1.02 var(--font-display);color:var(--ink);letter-spacing:-.026em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-spark{height:24px;min-width:0}
+.kpi-spark svg{width:100%;height:100%;display:block}
+.kpi-pe{display:flex;align-items:baseline;gap:6px;font:400 10px/1.4 var(--font-ui);color:var(--subtle);min-height:14px}
+.kpi-pe>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- paineis ---------- */
+.grade{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start}
+.painel{min-width:0;background:var(--surface);border:1px solid var(--border);scroll-margin:16px;border-radius:var(--r-card);padding:15px 16px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;transition:box-shadow .3s,border-color .3s}
+.painel[data-destacado="1"]{border-color:var(--brand-strong);box-shadow:0 0 0 1px var(--brand-strong),0 10px 34px -16px color-mix(in srgb,var(--brand-strong) 45%,transparent)}
+.painel>header{display:flex;flex-direction:column;gap:3px}
+.painel-linha{display:flex;align-items:baseline;gap:8px}
+.painel h2{margin:0;font:600 14px/1.25 var(--font-display);letter-spacing:-.015em;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.unidade{margin-left:auto;flex:none;font:500 8.5px/1.2 var(--font-mono);color:var(--faint);text-transform:uppercase;letter-spacing:.1em}
+.caixa{min-width:0}
+.formula{margin:0;font:400 9.5px/1.5 var(--font-mono);color:var(--subtle);border-top:1px solid var(--grid);padding-top:8px;overflow-wrap:anywhere}
+.nota{margin:0;font:400 10px/1.45 var(--font-ui);color:var(--faint)}
+
+/* ---------- barras horizontais ---------- */
+.linhas{height:100%;display:flex;flex-direction:column;justify-content:center;gap:7px;overflow:hidden}
+.linha-barra{display:grid;align-items:center;gap:9px}
+.linha-rot{font:500 10.5px/1.3 var(--font-ui);color:var(--muted);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trilho{height:11px;background:var(--grid);border-radius:11px;position:relative;overflow:hidden}
+.trilho-aberto{overflow:visible}
+.preenche{position:absolute;left:0;top:0;bottom:0;border-radius:11px}
+.marca-ref{position:absolute;top:-2px;bottom:-2px;width:2px;border-radius:2px}
+.linha-val{font:600 10.5px/1.3 var(--font-mono);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- estatisticas ---------- */
+.estats{height:100%;display:grid;gap:10px;overflow:hidden}
+.estat{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:12px 14px;background:var(--soft);border:1px solid var(--border);border-radius:15px;overflow:hidden}
+.estat-rot{font:500 9.5px/1.25 var(--font-ui);color:var(--subtle);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.estat-val{font:600 23px/1.05 var(--font-display);letter-spacing:-.024em;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.estat-sub{font:400 9.5px/1.4 var(--font-ui);color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- grupos ---------- */
+.grupos{height:100%;display:flex;flex-direction:column;justify-content:space-evenly;gap:8px;overflow:hidden}
+.grupo-rot{font:600 9px/1.2 var(--font-mono);color:var(--s2);text-transform:uppercase;letter-spacing:.1em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pilha{display:flex;height:18px;border-radius:18px;overflow:hidden;background:var(--grid);gap:2px}
+.pilha>span{display:flex;align-items:center;justify-content:center;font:600 9px/1 var(--font-mono);color:var(--on-fill);overflow:hidden;white-space:nowrap}
+.legenda{display:flex;flex-wrap:wrap;gap:10px;overflow:hidden}
+.legenda>span{display:flex;align-items:center;gap:5px;font:400 9.5px/1.2 var(--font-ui);color:var(--muted);white-space:nowrap}
+.swatch{flex:none;width:7px;height:7px;border-radius:2px}
+
+/* ---------- funil ---------- */
+.passos{height:100%;display:flex;flex-direction:column;justify-content:center;gap:4px;overflow:hidden}
+.passo{display:flex;align-items:center;gap:10px}
+.passo-barra{min-width:68px;height:30px;flex:none;border-radius:30px;display:flex;align-items:center;padding:0 13px;font:600 11px/1 var(--font-mono);color:var(--on-fill);overflow:hidden;white-space:nowrap}
+.passo-rot{font:500 10.5px/1.2 var(--font-ui);color:var(--muted);white-space:nowrap}
+.passo-nota{font:500 9.5px/1.2 var(--font-mono);color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- degraus ---------- */
+.degraus{height:100%;display:flex;align-items:stretch;gap:6px;overflow:hidden}
+.degrau{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.degrau-val{font:600 9.5px/1.2 var(--font-mono);color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.degrau-area{flex:1 1 auto;position:relative}
+.degrau-area>span{position:absolute;left:0;right:0;border-radius:3px}
+.degrau-rot{font:500 8.5px/1.25 var(--font-ui);color:var(--faint);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- ciclo ---------- */
+.faixas{height:100%;display:flex;flex-direction:column;justify-content:center;gap:5px;overflow:hidden}
+.faixa{display:grid;align-items:center;gap:8px}
+.faixa-rot{font:500 9.5px/1.3 var(--font-ui);color:var(--muted);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faixa-trilho{position:relative;height:10px;background:var(--grid);border-radius:10px}
+.faixa-trilho>span{position:absolute;top:0;bottom:0;border-radius:10px}
+.faixa-val{font:600 9.5px/1.3 var(--font-mono);color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.marcos{display:flex;justify-content:space-between;gap:6px;margin-top:2px}
+.marcos>span{font:500 8.5px/1.2 var(--font-mono);color:var(--faint);white-space:nowrap}
+
+/* ---------- dispersao ---------- */
+.disp{height:100%;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.disp-corpo{flex:1 1 auto;display:flex;gap:6px;min-height:0}
+.disp-y{flex:none;width:46px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;font:500 9px/1.2 var(--font-mono);color:var(--faint)}
+.disp-area{flex:1 1 auto;position:relative;border-left:1px solid var(--border-2);border-bottom:1px solid var(--border-2)}
+.disp-ponto{position:absolute;transform:translate(-50%,50%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.disp-ponto>b{font:600 9px/1.2 var(--font-ui);color:var(--muted);white-space:nowrap}
+.disp-bola{border-radius:999px;border:1.4px solid var(--surface)}
+.disp-x{display:flex;gap:6px}
+.disp-x>span:first-child{flex:none;width:46px}
+.disp-x-vals{flex:1 1 auto;display:flex;justify-content:space-between;font:500 9px/1.2 var(--font-mono);color:var(--faint)}
+.disp-leg{display:flex;justify-content:center;gap:14px;font:500 9.5px/1.2 var(--font-ui);color:var(--subtle);white-space:nowrap;overflow:hidden}
+
+/* ---------- mapa ---------- */
+.mapa{height:100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(7,minmax(0,1fr));gap:4px;max-width:330px;margin:0 auto}
+.uf{position:relative;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.uf-vazia{border:1px dashed var(--border-2)}
+.uf-fundo{position:absolute;left:0;right:0;top:0;bottom:0}
+.uf-sigla{position:relative;font:600 9.5px/1 var(--font-mono)}
+.uf-val{position:relative;font:500 8px/1.3 var(--font-mono)}
+
+/* ---------- rosca ---------- */
+.rosca{height:100%;display:flex;align-items:center;gap:12px;overflow:hidden}
+.rosca svg{flex:none;width:150px;height:100%}
+.rosca ul{flex:1 1 auto;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.rosca li{display:flex;align-items:center;gap:6px;font:400 10px/1.3 var(--font-ui);color:var(--muted);overflow:hidden;white-space:nowrap}
+.rosca li>span:nth-child(2){overflow:hidden;text-overflow:ellipsis}
+.rosca li>b{margin-left:auto;font:600 10px/1.3 var(--font-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---------- graficos ---------- */
+.gr{width:100%;position:relative;overflow:hidden}
+.gr svg{display:block}
+.gr-leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:2px;font:500 9.5px/1.2 var(--font-mono)}
+.gr-leg>span{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.gr-leg i{width:8px;height:8px;border-radius:2px;display:block}
+
+/* ---------- chat ---------- */
+.chat{flex:0 0 auto;width:420px;height:100vh;padding:14px;display:flex}
+.chat-cartao{flex:1 1 auto;min-height:0;min-width:0;background:var(--soft-2);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow-panel);display:flex;flex-direction:column;overflow:hidden}
+.chat-cab{padding:13px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface)}
+.selo{width:27px;height:27px;border-radius:9px;background:var(--btn-bg);color:var(--btn-ink);display:flex;align-items:center;justify-content:center;font:600 10px/1 var(--font-mono);flex:none}
+.chat-tit{font:600 12px/1.2 var(--font-ui);color:var(--ink)}
+.chat-sub{font:400 9.5px/1.3 var(--font-ui);color:var(--faint)}
+.chat-btn{border:1px solid var(--border-2);background:var(--surface);color:var(--subtle);border-radius:999px;padding:6px 10px;font:500 10px/1 var(--font-ui);cursor:pointer;flex:none}
+.chat-x{width:27px;height:27px;padding:0;font:600 12px/1 var(--font-ui)}
+.chat-log{position:relative;flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.chat-intro{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;font:400 11.5px/1.6 var(--font-ui);color:var(--muted)}
+.bolha{align-self:flex-end;max-width:88%;background:var(--btn-bg);color:var(--btn-ink);border-radius:16px 16px 4px;padding:9px 12px;font:400 11.5px/1.5 var(--font-ui);white-space:pre-line;overflow-wrap:anywhere}
+.turno{align-self:flex-start;width:100%;display:flex;flex-direction:column;gap:8px}
+.resp-cartao{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.resp-txt{margin:0;font:400 12px/1.6 var(--font-ui);color:var(--ink)}
+.resp-formula{margin:0;font:400 9.5px/1.5 var(--font-mono);color:var(--subtle);overflow-wrap:anywhere}
+.resp-cabeca{font:600 11.5px/1.4 var(--font-ui);color:var(--ink)}
+details>summary{font:500 9.5px/1.3 var(--font-mono);color:var(--subtle);text-transform:uppercase;letter-spacing:.1em;cursor:pointer}
+details>p{margin:6px 0 0;font:400 10.5px/1.6 var(--font-ui);color:var(--muted)}
+.rotulete{display:block;margin-bottom:4px;font:500 8.5px/1.2 var(--font-mono);color:var(--subtle);text-transform:uppercase;letter-spacing:.1em}
+.atalhos{display:flex;flex-direction:column;gap:5px}
+.atalho{text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--brand-strong);border-radius:12px;padding:7px 11px;font:400 11px/1.4 var(--font-ui);cursor:pointer}
+.atalho:hover{background:var(--brand-soft)}
+.acoes{display:flex;flex-direction:column;gap:6px;background:var(--soft);border:1px solid var(--border);border-radius:14px;padding:9px 12px}
+.acao-chip{background:var(--surface);border:1px solid var(--border-2);border-radius:999px;padding:4px 10px;font:500 9.5px/1.3 var(--font-ui);color:var(--muted)}
+.acao-linha{display:flex;gap:6px;margin-top:2px;flex-wrap:wrap}
+.acao-forte{background:var(--btn-bg);color:var(--btn-ink);border:0;border-radius:999px;padding:6px 12px;font:500 10px/1 var(--font-ui);cursor:pointer;text-decoration:none}
+.acao-leve{border:1px solid var(--border-2);background:var(--surface);color:var(--brand-strong);border-radius:999px;padding:5px 12px;font:500 10px/1 var(--font-ui);cursor:pointer;text-decoration:none}
+.estado{font:400 11px/1.5 var(--font-ui);color:var(--subtle)}
+.chat-pe{border-top:1px solid var(--border);padding:11px 14px 13px;background:var(--soft-2)}
+.guia-cab{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.guia-cab>span:first-child{font:600 8.5px/1.2 var(--font-mono);color:var(--s2);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.guia-cab>i{flex:1 1 auto;height:1px;background:var(--grid)}
+.guias{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.guia{border:1px solid var(--border-2);background:var(--surface);color:var(--brand-strong);border-radius:999px;padding:6px 11px;font:400 10px/1.3 var(--font-ui);cursor:pointer;text-align:left}
+.guia:hover{background:var(--brand-soft)}
+.chat-form{display:flex;gap:7px;align-items:flex-end}
+.chat-form textarea{flex:1 1 auto;min-width:0;resize:none;border:1px solid var(--border-2);background:var(--surface);border-radius:14px;padding:9px 12px;font:400 11.5px/1.5 var(--font-ui);color:var(--ink)}
+.chat-enviar{border:0;background:var(--btn-bg);color:var(--btn-ink);border-radius:999px;padding:0 17px;height:40px;font:500 11px/1 var(--font-ui);cursor:pointer;flex:none}
+.chat-enviar:disabled{opacity:.42;cursor:default}
+.chat-pe>p{margin:7px 0 0;font:400 9px/1.4 var(--font-ui);color:var(--faint)}
+.flutuante{position:fixed;right:22px;bottom:22px;z-index:60;display:flex;align-items:center;gap:10px}
+.flut-pill{border:1px solid var(--border-2);background:var(--surface);color:var(--muted);border-radius:999px;padding:10px 16px;font:500 11.5px/1.2 var(--font-ui);cursor:pointer;white-space:nowrap;box-shadow:0 6px 18px color-mix(in srgb,var(--ink) 12%,transparent)}
+.flut-ia{width:52px;height:52px;border-radius:999px;border:0;background:var(--btn-bg);color:var(--btn-ink);font:600 12px/1 var(--font-mono);cursor:pointer;box-shadow:0 10px 26px color-mix(in srgb,var(--ink) 24%,transparent)}
+.oculto{display:none!important}
+
+@media (max-width:1240px){
+  .chat{position:fixed;right:0;top:0;z-index:70;width:min(420px,100vw)}
+}
+@media (max-width:1080px){
+  .grade>div{grid-column:span 12!important}
+}
+@media (max-width:760px){
+  .cabecalho{padding:12px 16px}
+  .conteudo{padding:14px 16px 24px}
+  .topo{grid-template-columns:1fr;gap:10px}
+  .topo-fim{display:none}
+  h1.titulo{font-size:26px}
+  .faixa-kpis{grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:10px}
+}
+</style>
+
+<div class="quadro" data-teste="quadro">
+  <div class="coluna">
+    <header class="cabecalho" data-teste="cabecalho">
+      <div class="topo">
+        <div style="min-width:0">
+          <div class="marca-nome" id="marcaNome"></div>
+          <div class="marca-sub" id="marcaSub"></div>
+        </div>
+        <nav class="grupo-pilulas" aria-label="Módulos" id="navModulos"></nav>
+        <div class="topo-fim">
+          <button class="btn-leve" id="btnTema" type="button" title="Alternar tema claro e escuro">Tema</button>
+        </div>
+      </div>
+      <div class="eyebrow" id="eyebrow"></div>
+      <h1 class="titulo" id="titulo"></h1>
+      <form class="filtros" data-teste="barra-de-filtros" id="formFiltros"></form>
+      <nav class="abas" id="navTelas"></nav>
+    </header>
+    <main class="conteudo" data-teste="conteudo" id="conteudo">
+      <div class="faixa-kpis" data-teste="faixa-de-kpis" id="faixaKpis"></div>
+      <div class="grade" data-teste="grade-de-paineis" id="gradePaineis"></div>
+    </main>
+  </div>
+
+  <aside class="chat oculto" data-teste="chat" id="chat">
+    <div class="chat-cartao">
+      <header class="chat-cab">
+        <span class="selo" aria-hidden="true">IA</span>
+        <div style="flex:1 1 auto;min-width:0">
+          <div class="chat-tit">Converse com os dados</div>
+          <div class="chat-sub">Responde, filtra e abre o gráfico</div>
+        </div>
+        <button class="chat-btn" type="button" id="btnNova">Nova conversa</button>
+        <button class="chat-btn chat-x" type="button" id="btnFechar" aria-label="Fechar a conversa">✕</button>
+      </header>
+      <div class="chat-log" role="log" aria-live="polite" id="chatLog"></div>
+      <footer class="chat-pe">
+        <div class="guia-cab"><span>Guia desta tela</span><i aria-hidden="true"></i></div>
+        <div class="guias" id="chatGuias"></div>
+        <form class="chat-form" id="chatForm">
+          <textarea rows="2" id="chatCampo" aria-label="Sua pergunta" placeholder="Ex.: qual o lucro apurado do ano?"></textarea>
+          <button class="chat-enviar" type="submit" id="chatEnviar" disabled>Enviar</button>
+        </form>
+        <p id="chatNota">Cada número da resposta é conferido contra o painel antes de aparecer. Enter envia; Shift+Enter quebra a linha.</p>
+      </footer>
+    </div>
+  </aside>
+
+  <div class="flutuante" id="flutuante">
+    <button class="flut-pill" type="button" id="btnAbrirPill">Pergunte sobre os dados</button>
+    <button class="flut-ia" type="button" id="btnAbrirIA" aria-label="Abrir a conversa com os dados">IA</button>
+  </div>
+</div>
+<script id="dadosPainel" type="application/json">{"_meta":{"marca":{"titulo":"Controladoria","sub":"Painel executivo · BI"},"modulos":[{"id":"rh","nome":"Recursos Humanos","navLabel":"Telas de Recursos Humanos"},{"id":"fin","nome":"Financeiro","navLabel":"Telas de Financeiro e controladoria"},{"id":"int","nome":"Integração","navLabel":"Telas de Integração"}],"telas":{"rh":[["/rh/visao","Visão geral"],["/rh/colab","Colaboradores"],["/rh/turnover","Turnover"],["/rh/recrut","Recrutamento"],["/rh/trein","Treinamento"],["/rh/engaj","Engajamento"],["/rh/sal","Salários"]],"fin":[["/fin/visao","Visão financeira"],["/fin/caixa","Fluxo de caixa"],["/fin/orc","Orçamentário"],["/fin/contas","Contas a pagar/receber"],["/fin/fat","Faturamento"]],"int":[["/int/cruz","RH × Financeiro"]]},"filtros":[{"nome":"periodo","rotulo":null,"sel":"12-meses","opcoes":[["12-meses","12 meses"],["6-meses","6 meses"],["4-trimestre","4º trimestre"],["dezembro","Dezembro"]]},{"nome":"ano","rotulo":null,"sel":"2026","opcoes":[["2026","2026"],["2025","2025"]]},{"nome":"entidade","rotulo":null,"sel":"consolidado","opcoes":[["consolidado","Consolidado"],["unidade-sp","Unidade SP"],["demais-unidades","Demais unidades"]]},{"nome":"area","rotulo":null,"sel":"todas","opcoes":[["todas","Todas"],["operacoes","Operações"],["comercial","Comercial"],["tecnologia","Tecnologia"],["logistica","Logística"],["financeiro","Financeiro"],["marketing","Marketing"],["rh","RH"]]},{"nome":"modalidade","rotulo":null,"sel":"todas","opcoes":[["todas","Todas"],["presencial","Presencial"],["hibrido","Híbrido"],["remoto","Remoto"]]}],"sugestoes":{"rh/visao":["Qual o headcount hoje?","Como está o turnover?","Quanto é a folha total?"],"rh/colab":["Qual a idade média do quadro?","Qual o tempo médio de casa?","Quantos têm ensino superior?"],"rh/turnover":["Qual o custo de reposição?","Quantos desligamentos tivemos?","Qual o custo do turnover?"],"rh/recrut":["Quantas vagas abertas?","Qual o tempo de fechamento das vagas?","Qual o custo por contratação?"],"rh/trein":["Quantas horas de treinamento demos?","Qual a conclusão média dos treinamentos?","Qual o investimento em treinamento?"],"rh/engaj":["Como está o engajamento por área?","Como está o absenteísmo?","Quantos promotores temos?"],"rh/sal":["Qual o salário médio?","Quanto pagamos de encargos?","Quanto gastamos com benefícios?"],"fin/visao":["Qual a receita líquida do ano?","Qual é o nosso EBITDA?","Qual o lucro apurado do ano?"],"fin/caixa":["Qual o saldo de caixa?","Qual a geração de caixa operacional?","Quanto investimos em capex?"],"fin/orc":["Qual o desvio orçamentário?","Quanto foi orçado no ano?","Qual a economia obtida?"],"fin/contas":["Em quantos dias recebemos dos clientes?","Em quantos dias pagamos os fornecedores?","Como está a inadimplência?"],"fin/fat":["Qual a concentração nos 10 maiores clientes?","Quanto crescemos sobre o ano anterior?","Qual o ticket médio?"],"int/cruz":["Qual a receita por colaborador?","Qual o EBITDA per capita?","Qual o peso da folha?"]},"paletaOrigem":{"fundo":"#f2eee7","superficie":"#ffffff","superficieAlta":"#fffdfa","superficieSuave":"#faf7f1","barraLateral":"#1a1510","texto":"#17130f","textoSecundario":"#4a423a","textoTerciario":"#8a7f74","textoFraco":"#a89c8e","textoEmBarra":"#f7f2e8","borda":"#efe8de","bordaForte":"#e5ddd2","grade":"#ece5da","marca":"#6b4a2f","marcaEscura":"#3d2b1d","destaque":"#8f6b45","destaqueSuave":"#b8853a","positivo":"#4d7a52","negativo":"#a8402f","neutro":"#6d5f4e","comparacao":"#3f5f8a","meta":"#b39069"}},"telas":{"/rh/visao":{"t":"Visão geral","k":[{"k":"rh-visao-headcount","r":"Headcount","v":"1.240 FTE","f":"FTE no período","c":"#6d5f4e","s":[22,19.33,16.67,15.11,12,10.22,11.33,8.67,6,4,2.89,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-visao-turnover-12m","r":"Turnover 12m","v":"12,1%","f":"vs. meta 14%","c":"#6d5f4e","s":[12.87,18.17,11.02,21.02,9.16,14.2,2,9.58,14.65,17.21,22,15.06],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-visao-retencao-12m","r":"Retenção 12m","v":"87,9%","f":"meta 86%","c":"#6d5f4e","s":[11.13,5.83,12.98,2.98,14.84,9.8,22,14.42,9.35,6.79,2,8.94],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-visao-enps","r":"eNPS","v":"28","f":"zona favorável","c":"#6d5f4e","s":[22,18.68,20.42,13.75,10.27,7.02,12.13,8.61,5.39,7.08,2,3.64],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-visao-custo-por-fte","r":"Custo por FTE","v":"R$ 0,1 mi","f":"folha ÷ FTE","c":"#6d5f4e","s":[20.54,18.87,20.86,20.5,19.8,19.91,17.62,19.56,21.46,22,20.77,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-visao-folha-total","r":"Folha total","v":"R$ 186,0 mi","f":"da receita","c":"#6d5f4e","s":[22,19.65,18.47,17.29,14.94,13.76,13.76,12.59,11.41,10.24,9.06,2],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"rh-headcount","sp":"span 8","t":"Headcount nos últimos 12 meses","u":"FTE","f":"barras = admissões e desligamentos do mês; linha = headcount FTE no fim do mês","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,28],"cortes":[0,7,14,21,28],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Admissões","cor":"#6b4a2f","valores":[18,22,25,16,28,20,12,26,24,20,14,16]},{"nome":"Desligamentos","cor":"#8f6b45","valores":[12,10,13,9,14,12,17,14,12,11,9,12]}],"linhaSecundaria":{"nome":"Headcount (FTE)","cor":"#3d2b1d","valores":[1150,1162,1174,1181,1195,1203,1198,1210,1222,1231,1236,1240]},"eixoSecundario":{"dominio":[1150,1240],"cortes":[1150,1172.5,1195,1217.5,1240],"temLinhaDeZero":false}}},{"k":"rh-turnover","sp":"span 4","t":"Turnover (12 meses)","u":"pct","f":"turnover = desligamentos do mês ÷ headcount médio do mês","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":1.04,"rotulo":"1,0%"},{"categoria":"fev/2026","valor":0.86,"rotulo":"0,9%"},{"categoria":"mar/2026","valor":1.11,"rotulo":"1,1%"},{"categoria":"abr/2026","valor":0.76,"rotulo":"0,8%"},{"categoria":"mai/2026","valor":1.17,"rotulo":"1,2%"},{"categoria":"jun/2026","valor":1,"rotulo":"1,0%"},{"categoria":"jul/2026","valor":1.42,"rotulo":"1,4%"},{"categoria":"ago/2026","valor":1.16,"rotulo":"1,2%"},{"categoria":"set/2026","valor":0.98,"rotulo":"1,0%"},{"categoria":"out/2026","valor":0.89,"rotulo":"0,9%"},{"categoria":"nov/2026","valor":0.73,"rotulo":"0,7%"},{"categoria":"dez/2026","valor":0.97,"rotulo":"1,0%"}],"nome":"Turnover","eixo":{"dominio":[0.73,14],"cortes":[0.73,4.05,7.36,10.68,14],"temLinhaDeZero":false},"referencia":{"valor":14,"rotulo":"Meta anual 14,0%"}}},{"k":"rh-retencao","sp":"span 8","t":"Retenção e saldo líquido de pessoas","u":"pct","f":"saldo = admissões − desligamentos do mês; retenção = 100% − turnover","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[-5,14],"cortes":[-5,-0.25,4.5,9.25,14],"temLinhaDeZero":true},"comLegenda":true,"barras":[{"nome":"Saldo líquido","cor":"#6b4a2f","valores":[6,12,12,7,14,8,-5,12,12,9,5,4]}],"linhaSecundaria":{"nome":"Retenção","cor":"#3d2b1d","valores":[98.96,99.14,98.89,99.24,98.83,99,98.58,98.84,99.02,99.11,99.27,99.03]},"eixoSecundario":{"dominio":[98.58,99.27],"cortes":[98.58,98.75,98.93,99.1,99.27],"temLinhaDeZero":false}}},{"k":"rh-flash","sp":"span 4","t":"Leitura rápida do período","u":"contagem","f":"três leituras do período, cada uma com a fórmula do próprio número","h":180,"y":"estatistica","d":{"colunas":"repeat(2, minmax(0, 1fr))","itens":[{"rotulo":"Saldo do período","valor":"96","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":null},{"rotulo":"Melhor retenção","valor":"3,8%","cor":"#a8402f","borda":"3px solid #a8402f","sub":"RH"},{"rotulo":"Maior risco","valor":"14,8%","cor":"#a8402f","borda":"3px solid #a8402f","sub":"Comercial"}]}},{"k":"rh-folha","sp":"span 6","t":"Folha total e custo por colaborador","u":"BRL_mi","f":"folha do mês; custo por colaborador = folha × 12 ÷ headcount FTE","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,0.01],"cortes":[0,0,0.01,0.01,0.01],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Custo por FTE (ano)","cor":"#6b4a2f","valores":[0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]}],"linhaSecundaria":{"nome":"Folha mensal","cor":"#3d2b1d","valores":[14.8,15,15.1,15.2,15.4,15.5,15.5,15.6,15.7,15.8,15.9,16.5]},"eixoSecundario":{"dominio":[14.8,16.5],"cortes":[14.8,15.23,15.65,16.08,16.5],"temLinhaDeZero":false}}},{"k":"rh-areas","sp":"span 6","t":"Distribuição por área","u":"FTE","f":"headcount FTE por área, no último mês do recorte","n":"Operações e Comercial respondem por 56% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":100,"valor":"486 FTE","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":44.03,"valor":"214 FTE","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":34.57,"valor":"168 FTE","cor":"#6b4a2f"},{"rotulo":"Logística","pct":29.22,"valor":"142 FTE","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":19.75,"valor":"96 FTE","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":16.05,"valor":"78 FTE","cor":"#6b4a2f"},{"rotulo":"RH","pct":11.52,"valor":"56 FTE","cor":"#6b4a2f"}],"marcas":[]}}]},"/rh/colab":{"t":"Colaboradores","k":[{"k":"rh-colab-colaboradores","r":"Colaboradores","v":"1.240 FTE","f":"7 áreas","c":"#6d5f4e","s":[22,19.33,16.67,15.11,12,10.22,11.33,8.67,6,4,2.89,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-colab-idade-media","r":"Idade média","v":"34,2 anos","f":"faixa predominante","c":"#6d5f4e","s":[11.85,22,6.82,16.84,11.85,2.04,2,11.85,21.5,16.64,16.62,11.85],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-colab-tempo-medio-de-casa","r":"Tempo médio de casa","v":"3,1 anos","f":"base jovem de contrato","c":"#6d5f4e","s":[13.02,17.56,22,15.25,2,19.59,8.63,13.02,17.34,15.16,4.5,13.02],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-colab-trabalho-flexivel","r":"Trabalho flexível","v":"51,3%","f":"","c":"#6d5f4e","s":[5.49,15.14,19.01,18.15,20.12,22,19.23,19.34,19.45,13.32,8.97,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-colab-estados-atendidos","r":"Estados atendidos","v":"12","f":"concentração geográfica","c":"#6d5f4e","s":[12,12,12,12,12,12,12,12,12,12,12,12],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-colab-superior-ou-mais","r":"Superior ou mais","v":"51,6%","f":"maior titulação declarada","c":"#6d5f4e","s":[4.66,8.11,11.49,22,8.78,10.98,18.05,21.24,7.8,2,11.55,12.6],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"col-area","sp":"span 4","t":"Por área","u":"FTE","f":"headcount FTE por área, no último mês do recorte","n":"Operações e Comercial respondem por 56% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":100,"valor":"486 FTE","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":44.03,"valor":"214 FTE","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":34.57,"valor":"168 FTE","cor":"#6b4a2f"},{"rotulo":"Logística","pct":29.22,"valor":"142 FTE","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":19.75,"valor":"96 FTE","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":16.05,"valor":"78 FTE","cor":"#6b4a2f"},{"rotulo":"RH","pct":11.52,"valor":"56 FTE","cor":"#6b4a2f"}],"marcas":[]}},{"k":"col-perfil","sp":"span 4","t":"Perfil do quadro","u":"pct","f":"repartição de 100% do quadro dentro de cada corte, no fim do recorte","h":96,"y":"grupo","d":{"grupos":[{"nome":"Gênero","segmentos":[{"pct":56.94,"rotulo":"56,9%","cor":"#6b4a2f"},{"pct":41.29,"rotulo":"41,3%","cor":"#8f6b45"},{"pct":1.77,"rotulo":"","cor":"#3f5f8a"}],"legenda":[{"cor":"#6b4a2f","texto":"Masculino"},{"cor":"#8f6b45","texto":"Feminino"},{"cor":"#3f5f8a","texto":"Outro ou nao informado"}]},{"nome":"Modalidade","segmentos":[{"pct":48.71,"rotulo":"48,7%","cor":"#6b4a2f"},{"pct":38.06,"rotulo":"38,1%","cor":"#8f6b45"},{"pct":13.23,"rotulo":"","cor":"#3f5f8a"}],"legenda":[{"cor":"#6b4a2f","texto":"Presencial"},{"cor":"#8f6b45","texto":"Híbrido"},{"cor":"#3f5f8a","texto":"Remoto"}]}]}},{"k":"col-idade","sp":"span 4","t":"Por faixa etária","u":"FTE","f":"headcount FTE por faixa etária, no último mês do recorte","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"18–24","pct":28.4,"valor":"138 FTE","cor":"#6b4a2f"},{"rotulo":"25–34","pct":100,"valor":"486 FTE","cor":"#6b4a2f"},{"rotulo":"35–44","pct":76.54,"valor":"372 FTE","cor":"#6b4a2f"},{"rotulo":"45–54","pct":35.8,"valor":"174 FTE","cor":"#6b4a2f"},{"rotulo":"55 mais","pct":14.4,"valor":"70 FTE","cor":"#6b4a2f"}],"marcas":[]}},{"k":"col-tempo","sp":"span 8","t":"Tempo de empresa","u":"FTE","f":"headcount FTE por faixa de tempo de casa, no último mês do recorte","h":216,"y":"gBarras","d":{"categorias":["Menos de 1 ano","1–3 anos","3–5 anos","5–10 anos","10 mais anos"],"eixo":{"dominio":[0,412],"cortes":[0,103,206,309,412],"temLinhaDeZero":false},"comLegenda":false,"barras":[{"nome":"FTE","cor":"#6b4a2f","valores":[268,412,291,198,71]}]}},{"k":"col-escol","sp":"span 4","t":"Escolaridade","u":"FTE","f":"headcount FTE por escolaridade, no último mês do recorte","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Medio","pct":85.4,"valor":"386 FTE","cor":"#6b4a2f"},{"rotulo":"Tecnico","pct":47.35,"valor":"214 FTE","cor":"#6b4a2f"},{"rotulo":"Superior","pct":100,"valor":"452 FTE","cor":"#6b4a2f"},{"rotulo":"Pos graduacao","pct":34.07,"valor":"154 FTE","cor":"#6b4a2f"},{"rotulo":"Mestrado mais","pct":7.52,"valor":"34 FTE","cor":"#6b4a2f"}],"marcas":[]}},{"k":"col-mapa","sp":"span 8","t":"Distribuição geográfica por estado","u":"FTE","f":"headcount FTE por UF, no último mês do recorte","h":260,"y":"uf","d":{"ufs":[{"uf":"RR","col":"3","row":"1","v":null,"op":null,"cor":null,"claro":false},{"uf":"AP","col":"4","row":"1","v":null,"op":null,"cor":null,"claro":false},{"uf":"AM","col":"2","row":"2","v":null,"op":null,"cor":null,"claro":false},{"uf":"PA","col":"3","row":"2","v":null,"op":null,"cor":null,"claro":false},{"uf":"MA","col":"4","row":"2","v":null,"op":null,"cor":null,"claro":false},{"uf":"CE","col":"5","row":"2","v":"28 FTE","op":0.19,"cor":"#6b4a2f","claro":false},{"uf":"RN","col":"6","row":"2","v":null,"op":null,"cor":null,"claro":false},{"uf":"AC","col":"1","row":"3","v":null,"op":null,"cor":null,"claro":false},{"uf":"RO","col":"2","row":"3","v":null,"op":null,"cor":null,"claro":false},{"uf":"TO","col":"3","row":"3","v":null,"op":null,"cor":null,"claro":false},{"uf":"PI","col":"4","row":"3","v":null,"op":null,"cor":null,"claro":false},{"uf":"PE","col":"5","row":"3","v":"44 FTE","op":0.22,"cor":"#6b4a2f","claro":false},{"uf":"PB","col":"6","row":"3","v":null,"op":null,"cor":null,"claro":false},{"uf":"MT","col":"3","row":"4","v":null,"op":null,"cor":null,"claro":false},{"uf":"GO","col":"4","row":"4","v":"34 FTE","op":0.2,"cor":"#6b4a2f","claro":false},{"uf":"BA","col":"5","row":"4","v":"62 FTE","op":0.25,"cor":"#6b4a2f","claro":false},{"uf":"AL","col":"6","row":"4","v":null,"op":null,"cor":null,"claro":false},{"uf":"SE","col":"7","row":"4","v":null,"op":null,"cor":null,"claro":false},{"uf":"MS","col":"3","row":"5","v":null,"op":null,"cor":null,"claro":false},{"uf":"DF","col":"4","row":"5","v":"14 FTE","op":0.17,"cor":"#6b4a2f","claro":false},{"uf":"MG","col":"5","row":"5","v":"152 FTE","op":0.42,"cor":"#6b4a2f","claro":false},{"uf":"ES","col":"6","row":"5","v":"18 FTE","op":0.17,"cor":"#6b4a2f","claro":false},{"uf":"PR","col":"4","row":"6","v":"124 FTE","op":0.37,"cor":"#6b4a2f","claro":false},{"uf":"SP","col":"5","row":"6","v":"468 FTE","op":1,"cor":"#6b4a2f","claro":true},{"uf":"RJ","col":"6","row":"6","v":"112 FTE","op":0.35,"cor":"#6b4a2f","claro":false},{"uf":"RS","col":"4","row":"7","v":"88 FTE","op":0.3,"cor":"#6b4a2f","claro":false},{"uf":"SC","col":"5","row":"7","v":"96 FTE","op":0.32,"cor":"#6b4a2f","claro":false}]}},{"k":"col-geo","sp":"span 4","t":"Concentração geográfica","u":"contagem","f":"leituras da distribuição do quadro por UF, no fim do recorte","h":180,"y":"estatistica","d":{"colunas":"repeat(2, minmax(0, 1fr))","itens":[{"rotulo":"Estados com presença","valor":"12","cor":"#17130f","borda":"3px solid #17130f","sub":"de 27 unidades federativas"},{"rotulo":"São Paulo","valor":"37,7%","cor":"#17130f","borda":"3px solid #17130f","sub":"São Paulo"},{"rotulo":"Top 4 estados","valor":"69,0%","cor":"#17130f","borda":"3px solid #17130f","sub":"as quatro maiores UFs somadas"}]}}]},"/rh/turnover":{"t":"Turnover","k":[{"k":"rh-turnover-turnover-12m","r":"Turnover 12m","v":"12,1%","f":"vs. meta de 14,0%","c":"#6d5f4e","s":[12.87,18.17,11.02,21.02,9.16,14.2,2,9.58,14.65,17.21,22,15.06],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-turnover-retencao-12m","r":"Retenção 12m","v":"87,9%","f":"100% − turnover","c":"#6d5f4e","s":[11.13,5.83,12.98,2.98,14.84,9.8,22,14.42,9.35,6.79,2,8.94],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-turnover-desligamentos","r":"Desligamentos","v":"145","f":"no período de 12 meses","c":"#6d5f4e","s":[14.5,19.5,12,22,9.5,14.5,2,9.5,14.5,17,22,14.5],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-turnover-custo-do-turnover","r":"Custo do turnover","v":"R$ 12,4 mi","f":"da folha anual","c":"#6d5f4e","s":[14.5,19.5,12,22,9.5,14.5,2,9.5,14.5,17,22,14.5],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-turnover-custo-de-reposicao","r":"Custo de reposição","v":"R$ 5,7 mi","f":"ramp-up + produtividade","c":"#6d5f4e","s":[14.5,19.5,12,22,9.5,14.5,2,9.5,14.5,17,22,14.5],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-turnover-tempo-ate-a-saida","r":"Tempo até a saída","v":"2,1 anos","f":"faixa mais volátil","c":"#6d5f4e","s":[16.85,9.64,19.62,4.83,22,16.85,2,22,16.85,13.57,4.83,16.85],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"tov-12m","sp":"span 8","t":"Taxa de turnover — 12 meses","u":"pct","f":"turnover = desligamentos do mês ÷ headcount médio do mês","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":1.04,"rotulo":"1,0%"},{"categoria":"fev/2026","valor":0.86,"rotulo":"0,9%"},{"categoria":"mar/2026","valor":1.11,"rotulo":"1,1%"},{"categoria":"abr/2026","valor":0.76,"rotulo":"0,8%"},{"categoria":"mai/2026","valor":1.17,"rotulo":"1,2%"},{"categoria":"jun/2026","valor":1,"rotulo":"1,0%"},{"categoria":"jul/2026","valor":1.42,"rotulo":"1,4%"},{"categoria":"ago/2026","valor":1.16,"rotulo":"1,2%"},{"categoria":"set/2026","valor":0.98,"rotulo":"1,0%"},{"categoria":"out/2026","valor":0.89,"rotulo":"0,9%"},{"categoria":"nov/2026","valor":0.73,"rotulo":"0,7%"},{"categoria":"dez/2026","valor":0.97,"rotulo":"1,0%"}],"nome":"Turnover","eixo":{"dominio":[0.73,14],"cortes":[0.73,4.05,7.36,10.68,14],"temLinhaDeZero":false},"referencia":{"valor":14,"rotulo":"Meta anual 14,0%"}}},{"k":"tov-tipos","sp":"span 4","t":"Tipos de desligamento","u":"pct","f":"participação de cada tipo de saída no total de desligamentos do recorte","h":200,"y":"rosca","d":{"centro":{"valor":"62,1%","rotulo":"voluntário"},"itens":[{"nome":"Voluntario","valor":"62,1%","cor":"#6b4a2f"},{"nome":"Sem justa causa","valor":"29,0%","cor":"#8f6b45"},{"nome":"Aposentadoria","valor":"5,5%","cor":"#3f5f8a"},{"nome":"Outros","valor":"3,4%","cor":"#b8853a"}],"arcos":[{"cor":"#6b4a2f","da":"201.29522232827904 125.43041364505947","off":"0"},{"cor":"#8f6b45","da":"93.13777041986356 233.58786555347496","off":"-202.79522232827904"},{"cor":"#3f5f8a","da":"16.52624198473592 310.1993939886026","off":"-297.4329927481426"},{"cor":"#b8853a","da":"9.766401240459945 316.95923473287854","off":"-315.45923473287854"}],"trilha":"#ece5da"}},{"k":"tov-area","sp":"span 6","t":"Turnover por área","u":"pct","f":"turnover da área = desligamentos da área ÷ headcount médio da área","n":"Comercial e Operações respondem por 41% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":95.85,"valor":"14,2%","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":100,"valor":"14,8%","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":64.41,"valor":"9,5%","cor":"#6b4a2f"},{"rotulo":"Logística","pct":83.02,"valor":"12,3%","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":36.96,"valor":"5,5%","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":69.52,"valor":"10,3%","cor":"#6b4a2f"},{"rotulo":"RH","pct":25.81,"valor":"3,8%","cor":"#6b4a2f"}],"marcas":[{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""},{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""},{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""},{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""},{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""},{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""},{"left":"94.68817204301074%","cor":"#3f5f8a","rot":""}]}},{"k":"tov-corte","sp":"span 6","t":"Turnover por gênero e faixa etária","u":"pct","f":"turnover do corte = desligamentos do corte ÷ quadro do corte","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Masculino","pct":60.73,"valor":"12,3%","cor":"#6b4a2f"},{"rotulo":"Feminino","pct":53.91,"valor":"10,9%","cor":"#6b4a2f"},{"rotulo":"Outro ou nao informado","pct":44.81,"valor":"9,1%","cor":"#6b4a2f"},{"rotulo":"18–24","pct":100,"valor":"20,3%","cor":"#6b4a2f"},{"rotulo":"25–34","pct":70.99,"valor":"14,4%","cor":"#6b4a2f"},{"rotulo":"35–44","pct":43.72,"valor":"8,9%","cor":"#6b4a2f"},{"rotulo":"45–54","pct":31.16,"valor":"6,3%","cor":"#6b4a2f"},{"rotulo":"55 mais","pct":21.12,"valor":"4,3%","cor":"#6b4a2f"}],"marcas":[{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""},{"left":"69%","cor":"#3f5f8a","rot":""}]}},{"k":"tov-resumo","sp":"span 4","t":"Custo do turnover em reais","u":"BRL_mi","f":"o custo do turnover separado entre o que é rescisão e o que é reposição","h":180,"y":"estatistica","d":{"colunas":"repeat(2, minmax(0, 1fr))","itens":[{"rotulo":"Custo total com rescisões","valor":"R$ 4,8 mi","cor":"#a8402f","borda":"3px solid #a8402f","sub":"verbas rescisórias pagas no período"},{"rotulo":"Custo estimado de reposição","valor":"R$ 7,6 mi","cor":"#a8402f","borda":"3px solid #a8402f","sub":"recrutamento, ramp-up e produtividade"},{"rotulo":"Total","valor":"R$ 12,4 mi","cor":"#a8402f","borda":"3px solid #a8402f","sub":null}]}},{"k":"tov-custo","sp":"span 8","t":"Custo financeiro do turnover","u":"BRL_mi","f":"custo do turnover = rescisão + recrutamento + ramp-up + produtividade perdida","h":216,"y":"gBarras","d":{"categorias":["Rescisao","Ramp up","Produtividade","Recrutamento"],"eixo":{"dominio":[0,4.8],"cortes":[0,1.2,2.4,3.6,4.8],"temLinhaDeZero":false},"comLegenda":false,"barras":[{"nome":"Custo","cor":"#6b4a2f","valores":[4.8,3.4,2.3,1.9]}]}}]},"/rh/recrut":{"t":"Recrutamento","k":[{"k":"rh-recrut-vagas-abertas","r":"Vagas abertas","v":"48","f":"sem candidato em etapa final","c":"#6d5f4e","s":[12,12,12,12,12,12,12,12,12,12,12,12],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-recrut-em-andamento","r":"Em andamento","v":"23","f":"triagem a proposta","c":"#6d5f4e","s":[2,2,2,2,2,2,2,2,2,2,2,22],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-recrut-fechadas-12m","r":"Fechadas (12m)","v":"96","f":"contratações efetivadas","c":"#6d5f4e","s":[12,12,12,12,12,12,12,12,12,12,12,12],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-recrut-tempo-de-fechamento","r":"Tempo de fechamento","v":"40 dias","f":"meta de 40 dias","c":"#6d5f4e","s":[2,8.67,5.33,12,15.33,17.83,11.17,20.33,17.83,18.67,17,22],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-recrut-custo-por-contratacao","r":"Custo por contratação","v":"R$ 0,0 mi","f":"vs. ano anterior","c":"#6d5f4e","s":[12,12,12,12,12,10.24,10.24,10.24,10.24,2,4.94,22],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-recrut-canceladas","r":"Canceladas","v":"12","f":"do total movimentado no ano","c":"#6d5f4e","s":[12,12,12,12,12,12,12,12,12,12,12,12],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"rec-dias","sp":"span 8","t":"Tempo médio de fechamento por mês","u":"dias","f":"dias médios = dias somados até o aceite ÷ vagas fechadas no mês","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,41.5],"cortes":[0,10.38,20.75,31.13,41.5],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Dias","cor":"#6b4a2f","valores":[41.5,40.5,41,40,39.5,39.13,40.13,38.75,39.13,39,39.25,38.5]}],"linhaSecundaria":{"nome":"Meta","cor":"#3f5f8a","valores":[40,40,40,40,40,40,40,40,40,40,40,40]}}},{"k":"rec-status","sp":"span 4","t":"Status das vagas no ano","u":"pct","f":"participação de cada status no total de vagas movimentadas no recorte","h":200,"y":"rosca","d":{"centro":{"valor":"53,6%","rotulo":"fechadas"},"itens":[{"nome":"Abertas","valor":"26,8%","cor":"#6b4a2f"},{"nome":"Em andamento","valor":"12,8%","cor":"#8f6b45"},{"nome":"Fechadas","valor":"53,6%","cor":"#3f5f8a"},{"nome":"Canceladas","valor":"6,7%","cor":"#b8853a"}],"arcos":[{"cor":"#6b4a2f","da":"86.11357836156563 240.61205761177288","off":"0"},{"cor":"#8f6b45","da":"40.4815062982502 286.2441296750883","off":"-87.61357836156563"},{"cor":"#3f5f8a","da":"173.72715672313126 152.99847925020725","off":"-129.59508465981583"},{"cor":"#b8853a","da":"20.403394590391407 306.3222413829471","off":"-304.8222413829471"}],"trilha":"#ece5da"}},{"k":"rec-funil","sp":"span 6","t":"Pipeline de recrutamento","u":"contagem","f":"soma de cada etapa do funil no recorte, da candidatura à contratação","h":200,"y":"passo","d":{"passos":[{"rotulo":"Candidaturas","valor":"4.820","pct":58,"cor":"#6b4a2f","nota":"início do funil"},{"rotulo":"Triagem","valor":"1.180","pct":14.2,"cor":"#8f6b45","nota":"↳ 24,5% do passo anterior"},{"rotulo":"Entrevistas","valor":"412","pct":4.96,"cor":"#3f5f8a","nota":"↳ 34,9% do passo anterior"},{"rotulo":"Propostas","valor":"128","pct":1.54,"cor":"#b8853a","nota":"↳ 31,1% do passo anterior"},{"rotulo":"Contratados","valor":"96","pct":1.16,"cor":"#3d2b1d","nota":"↳ 75,0% do passo anterior"}]}},{"k":"rec-fontes","sp":"span 6","t":"Fontes de aquisição de talentos","u":"pct","f":"participação de cada fonte no total de contratados do recorte","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Agencia","pct":1.69,"valor":"1,0%","cor":"#6b4a2f"},{"rotulo":"Banco de talentos","pct":20.34,"valor":"12,5%","cor":"#6b4a2f"},{"rotulo":"Indicacao","pct":100,"valor":"61,5%","cor":"#6b4a2f"},{"rotulo":"Linkedin","pct":40.68,"valor":"25,0%","cor":"#6b4a2f"},{"rotulo":"Outros","pct":0,"valor":"0,0%","cor":"#6b4a2f"},{"rotulo":"Site proprio","pct":0,"valor":"0,0%","cor":"#6b4a2f"}],"marcas":[]}},{"k":"rec-tempo","sp":"span 6","t":"Tempo médio de fechamento por área","u":"dias","f":"dias médios da área = dias somados da área ÷ vagas fechadas da área","n":"Tecnologia e Marketing respondem por 33% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":69.14,"valor":"36 dias","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":77.83,"valor":"40 dias","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":100,"valor":"52 dias","cor":"#6b4a2f"},{"rotulo":"Logística","pct":66.63,"valor":"34 dias","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":85.71,"valor":"44 dias","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":85.8,"valor":"44 dias","cor":"#6b4a2f"},{"rotulo":"RH","pct":72.71,"valor":"38 dias","cor":"#6b4a2f"}],"marcas":[{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""},{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""},{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""},{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""},{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""},{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""},{"left":"77.5623268698061%","cor":"#3f5f8a","rot":""}]}},{"k":"rec-vagas","sp":"span 6","t":"Vagas por status e área","u":"contagem","f":"vagas por status, somadas no recorte e quebradas por área","n":"Operações e Tecnologia respondem por 56% do total.","h":216,"y":"gBarrasEmpilhadas","d":{"categorias":["Operações","Comercial","Tecnologia","Logística","Financeiro","Marketing","RH"],"horizontal":true,"eixo":{"dominio":[0,59],"cortes":[0,14.75,29.5,44.25,59],"temLinhaDeZero":false},"faixas":[{"nome":"Abertas","cor":"#6b4a2f","valores":[14,11,13,5,2,2,1]},{"nome":"Em andamento","cor":"#8f6b45","valores":[7,5,6,2,1,1,1]},{"nome":"Fechadas","cor":"#3f5f8a","valores":[38,22,14,11,5,4,2]}]}},{"k":"rec-resumo","sp":"span 12","t":"Resumo do funil","u":"contagem","f":"o fechamento do ciclo de recrutamento no recorte, número a número","h":180,"y":"estatistica","d":{"colunas":"repeat(4, minmax(0, 1fr))","itens":[{"rotulo":"Vagas movimentadas","valor":"179","cor":"#17130f","borda":"3px solid #17130f","sub":"abertas, em andamento, fechadas e canceladas"},{"rotulo":"Taxa de conversão","valor":"53,6%","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":"fechadas ÷ vagas movimentadas"},{"rotulo":"Custo médio de contratação","valor":"R$ 0,0 mi","cor":"#a8402f","borda":"3px solid #a8402f","sub":null},{"rotulo":"Tempo médio","valor":"40 dias","cor":"#a8402f","borda":"3px solid #a8402f","sub":null}]}}]},"/rh/trein":{"t":"Treinamento","k":[{"k":"rh-trein-horas-de-treinamento","r":"Horas de treinamento","v":"21.400,0 h","f":"no período","c":"#6d5f4e","s":[22,15.42,9.59,13.9,6.05,2,17.95,20.23,11.62,8.33,12.89,13.65],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-trein-participacao","r":"Participação","v":"78,1%","f":"dos FTE com ao menos 1 trilha","c":"#6d5f4e","s":[16.41,20.29,13.68,22,10.19,4.52,11.73,15.67,8.06,6.23,14.13,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-trein-conclusao-media","r":"Conclusão média","v":"68,5%","f":"gargalo no autoinstrucional","c":"#6d5f4e","s":[14.38,2,20.85,8.81,12.86,12.49,3.08,17.71,22,16.83,7.09,19.4],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-trein-investimento","r":"Investimento","v":"R$ 0,6 mi","f":"da folha anual","c":"#6d5f4e","s":[22,15.45,9.63,13.91,6.06,2,17.94,20.21,11.62,8.46,12.95,13.66],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-trein-custo-por-hora","r":"Custo por hora","v":"R$ 0,0 mi","f":"investimento ÷ horas","c":"#6d5f4e","s":[10.02,11.6,9.71,7.73,4.09,2,6.49,5.34,4.43,22,14.52,7.82],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-trein-horas-por-fte","r":"Horas por FTE","v":"17,3 h","f":"no período","c":"#6d5f4e","s":[21.89,14.92,8.94,14.01,6.02,2,19.11,22,13.21,10.09,15.11,16.06],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"tre-horas","sp":"span 8","t":"Horas de treinamento e participação","u":"horas","f":"horas realizadas no mês; participação = participantes ÷ headcount FTE","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,78.06],"cortes":[0,19.52,39.03,58.55,78.06],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Participação","cor":"#6b4a2f","valores":[70.87,68.93,72.23,68.08,73.97,76.81,73.21,71.24,75.04,75.95,72.01,78.06]}],"linhaSecundaria":{"nome":"Horas","cor":"#3d2b1d","valores":[1420,1680,1910,1740,2050,2210,1580,1490,1830,1960,1780,1750]},"eixoSecundario":{"dominio":[1420,2210],"cortes":[1420,1617.5,1815,2012.5,2210],"temLinhaDeZero":false}}},{"k":"tre-conclusao","sp":"span 4","t":"Conclusão das trilhas","u":"pct","f":"trilhas concluídas contra iniciadas no recorte","h":200,"y":"rosca","d":{"centro":{"valor":"68,5%","rotulo":"concluídas"},"itens":[{"nome":"Concluídas","valor":"68,5%","cor":"#6b4a2f"},{"nome":"Em andamento","valor":"31,5%","cor":"#8f6b45"}],"arcos":[{"cor":"#6b4a2f","da":"222.15879526129487 104.56684071204364","off":"0"},{"cor":"#8f6b45","da":"101.56684071204363 225.15879526129487","off":"-223.65879526129487"}],"trilha":"#ece5da"}},{"k":"tre-modal","sp":"span 4","t":"Horas por modalidade","u":"pct","f":"repartição de 100% das horas do recorte entre as modalidades de trilha","h":96,"y":"grupo","d":{"grupos":[{"nome":"Horas por modalidade","segmentos":[{"pct":15.89,"rotulo":"","cor":"#6b4a2f"},{"pct":55.14,"rotulo":"55,1%","cor":"#8f6b45"},{"pct":28.97,"rotulo":"29,0%","cor":"#3f5f8a"}],"legenda":[{"cor":"#6b4a2f","texto":"Híbrido"},{"cor":"#8f6b45","texto":"Online"},{"cor":"#3f5f8a","texto":"Presencial"}]}]}},{"k":"tre-conclmod","sp":"span 4","t":"Conclusão por modalidade","u":"pct","f":"conclusão da modalidade = concluídas ÷ iniciadas naquela modalidade","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Híbrido","pct":83.37,"valor":"72,0%","cor":"#6b4a2f"},{"rotulo":"Online","pct":67.17,"valor":"58,0%","cor":"#6b4a2f"},{"rotulo":"Presencial","pct":100,"valor":"86,4%","cor":"#6b4a2f"}],"marcas":[]}},{"k":"tre-invest","sp":"span 4","t":"Investimento em desenvolvimento","u":"BRL_mi","f":"as três leituras do investimento em desenvolvimento no recorte","h":180,"y":"estatistica","d":{"colunas":"repeat(2, minmax(0, 1fr))","itens":[{"rotulo":"Investimento total","valor":"R$ 0,6 mi","cor":"#17130f","borda":"3px solid #17130f","sub":null},{"rotulo":"Horas realizadas","valor":"21.400,0 h","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":null},{"rotulo":"Participação","valor":"78,1%","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":"do quadro com ao menos uma trilha"}]}},{"k":"tre-area","sp":"span 12","t":"Horas por área e investimento por trilha","u":"horas","f":"soma das horas de treinamento por área","n":"Operações e Tecnologia respondem por 58% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":100,"valor":"7.800,0 h","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":53.85,"valor":"4.200,0 h","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":58.97,"valor":"4.600,0 h","cor":"#6b4a2f"},{"rotulo":"Logística","pct":26.92,"valor":"2.100,0 h","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":16.67,"valor":"1.300,0 h","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":11.54,"valor":"900,0 h","cor":"#6b4a2f"},{"rotulo":"RH","pct":6.41,"valor":"500,0 h","cor":"#6b4a2f"}],"marcas":[]}}]},"/rh/engaj":{"t":"Engajamento","k":[{"k":"rh-engaj-enps","r":"eNPS","v":"28","f":"histórico de 12 meses","c":"#6d5f4e","s":[22,18.68,20.42,13.75,10.27,7.02,12.13,8.61,5.39,7.08,2,3.64],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-engaj-engajamento","r":"Engajamento","v":"71,9%","f":"pesquisa trimestral","c":"#6d5f4e","s":[22,19.14,16.29,13.43,10.57,7.71,13.43,10.57,7.71,4.86,2,4.86],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-engaj-absenteismo","r":"Absenteísmo","v":"2,6%","f":"horas não trabalhadas","c":"#6d5f4e","s":[22,19.5,14.5,17,12.01,14.5,7,4.51,2,7,9.5,9.5],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-engaj-promotores","r":"Promotores","v":"41,3%","f":"da última pesquisa","c":"#6d5f4e","s":[21.99,17.11,22,12.37,6.83,2.13,12.55,7.18,2.69,12.45,2,11.84],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-engaj-cobertura-da-pesquisa","r":"Cobertura da pesquisa","v":"74,0%","f":"do quadro elegível","c":"#6d5f4e","s":[12.96,10.13,7.37,11.57,19.82,17.96,2,22,19.23,11.63,4.99,4.14],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-engaj-area-mais-critica","r":"Área mais crítica","v":"67,7%","f":"menor engajamento","c":"#6d5f4e","s":[22,19.12,16.3,13.38,10.52,7.65,13.56,10.66,7.76,4.96,2,4.96],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"eng-area","sp":"span 8","t":"Engajamento por área","u":"pct","f":"engajamento da área = pontos da pesquisa ÷ respondentes da área","n":"RH e Tecnologia respondem por 30% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":87.75,"valor":"69,7%","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":88.97,"valor":"70,6%","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":97.55,"valor":"77,4%","cor":"#6b4a2f"},{"rotulo":"Logística","pct":85.32,"valor":"67,7%","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":96.37,"valor":"76,5%","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":93.84,"valor":"74,5%","cor":"#6b4a2f"},{"rotulo":"RH","pct":100,"valor":"79,4%","cor":"#6b4a2f"}],"marcas":[]}},{"k":"eng-cat","sp":"span 4","t":"Categorias do eNPS","u":"pct","f":"repartição de 100% dos respondentes entre promotores, neutros e detratores","h":96,"y":"grupo","d":{"grupos":[{"nome":"Categorias do eNPS","segmentos":[{"pct":41.27,"rotulo":"41,3%","cor":"#6b4a2f"},{"pct":45.21,"rotulo":"45,2%","cor":"#8f6b45"},{"pct":13.52,"rotulo":"","cor":"#3f5f8a"}],"legenda":[{"cor":"#6b4a2f","texto":"Promotores"},{"cor":"#8f6b45","texto":"Neutros"},{"cor":"#3f5f8a","texto":"Detratores"}]}]}},{"k":"eng-enps","sp":"span 4","t":"eNPS (12 meses)","u":"pontos","f":"eNPS = (promotores − detratores) ÷ respondentes × 100","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":21.03,"rotulo":"21"},{"categoria":"fev/2026","valor":23.02,"rotulo":"23"},{"categoria":"mar/2026","valor":21.98,"rotulo":"22"},{"categoria":"abr/2026","valor":25.97,"rotulo":"26"},{"categoria":"mai/2026","valor":28.05,"rotulo":"28"},{"categoria":"jun/2026","valor":30,"rotulo":"30"},{"categoria":"jul/2026","valor":26.94,"rotulo":"27"},{"categoria":"ago/2026","valor":29.05,"rotulo":"29"},{"categoria":"set/2026","valor":30.97,"rotulo":"31"},{"categoria":"out/2026","valor":29.97,"rotulo":"30"},{"categoria":"nov/2026","valor":33.01,"rotulo":"33"},{"categoria":"dez/2026","valor":32.03,"rotulo":"32"}],"nome":"eNPS","eixo":{"dominio":[21.03,33.01],"cortes":[21.03,24.03,27.02,30.01,33.01],"temLinhaDeZero":false},"referencia":{"valor":30,"rotulo":"Zona favorável 30"}}},{"k":"eng-eng","sp":"span 4","t":"Engajamento (12 meses)","u":"pct","f":"engajamento = pontos da pesquisa ÷ respondentes","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":68,"rotulo":"68,0%"},{"categoria":"fev/2026","valor":69,"rotulo":"69,0%"},{"categoria":"mar/2026","valor":70,"rotulo":"70,0%"},{"categoria":"abr/2026","valor":71,"rotulo":"71,0%"},{"categoria":"mai/2026","valor":72,"rotulo":"72,0%"},{"categoria":"jun/2026","valor":73,"rotulo":"73,0%"},{"categoria":"jul/2026","valor":71,"rotulo":"71,0%"},{"categoria":"ago/2026","valor":72,"rotulo":"72,0%"},{"categoria":"set/2026","valor":73,"rotulo":"73,0%"},{"categoria":"out/2026","valor":74,"rotulo":"74,0%"},{"categoria":"nov/2026","valor":75,"rotulo":"75,0%"},{"categoria":"dez/2026","valor":74,"rotulo":"74,0%"}],"nome":"Engajamento","eixo":{"dominio":[68,75],"cortes":[68,69.75,71.5,73.25,75],"temLinhaDeZero":false}}},{"k":"eng-abs","sp":"span 4","t":"Absenteísmo (12 meses)","u":"pct","f":"absenteísmo = horas ausentes ÷ horas previstas × 100","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":2.2,"rotulo":"2,2%"},{"categoria":"fev/2026","valor":2.3,"rotulo":"2,3%"},{"categoria":"mar/2026","valor":2.5,"rotulo":"2,5%"},{"categoria":"abr/2026","valor":2.4,"rotulo":"2,4%"},{"categoria":"mai/2026","valor":2.6,"rotulo":"2,6%"},{"categoria":"jun/2026","valor":2.5,"rotulo":"2,5%"},{"categoria":"jul/2026","valor":2.8,"rotulo":"2,8%"},{"categoria":"ago/2026","valor":2.9,"rotulo":"2,9%"},{"categoria":"set/2026","valor":3,"rotulo":"3,0%"},{"categoria":"out/2026","valor":2.8,"rotulo":"2,8%"},{"categoria":"nov/2026","valor":2.7,"rotulo":"2,7%"},{"categoria":"dez/2026","valor":2.7,"rotulo":"2,7%"}],"nome":"Absenteísmo","eixo":{"dominio":[2.2,3],"cortes":[2.2,2.4,2.6,2.8,3],"temLinhaDeZero":false}}},{"k":"eng-clima","sp":"span 12","t":"Resumo de clima","u":"pontos","f":"as leituras de clima do recorte, cada uma com a própria fórmula","h":180,"y":"estatistica","d":{"colunas":"repeat(4, minmax(0, 1fr))","itens":[{"rotulo":"eNPS atual","valor":"28","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":null},{"rotulo":"Engajamento médio","valor":"71,9%","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":null},{"rotulo":"Absenteísmo médio","valor":"2,6%","cor":"#a8402f","borda":"3px solid #a8402f","sub":null},{"rotulo":"Pior área","valor":"67,7%","cor":"#4d7a52","borda":"3px solid #4d7a52","sub":"Logística"}]}}]},"/rh/sal":{"t":"Salários","k":[{"k":"rh-sal-folha-total","r":"Folha total","v":"R$ 186,0 mi","f":"da receita líquida","c":"#6d5f4e","s":[22,19.65,18.47,17.29,14.94,13.76,13.76,12.59,11.41,10.24,9.06,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-sal-salario-medio","r":"Salário médio","v":"R$ 0,0 mi","f":"base mensal, sem encargos","c":"#6d5f4e","s":[20.54,18.87,20.86,20.5,19.8,19.91,17.62,19.56,21.46,22,20.77,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-sal-custo-por-colaborador","r":"Custo por colaborador","v":"R$ 0,1 mi","f":"folha ÷ FTE anualizado","c":"#6d5f4e","s":[20.54,18.87,20.86,20.5,19.8,19.91,17.62,19.56,21.46,22,20.77,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-sal-encargos","r":"Encargos","v":"37,5%","f":"R$ 42 mi sobre R$ 112 mi","c":"#6d5f4e","s":[22,6.67,19.28,11.74,16.67,9.29,9.29,2,21.41,14.14,6.96,2.53],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-sal-beneficios","r":"Benefícios","v":"R$ 21,0 mi","f":"saúde = 47% do pacote","c":"#6d5f4e","s":[22,19.65,18.47,17.29,14.94,13.76,13.76,12.59,11.41,10.24,9.06,2],"sc":"#6d5f4e","se":"neutral"},{"k":"rh-sal-variavel","r":"Variável","v":"R$ 11,0 mi","f":"bônus e horas extras","c":"#6d5f4e","s":[22,19.65,18.47,17.29,14.94,13.76,13.76,12.59,11.41,10.24,9.06,2],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"sal-medio","sp":"span 8","t":"Salário médio por área","u":"BRL_mi","f":"salário médio da área = folha da área ÷ headcount FTE da área","n":"Tecnologia e Financeiro respondem por 40% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":48.9,"valor":"R$ 0,0 mi","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":65.1,"valor":"R$ 0,0 mi","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":100,"valor":"R$ 0,0 mi","cor":"#6b4a2f"},{"rotulo":"Logística","pct":49.06,"valor":"R$ 0,0 mi","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":76.83,"valor":"R$ 0,0 mi","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":63.04,"valor":"R$ 0,0 mi","cor":"#6b4a2f"},{"rotulo":"RH","pct":43.9,"valor":"R$ 0,0 mi","cor":"#6b4a2f"}],"marcas":[]}},{"k":"sal-comp","sp":"span 4","t":"Composição da folha","u":"pct","f":"repartição de 100% da folha do recorte entre os quatro componentes","h":200,"y":"rosca","d":{"centro":{"valor":"60,2%","rotulo":"salários"},"itens":[{"nome":"Salários","valor":"60,2%","cor":"#6b4a2f"},{"nome":"Encargos","valor":"22,6%","cor":"#8f6b45"},{"nome":"Benefícios","valor":"11,3%","cor":"#3f5f8a"},{"nome":"Variável","valor":"5,9%","cor":"#b8853a"}],"arcos":[{"cor":"#6b4a2f","da":"195.23801736028986 131.48761861304865","off":"0"},{"cor":"#8f6b45","da":"72.27675651010868 254.44887946322984","off":"-196.73801736028986"},{"cor":"#3f5f8a","da":"35.38837825505434 291.33725771828415","off":"-270.5147738703985"},{"cor":"#b8853a","da":"17.82248384788561 308.9031521254529","off":"-307.4031521254529"}],"trilha":"#ece5da"}},{"k":"sal-folha","sp":"span 6","t":"Folha por área","u":"BRL_mi","f":"soma da folha por área no recorte","n":"Operações e Tecnologia respondem por 53% do total.","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":100,"valor":"R$ 58,0 mi","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":58.62,"valor":"R$ 34,0 mi","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":70.69,"valor":"R$ 41,0 mi","cor":"#6b4a2f"},{"rotulo":"Logística","pct":29.31,"valor":"R$ 17,0 mi","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":31.03,"valor":"R$ 18,0 mi","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":20.69,"valor":"R$ 12,0 mi","cor":"#6b4a2f"},{"rotulo":"RH","pct":10.34,"valor":"R$ 6,0 mi","cor":"#6b4a2f"}],"marcas":[]}},{"k":"sal-faixas","sp":"span 6","t":"Faixas salariais","u":"FTE","f":"headcount FTE por faixa salarial, no último mês do recorte","h":216,"y":"gBarras","d":{"categorias":["Ate 3k","3–6k","6–10k","10–18k","18–30k","Acima 30k"],"eixo":{"dominio":[0,402],"cortes":[0,100.5,201,301.5,402],"temLinhaDeZero":false},"comLegenda":false,"barras":[{"nome":"FTE","cor":"#6b4a2f","valores":[214,402,328,196,76,24]}]}},{"k":"sal-benef","sp":"span 8","t":"Benefícios e encargos","u":"BRL_mi","f":"soma de encargos e benefícios no recorte, em reais","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Encargos","pct":100,"valor":"R$ 42,0 mi","cor":"#6b4a2f"},{"rotulo":"Benefícios","pct":50,"valor":"R$ 21,0 mi","cor":"#6b4a2f"}],"marcas":[]}},{"k":"sal-resumo","sp":"span 4","t":"Indicadores de salário","u":"BRL_mi","f":"os limites da política de remuneração, lidos das bandas de cargo","h":180,"y":"estatistica","d":{"colunas":"repeat(2, minmax(0, 1fr))","itens":[{"rotulo":"Maior salário base","valor":"R$ 0,0 mi","cor":"#17130f","borda":"3px solid #17130f","sub":"Gerência sênior · Tecnologia"},{"rotulo":"Menor salário base","valor":"R$ 0,0 mi","cor":"#17130f","borda":"3px solid #17130f","sub":"Auxiliar operacional · Operações"},{"rotulo":"Amplitude","valor":"14","cor":"#a8402f","borda":"3px solid #a8402f","sub":"entre o menor e o maior salário base"}]}}]},"/fin/visao":{"t":"Visão financeira","k":[{"k":"fin-visao-receita-bruta","r":"Receita bruta","v":"R$ 1.412,0 mi","f":"vs. mesmo período do ano anterior","c":"#6d5f4e","s":[22,18.67,15.33,12.83,8.67,2,8.67,11.17,13.67,10.33,11.17,9.5],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-visao-receita-liquida","r":"Receita líquida","v":"R$ 1.200,0 mi","f":"após deduções de 15%","c":"#6d5f4e","s":[22,18.67,15.33,12.83,8.67,2,8.67,11.17,13.67,10.33,11.17,9.5],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-visao-ebitda","r":"EBITDA","v":"R$ 200,0 mi","f":"margem EBITDA","c":"#6d5f4e","s":[22,18,14,14,10,2,6,10,14,10,10,6],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-visao-margem-bruta","r":"Margem bruta","v":"40,0%","f":"CMV em 60% da receita","c":"#6d5f4e","s":[11.09,7.45,12.91,16.55,9.27,2,12.91,18.36,22,14.73,16.55,11.09],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-visao-margem-liquida","r":"Margem líquida","v":"-0,7%","f":"juros consomem todo o EBIT","c":"#6d5f4e","s":[22,16.95,12.33,18.78,16.42,8.53,4.15,10.22,16.67,12.33,10.22,2],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-visao-lucro-liquido","r":"Lucro líquido","v":"-R$ 8,0 mi","f":"cobertura de juros 1,0x","c":"#6d5f4e","s":[22,17.62,13.24,20.67,18.76,10,4.48,11.33,18.19,13.81,11.33,2],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"fin-receita","sp":"span 8","t":"Receita líquida — ano atual vs. ano anterior","u":"BRL_mi","f":"receita líquida do mês, contra o mesmo mês do ano anterior","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,112],"cortes":[0,28,56,84,112],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Ano atual","cor":"#6b4a2f","valores":[88,92,96,99,104,112,104,101,98,102,101,103]},{"nome":"Ano anterior","cor":"#8f6b45","valores":[78,81,86,88,92,99,93,90,88,91,90,92]}]}},{"k":"fin-margens","sp":"span 4","t":"Margens (12 meses)","u":"pct","f":"margens do mês sobre a receita líquida: bruta, EBITDA e líquida","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":40.1,"rotulo":"40,1%"},{"categoria":"fev/2026","valor":40.3,"rotulo":"40,3%"},{"categoria":"mar/2026","valor":40,"rotulo":"40,0%"},{"categoria":"abr/2026","valor":39.8,"rotulo":"39,8%"},{"categoria":"mai/2026","valor":40.2,"rotulo":"40,2%"},{"categoria":"jun/2026","valor":40.6,"rotulo":"40,6%"},{"categoria":"jul/2026","valor":40,"rotulo":"40,0%"},{"categoria":"ago/2026","valor":39.7,"rotulo":"39,7%"},{"categoria":"set/2026","valor":39.5,"rotulo":"39,5%"},{"categoria":"out/2026","valor":39.9,"rotulo":"39,9%"},{"categoria":"nov/2026","valor":39.8,"rotulo":"39,8%"},{"categoria":"dez/2026","valor":40.1,"rotulo":"40,1%"}],"nome":"Bruta","eixo":{"dominio":[-1.42,40.6],"cortes":[-1.42,9.08,19.59,30.09,40.6],"temLinhaDeZero":true},"linhas":[{"nome":"EBITDA","cor":"#8f6b45","valores":[15.91,16.3,16.67,16.16,16.35,16.96,17.31,16.83,16.33,16.67,16.83,17.48]},{"nome":"Líquida","cor":"#3f5f8a","valores":[-1.42,-1.03,-0.67,-1.17,-0.99,-0.37,-0.03,-0.5,-1.01,-0.67,-0.5,0.14]}]}},{"k":"fin-ebitda","sp":"span 5","t":"EBITDA mensal e conversão em caixa","u":"BRL_mi","f":"EBITDA do mês contra o FCO do mês","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,20],"cortes":[0,5,10,15,20],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"EBITDA","cor":"#6b4a2f","valores":[14,15,16,16,17,19,18,17,16,17,17,18]},{"nome":"FCO","cor":"#8f6b45","valores":[14,15,17,15,17,20,17,18,14,14,13,11]}]}},{"k":"fin-dre","sp":"span 7","t":"Ponte da DRE — receita líquida ao lucro líquido","u":"BRL_mi","f":"receita líquida − CMV − despesas = EBITDA; − D&A − financeiro − não operacional = lucro líquido","h":216,"y":"degrau","d":{"degraus":[{"rotulo":"Receita líquida","valor":"R$ 1.200,0 mi","top":0,"h":99.34,"cor":"#6b4a2f"},{"rotulo":"CMV","valor":"-R$ 720,0 mi","top":0,"h":59.6,"cor":"#a8402f"},{"rotulo":"Despesas operacionais","valor":"-R$ 280,0 mi","top":59.6,"h":23.18,"cor":"#a8402f"},{"rotulo":"EBITDA","valor":"R$ 200,0 mi","top":82.78,"h":16.56,"cor":"#6b4a2f"},{"rotulo":"D&A","valor":"-R$ 60,0 mi","top":82.78,"h":4.97,"cor":"#a8402f"},{"rotulo":"Resultado financeiro","valor":"-R$ 140,0 mi","top":87.75,"h":11.59,"cor":"#a8402f"},{"rotulo":"Não operacional","valor":"-R$ 8,0 mi","top":99.34,"h":0.66,"cor":"#a8402f"},{"rotulo":"Lucro líquido","valor":"-R$ 8,0 mi","top":99.34,"h":0.66,"cor":"#6b4a2f"}]}}]},"/fin/caixa":{"t":"Fluxo de caixa","k":[{"k":"fin-caixa-saldo-de-caixa","r":"Saldo de caixa","v":"R$ 100,0 mi","f":"vs. saldo inicial de {valor}","c":"#6d5f4e","s":[2,3.94,4.58,5.87,5.23,2.65,3.94,6.52,10.39,14.26,19.42,22],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-caixa-geracao-operacional","r":"Geração operacional","v":"R$ 185,0 mi","f":"FCO ÷ EBITDA no ano","c":"#6d5f4e","s":[15.33,13.11,8.67,13.11,8.67,2,8.67,6.44,15.33,15.33,17.56,22],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-caixa-investimento-fci","r":"Investimento (FCI)","v":"R$ 140,0 mi","f":"manutenção e expansão","c":"#6d5f4e","s":[22,18.67,15.33,12.83,8.67,2,8.67,11.17,13.67,10.33,11.17,9.5],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-caixa-financiamento-fcf","r":"Financiamento (FCF)","v":"R$ 80,0 mi","f":"amortização {valor} · juros {valor}","c":"#6d5f4e","s":[22,18.67,15.33,12.83,8.67,2,8.67,11.17,13.67,10.33,11.17,9.5],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-caixa-conversao-de-dez","r":"Conversão de Dez","v":"92,5%","f":"abaixo do gatilho de 80%","c":"#6d5f4e","s":[4.77,4.77,2,7.54,4.77,2.44,7.23,2.16,10.31,12.59,15.19,22],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"cx-diario","sp":"span 12","t":"Movimentação diária — últimos 30 dias","u":"BRL_mi","f":"fluxo líquido do dia = entradas − saídas, por dia útil","h":216,"y":"gBarras","d":{"categorias":["20/11","23/11","24/11","25/11","26/11","27/11","30/11","01/12","02/12","03/12","04/12","07/12","08/12","09/12","10/12","11/12","14/12","15/12","16/12","17/12","18/12","21/12","22/12","23/12","24/12","25/12","28/12","29/12","30/12","31/12"],"eixo":{"dominio":[-11.76,2.18],"cortes":[-11.76,-8.27,-4.79,-1.31,2.18],"temLinhaDeZero":true},"comLegenda":false,"barras":[{"nome":"Fluxo líquido do dia","cor":"#6b4a2f","valores":[-11.76,0.4,0.4,1.49,1.49,1.49,-7.81,2.18,2.18,2.18,-2.14,2.18,2.18,2.18,2.18,2.18,2.18,2.18,-0.38,-0.38,-0.38,-4.7,-0.38,-0.38,-0.38,0.64,0.64,-3.68,-10.59,-3.68]}]}},{"k":"cx-ponte","sp":"span 6","t":"Ponte do fluxo de caixa","u":"BRL_mi","f":"saldo inicial + FCO − investimento − financiamento = saldo final","h":216,"y":"degrau","d":{"degraus":[{"rotulo":"Saldo inicial","valor":"R$ 135,0 mi","top":57.81,"h":42.19,"cor":"#6b4a2f"},{"rotulo":"Operacional (FCO)","valor":"R$ 185,0 mi","top":0,"h":57.81,"cor":"#4d7a52"},{"rotulo":"Investimento (FCI)","valor":"-R$ 140,0 mi","top":0,"h":43.75,"cor":"#a8402f"},{"rotulo":"Financiamento (FCF)","valor":"-R$ 80,0 mi","top":43.75,"h":25,"cor":"#a8402f"},{"rotulo":"Saldo final","valor":"R$ 100,0 mi","top":68.75,"h":31.25,"cor":"#6b4a2f"}]}},{"k":"cx-saldo","sp":"span 6","t":"Saldo de caixa consolidado","u":"BRL_mi","f":"saldo de caixa no fechamento de cada mês","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":131,"rotulo":"R$ 131,0 mi"},{"categoria":"fev/2026","valor":128,"rotulo":"R$ 128,0 mi"},{"categoria":"mar/2026","valor":127,"rotulo":"R$ 127,0 mi"},{"categoria":"abr/2026","valor":125,"rotulo":"R$ 125,0 mi"},{"categoria":"mai/2026","valor":126,"rotulo":"R$ 126,0 mi"},{"categoria":"jun/2026","valor":130,"rotulo":"R$ 130,0 mi"},{"categoria":"jul/2026","valor":128,"rotulo":"R$ 128,0 mi"},{"categoria":"ago/2026","valor":124,"rotulo":"R$ 124,0 mi"},{"categoria":"set/2026","valor":118,"rotulo":"R$ 118,0 mi"},{"categoria":"out/2026","valor":112,"rotulo":"R$ 112,0 mi"},{"categoria":"nov/2026","valor":104,"rotulo":"R$ 104,0 mi"},{"categoria":"dez/2026","valor":100,"rotulo":"R$ 100,0 mi"}],"nome":"Saldo","eixo":{"dominio":[100,131],"cortes":[100,107.75,115.5,123.25,131],"temLinhaDeZero":false}}},{"k":"cx-fluxo","sp":"span 8","t":"Entradas × saídas por mês","u":"BRL_mi","f":"entradas e saídas do mês; linha = saldo acumulado no fechamento","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,131],"cortes":[0,32.75,65.5,98.25,131],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Entradas","cor":"#6b4a2f","valores":[92,94,98,100,105,110,103,100,99,101,100,104]},{"nome":"Saídas","cor":"#8f6b45","valores":[96,97,99,102,104,106,105,104,105,107,108,108]},{"nome":"Saldo acumulado","cor":"#3f5f8a","valores":[131,128,127,125,126,130,128,124,118,112,104,100]}]}},{"k":"cx-cat","sp":"span 4","t":"Principais categorias de saída","u":"BRL_mi","f":"soma do desembolso de cada natureza no recorte","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Matéria-prima","pct":100,"valor":"R$ 434,9 mi","cor":"#6b4a2f"},{"rotulo":"Pessoal","pct":46.97,"valor":"R$ 204,3 mi","cor":"#6b4a2f"},{"rotulo":"Juros","pct":40.4,"valor":"R$ 175,7 mi","cor":"#6b4a2f"},{"rotulo":"Serviços de terceiros","pct":29.8,"valor":"R$ 129,6 mi","cor":"#6b4a2f"},{"rotulo":"Impostos","pct":24.24,"valor":"R$ 105,4 mi","cor":"#6b4a2f"},{"rotulo":"Fretes e logística","pct":18.69,"valor":"R$ 81,3 mi","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":10.61,"valor":"R$ 46,1 mi","cor":"#6b4a2f"},{"rotulo":"Outras saídas","pct":14.65,"valor":"R$ 63,7 mi","cor":"#6b4a2f"}],"marcas":[]}}]},"/fin/orc":{"t":"Orçamentário","k":[{"k":"fin-orc-orcado","r":"Orçado","v":"R$ 1.140,0 mi","f":"todos os centros de custo","c":"#6d5f4e","s":[22,22,12,12,12,12,12,12,12,2,12,2],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-orc-realizado","r":"Realizado","v":"R$ 1.196,0 mi","f":"vs. orçado do período","c":"#6d5f4e","s":[22,20.57,16.29,14.86,13.43,12,10.57,9.14,6.29,3.43,2,2],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-orc-desvio","r":"Desvio","v":"R$ 56,0 mi","f":"estouro acumulado","c":"#6d5f4e","s":[22,20.46,17.38,15.85,14.31,12.77,11.23,9.69,6.62,5.08,2,3.54],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-orc-economia-obtida","r":"Economia obtida","v":"R$ 11,0 mi","f":"","c":"#6d5f4e","s":[2,5.53,9.38,10.85,12.33,13.81,15.29,16.77,19.57,20.28,22,21.09],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"orc-vs","sp":"span 8","t":"Orçado × Realizado por mês","u":"BRL_mi","f":"orçado e realizado do mês, lado a lado","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,106],"cortes":[0,26.5,53,79.5,106],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Orçado","cor":"#6b4a2f","valores":[94,94,95,95,95,95,95,95,95,96,95,96]},{"nome":"Realizado","cor":"#8f6b45","valores":[92,93,96,97,98,99,100,101,103,105,106,106]}]}},{"k":"orc-desvio","sp":"span 4","t":"Desvio por centro de custo","u":"BRL_mi","f":"desvio = realizado − orçado no recorte, por centro de custo","h":216,"y":"gBarras","d":{"categorias":["Operações","Comercial","Tecnologia","Logística","Financeiro","Corporativo","Marketing","RH"],"eixo":{"dominio":[-5,26],"cortes":[-5,2.75,10.5,18.25,26],"temLinhaDeZero":true},"comLegenda":false,"barras":[{"nome":"Desvio","cor":"#6b4a2f","valores":[26,14,11,6,-3,10,-5,-3]}]}},{"k":"orc-gastos","sp":"span 6","t":"Gastos por centro de custo","u":"BRL_mi","f":"soma do realizado por centro de custo no recorte","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Operações","pct":100,"valor":"R$ 412,0 mi","cor":"#6b4a2f"},{"rotulo":"Comercial","pct":48.06,"valor":"R$ 198,0 mi","cor":"#6b4a2f"},{"rotulo":"Tecnologia","pct":37.38,"valor":"R$ 154,0 mi","cor":"#6b4a2f"},{"rotulo":"Logística","pct":32.04,"valor":"R$ 132,0 mi","cor":"#6b4a2f"},{"rotulo":"Financeiro","pct":23.3,"valor":"R$ 96,0 mi","cor":"#6b4a2f"},{"rotulo":"Corporativo","pct":21.36,"valor":"R$ 88,0 mi","cor":"#6b4a2f"},{"rotulo":"Marketing","pct":17.96,"valor":"R$ 74,0 mi","cor":"#6b4a2f"},{"rotulo":"RH","pct":10.19,"valor":"R$ 42,0 mi","cor":"#6b4a2f"}],"marcas":[]}},{"k":"orc-acum","sp":"span 6","t":"Orçamento acumulado × realizado","u":"BRL_mi","f":"orçado e realizado acumulados do início do recorte até cada mês","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":94,"rotulo":"R$ 94,0 mi"},{"categoria":"fev/2026","valor":188,"rotulo":"R$ 188,0 mi"},{"categoria":"mar/2026","valor":283,"rotulo":"R$ 283,0 mi"},{"categoria":"abr/2026","valor":378,"rotulo":"R$ 378,0 mi"},{"categoria":"mai/2026","valor":473,"rotulo":"R$ 473,0 mi"},{"categoria":"jun/2026","valor":568,"rotulo":"R$ 568,0 mi"},{"categoria":"jul/2026","valor":663,"rotulo":"R$ 663,0 mi"},{"categoria":"ago/2026","valor":758,"rotulo":"R$ 758,0 mi"},{"categoria":"set/2026","valor":853,"rotulo":"R$ 853,0 mi"},{"categoria":"out/2026","valor":949,"rotulo":"R$ 949,0 mi"},{"categoria":"nov/2026","valor":1044,"rotulo":"R$ 1.044,0 mi"},{"categoria":"dez/2026","valor":1140,"rotulo":"R$ 1.140,0 mi"}],"nome":"Orçado acumulado","eixo":{"dominio":[92,1196],"cortes":[92,368,644,920,1196],"temLinhaDeZero":false},"linhas":[{"nome":"Realizado acumulado","cor":"#8f6b45","valores":[92,185,281,378,476,575,675,776,879,984,1090,1196]}]}}]},"/fin/contas":{"t":"Contas a pagar/receber","k":[{"k":"fin-contas-pmr","r":"PMR","v":"52 dias","f":"contas a receber R$ 171 mi","c":"#6d5f4e","s":[22,17.94,2,20.52,18.92,12.48,18.92,12.89,18.46,14.94,12.89,16.95],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-contas-pme","r":"PME","v":"75 dias","f":"estoques R$ 148 mi","c":"#6d5f4e","s":[7.28,21.16,15.05,17.74,2,9.47,14.25,6.63,8.19,22,3.76,13.5],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-contas-pmp","r":"PMP","v":"51 dias","f":"fornecedores R$ 101 mi","c":"#6d5f4e","s":[2,7.91,16.39,8.78,18.54,18.78,6.28,10.11,16.19,13.15,22,13.24],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-contas-ciclo-de-conversao","r":"Ciclo de conversão","v":"76 dias","f":"PMR + PME − PMP","c":"#6d5f4e","s":[22,20.23,5.52,19.51,6.48,6.09,19.69,11.99,10.04,15.3,2,13.35],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-contas-inadimplencia","r":"Inadimplência","v":"4,1%","f":"R$ 7 mi sobre R$ 171 mi","c":"#6d5f4e","s":[2,17,10.91,19.65,16.1,22,16.1,6.88,16.52,10.01,6.88,13.08],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"ct-ciclo","sp":"span 12","t":"Ciclo de conversão de caixa","u":"dias","f":"ciclo financeiro = PMR + PME − PMP, em dias","h":116,"y":"faixa","d":{"colunas":"148px minmax(0, 1fr) 54px","faixas":[{"rotulo":"Prazo do fornecedor (PMP)","left":0,"w":40.3,"valor":"51 dias","cor":"#4d7a52"},{"rotulo":"Estoque (PME)","left":0,"w":59.06,"valor":"75 dias","cor":"#a8402f"},{"rotulo":"Recebimento (PMR)","left":59.06,"w":40.94,"valor":"52 dias","cor":"#a8402f"},{"rotulo":"Ciclo sem caixa","left":40.3,"w":59.7,"valor":"76 dias","cor":"#a8402f"}],"marcos":[{"rot":"Compra","texto":"0 dias","left":"0%"},{"rot":"Paga o fornecedor (PMP)","texto":"51 dias","left":"40.303272146847576%"},{"rot":"Fatura (PME)","texto":"75 dias","left":"59.05826017557862%"},{"rot":"Recebe do cliente (PMR)","texto":"127 dias","left":"100%"}]}},{"k":"cr-aging","sp":"span 6","t":"Aging de contas a receber","u":"BRL_mi","f":"saldo a receber por faixa de vencimento, no último mês do recorte","h":216,"y":"gBarras","d":{"categorias":["A vencer","1–30d","31–60d","61–90d","Mais 90d"],"eixo":{"dominio":[0,118],"cortes":[0,29.5,59,88.5,118],"temLinhaDeZero":false},"comLegenda":false,"barras":[{"nome":"A receber","cor":"#6b4a2f","valores":[118,26,12,8,7]}]}},{"k":"cp-aging","sp":"span 6","t":"Aging de contas a pagar","u":"BRL_mi","f":"saldo a pagar por faixa de vencimento, no último mês do recorte","h":216,"y":"gBarras","d":{"categorias":["A vencer","1–30d","31–60d","61–90d","Mais 90d"],"eixo":{"dominio":[0,74],"cortes":[0,18.5,37,55.5,74],"temLinhaDeZero":false},"comLegenda":false,"barras":[{"nome":"A pagar","cor":"#6b4a2f","valores":[74,15,7,3,2]}]}},{"k":"cr-inadim","sp":"span 6","t":"Top clientes inadimplentes","u":"BRL_mi","f":"saldo vencido por cliente no fim do recorte, do maior para o menor","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Cliente A","pct":100,"valor":"R$ 4,2 mi","cor":"#6b4a2f"},{"rotulo":"Cliente B","pct":73.81,"valor":"R$ 3,1 mi","cor":"#6b4a2f"},{"rotulo":"Cliente C","pct":57.14,"valor":"R$ 2,4 mi","cor":"#6b4a2f"},{"rotulo":"Cliente D","pct":42.86,"valor":"R$ 1,8 mi","cor":"#6b4a2f"},{"rotulo":"Cliente E","pct":33.33,"valor":"R$ 1,4 mi","cor":"#6b4a2f"},{"rotulo":"Cliente F","pct":26.19,"valor":"R$ 1,1 mi","cor":"#6b4a2f"}],"marcas":[]}},{"k":"cp-fornec","sp":"span 6","t":"Top fornecedores por saldo","u":"BRL_mi","f":"saldo a pagar por fornecedor no fim do recorte, do maior para o menor","h":216,"y":"barra","d":{"colunas":"96px minmax(0, 1fr) 62px","linhas":[{"rotulo":"Fornecedor 1","pct":100,"valor":"R$ 22,0 mi","cor":"#6b4a2f"},{"rotulo":"Fornecedor 2","pct":77.27,"valor":"R$ 17,0 mi","cor":"#6b4a2f"},{"rotulo":"Fornecedor 3","pct":63.64,"valor":"R$ 14,0 mi","cor":"#6b4a2f"},{"rotulo":"Fornecedor 4","pct":50,"valor":"R$ 11,0 mi","cor":"#6b4a2f"},{"rotulo":"Fornecedor 5","pct":40.91,"valor":"R$ 9,0 mi","cor":"#6b4a2f"},{"rotulo":"Fornecedor 6","pct":31.82,"valor":"R$ 7,0 mi","cor":"#6b4a2f"}],"marcas":[]}}]},"/fin/fat":{"t":"Faturamento","k":[{"k":"fin-fat-faturamento","r":"Faturamento","v":"R$ 1.200,0 mi","f":"receita líquida do período","c":"#6d5f4e","s":[22,18.67,15.33,12.83,8.67,2,8.67,11.17,13.67,10.33,11.17,9.5],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-fat-crescimento-yoy","r":"Crescimento YoY","v":"12,4%","f":"base do ano anterior: {valor}","c":"#6d5f4e","s":[8.85,2,19.62,11.75,6.84,6.05,17.81,14.25,22,15.47,14.25,16.65],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-fat-ticket-medio","r":"Ticket médio","v":"R$ 0,1 mi","f":"18.400 notas emitidas","c":"#6d5f4e","s":[22,18.44,15.04,12.47,8.32,2,8.32,10.87,13.39,9.98,10.87,9.2],"sc":"#6d5f4e","se":"neutral"},{"k":"fin-fat-concentracao-top-10","r":"Concentração top 10","v":"54,3%","f":"risco moderado de dependência","c":"#6d5f4e","s":[16.5,2,9.09,9.09,2.82,14.91,2.82,2.63,2.43,9.09,22,15.42],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"fat-evolucao","sp":"span 8","t":"Evolução do faturamento","u":"BRL_mi","f":"faturamento do mês, contra o mesmo mês do ano anterior","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,112],"cortes":[0,28,56,84,112],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Ano atual","cor":"#6b4a2f","valores":[88,92,96,99,104,112,104,101,98,102,101,103]},{"nome":"Ano anterior","cor":"#8f6b45","valores":[78,81,86,88,92,99,93,90,88,91,90,92]}]}},{"k":"fat-segm","sp":"span 4","t":"Carteira por segmento","u":"pct","f":"participação de cada segmento na receita da carteira no recorte","h":200,"y":"rosca","d":{"centro":{"valor":"45,7%","rotulo":"indústria"},"itens":[{"nome":"Industria","valor":"45,7%","cor":"#6b4a2f"},{"nome":"Varejo","valor":"21,2%","cor":"#8f6b45"},{"nome":"Servicos","valor":"15,6%","cor":"#3f5f8a"},{"nome":"Governo","valor":"12,3%","cor":"#b8853a"},{"nome":"Outros","valor":"5,2%","cor":"#3d2b1d"}],"arcos":[{"cor":"#6b4a2f","da":"147.83165570560564 178.89398026773287","off":"0"},{"cor":"#8f6b45","da":"67.65358552809926 259.07205044523926","off":"-149.33165570560564"},{"cor":"#3f5f8a","da":"49.61351973816032 277.1121162351782","off":"-218.4852412337049"},{"cor":"#b8853a","da":"38.58903508875319 288.13660088458533","off":"-269.5987609718652"},{"cor":"#3d2b1d","da":"15.53783991272011 311.1877960606184","off":"-309.6877960606184"}],"trilha":"#ece5da"}},{"k":"fat-margem","sp":"span 6","t":"Margem de contribuição por cliente","u":"BRL_mi","f":"um ponto por cliente: receita no eixo X, margem de contribuição no eixo Y","h":216,"y":"ponto","d":{"eixoY":["38,4%","5,7%"],"eixoX":["R$ 23,9 mi","R$ 128,1 mi"],"legenda":["↔ Receita do cliente","↕ Margem de contribuição"],"pontos":[{"id":"C1","left":90.32,"bottom":81.74,"tam":26,"cor":"#6b4a2f"},{"id":"C2","left":69.2,"bottom":68.55,"tam":22.64,"cor":"#8f6b45"},{"id":"C3","left":57.68,"bottom":90.32,"tam":20.81,"cor":"#3f5f8a"},{"id":"C4","left":46.16,"bottom":42.49,"tam":18.98,"cor":"#b8853a"},{"id":"C5","left":40.4,"bottom":58.43,"tam":18.07,"cor":"#3d2b1d"},{"id":"C6","left":28.88,"bottom":20.41,"tam":16.24,"cor":"#4d7a52"},{"id":"C7","left":23.12,"bottom":73.46,"tam":15.32,"cor":"#6d5f4e"},{"id":"C8","left":17.36,"bottom":9.68,"tam":14.41,"cor":"#b39069"},{"id":"C9","left":13.52,"bottom":50.15,"tam":13.8,"cor":"#6b4a2f"},{"id":"C10","left":9.68,"bottom":78.98,"tam":13.19,"cor":"#8f6b45"}]}},{"k":"fat-risco","sp":"span 6","t":"Risco de crédito da carteira","u":"pct","f":"participação de cada faixa de rating na receita da carteira","h":216,"y":"gBarrasEmpilhadas","d":{"categorias":["2026"],"horizontal":true,"eixo":{"dominio":[0,100],"cortes":[0,25,50,75,100],"temLinhaDeZero":false},"faixas":[{"nome":"AAA-A","cor":"#6b4a2f","valores":[61.96]},{"nome":"BBB","cor":"#8f6b45","valores":[21.17]},{"nome":"BB","cor":"#3f5f8a","valores":[11.04]},{"nome":"B ou inferior","cor":"#b8853a","valores":[5.83]}]}}]},"/int/cruz":{"t":"RH × Financeiro","k":[{"k":"int-cruz-receita-por-colaborador","r":"Receita por colaborador","v":"R$ 1,0 mi","f":"anualizado por FTE","c":"#6d5f4e","s":[22,18.8,15.67,13.19,9.32,2,9.59,13.62,17.57,14.35,15.73,14.11],"sc":"#6d5f4e","se":"neutral"},{"k":"int-cruz-ebitda-per-capita","r":"EBITDA per capita","v":"R$ 0,2 mi","f":"anualizado por FTE","c":"#6d5f4e","s":[22,17.94,13.96,14.41,10.66,2,6.25,11.64,16.92,12.96,13.27,9.06],"sc":"#6d5f4e","se":"neutral"},{"k":"int-cruz-despesa-de-pessoal","r":"Despesa de pessoal","v":"15,5%","f":"sobre a receita líquida","c":"#6d5f4e","s":[2,5.45,9.31,11.83,15.5,22,14.85,11.22,7.36,10.92,9.22,7.36],"sc":"#6d5f4e","se":"neutral"},{"k":"int-cruz-headcount","r":"Headcount","v":"1.240 FTE","f":"FTE no fim do período","c":"#6d5f4e","s":[22,19.33,16.67,15.11,12,10.22,11.33,8.67,6,4,2.89,2],"sc":"#6d5f4e","se":"neutral"}],"p":[{"k":"int-rpc","sp":"span 6","t":"Receita por colaborador","u":"BRL_mi","f":"receita por colaborador = receita do mês × 12 ÷ headcount FTE","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"fev/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"mar/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"abr/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"mai/2026","valor":0.09,"rotulo":"R$ 0,1 mi"},{"categoria":"jun/2026","valor":0.09,"rotulo":"R$ 0,1 mi"},{"categoria":"jul/2026","valor":0.09,"rotulo":"R$ 0,1 mi"},{"categoria":"ago/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"set/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"out/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"nov/2026","valor":0.08,"rotulo":"R$ 0,1 mi"},{"categoria":"dez/2026","valor":0.08,"rotulo":"R$ 0,1 mi"}],"nome":"Receita por FTE","eixo":{"dominio":[0.08,0.09],"cortes":[0.08,0.08,0.08,0.09,0.09],"temLinhaDeZero":false}}},{"k":"int-ebitda-pc","sp":"span 6","t":"EBITDA per capita","u":"BRL_mi","f":"EBITDA per capita = EBITDA do mês × 12 ÷ headcount FTE","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,0.02],"cortes":[0,0,0.01,0.01,0.02],"temLinhaDeZero":false},"comLegenda":false,"barras":[{"nome":"EBITDA por FTE","cor":"#6b4a2f","valores":[0.01,0.01,0.01,0.01,0.01,0.02,0.02,0.01,0.01,0.01,0.01,0.01]}]}},{"k":"int-hc-desp","sp":"span 12","t":"Headcount versus despesa de pessoal","u":"BRL_mi","f":"folha e receita do mês em reais; headcount FTE no fim do mês","h":216,"y":"gBarras","d":{"categorias":["jan/2026","fev/2026","mar/2026","abr/2026","mai/2026","jun/2026","jul/2026","ago/2026","set/2026","out/2026","nov/2026","dez/2026"],"eixo":{"dominio":[0,112],"cortes":[0,28,56,84,112],"temLinhaDeZero":false},"comLegenda":true,"barras":[{"nome":"Folha mensal","cor":"#6b4a2f","valores":[14.8,15,15.1,15.2,15.4,15.5,15.5,15.6,15.7,15.8,15.9,16.5]},{"nome":"Receita mensal","cor":"#8f6b45","valores":[88,92,96,99,104,112,104,101,98,102,101,103]}],"linhaSecundaria":{"nome":"Headcount (FTE)","cor":"#3d2b1d","valores":[1150,1162,1174,1181,1195,1203,1198,1210,1222,1231,1236,1240]},"eixoSecundario":{"dominio":[1150,1240],"cortes":[1150,1172.5,1195,1217.5,1240],"temLinhaDeZero":false}}},{"k":"int-scatter","sp":"span 6","t":"Custo de pessoal × retorno por área","u":"BRL_mi","f":"um ponto por área: custo anual por FTE no eixo X, receita por FTE no eixo Y","h":216,"y":"ponto","d":{"eixoY":["R$ 23,7 mi","R$ 0,2 mi"],"eixoX":["R$ 0,1 mi","R$ 0,3 mi"],"legenda":["↔ Custo anual por FTE","↕ Receita atribuída por FTE"],"pontos":[{"id":"Operações","left":16.86,"bottom":9.68,"tam":26,"cor":"#6b4a2f"},{"id":"Comercial","left":40.15,"bottom":23.03,"tam":15.93,"cor":"#8f6b45"},{"id":"Tecnologia","left":90.32,"bottom":29.56,"tam":14.22,"cor":"#3f5f8a"},{"id":"Logística","left":17.09,"bottom":35.12,"tam":13.26,"cor":"#b8853a"},{"id":"Financeiro","left":57.01,"bottom":52.34,"tam":11.56,"cor":"#3d2b1d"},{"id":"Marketing","left":37.19,"bottom":64.61,"tam":10.89,"cor":"#4d7a52"},{"id":"RH","left":9.68,"bottom":90.32,"tam":10.07,"cor":"#6d5f4e"}]}},{"k":"int-pct","sp":"span 6","t":"Despesa de pessoal sobre a receita","u":"pct","f":"despesa de pessoal sobre a receita = folha ÷ receita líquida × 100","h":216,"y":"gLinha","d":{"pontos":[{"categoria":"jan/2026","valor":16.82,"rotulo":"16,8%"},{"categoria":"fev/2026","valor":16.3,"rotulo":"16,3%"},{"categoria":"mar/2026","valor":15.73,"rotulo":"15,7%"},{"categoria":"abr/2026","valor":15.35,"rotulo":"15,4%"},{"categoria":"mai/2026","valor":14.81,"rotulo":"14,8%"},{"categoria":"jun/2026","valor":13.84,"rotulo":"13,8%"},{"categoria":"jul/2026","valor":14.9,"rotulo":"14,9%"},{"categoria":"ago/2026","valor":15.45,"rotulo":"15,4%"},{"categoria":"set/2026","valor":16.02,"rotulo":"16,0%"},{"categoria":"out/2026","valor":15.49,"rotulo":"15,5%"},{"categoria":"nov/2026","valor":15.74,"rotulo":"15,7%"},{"categoria":"dez/2026","valor":16.02,"rotulo":"16,0%"}],"nome":"Folha ÷ receita","eixo":{"dominio":[13.84,16.82],"cortes":[13.84,14.58,15.33,16.07,16.82],"temLinhaDeZero":false},"referencia":{"valor":15.5,"rotulo":"Média do período 15,5%"}}}]}}}</script>
+
+<script>
+(function(){
+"use strict";
+var D = JSON.parse(document.getElementById('dadosPainel').textContent);
+var META = D._meta, TELAS = D.telas;
+
+/* ---------- cor: hex de origem -> token do tema ---------- */
+var MAPA = {
+  '#6b4a2f':'--s1','#8f6b45':'--s2','#3f5f8a':'--s3','#b8853a':'--s4','#3d2b1d':'--ink-line',
+  '#4d7a52':'--pos','#a8402f':'--neg','#6d5f4e':'--neu','#b39069':'--meta',
+  '#ece5da':'--grid','#e5ddd2':'--border-2','#efe8de':'--border','#faf7f1':'--soft',
+  '#ffffff':'--surface','#fffdfa':'--surface','#f2eee7':'--bg',
+  '#17130f':'--ink','#4a423a':'--muted','#8a7f74':'--subtle','#a89c8e':'--faint',
+  '#f7f2e8':'--on-fill','#1a1510':'--bar-bg'
+};
+function cor(hex){
+  if(!hex) return 'var(--s1)';
+  var h = String(hex).trim().toLowerCase();
+  return MAPA[h] ? 'var('+MAPA[h]+')' : h;
+}
+var SERIES = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--neu)'];
+
+/* ---------- utilidades ---------- */
+function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function num(v){ return Number.isInteger(v) ? String(v) : String(Math.round(v*100)/100); }
+function slug(r){ return r.replace(/^\//,''); }
+function modOf(r){ return r.split('/')[1]; }
+
+/* ---------- estado ---------- */
+var estado = {
+  rota: '/rh/visao',
+  painel: null,
+  filtros: {},
+  chatAberto: false,
+  turnos: []
+};
+META.filtros.forEach(function(f){ estado.filtros[f.nome] = f.sel; });
+
+function lerHash(){
+  var h = location.hash.replace(/^#/,'');
+  if(!h) return;
+  var partes = h.split('?');
+  var rota = partes[0];
+  if(TELAS[rota]) estado.rota = rota;
+  if(partes[1]){
+    var q = new URLSearchParams(partes[1]);
+    estado.painel = q.get('painel') || null;
+    META.filtros.forEach(function(f){ if(q.get(f.nome)) estado.filtros[f.nome]=q.get(f.nome); });
+  } else { estado.painel = null; }
+}
+function gravarHash(){
+  var q = new URLSearchParams();
+  META.filtros.forEach(function(f){ if(estado.filtros[f.nome]!==f.sel) q.set(f.nome, estado.filtros[f.nome]); });
+  if(estado.painel) q.set('painel', estado.painel);
+  var s = q.toString();
+  var novo = '#'+estado.rota+(s?'?'+s:'');
+  if(location.hash !== novo) history.replaceState(null,'',novo);
+}
+function ir(rota, painel){
+  if(TELAS[rota]) estado.rota = rota;
+  estado.painel = painel || null;
+  gravarHash(); render();
+  if(estado.painel){
+    var alvo = document.querySelector('[data-painel="'+estado.painel+'"]');
+    if(alvo) alvo.scrollIntoView({block:'center', behavior:'smooth'});
+  } else {
+    document.getElementById('conteudo').scrollTop = 0;
+  }
+}
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+function renderCabecalho(){
+  var tela = TELAS[estado.rota], mod = modOf(estado.rota);
+  var info = META.modulos.filter(function(m){ return m.id===mod; })[0];
+  document.getElementById('marcaNome').textContent = META.marca.titulo;
+  document.getElementById('marcaSub').textContent = META.marca.sub;
+
+  var nm = document.getElementById('navModulos'); nm.textContent='';
+  META.modulos.forEach(function(m){
+    var primeira = META.telas[m.id][0][0];
+    var b = el('button','pilula', m.nome);
+    b.type='button'; b.setAttribute('data-teste','modulo-'+m.id);
+    if(m.id===mod) b.setAttribute('aria-current','page');
+    b.addEventListener('click', function(){ ir(primeira); });
+    nm.appendChild(b);
+  });
+
+  document.getElementById('eyebrow').textContent = info.nome + ' · ' + estado.filtros.ano;
+  document.getElementById('titulo').textContent = tela.t;
+  document.title = tela.t + ' · ' + info.nome;
+
+  var f = document.getElementById('formFiltros'); f.textContent='';
+  META.filtros.forEach(function(flt){
+    var lab = el('label','campo');
+    lab.appendChild(el('span',null,flt.rotulo));
+    var sel = document.createElement('select');
+    sel.name = flt.nome; sel.setAttribute('data-teste','filtro-'+flt.nome);
+    flt.opcoes.forEach(function(o){
+      var op = document.createElement('option'); op.value=o[0]; op.textContent=o[1];
+      if(o[0]===estado.filtros[flt.nome]) op.selected=true;
+      sel.appendChild(op);
+    });
+    sel.addEventListener('change', function(){ estado.filtros[flt.nome]=sel.value; });
+    lab.appendChild(sel); f.appendChild(lab);
+  });
+  var aplicar = el('button','btn-forte','Aplicar'); aplicar.type='submit';
+  var limpar = el('button','btn-leve','Limpar'); limpar.type='button';
+  limpar.addEventListener('click', function(){
+    META.filtros.forEach(function(flt){ estado.filtros[flt.nome]=flt.sel; });
+    estado.painel=null; gravarHash(); render();
+  });
+  f.appendChild(aplicar); f.appendChild(limpar);
+  f.onsubmit = function(e){ e.preventDefault(); gravarHash(); render(); };
+
+  var nt = document.getElementById('navTelas'); nt.textContent='';
+  META.telas[mod].forEach(function(t){
+    var b = el('button','aba', t[1]); b.type='button';
+    if(t[0]===estado.rota) b.setAttribute('aria-current','page');
+    b.addEventListener('click', function(){ ir(t[0]); });
+    nt.appendChild(b);
+  });
+  nt.setAttribute('aria-label', info.navLabel);
+}
+
+/* =========================================================
+   KPIs
+   ========================================================= */
+function renderKpis(){
+  var caixa = document.getElementById('faixaKpis'); caixa.textContent='';
+  TELAS[estado.rota].k.forEach(function(k){
+    var c = el('div','kpi');
+    c.setAttribute('data-teste','cartao-de-kpi'); c.setAttribute('data-kpi',k.k);
+    var topo = el('div','kpi-topo');
+    var pt = el('span','ponto'); pt.style.background = cor(k.c); pt.setAttribute('aria-hidden','true');
+    topo.appendChild(pt); topo.appendChild(el('span','kpi-rot',k.r));
+    c.appendChild(topo);
+    var vv = el('div','kpi-val',k.v);
+    var n = String(k.v||'').length;
+    if(n > 15) vv.style.fontSize = '19px';
+    else if(n > 12) vv.style.fontSize = '22px';
+    else if(n > 10) vv.style.fontSize = '25px';
+    c.appendChild(vv);
+    if(k.s && k.s.length>1){
+      var sp = el('div','kpi-spark');
+      sp.innerHTML = sparkSvg(k.s, cor(k.sc||k.c));
+      c.appendChild(sp);
+    }
+    var pe = el('div','kpi-pe');
+    pe.appendChild(el('span',null,k.f||''));
+    (k.x||[]).forEach(function(x){
+      var s = el('span',null,x.t); if(x.cor) s.style.color = cor(x.cor); pe.appendChild(s);
+    });
+    c.appendChild(pe);
+    caixa.appendChild(c);
+  });
+}
+function sparkSvg(ys, stroke){
+  var n = ys.length, d = '';
+  for(var i=0;i<n;i++){
+    var x = (i/(n-1))*100;
+    d += (i?' L':'M') + Math.round(x*100)/100 + ' ' + ys[i];
+  }
+  return '<svg viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">'+
+    '<path d="'+d+'" fill="none" style="stroke:'+stroke+'" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path></svg>';
+}
+
+/* =========================================================
+   PAINÉIS
+   ========================================================= */
+var graficos = [];
+function renderPaineis(){
+  var grade = document.getElementById('gradePaineis'); grade.textContent='';
+  graficos = [];
+  TELAS[estado.rota].p.forEach(function(p){
+    var wrap = el('div'); wrap.style.gridColumn = p.sp || 'span 12'; wrap.style.minWidth='0';
+    var sec = el('section','painel');
+    sec.setAttribute('data-teste','painel'); sec.setAttribute('data-painel',p.k);
+    sec.setAttribute('data-destacado', estado.painel===p.k ? '1':'0');
+    sec.setAttribute('aria-label', p.t);
+    var head = el('header');
+    var linha = el('div','painel-linha');
+    linha.appendChild(el('h2',null,p.t));
+    if(p.u) linha.appendChild(el('span','unidade',p.u));
+    head.appendChild(linha); sec.appendChild(head);
+
+    var caixa = el('div','caixa');
+    if(p.h){ caixa.style.height = p.h+'px'; caixa.style.minHeight = p.h+'px'; }
+    corpo(caixa, p);
+    sec.appendChild(caixa);
+    if(p.n) sec.appendChild(el('p','nota',p.n));
+    if(p.f){ var fm = el('p','formula',p.f); fm.setAttribute('data-teste','formula-do-painel'); sec.appendChild(fm); }
+    wrap.appendChild(sec); grade.appendChild(wrap);
+  });
+  medirGraficos();
+}
+
+function corpo(caixa, p){
+  var d = p.d;
+  switch(p.y){
+    case 'gBarras': case 'gBarrasEmpilhadas': case 'gLinha': {
+      var box = el('div','gr'); box.style.height = p.h+'px';
+      box.setAttribute('role','img'); box.setAttribute('aria-label', p.t + '. ' + (p.f||''));
+      caixa.appendChild(box);
+      graficos.push({box:box, tipo:p.y, d:d, h:p.h});
+      break;
+    }
+    case 'barra': return barras(caixa, d);
+    case 'estatistica': return estats(caixa, d);
+    case 'grupo': return grupos(caixa, d);
+    case 'passo': return passos(caixa, d);
+    case 'degrau': return degraus(caixa, d);
+    case 'faixa': return faixas(caixa, d);
+    case 'ponto': return dispersao(caixa, d);
+    case 'uf': return mapa(caixa, d);
+    case 'rosca': return rosca(caixa, d);
+  }
+}
+
+/* ----- barras horizontais com rótulo e valor ----- */
+function barras(caixa, d){
+  var box = el('div','linhas');
+  d.linhas.forEach(function(l, i){
+    var r = el('div','linha-barra');
+    r.setAttribute('data-barra', l.rotulo);
+    r.style.gridTemplateColumns = d.colunas || '96px minmax(0, 1fr) 62px';
+    r.appendChild(el('div','linha-rot', l.rotulo));
+    var trilho = el('div','trilho');
+    var m = (d.marcas||[])[i];
+    if(m){ trilho.className='trilho trilho-aberto'; }
+    var pre = el('div','preenche');
+    pre.style.width = (l.pct||0)+'%'; pre.style.background = cor(l.cor);
+    trilho.appendChild(pre);
+    if(m && m.left){
+      var mk = el('span','marca-ref'); mk.style.left = m.left; mk.style.background = cor(m.cor);
+      mk.title = 'referência'; trilho.appendChild(mk);
+    }
+    r.appendChild(trilho);
+    r.appendChild(el('div','linha-val', l.valor));
+    box.appendChild(r);
+  });
+  caixa.appendChild(box);
+}
+
+/* ----- tiles de estatística ----- */
+function estats(caixa, d){
+  var box = el('div','estats');
+  box.style.gridTemplateColumns = d.colunas || 'repeat(2, minmax(0, 1fr))';
+  d.itens.forEach(function(it){
+    var t = el('div','estat'); t.setAttribute('data-estatistica', it.rotulo);
+    if(it.borda){
+      var c = it.borda.split(' ').pop();
+      t.style.borderLeft = '3px solid ' + cor(c);
+    }
+    t.appendChild(el('div','estat-rot', it.rotulo));
+    var v = el('div','estat-val', it.valor); v.style.color = cor(it.cor); t.appendChild(v);
+    if(it.sub) t.appendChild(el('div','estat-sub', it.sub));
+    box.appendChild(t);
+  });
+  caixa.appendChild(box);
+}
+
+/* ----- grupos empilhados 100% ----- */
+function grupos(caixa, d){
+  var box = el('div','grupos');
+  d.grupos.forEach(function(g){
+    var bloco = el('div'); bloco.setAttribute('data-grupo', g.nome);
+    bloco.style.display='flex'; bloco.style.flexDirection='column'; bloco.style.gap='4px';
+    bloco.appendChild(el('div','grupo-rot', g.nome));
+    var pilha = el('div','pilha');
+    g.segmentos.forEach(function(s){
+      var seg = el('span',null, s.rotulo||'');
+      seg.style.width = (s.pct||0)+'%'; seg.style.background = cor(s.cor);
+      pilha.appendChild(seg);
+    });
+    bloco.appendChild(pilha);
+    var leg = el('div','legenda'); leg.setAttribute('data-legenda','');
+    g.legenda.forEach(function(l){
+      var s = el('span');
+      var sw = el('span','swatch'); sw.style.background = cor(l.cor);
+      s.appendChild(sw); s.appendChild(document.createTextNode(l.texto));
+      leg.appendChild(s);
+    });
+    bloco.appendChild(leg);
+    box.appendChild(bloco);
+  });
+  caixa.appendChild(box);
+}
+
+/* ----- funil ----- */
+function passos(caixa, d){
+  var box = el('div','passos');
+  d.passos.forEach(function(s){
+    var r = el('div','passo'); r.setAttribute('data-passo', s.rotulo);
+    var b = el('div','passo-barra', s.valor);
+    b.style.width = (s.pct||0)+'%'; b.style.background = cor(s.cor);
+    r.appendChild(b);
+    r.appendChild(el('div','passo-rot', s.rotulo));
+    r.appendChild(el('div','passo-nota', s.nota||''));
+    box.appendChild(r);
+  });
+  caixa.appendChild(box);
+}
+
+/* ----- cascata (DRE) ----- */
+function degraus(caixa, d){
+  var box = el('div','degraus');
+  d.degraus.forEach(function(s){
+    var c = el('div','degrau'); c.setAttribute('data-degrau', s.rotulo);
+    c.appendChild(el('div','degrau-val', s.valor));
+    var area = el('div','degrau-area');
+    var b = el('span');
+    b.style.top = (s.top||0)+'%'; b.style.height = Math.max(s.h||0,0.8)+'%'; b.style.background = cor(s.cor);
+    area.appendChild(b); c.appendChild(area);
+    c.appendChild(el('div','degrau-rot', s.rotulo));
+    box.appendChild(c);
+  });
+  caixa.appendChild(box);
+}
+
+/* ----- ciclo financeiro ----- */
+function faixas(caixa, d){
+  var box = el('div','faixas');
+  d.faixas.forEach(function(f){
+    var r = el('div','faixa');
+    r.setAttribute('data-faixa', f.rotulo);
+    r.style.gridTemplateColumns = d.colunas || '148px minmax(0, 1fr) 54px';
+    r.appendChild(el('span','faixa-rot', f.rotulo));
+    var t = el('span','faixa-trilho');
+    var b = el('span'); b.style.left=(f.left||0)+'%'; b.style.width=Math.max(f.w||0,1)+'%'; b.style.background=cor(f.cor);
+    t.appendChild(b); r.appendChild(t);
+    r.appendChild(el('span','faixa-val', f.valor));
+    box.appendChild(r);
+  });
+  if(d.marcos && d.marcos.length){
+    var m = el('div','marcos');
+    d.marcos.forEach(function(x){ m.appendChild(el('span',null, x.rot + ' · ' + x.texto)); });
+    box.appendChild(m);
+  }
+  caixa.appendChild(box);
+}
+
+/* ----- dispersão ----- */
+function dispersao(caixa, d){
+  var box = el('div','disp');
+  var corpo = el('div','disp-corpo');
+  var y = el('div','disp-y');
+  (d.eixoY||[]).forEach(function(t){ y.appendChild(el('span',null,t)); });
+  corpo.appendChild(y);
+  var area = el('div','disp-area'); area.setAttribute('data-area-de-desenho','');
+  (d.pontos||[]).forEach(function(p){
+    var n = el('div','disp-ponto'); n.setAttribute('data-ponto', p.id);
+    n.style.left = p.left+'%'; n.style.bottom = p.bottom+'%';
+    n.appendChild(el('b',null,p.id));
+    var bola = el('span','disp-bola');
+    bola.style.width = p.tam+'px'; bola.style.height = p.tam+'px'; bola.style.background = cor(p.cor);
+    n.appendChild(bola); area.appendChild(n);
+  });
+  corpo.appendChild(area); box.appendChild(corpo);
+  var xr = el('div','disp-x'); xr.appendChild(el('span'));
+  var xv = el('div','disp-x-vals');
+  (d.eixoX||[]).forEach(function(t){ xv.appendChild(el('span',null,t)); });
+  xr.appendChild(xv); box.appendChild(xr);
+  if(d.legenda && d.legenda.length){
+    var lg = el('div','disp-leg');
+    d.legenda.forEach(function(t){ lg.appendChild(el('span',null,t)); });
+    box.appendChild(lg);
+  }
+  caixa.appendChild(box);
+}
+
+/* ----- mapa de UFs ----- */
+function mapa(caixa, d){
+  var box = el('div','mapa');
+  d.ufs.forEach(function(u){
+    var c = el('div', u.op==null ? 'uf uf-vazia' : 'uf');
+    c.setAttribute('data-uf', u.uf);
+    c.style.gridColumn = u.col; c.style.gridRow = u.row;
+    if(u.op!=null){
+      var f = el('span','uf-fundo'); f.style.background = cor(u.cor); f.style.opacity = u.op;
+      c.appendChild(f);
+    }
+    var sig = el('span','uf-sigla', u.uf);
+    var val = el('span','uf-val', u.v||'');
+    sig.style.color = u.claro ? 'var(--on-fill)' : 'var(--ink)';
+    val.style.color = u.claro ? 'var(--on-fill)' : 'var(--subtle)';
+    c.appendChild(sig); c.appendChild(val);
+    box.appendChild(c);
+  });
+  caixa.appendChild(box);
+}
+
+/* ----- rosca ----- */
+function rosca(caixa, d){
+  var box = el('div','rosca');
+  var s = '<svg viewBox="0 0 150 150" aria-hidden="true">';
+  s += '<circle cx="75" cy="75" r="52" fill="none" style="stroke:'+cor(d.trilha)+'" stroke-width="20"></circle>';
+  (d.arcos||[]).forEach(function(a){
+    s += '<circle cx="75" cy="75" r="52" fill="none" style="stroke:'+cor(a.cor)+'" stroke-width="20" stroke-dasharray="'+a.da+'" stroke-dashoffset="'+a.off+'" transform="rotate(-90 75 75)"></circle>';
+  });
+  s += '<text x="75" y="75" style="fill:var(--ink);font:600 19px var(--font-mono)" text-anchor="middle">'+esc(d.centro.valor)+'</text>';
+  s += '<text x="75" y="75" dy="16" style="fill:var(--subtle);font:500 9.5px var(--font-ui)" text-anchor="middle">'+esc(d.centro.rotulo)+'</text>';
+  s += '</svg>';
+  var ul = '<ul data-legenda="">';
+  (d.itens||[]).forEach(function(it){
+    ul += '<li><span class="swatch" style="width:8px;height:8px;background:'+cor(it.cor)+'"></span><span>'+esc(it.nome)+'</span><b>'+esc(it.valor)+'</b></li>';
+  });
+  ul += '</ul>';
+  box.innerHTML = s + ul;
+  caixa.appendChild(box);
+}
+
+/* =========================================================
+   GRAFICOS EM SVG (redesenhados na largura real)
+   ========================================================= */
+function medirGraficos(){
+  graficos.forEach(function(g){
+    var w = g.box.clientWidth || 340;
+    g.box.innerHTML = desenhar(g.tipo, g.d, w, g.h);
+  });
+}
+var pend = null;
+function agenda(){ if(pend) return; pend = requestAnimationFrame(function(){ pend=null; medirGraficos(); }); }
+window.addEventListener('resize', agenda);
+
+function desenhar(tipo, d, w, h){
+  if(tipo==='gBarras') return gBarras(d, w, h);
+  if(tipo==='gLinha') return gLinha(d, w, h);
+  return gEmpilhadas(d, w, h);
+}
+
+function legendaHtml(itens){
+  var s = '<div class="gr-leg">';
+  itens.forEach(function(i){
+    s += '<span><i style="background:'+i.cor+'"></i><span style="color:'+i.cor+'">'+esc(i.nome)+'</span></span>';
+  });
+  return s + '</div>';
+}
+function passoRotulos(cats, largura){
+  var precisa = cats.reduce(function(a,c){ return a + c.length*5.6 + 10; }, 0);
+  return Math.max(1, Math.ceil(precisa/Math.max(largura,1)));
+}
+function escalaY(v, dom, y0, y1){
+  var a = dom[0], b = dom[1];
+  if(b===a) return (y0+y1)/2;
+  return y1 - (v-a)/(b-a)*(y1-y0);
+}
+function eixoY(cortes, dom, x, y0, y1, ancora){
+  var s='';
+  cortes.forEach(function(v){
+    var y = escalaY(v, dom, y0, y1);
+    s += '<text x="'+x+'" y="'+(y+3)+'" text-anchor="'+ancora+'" style="fill:var(--faint);font:500 9px var(--font-mono)">'+esc(num(v))+'</text>';
+  });
+  return s;
+}
+function grade(cortes, dom, x0, x1, y0, y1, zero){
+  var s='';
+  cortes.forEach(function(v){
+    var y = escalaY(v, dom, y0, y1);
+    s += '<line x1="'+x0+'" y1="'+y+'" x2="'+x1+'" y2="'+y+'" style="stroke:var(--grid)" stroke-width="1"></line>';
+  });
+  if(zero && dom[0] < 0 && dom[1] > 0){
+    var yz = escalaY(0, dom, y0, y1);
+    s += '<line x1="'+x0+'" y1="'+yz+'" x2="'+x1+'" y2="'+yz+'" style="stroke:var(--border-2)" stroke-width="1.25"></line>';
+  }
+  return s;
+}
+function r1(v){ return Math.round(v*10)/10; }
+
+/* ---------- barras verticais agrupadas (+ linha secundaria) ---------- */
+function gBarras(d, w, h){
+  var cats = d.categorias, series = d.barras || [];
+  var temLeg = !!d.comLegenda, temSec = !!d.linhaSecundaria;
+  var legHtml = '';
+  if(temLeg){
+    var itens = series.map(function(s,i){ return {nome:s.nome, cor:cor(s.cor)||SERIES[i]}; });
+    if(temSec) itens.push({nome:d.linhaSecundaria.nome, cor:cor(d.linhaSecundaria.cor)});
+    legHtml = legendaHtml(itens);
+  }
+  var hs = Math.max(h - (temLeg?22:0), 80);
+  var mL = 44, mR = temSec ? 46 : 14, mT = 10, mB = 26;
+  var x0 = mL, x1 = Math.max(w - mR, mL+40), y0 = mT, y1 = hs - mB;
+  var s = '<svg width="'+w+'" height="'+hs+'" viewBox="0 0 '+w+' '+hs+'" role="presentation">';
+  s += grade(d.eixo.cortes, d.eixo.dominio, x0, x1, y0, y1, d.eixo.temLinhaDeZero);
+  s += eixoY(d.eixo.cortes, d.eixo.dominio, mL-7, y0, y1, 'end');
+  if(temSec) s += eixoY(d.eixoSecundario.cortes, d.eixoSecundario.dominio, x1+7, y0, y1, 'start');
+
+  var banda = (x1-x0)/cats.length;
+  var n = series.length || 1;
+  var larguraGrupo = Math.min(banda*0.66, 46);
+  var bw = Math.max(larguraGrupo/n, 2);
+  var base = escalaY(Math.max(d.eixo.dominio[0],0), d.eixo.dominio, y0, y1);
+  series.forEach(function(se, si){
+    var c = cor(se.cor) || SERIES[si];
+    se.valores.forEach(function(v, i){
+      var cx = x0 + banda*i + banda/2 - larguraGrupo/2 + bw*si;
+      var y = escalaY(v, d.eixo.dominio, y0, y1);
+      var alt = Math.max(base - y, 1);
+      s += '<rect x="'+r1(cx)+'" y="'+r1(y)+'" width="'+r1(Math.max(bw-1.5,1.2))+'" height="'+r1(alt)+'" rx="2.5" style="fill:'+c+'"></rect>';
+    });
+  });
+  if(temSec){
+    var ls = d.linhaSecundaria, dom2 = d.eixoSecundario.dominio, pts=[];
+    ls.valores.forEach(function(v,i){ pts.push([x0+banda*i+banda/2, escalaY(v, dom2, y0, y1)]); });
+    s += '<path d="'+pts.map(function(p,i){ return (i?'L':'M')+r1(p[0])+' '+r1(p[1]); }).join(' ')+'" fill="none" style="stroke:'+cor(ls.cor)+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>';
+    pts.forEach(function(p,i){
+      var ult = i===pts.length-1;
+      s += '<circle cx="'+r1(p[0])+'" cy="'+r1(p[1])+'" r="'+(ult?3:1.9)+'" style="fill:'+cor(ls.cor)+';stroke:var(--surface)" stroke-width="1.2"></circle>';
+    });
+  }
+  var passo = passoRotulos(cats, x1-x0);
+  cats.forEach(function(c, i){
+    if(i % passo) return;
+    s += '<text x="'+r1(x0+banda*i+banda/2)+'" y="'+(y1+15)+'" text-anchor="middle" style="fill:var(--faint);font:500 9px var(--font-mono)">'+esc(c)+'</text>';
+  });
+  return legHtml + s + '</svg>';
+}
+
+/* ---------- linha (uma ou varias series) + referencia ---------- */
+function gLinha(d, w, h){
+  var pts = d.pontos, extras = d.linhas || [];
+  var temLeg = extras.length > 0;
+  var legHtml = '';
+  if(temLeg){
+    var itens = [{nome:d.nome, cor:'var(--s1)'}];
+    extras.forEach(function(l,i){ itens.push({nome:l.nome, cor:cor(l.cor)||SERIES[i+1]}); });
+    legHtml = legendaHtml(itens);
+  }
+  var hs = Math.max(h - (temLeg?22:0), 80);
+  var mL = 44, mR = 16, mT = d.referencia ? 22 : 10, mB = 26;
+  var x0 = mL, x1 = Math.max(w - mR, mL+40), y0 = mT, y1 = hs - mB;
+  var dom = d.eixo.dominio;
+  var s = '<svg width="'+w+'" height="'+hs+'" viewBox="0 0 '+w+' '+hs+'" role="presentation">';
+  s += grade(d.eixo.cortes, dom, x0, x1, y0, y1, d.eixo.temLinhaDeZero);
+  s += eixoY(d.eixo.cortes, dom, mL-7, y0, y1, 'end');
+
+  var passoX = pts.length>1 ? (x1-x0)/(pts.length-1) : 0;
+  function cx(i){ return x0 + passoX*i; }
+  var caminho = pts.map(function(p,i){ return (i?'L':'M')+r1(cx(i))+' '+r1(escalaY(p.valor, dom, y0, y1)); }).join(' ');
+
+  if(!temLeg){
+    var baseY = escalaY(Math.max(dom[0],0), dom, y0, y1);
+    s += '<path d="'+caminho+' L'+r1(cx(pts.length-1))+' '+r1(baseY)+' L'+r1(x0)+' '+r1(baseY)+' Z" style="fill:var(--s1);opacity:.09"></path>';
+  }
+  s += '<path d="'+caminho+'" fill="none" style="stroke:var(--s1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>';
+  pts.forEach(function(p,i){
+    var ult = i===pts.length-1;
+    s += '<circle cx="'+r1(cx(i))+'" cy="'+r1(escalaY(p.valor, dom, y0, y1))+'" r="'+(ult?3.4:2)+'" style="fill:var(--s1);stroke:var(--surface)" stroke-width="1.3"></circle>';
+  });
+  extras.forEach(function(l, li){
+    var c = cor(l.cor) || SERIES[li+1];
+    var cam = l.valores.map(function(v,i){ return (i?'L':'M')+r1(cx(i))+' '+r1(escalaY(v, dom, y0, y1)); }).join(' ');
+    s += '<path d="'+cam+'" fill="none" style="stroke:'+c+'" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>';
+    var ui = l.valores.length-1;
+    s += '<circle cx="'+r1(cx(ui))+'" cy="'+r1(escalaY(l.valores[ui], dom, y0, y1))+'" r="3" style="fill:'+c+';stroke:var(--surface)" stroke-width="1.3"></circle>';
+  });
+  if(d.referencia){
+    var yr = escalaY(d.referencia.valor, dom, y0, y1);
+    var yl = (yr>=y0-2 && yr<=y1+2) ? yr : y0+2;
+    s += '<line x1="'+x0+'" y1="'+r1(yl)+'" x2="'+x1+'" y2="'+r1(yl)+'" style="stroke:var(--meta)" stroke-width="1.2" stroke-dasharray="4 3"></line>';
+    var rot = d.referencia.rotulo, larg = rot.length*5.4+14;
+    s += '<rect x="'+r1(x1-larg)+'" y="'+r1(yl-16)+'" width="'+r1(larg)+'" height="14" rx="7" style="fill:var(--surface);stroke:var(--meta)" stroke-width="1" stroke-dasharray="3 2"></rect>';
+    s += '<text x="'+r1(x1-larg/2)+'" y="'+r1(yl-6)+'" text-anchor="middle" style="fill:var(--meta);font:500 8.5px var(--font-mono)">'+esc(rot)+'</text>';
+  }
+  var cats = pts.map(function(p){ return p.categoria; });
+  var passo = passoRotulos(cats, x1-x0);
+  cats.forEach(function(c,i){
+    if(i % passo) return;
+    s += '<text x="'+r1(cx(i))+'" y="'+(y1+15)+'" text-anchor="middle" style="fill:var(--faint);font:500 9px var(--font-mono)">'+esc(c)+'</text>';
+  });
+  return legHtml + s + '</svg>';
+}
+
+/* ---------- barras empilhadas horizontais ---------- */
+function gEmpilhadas(d, w, h){
+  var cats = d.categorias, faixas = d.faixas || [];
+  var legHtml = legendaHtml(faixas.map(function(f,i){ return {nome:f.nome, cor:cor(f.cor)||SERIES[i]}; }));
+  var hs = Math.max(h - 22, 80);
+  var maiorRot = cats.reduce(function(a,c){ return Math.max(a, c.length); }, 0);
+  var mL = Math.min(Math.max(maiorRot*5.9+8, 56), 128), mR = 14, mT = 6, mB = 22;
+  var x0 = mL, x1 = Math.max(w - mR, mL+40), y0 = mT, y1 = hs - mB;
+  var dom = d.eixo.dominio;
+  function ex(v){ return x0 + (v-dom[0])/((dom[1]-dom[0])||1)*(x1-x0); }
+  var s = '<svg width="'+w+'" height="'+hs+'" viewBox="0 0 '+w+' '+hs+'" role="presentation">';
+  d.eixo.cortes.forEach(function(v){
+    var x = ex(v);
+    s += '<line x1="'+r1(x)+'" y1="'+y0+'" x2="'+r1(x)+'" y2="'+y1+'" style="stroke:var(--grid)" stroke-width="1"></line>';
+    s += '<text x="'+r1(x)+'" y="'+(y1+14)+'" text-anchor="middle" style="fill:var(--faint);font:500 9px var(--font-mono)">'+esc(num(v))+'</text>';
+  });
+  var banda = (y1-y0)/cats.length, alt = Math.min(banda*0.62, 22);
+  cats.forEach(function(c, i){
+    var yc = y0 + banda*i + banda/2;
+    s += '<text x="'+(mL-8)+'" y="'+r1(yc+3.2)+'" text-anchor="end" style="fill:var(--muted);font:500 9.5px var(--font-ui)">'+esc(c)+'</text>';
+    var acc = 0;
+    faixas.forEach(function(f, fi){
+      var v = f.valores[i] || 0;
+      var xa = ex(acc), xb = ex(acc+v);
+      if(xb-xa > 0.3){
+        s += '<rect x="'+r1(xa)+'" y="'+r1(yc-alt/2)+'" width="'+r1(xb-xa)+'" height="'+r1(alt)+'" rx="'+((fi===0||fi===faixas.length-1)?2.5:0)+'" style="fill:'+(cor(f.cor)||SERIES[fi])+'"></rect>';
+      }
+      acc += v;
+    });
+  });
+  return legHtml + s + '</svg>';
+}
+
+/* =========================================================
+   CHAT — pergunta ancorada no painel + redacao pela IA
+   ========================================================= */
+var sampleFn = null, sampleTentado = false, ocupado = false;
+async function obterSample(){
+  if(sampleTentado) return sampleFn;
+  sampleTentado = true;
+  try { sampleFn = (window.claude && claude.use) ? await claude.use('sample') : null; }
+  catch(e){ sampleFn = null; }
+  return sampleFn;
+}
+
+function semAcento(s){ return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+var VAZIAS = {'qual':1,'quais':1,'o':1,'a':1,'os':1,'as':1,'de':1,'do':1,'da':1,'dos':1,'das':1,'e':1,'em':1,'no':1,'na':1,'nos':1,'nas':1,'um':1,'uma':1,'que':1,'como':1,'esta':1,'esta?':1,'nosso':1,'nossa':1,'temos':1,'foi':1,'ano':1,'quanto':1,'quantos':1,'quantas':1,'para':1,'por':1,'com':1,'the':1};
+function fichas(s){
+  return semAcento(s).replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(function(t){ return t.length>2 && !VAZIAS[t]; });
+}
+
+/* indice de metricas de todas as telas */
+var INDICE = [];
+Object.keys(TELAS).forEach(function(rota){
+  var tela = TELAS[rota], mod = modOf(rota);
+  var nomeMod = META.modulos.filter(function(m){ return m.id===mod; })[0].nome;
+  tela.k.forEach(function(k){
+    var painel = melhorPainel(tela, k.r);
+    INDICE.push({
+      rota: rota, tela: tela.t, modulo: nomeMod,
+      rotulo: k.r, valor: k.v, rodape: k.f,
+      painel: painel ? painel.k : null,
+      painelTit: painel ? painel.t : null,
+      formula: painel ? painel.f : null,
+      busca: fichas(k.r + ' ' + (k.f||'') + ' ' + (painel? painel.t + ' ' + (painel.f||'') : ''))
+    });
+  });
+});
+function melhorPainel(tela, rotulo){
+  var alvo = fichas(rotulo), melhor = null, mp = 0;
+  tela.p.forEach(function(p){
+    var t = fichas(p.t + ' ' + (p.f||''));
+    var pontos = alvo.filter(function(x){ return t.indexOf(x)>=0; }).length;
+    if(pontos > mp){ mp = pontos; melhor = p; }
+  });
+  return melhor;
+}
+function localizar(pergunta){
+  var q = fichas(pergunta);
+  if(!q.length) return null;
+  var melhor = null, mp = 0;
+  INDICE.forEach(function(it){
+    var pontos = 0;
+    q.forEach(function(t){
+      if(it.busca.indexOf(t) >= 0) pontos += 2;
+      else if(it.busca.some(function(b){ return b.indexOf(t)===0 || t.indexOf(b)===0; })) pontos += 1;
+    });
+    if(it.rota === estado.rota) pontos += 1.5;
+    if(pontos > mp){ mp = pontos; melhor = it; }
+  });
+  return mp >= 2 ? melhor : null;
+}
+
+var FONTES = {rh:'vw_fato_rh_mes', fin:'vw_fato_fin_mes', int:'vw_fato_int_mes'};
+function rodapeTecnico(achado){
+  var mod = modOf(achado.rota);
+  return (achado.formula || 'apuracao direta do painel') +
+         ' · fechamento ' + estado.filtros.ano + '-12-31' +
+         ' · fonte ' + (FONTES[mod]||'vw_fato');
+}
+function recorteTexto(){
+  var partes = [];
+  META.filtros.forEach(function(f){
+    var op = f.opcoes.filter(function(o){ return o[0]===estado.filtros[f.nome]; })[0];
+    partes.push(f.rotulo + ': ' + (op?op[1]:estado.filtros[f.nome]));
+  });
+  return partes.join(', ');
+}
+
+function renderGuias(){
+  var caixa = document.getElementById('chatGuias'); caixa.textContent='';
+  (META.sugestoes[slug(estado.rota)]||[]).forEach(function(q){
+    var b = el('button','guia',q); b.type='button'; b.setAttribute('data-teste','chat-guia');
+    b.addEventListener('click', function(){ perguntar(q); });
+    caixa.appendChild(b);
+  });
+}
+function renderLog(){
+  var log = document.getElementById('chatLog'); log.textContent='';
+  if(!estado.turnos.length){
+    log.appendChild(el('div','chat-intro','Pergunte aos dados desta tela ou de qualquer outra. A resposta traz o número, o que entrou na conta e a fórmula — e abre o gráfico certo, no recorte da pergunta.'));
+    return;
+  }
+  estado.turnos.forEach(function(t){
+    var b = el('div','bolha', t.pergunta); b.setAttribute('data-teste','chat-pergunta');
+    log.appendChild(b);
+    var turno = el('div','turno'); turno.setAttribute('data-teste','chat-turno');
+    var cartao = el('div','resp-cartao'); cartao.setAttribute('data-teste','chat-resposta');
+    if(t.estado==='consultando'){
+      cartao.appendChild(el('p','estado','Consultando o painel…'));
+    } else if(!t.achado){
+      cartao.appendChild(el('p','resp-txt','Não encontrei essa métrica nos painéis publicados. Tente pelo nome do indicador — headcount, turnover, EBITDA, folha, inadimplência.'));
+    } else {
+      cartao.appendChild(el('div','resp-cabeca', t.achado.rotulo + ': ' + t.achado.valor));
+      if(t.estado==='redigindo'){
+        cartao.appendChild(el('p','estado','Número conferido. Redigindo a leitura…'));
+      } else {
+        var p = el('p','resp-txt', t.texto); cartao.appendChild(p);
+      }
+      var fm = el('p','resp-formula', rodapeTecnico(t.achado)); fm.setAttribute('data-teste','chat-formula');
+      cartao.appendChild(fm);
+      if(t.definicao){
+        var det = document.createElement('details');
+        var sum = document.createElement('summary'); sum.textContent='definição registrada';
+        det.appendChild(sum); det.appendChild(el('p',null,t.definicao));
+        cartao.appendChild(det);
+      }
+      if(t.sugestoes && t.sugestoes.length){
+        var at = el('div','atalhos'); at.setAttribute('data-teste','chat-atalhos');
+        at.appendChild(el('span','rotulete','para continuar'));
+        t.sugestoes.forEach(function(q){
+          var b2 = el('button','atalho',q); b2.type='button';
+          b2.addEventListener('click', function(){ perguntar(q); });
+          at.appendChild(b2);
+        });
+        cartao.appendChild(at);
+      }
+    }
+    turno.appendChild(cartao);
+    if(t.achado){
+      var ac = el('div','acoes'); ac.setAttribute('data-teste','chat-acoes');
+      ac.appendChild(el('span','rotulete','ações aplicadas'));
+      var chips = el('div'); chips.style.display='flex'; chips.style.flexWrap='wrap'; chips.style.gap='5px';
+      chips.appendChild(el('span','acao-chip','Tela: ' + t.achado.modulo + ' · ' + t.achado.tela));
+      ac.appendChild(chips);
+      var linha = el('div','acao-linha');
+      var ver = el('button','acao-forte','Ver o gráfico'); ver.type='button';
+      ver.setAttribute('data-teste','chat-ver-grafico');
+      ver.addEventListener('click', function(){ ir(t.achado.rota, t.achado.painel); });
+      var des = el('button','acao-leve','Desfazer'); des.type='button';
+      des.setAttribute('data-teste','chat-desfazer');
+      des.addEventListener('click', function(){ ir(t.achado.rota, null); });
+      linha.appendChild(ver); linha.appendChild(des);
+      ac.appendChild(linha);
+      turno.appendChild(ac);
+    }
+    log.appendChild(turno);
+  });
+  log.scrollTop = log.scrollHeight;
+}
+
+function abrirChat(v){
+  estado.chatAberto = v;
+  document.getElementById('chat').classList.toggle('oculto', !v);
+  document.getElementById('flutuante').classList.toggle('oculto', v);
+  if(v){ renderGuias(); renderLog(); agenda(); setTimeout(function(){ document.getElementById('chatCampo').focus(); }, 30); }
+  else agenda();
+}
+
+async function perguntar(pergunta){
+  pergunta = String(pergunta||'').trim();
+  if(!pergunta || ocupado) return;
+  if(!estado.chatAberto) abrirChat(true);
+  ocupado = true;
+  var turno = {pergunta:pergunta, estado:'consultando', achado:null, texto:'', definicao:'', sugestoes:[]};
+  estado.turnos.push(turno); renderLog();
+
+  var achado = localizar(pergunta);
+  turno.achado = achado;
+  if(!achado){ turno.estado='pronta'; ocupado=false; renderLog(); return; }
+  if(achado.painel) ir(achado.rota, achado.painel);
+  turno.estado = 'redigindo'; renderLog();
+
+  var s = await obterSample();
+  if(!s){
+    turno.texto = achado.rotulo + ' foi ' + achado.valor + ' no recorte selecionado (' + achado.rodape + '). Painel de origem: ' + achado.tela + ' · ' + (achado.painelTit||'—') + '.';
+    turno.definicao = 'Leitura apurada direto do painel. A redação pela IA precisa da permissão de uso do Claude nesta página.';
+    turno.estado='pronta'; ocupado=false; renderLog(); return;
+  }
+
+  var mesmaTela = INDICE.filter(function(i){ return i.rota===achado.rota; })
+    .map(function(i){ return '- ' + i.rotulo + ': ' + i.valor + ' (' + (i.rodape||'') + ')'; }).join('\n');
+  var outras = Object.keys(TELAS).filter(function(r){ return r!==achado.rota; })
+    .map(function(r){ return TELAS[r].t + ': ' + TELAS[r].k.map(function(k){ return k.r+' '+k.v; }).join('; '); }).join('\n');
+
+  var prompt =
+"Voce e o copiloto de um painel executivo de controladoria (RH e Financeiro) de uma empresa brasileira. Escreve como um controller senior: direto, tecnico, sem adjetivos de venda, sem emoji, em portugues do Brasil.\n\n" +
+"REGRA DURA: os numeros ja foram apurados pelo painel. Use EXATAMENTE os valores abaixo, copiados caractere a caractere. Nunca recalcule, arredonde ou invente numero algum. Se a pergunta pedir algo que nao esta nos dados, diga o que falta.\n\n" +
+"PERGUNTA: " + pergunta + "\n\n" +
+"METRICA LOCALIZADA\n" +
+"- indicador: " + achado.rotulo + "\n- valor: " + achado.valor + "\n- observacao do painel: " + (achado.rodape||'-') + "\n" +
+"- tela: " + achado.modulo + " / " + achado.tela + "\n- painel: " + (achado.painelTit||'-') + "\n- formula registrada: " + (achado.formula||'-') + "\n\n" +
+"RECORTE ATUAL: " + recorteTexto() + "\n\n" +
+"OUTROS NUMEROS DESTA TELA\n" + mesmaTela + "\n\n" +
+"RESUMO DAS DEMAIS TELAS\n" + outras + "\n\n" +
+"Responda SOMENTE com este JSON, sem texto fora dele:\n" +
+'{"texto":"2 a 4 frases: o numero com a unidade, o que ele significa em linguagem de negocio e uma leitura util (tendencia, comparacao com outro numero desta tela ou risco). Termine com uma pergunta curta oferecendo o proximo corte.","definicao":"1 a 2 frases sobre como a metrica e medida e o cuidado de leitura (estoque x fluxo, base do denominador, defasagem).","sugestoes":["pergunta curta de continuidade","outra pergunta curta"]}';
+
+  try{
+    var r = await s.json(prompt, {modelTier:'quick', cache:false});
+    turno.texto = String(r && r.texto || '').trim() || (achado.rotulo + ' foi ' + achado.valor + '.');
+    turno.definicao = String(r && r.definicao || '').trim();
+    turno.sugestoes = Array.isArray(r && r.sugestoes) ? r.sugestoes.slice(0,3).map(String) : [];
+  }catch(e){
+    turno.texto = achado.rotulo + ' foi ' + achado.valor + ' no recorte selecionado (' + achado.rodape + ').';
+    turno.definicao = (e && e.code==='not_granted')
+      ? 'A redacao pela IA depende da sua permissao de uso do Claude nesta pagina; o numero acima vem direto do painel.'
+      : 'Numero conferido no painel. A redacao pela IA nao completou desta vez.';
+  }
+  turno.estado='pronta'; ocupado=false; renderLog();
+}
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+function render(){ renderCabecalho(); renderKpis(); renderPaineis(); if(estado.chatAberto){ renderGuias(); } }
+
+document.getElementById('btnAbrirPill').addEventListener('click', function(){ abrirChat(true); });
+document.getElementById('btnAbrirIA').addEventListener('click', function(){ abrirChat(true); });
+document.getElementById('btnFechar').addEventListener('click', function(){ abrirChat(false); });
+document.getElementById('btnNova').addEventListener('click', function(){ estado.turnos=[]; renderLog(); });
+var campo = document.getElementById('chatCampo'), enviar = document.getElementById('chatEnviar');
+campo.addEventListener('input', function(){ enviar.disabled = campo.value.trim()===''; });
+campo.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('chatForm').requestSubmit(); }
+});
+document.getElementById('chatForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var q = campo.value.trim(); if(!q) return;
+  campo.value=''; enviar.disabled=true; perguntar(q);
+});
+document.getElementById('btnTema').addEventListener('click', function(){
+  var raiz = document.documentElement;
+  var atual = raiz.getAttribute('data-theme');
+  var escuro = atual ? atual==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  raiz.setAttribute('data-theme', escuro ? 'light' : 'dark');
+  agenda();
+});
+window.addEventListener('hashchange', function(){ lerHash(); render(); });
+
+lerHash();
+render();
+obterSample();
+})();
+</script>
+</body></html>
