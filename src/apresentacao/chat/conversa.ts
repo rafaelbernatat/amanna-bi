@@ -41,6 +41,8 @@ export type Turno = {
   readonly resposta: Resposta | null;
   /** `rede` é do navegador: a rota não respondeu. Os outros vêm dela. */
   readonly falha: MotivoDeFalha | "rede" | null;
+  /** O que o laço está lendo agora, enquanto a resposta não chega (T-434). */
+  readonly passo?: string | undefined;
 };
 
 export type Conversa = {

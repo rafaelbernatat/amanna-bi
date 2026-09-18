@@ -40,6 +40,7 @@ import {
   type Familia,
 } from "@/chat/leitura";
 import { destinoDaMetrica } from "@/chat/roteamento";
+import { JANELA_DO_GRAFICO, painelDaSerie } from "@/chat/serie";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import type {
   PanelResponse,
@@ -366,14 +367,32 @@ export async function resolver(
     entrada.sentido as Sentido,
   );
 
-  const [valor, painel, apoio, referencias] = await Promise.all([
-    lerMetrica(metrica, consulta),
-    painelId === null ? Promise.resolve(null) : lerPainel(painelId, consulta),
-    lerApoio(metrica, consulta),
-    familia === null
-      ? Promise.resolve<readonly TaxaDeReferencia[]>([])
-      : lerReferencias(),
-  ]);
+  /*
+   * O gráfico sintético (T-432): sem cartão na tela, a série mensal da própria
+   * métrica vira painel de linha. Com o período fora dos doze meses, a série
+   * do recorte tem um ponto só, e a métrica é lida de novo na janela de doze
+   * meses — só para o desenho; o valor da resposta é o do recorte pedido.
+   */
+  const janela: Query = { ...consulta, periodo: JANELA_DO_GRAFICO };
+  const precisaDaJanela =
+    painelId === null && consulta.periodo !== JANELA_DO_GRAFICO;
+
+  const [valor, painelDoCartao, apoio, referencias, valorDaJanela] =
+    await Promise.all([
+      lerMetrica(metrica, consulta),
+      painelId === null ? Promise.resolve(null) : lerPainel(painelId, consulta),
+      lerApoio(metrica, consulta),
+      familia === null
+        ? Promise.resolve<readonly TaxaDeReferencia[]>([])
+        : lerReferencias(),
+      precisaDaJanela ? lerMetrica(metrica, janela) : Promise.resolve(null),
+    ]);
+
+  const painel =
+    painelDoCartao ??
+    (valorDaJanela === null
+      ? painelDaSerie(metrica, valor, consulta)
+      : painelDaSerie(metrica, valorDaJanela, janela));
 
   const { comparacao, porque } = await compararComJuros(
     metrica,
@@ -386,7 +405,9 @@ export async function resolver(
   );
 
   // Apoio cujo rótulo já veio como degrau do painel não entra duas vezes.
-  const doPainel = painel === null ? [] : consideracoesDo(painel);
+  // Só o painel da tela decompõe; a série sintética não é composição.
+  const doPainel =
+    painelDoCartao === null ? [] : consideracoesDo(painelDoCartao);
   const rotulosDoPainel = new Set(doPainel.map((c) => c.rotulo));
 
   return {

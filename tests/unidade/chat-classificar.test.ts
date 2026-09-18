@@ -104,3 +104,27 @@ describe("o que vai ao laço", () => {
     expect(classificar("Como está por área?", null).classe).toBe("composta");
   });
 });
+
+describe("os sinais de T-435", () => {
+  it.each([
+    ["Como a receita evoluiu nos últimos 12 meses?", "serie"],
+    ["Qual o histórico da margem EBITDA?", "serie"],
+    ["Como a receita se distribui por segmento?", "decomposicao"],
+    ["Como se decompõe o custo de pessoal?", "decomposicao"],
+    ["Quais clientes concentram a receita?", "ranking"],
+    ["Qual a participação de cada cliente na receita?", "ranking"],
+  ] as const)("%s é composta por %s", (pergunta, sinal) => {
+    const c = classificar(
+      pergunta,
+      interpretarLocalmente(pergunta, QUERY_PADRAO),
+    );
+    expect(c.classe).toBe("composta");
+    expect(c.sinais).toContain(sinal);
+  });
+
+  it("'E por área?' depois de uma resposta é composta: o laço herda a métrica pela conversa", () => {
+    const c = classificar("E por área?", null);
+    expect(c.classe).toBe("composta");
+    expect(c.sinais).toContain("ranking");
+  });
+});

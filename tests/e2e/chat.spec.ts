@@ -338,3 +338,21 @@ test.describe("o painel destacado fica na vista sem rolagem manual (RF-13)", () 
     await expect(destacado).toBeInViewport({ ratio: 0.5 });
   });
 });
+
+test.describe("um grafico para toda resposta (T-432)", () => {
+  test("uma metrica sem painel na tela desenha a propria serie de doze meses na bolha", async ({
+    page,
+  }) => {
+    await page.goto("/fin/visao");
+    const chat = await abrirChat(page);
+    await perguntar(page, "Qual o ROE?");
+    await expect(chat.locator('[data-teste="chat-resposta"]')).toBeVisible({
+      timeout: ESPERA,
+    });
+    const grafico = chat.locator('[data-teste="chat-grafico"]');
+    await expect(grafico).toBeVisible();
+    await expect(grafico).toHaveAttribute("data-painel", "chat-serie-roe");
+    // Nao ha painel na tela para destacar: a URL nao ganha painel=.
+    await expect(page).not.toHaveURL(/painel=/);
+  });
+});

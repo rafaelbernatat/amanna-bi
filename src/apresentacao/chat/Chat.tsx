@@ -266,7 +266,9 @@ function ChatNaTela({
 
       const tratar = (linha: string) => {
         const l = JSON.parse(linha) as LinhaDoFluxo;
-        if (l.fase === "previa") {
+        if (l.fase === "andamento") {
+          atualizarTurno(id, { passo: l.passo });
+        } else if (l.fase === "previa") {
           atualizarTurno(id, { estado: "redigindo", previa: l.previa });
           aplicar(l.previa.acoes);
         } else if (l.fase === "resposta") {
@@ -812,7 +814,7 @@ function CorpoDoTurno({
       return (
         <Bolha cheio={cheio}>
           <p role="status" data-teste="chat-pendente" style={{ margin: 0 }}>
-            Lendo os dados…
+            {turno.passo ?? "Lendo os dados…"}
           </p>
         </Bolha>
       );
@@ -848,7 +850,7 @@ function CorpoDoTurno({
               data-teste="chat-pendente"
               style={{ margin: 0, color: PALETA.textoTerciario }}
             >
-              Número conferido. Redigindo a leitura…
+              {turno.passo ?? "Número conferido. Redigindo a leitura…"}
             </p>
           </Bolha>
           {/* O gráfico aparece com o número, antes do texto: é o que a
