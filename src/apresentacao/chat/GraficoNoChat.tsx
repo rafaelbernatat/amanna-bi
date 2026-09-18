@@ -1,7 +1,11 @@
 "use client";
 
 import { DesenhoDePainel } from "@/apresentacao/paineis/DesenhoDePainel";
-import { PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
+import {
+  type CoresDaMarca,
+  PALETA,
+  TIPOGRAFIA,
+} from "@/apresentacao/tema/tema";
 import type { PanelResponse } from "@/semantica/contrato";
 
 /**
@@ -30,7 +34,14 @@ import type { PanelResponse } from "@/semantica/contrato";
  */
 export const SPAN_DO_CHAT = 4;
 
-export function GraficoNoChat({ painel }: { readonly painel: PanelResponse }) {
+export function GraficoNoChat({
+  painel,
+  cores = null,
+}: {
+  readonly painel: PanelResponse;
+  /** As cores da marca, ja resolvidas; ver `DesenhoDePainel`. */
+  readonly cores?: CoresDaMarca | null;
+}) {
   return (
     <figure
       data-teste="chat-grafico"
@@ -70,7 +81,7 @@ export function GraficoNoChat({ painel }: { readonly painel: PanelResponse }) {
         </span>
       </figcaption>
       <div style={{ minWidth: 0 }}>
-        <DesenhoDePainel painel={painel} span={SPAN_DO_CHAT} />
+        <DesenhoDePainel painel={painel} span={SPAN_DO_CHAT} cores={cores} />
       </div>
     </figure>
   );

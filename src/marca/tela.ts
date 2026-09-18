@@ -19,6 +19,7 @@ import { lerMarcaAtiva } from "@/marca/leitura";
 import { podeConfigurarMarca } from "@/marca/permissao";
 import { personalizacaoLigada } from "@/marca/armazem";
 import { podeApresentar } from "@/seguranca/convite";
+import type { CoresDaMarca } from "@/apresentacao/tema/tema";
 import type { Perfil } from "@/seguranca/identidade";
 
 export { hospedeiroDe };
@@ -47,6 +48,22 @@ export type CabecalhoDaInstalacao = {
  * O nome informado vem primeiro; sem ele, o domínio do site; sem os dois, o
  * que sobra dizer.
  */
+/**
+ * As cores da marca aplicada, ou `null` quando nao ha marca.
+ *
+ * Existe para o **grafico**, que nao pode ler propriedade CSS: `var()` nao
+ * pinta atributo de SVG, e um SVG serializado perde o `:root` (ver o cabecalho
+ * de `tema.ts`). A moldura continua lendo `MARCA`; o grafico recebe estes
+ * valores literais por propriedade, resolvidos na pagina.
+ *
+ * A leitura e a mesma de `lerCabecalhoDaInstalacao`, memorizada por
+ * requisicao: chamar as duas nao le o armazem duas vezes.
+ */
+export async function lerCoresAplicadas(): Promise<CoresDaMarca | null> {
+  const marca = await lerMarcaAtiva();
+  return marca?.cores ?? null;
+}
+
 export function rotuloDoLogo(marca: Marca): string {
   if (marca.nome !== null) return marca.nome;
   if (marca.site !== null) return hospedeiroDe(marca.site);
