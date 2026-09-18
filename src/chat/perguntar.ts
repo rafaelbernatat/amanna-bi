@@ -62,6 +62,8 @@ import {
 } from "@/chat/interpretar";
 import { resolverComposta, type EventosDoLaco } from "@/chat/laco";
 import { PROXIMO_PASSO } from "@/chat/leitura";
+import { mesNomeado } from "@/chat/mes";
+import { RECUSA_FORA_DO_ASSUNTO } from "@/chat/recusa";
 import {
   corrigirComGateway,
   gatewayConfigurado,
@@ -79,6 +81,7 @@ import { QUERY_PADRAO, type Query, type Unidade } from "@/semantica/contrato";
 import { rotuloDe } from "@/semantica/dimensoes";
 
 export type { TurnoAnterior } from "@/chat/interpretar";
+export { RECUSA_FORA_DO_ASSUNTO } from "@/chat/recusa";
 
 /**
  * Como o texto foi produzido. A tela mostra, para não haver dúvida.
@@ -411,7 +414,11 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
   if (r.caminho === "degradado") linhas.push(AVISO_DE_DEGRADACAO);
   // As leituras do laço vêm primeiro: são o que a pergunta composta pediu.
   for (const { leitura } of r.leituras) linhas.push(fraseDe(leitura));
-  linhas.push(`${r.rotulo}: ${valor}.`);
+  linhas.push(
+    r.mes === undefined
+      ? `${r.rotulo}: ${valor}.`
+      : `${r.rotulo} em ${r.mes.rotulo}: ${valor}.`,
+  );
 
   const doPainel = r.consideracoes.filter((c) => c.origem === "painel");
   const deApoio = r.consideracoes.filter((c) => c.origem === "apoio");
@@ -668,7 +675,9 @@ async function interpretar(
       metrica: "",
       filtros,
       confianca: SEM_CONFIANCA,
-      alternativas: doModelo.alternativas,
+      alternativas:
+        doModelo.foraDoAssunto === true ? [] : doModelo.alternativas,
+      ...(doModelo.foraDoAssunto === true ? { foraDoAssunto: true } : {}),
     };
   }
 
@@ -788,6 +797,10 @@ export async function resolverPergunta(
 
   const intencao = await interpretar(pergunta, atuais, historico);
 
+  if (intencao?.foraDoAssunto === true) {
+    return { tipo: "recusa", texto: RECUSA_FORA_DO_ASSUNTO, alternativas: [] };
+  }
+
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
     // Nada casou (local) ou o modelo recusou: não há métrica para oferecer.
     const recusou = intencao === null || intencao.metrica === "";
@@ -814,7 +827,9 @@ export async function resolverPergunta(
   }
 
   try {
-    const resolucao = await resolver(intencao.metrica, intencao.filtros);
+    // Um mês nomeado que o filtro não alcança: o valor é o ponto do mês.
+    const mes = mesNomeado(pergunta, intencao.filtros.ano) ?? undefined;
+    const resolucao = await resolver(intencao.metrica, intencao.filtros, mes);
     return {
       tipo: "resolvida",
       resolucao: degradada ? { ...resolucao, caminho: "degradado" } : resolucao,
@@ -978,6 +993,7 @@ export function paraOModelo(r: Resolucao, contexto?: ContextoDaTela): unknown {
     leituras: r.leituras.map((l) => paraOModeloLeitura(l.leitura)),
     metrica: r.rotulo,
     valor: { bruto: r.valor, formatado: formatado(r.valor, r.unidade) },
+    mes: r.mes?.rotulo ?? null,
     periodo: rotuloDe("periodo", r.acoes.filtros.periodo),
     fechamento: formatarMesAno(r.asOf),
     leitura: r.familia,
