@@ -821,7 +821,18 @@ export async function resolverPergunta(
      * busca no catálogo (`listar_metricas`) e lê antes de qualquer recusa; a
      * recusa útil continua sendo o que sai quando nem ele conclui.
      */
-    if (!degradada && lacoNaDuvidaLigado(process.env) && gatewayConfigurado()) {
+    // O interpretador do modelo disse que a pergunta não é sobre os dados
+    // (métrica vazia e nenhuma próxima): o laço não tem o que buscar.
+    const foraDosDados =
+      intencao !== null &&
+      intencao.metrica === "" &&
+      intencao.alternativas.length === 0;
+    if (
+      !degradada &&
+      !foraDosDados &&
+      lacoNaDuvidaLigado(process.env) &&
+      gatewayConfigurado()
+    ) {
       const tentativa = await resolverComposta(
         pergunta,
         contexto,

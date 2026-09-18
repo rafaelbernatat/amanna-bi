@@ -2,6 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { Composta } from "@/chat/laco";
 import { resolverComposta } from "@/chat/laco";
+import { interpretarComGateway } from "@/chat/openrouter";
 import { lacoNaDuvidaLigado, resolverPergunta } from "@/chat/perguntar";
 import { resolver } from "@/chat/resolver";
 import { QUERY_PADRAO } from "@/semantica/contrato";
@@ -70,6 +71,22 @@ describe("a pergunta sem métrica, com gateway", () => {
     expect(resolvida.resolucao.caminho).toBe("composto");
     expect(resolvida.redacao?.texto).toBe("O laço leu e escreveu.");
     expect(resolvida.redacao?.autoria).toBe("modelo");
+  });
+
+  it("fora dos dados — o interpretador não vê métrica próxima —, não vai ao laço e a recusa sugere o guia", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "chave-de-teste");
+    vi.mocked(interpretarComGateway).mockResolvedValueOnce({
+      metrica: "",
+      confianca: 0,
+      alternativas: [],
+    });
+
+    const resolvida = await resolverPergunta("Qual a capital da França?");
+    expect(vi.mocked(resolverComposta)).not.toHaveBeenCalled();
+    expect(resolvida.tipo).toBe("recusa");
+    if (resolvida.tipo !== "recusa") return;
+    expect(resolvida.alternativas).toEqual([]);
+    expect(resolvida.texto).toMatch(/não consigo responder/i);
   });
 
   it("se o laço não conclui, fica a recusa útil", async () => {

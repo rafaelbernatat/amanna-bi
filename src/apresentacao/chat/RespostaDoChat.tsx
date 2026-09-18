@@ -44,12 +44,16 @@ export function RespostaDoChat({
           />
         )}
         {/*
-          Sem métrica próxima, a recusa diz o que dá para perguntar: o guia
-          da tela, que o servidor mandou junto (T-441).
+          A recusa diz o que dá para perguntar: o guia da tela, que o servidor
+          mandou junto (T-441). Com métricas próximas, vem depois delas.
         */}
-        {resposta.alternativas.length === 0 && resposta.sugestoes.length > 0 ? (
+        {resposta.sugestoes.length > 0 ? (
           <Atalhos
-            rotulo="pergunte, por exemplo"
+            rotulo={
+              resposta.alternativas.length === 0
+                ? "pergunte, por exemplo"
+                : "ou pergunte, por exemplo"
+            }
             textos={resposta.sugestoes}
             aoPerguntar={aoPerguntar}
           />

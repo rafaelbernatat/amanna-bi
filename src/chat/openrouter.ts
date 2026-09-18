@@ -92,8 +92,14 @@ Responda SOMENTE com JSON, no formato:
 Regras:
 - "metrica" precisa ser um dos ids da lista fornecida. Nunca invente um id.
 - Você NÃO calcula nem estima número nenhum. Sua saída é só a intenção.
-- Se a pergunta não corresponder a nenhuma métrica da lista, devolva
+- Se a pergunta for sobre os dados da empresa mas não corresponder a nenhuma
+  métrica da lista, devolva
   {"metrica": "", "confianca": 0, "alternativas": [os 3 ids mais próximos]}.
+- Se a pergunta NÃO for sobre os dados da empresa (RH, financeiro, operação)
+  — geografia, conversa, opinião, qualquer outro assunto —, devolva
+  {"metrica": "", "confianca": 0, "alternativas": []}. Uma palavra em comum
+  ("capital", "caixa") não torna uma métrica próxima de uma pergunta que não
+  é sobre os dados.
 - "confianca" baixa quando a pergunta couber em mais de uma métrica.
 - Quando houver "Conversa até aqui", ela é contexto. Se a pergunta atual for
   continuação da anterior — só troca o recorte ("e em dezembro?", "e na
