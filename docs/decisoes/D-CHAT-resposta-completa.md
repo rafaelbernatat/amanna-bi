@@ -185,3 +185,11 @@ correções, cada uma com tarefa:
   e lê, antes de qualquer recusa. Custa uma ida ao modelo do laço por pergunta
   sem métrica; `CHAT_LACO_NA_DUVIDA=0` desliga. A recusa útil continua sendo o
   que sai quando nem o laço conclui.
+- **A resposta em parágrafos curtos, e a recusa que sugere (T-441).** O
+  texto chegava num bloco corrido: a instrução pedia parágrafos, e a bolha
+  os colava num `<p>` só. Agora a instrução pede até três parágrafos
+  separados por linha em branco e no máximo oito frases, o "Traduzindo:" abre
+  o próprio parágrafo, e a bolha desenha cada um — o "Traduzindo" com rótulo
+  e barra de destaque. A pergunta que nada tem a ver com os dados recebe "não
+  consigo responder a isso com os dados do painel" e o guia da tela como
+  atalhos, em vez de uma lista vazia.

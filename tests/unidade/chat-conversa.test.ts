@@ -58,7 +58,12 @@ function respondida(metrica: string): Resposta {
   };
 }
 
-const RECUSA: Resposta = { tipo: "recusa", texto: "não", alternativas: [] };
+const RECUSA: Resposta = {
+  tipo: "recusa",
+  texto: "não",
+  alternativas: [],
+  sugestoes: [],
+};
 
 function turno(id: string, parcial: Partial<Turno> = {}): Turno {
   return {

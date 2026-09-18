@@ -17,16 +17,19 @@ export const CONTEINER_DA_TELA = "quadro-da-tela";
  *
  * `!important` em cada declaracao, porque tudo o que esta folha vence e
  * estilo em linha — largura, `display`, alinhamento —, e estilo em linha
- * ganha de folha sem isso. Sob a consulta, a lista e o botao somem: expandir
- * num espaco que nao cabe seria um botao que nao faz nada.
+ * ganha de folha sem isso. Sob a consulta, os titulos, o nome do modulo e o
+ * botao somem, e ficam os icones das telas, clicaveis (T-442): expandir num
+ * espaco que nao cabe seria um botao que nao faz nada.
  */
 export function EstiloDoMenu({ nonce }: { readonly nonce?: string }) {
   const menu = '[data-teste="menu-lateral"]';
   const folha =
     `@container ${CONTEINER_DA_TELA} (max-width: ${String(LARGURA_MINIMA_PARA_MENU_ABERTO - 1)}px){` +
     `${menu}{width:${String(LARGURA_DO_MENU_RECOLHIDO)}px !important}` +
-    `${menu} [data-parte="telas"],${menu} [data-parte="modulo"],${menu} [data-teste="recolher-menu"]{display:none !important}` +
-    `${menu} [data-parte="topo"]{justify-content:center !important;padding:14px 0 !important}` +
+    `${menu} [data-parte="titulo"],${menu} [data-parte="modulo"],${menu} [data-teste="recolher-menu"]{display:none !important}` +
+    `${menu} [data-parte="topo"]{justify-content:center !important;padding:14px 0 6px !important}` +
+    `${menu} [data-parte="telas"]{padding:0 4px 12px !important}` +
+    `${menu} [data-parte="telas"] a{justify-content:center !important;padding:9px 0 !important;border-left-color:transparent !important}` +
     "}";
 
   return (

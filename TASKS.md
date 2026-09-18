@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 307 tarefas: 178 pendentes e 129 já concluídas (5 no protótipo) |
+| **Total** | 309 tarefas: 178 pendentes e 131 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 95 | 53 | 35 | 7 | 47 de 95 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 97 | 53 | 37 | 7 | 49 de 97 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **307** | **155** | **120** | **27** | **129 de 307** |
+| **Total** | **309** | **155** | **122** | **27** | **131 de 309** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -57,7 +57,7 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    75 tarefas         95 tarefas
+    75 tarefas         97 tarefas
          |               |
          +-------+-------+
                  |
@@ -693,7 +693,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 
 > **Critério de saída:** O conjunto de 100 perguntas atinge as metas da seção 7.7, com zero número inventado.
 
-*95 tarefas · 53 P0 · 35 P1 · 7 P2*
+*97 tarefas · 53 P0 · 37 P1 · 7 P2*
 
 - [ ] **T-301** `P0` `M` `chat` Definir os contratos Intent e Answer com JSON Schema gerado
   · **Aceite:** Existem os tipos Intent e Answer da seção 7.2 e schemas derivados com additionalProperties false e required completo; o teste rejeita 10 payloads inválidos (métrica ausente, breakdown fora do enum, confidence fora de 0..1, undo sem view) e aceita 5 válidos.
@@ -921,7 +921,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
   · **Aceite:** trocar qualquer dos cinco controles navega para a URL canonica do novo recorte apos 300 ms de silencio, preservando o painel destacado; setas seguidas no mesmo `<select>` viram uma navegacao so e o foco continua no controle depois dela, medido no e2e; a barra indica que esta aplicando sem deslocar nada; sem JavaScript o formulario ainda envia por um botao em `noscript`; `marca.spec` le a cor da marca de um elemento que continua existindo; `BarraDeFiltros` entra na lista nomeada de fronteira de cliente e o README diz por que.
   · **PRD:** secao 6.2, secao 6.6, secao 13, RF-01 · **Depende de:** T-128, T-372
 - [X] **T-421** `P1` `M` `paineis` As telas do modulo num menu lateral recolhivel; os modulos continuam abas
-  · **Aceite:** um `nav` "Telas de ..." a esquerda lista as telas do modulo ativo com `aria-current`, links que carregam o recorte (6.2) e `data-teste` por tela; recolhido vira uma faixa de 44 px so com o botao, e o estado vive em cookie lido no servidor — o primeiro quadro ja sai certo e o CLS segue zero com e sem cookie; com menos de 900 px para a tela (conversa aberta em 1280) o menu recolhe por consulta de conteiner, sem medir nada em JS; a tira de telas sai do cabecalho; `shell.spec` e reescrito para a nova geometria e nada vaza da viewport em 1280 e 1440 com a conversa aberta; `MenuLateral` entra na lista nomeada de fronteira de cliente.
+  · **Aceite:** um `nav` "Telas de ..." a esquerda lista as telas do modulo ativo com `aria-current`, links que carregam o recorte (6.2) e `data-teste` por tela; recolhido vira uma faixa de 44 px com o botao e os icones das telas (T-442), e o estado vive em cookie lido no servidor — o primeiro quadro ja sai certo e o CLS segue zero com e sem cookie; com menos de 900 px para a tela (conversa aberta em 1280) o menu recolhe por consulta de conteiner, sem medir nada em JS; a tira de telas sai do cabecalho; `shell.spec` e reescrito para a nova geometria e nada vaza da viewport em 1280 e 1440 com a conversa aberta; `MenuLateral` entra na lista nomeada de fronteira de cliente.
   · **PRD:** secao 6.1, secao 6.2, secao 13 · **Depende de:** T-126, T-420
 - [X] **T-422** `P1` `S` `paineis` Os graficos seguem o tema do sistema a partir da segunda tela
   · **Aceite:** um script embutido com nonce grava a cada pagina um segundo cookie (`amanna-bi.tema-do-sistema`) com o que `prefers-color-scheme` diz; `temaAtivo()` usa a escolha explicita, depois o observado, depois claro; `temaEscolhido()` continua so com a escolha explicita, entao a moldura segue o sistema sem ficar presa; a grade de paineis declara `data-pele` e o e2e prova que, em sistema escuro sem escolha, a segunda pagina ja desenha os graficos na pele escura e que a escolha explicita vence.
@@ -980,6 +980,12 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-440** `P1` `S` `chat` A comparacao com juros so para resultado de verdade
   · **Aceite:** a familia `resultado` vira lista fechada (lucro liquido, EBITDA, resultado operacional liquido, margem de contribuicao em reais, resultado com receita 10% menor), no lugar da regra "reais e maior e melhor"; receita, saldo, patrimonio, caixa gerado e valor por colaborador ficam sem comparacao, com o motivo dito; "Retorno sobre a receita liquida: 100,0%, 86,3 p.p. acima da Selic" nao volta a aparecer.
   · **PRD:** secao 7.1 · **Depende de:** T-433
+- [X] **T-441** `P1` `S` `chat` A resposta em paragrafos curtos, com o "Traduzindo" em destaque; a recusa sugere o que perguntar
+  · **Aceite:** a instrucao pede ate tres paragrafos separados por linha em branco e no maximo oito frases, com o "Traduzindo:" abrindo o proprio paragrafo; a bolha desenha os paragrafos um a um (`paragrafosDaResposta`, puro e testado) e da ao "Traduzindo" rotulo e barra na cor de destaque; a recusa sem metrica proxima diz que nao consegue responder com os dados do painel e traz o guia da tela como atalhos (`sugestoes` no envelope da recusa); pedido de Produto (2026-09-18, print).
+  · **PRD:** secao 7.1, secao 7.5, RF-16 · **Depende de:** T-433, T-439
+- [X] **T-442** `P1` `S` `paineis` Icones no menu lateral: recolhido, ficam so os icones clicaveis
+  · **Aceite:** cada tela do registro tem um `icone` de um conjunto fechado, sem repeticao (teste); `IconeDaTela` desenha vetores em `currentColor`; aberto, o link mostra icone e titulo; recolhido (por clique ou por consulta de conteiner), so o icone, com o titulo em `aria-label` e `title`, e o clique navega com o recorte; o e2e prova os dois estados e o clique recolhido.
+  · **PRD:** secao 6.1, secao 13 · **Depende de:** T-421
 
 ---
 

@@ -63,6 +63,7 @@ import {
 } from "@/chat/interpretar";
 import { resolverComposta, type EventosDoLaco } from "@/chat/laco";
 import { PROXIMO_PASSO } from "@/chat/leitura";
+import { sugestoesDaTela } from "@/chat/sugestoes";
 import {
   corrigirComGateway,
   gatewayConfigurado,
@@ -120,6 +121,8 @@ export type Resposta =
         readonly id: string;
         readonly rotulo: string;
       }[];
+      /** O guia da tela: o que dá para perguntar, quando nada casou (T-441). */
+      readonly sugestoes: readonly string[];
     };
 
 /* ------------------------------------------------------------------ *
@@ -788,6 +791,7 @@ export async function resolverPergunta(
           tipo: "recusa",
           texto: composta.texto,
           alternativas: composta.alternativas,
+          sugestoes: sugestoesParaRecusa(contexto),
         };
       }
       return composta.texto === null
@@ -817,7 +821,18 @@ export async function resolverPergunta(
      * busca no catálogo (`listar_metricas`) e lê antes de qualquer recusa; a
      * recusa útil continua sendo o que sai quando nem ele conclui.
      */
-    if (!degradada && lacoNaDuvidaLigado(process.env) && gatewayConfigurado()) {
+    // O interpretador do modelo disse que a pergunta não é sobre os dados
+    // (métrica vazia e nenhuma próxima): o laço não tem o que buscar.
+    const foraDosDados =
+      intencao !== null &&
+      intencao.metrica === "" &&
+      intencao.alternativas.length === 0;
+    if (
+      !degradada &&
+      !foraDosDados &&
+      lacoNaDuvidaLigado(process.env) &&
+      gatewayConfigurado()
+    ) {
       const tentativa = await resolverComposta(
         pergunta,
         contexto,
@@ -858,11 +873,12 @@ export async function resolverPergunta(
       tipo: "recusa",
       texto:
         alternativas.length === 0
-          ? "Não tenho métrica no catálogo que responda a isso."
+          ? "Não consigo responder a isso com os dados do painel. Posso responder perguntas sobre as métricas de RH e financeiro."
           : recusou
             ? "Não tenho essa métrica no catálogo. Estas são as mais próximas:"
             : "Não tenho certeza do que você quer saber. Estas são as métricas mais próximas:",
       alternativas,
+      sugestoes: sugestoesParaRecusa(contexto),
     };
   }
 
@@ -885,10 +901,21 @@ export async function resolverPergunta(
           id,
           rotulo: rotuloDaMetrica(id),
         })),
+        sugestoes: sugestoesParaRecusa(contexto),
       };
     }
     throw erro;
   }
+}
+
+/**
+ * O guia da tela, para a recusa dizer o que dá para perguntar (T-441). Sem
+ * tela no contexto — a conversa em tela cheia sem tela nomeada —, nada.
+ */
+function sugestoesParaRecusa(contexto: ContextoDaTela): readonly string[] {
+  return contexto.tela === null
+    ? []
+    : sugestoesDaTela(contexto.tela.replace(/^\//, ""));
 }
 
 /**

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ICONES_DE_TELA,
   MODULOS,
   TELA_PADRAO,
   acharModulo,
@@ -45,6 +46,12 @@ describe("Registro de navegacao", () => {
 
   it("distribui as telas como o Anexo A: 7 de RH, 5 de Financeiro, 1 de Integracao", () => {
     expect(MODULOS.map((m) => m.telas.length)).toEqual([7, 5, 1]);
+  });
+
+  it("toda tela tem um icone do conjunto, e nenhum icone se repete (T-442)", () => {
+    const icones = MODULOS.flatMap((m) => m.telas.map((t) => t.icone));
+    for (const icone of icones) expect(ICONES_DE_TELA).toContain(icone);
+    expect(new Set(icones).size).toBe(icones.length);
   });
 
   it("nenhuma rota se repete", () => {

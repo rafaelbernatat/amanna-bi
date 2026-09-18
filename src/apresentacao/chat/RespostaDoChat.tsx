@@ -1,4 +1,5 @@
 import { formatarValor } from "@/apresentacao/formato/formato";
+import { paragrafosDaResposta } from "@/apresentacao/chat/paragrafos";
 import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type {
   LeituraDeFerramenta,
@@ -42,6 +43,21 @@ export function RespostaDoChat({
             aoPerguntar={aoPerguntar}
           />
         )}
+        {/*
+          A recusa diz o que dá para perguntar: o guia da tela, que o servidor
+          mandou junto (T-441). Com métricas próximas, vem depois delas.
+        */}
+        {resposta.sugestoes.length > 0 ? (
+          <Atalhos
+            rotulo={
+              resposta.alternativas.length === 0
+                ? "pergunte, por exemplo"
+                : "ou pergunte, por exemplo"
+            }
+            textos={resposta.sugestoes}
+            aoPerguntar={aoPerguntar}
+          />
+        ) : null}
       </div>
     );
   }
@@ -53,7 +69,7 @@ export function RespostaDoChat({
       data-teste="chat-resposta"
       style={{ display: "flex", flexDirection: "column", gap: 10 }}
     >
-      <p style={ESTILO_DO_TEXTO}>{resposta.texto}</p>
+      <TextoDaResposta texto={resposta.texto} />
 
       {r.leituras.length === 0 ? null : (
         <div
@@ -468,14 +484,57 @@ export function Atalhos({
   );
 }
 
-export function Rotulo({ texto }: { readonly texto: string }) {
+/**
+ * O texto da resposta em parágrafos, com o "Traduzindo" em destaque (T-441).
+ *
+ * O modelo escreve até três parágrafos separados por linha em branco; a
+ * bolha os desenha um a um. O que começa com "Traduzindo:" ganha o rótulo e
+ * uma barra na cor de destaque — é a frase que diz o que o número significa
+ * para o negócio. O texto montado, sem marca nenhuma, é um parágrafo só.
+ */
+function TextoDaResposta({ texto }: { readonly texto: string }) {
+  return (
+    <div
+      data-teste="chat-texto"
+      style={{ display: "flex", flexDirection: "column", gap: 8 }}
+    >
+      {paragrafosDaResposta(texto).map((p) =>
+        p.rotulo === null ? (
+          <p key={p.texto} data-teste="chat-paragrafo" style={ESTILO_DO_TEXTO}>
+            {p.texto}
+          </p>
+        ) : (
+          <div
+            key={`${p.rotulo}:${p.texto}`}
+            data-teste="chat-traduzindo"
+            style={{
+              borderLeft: `2px solid ${MARCA.destaqueSuave}`,
+              padding: "2px 0 2px 10px",
+            }}
+          >
+            <Rotulo texto={p.rotulo} cor={MARCA.destaque} />
+            <p style={ESTILO_DO_TEXTO}>{p.texto}</p>
+          </div>
+        ),
+      )}
+    </div>
+  );
+}
+
+export function Rotulo({
+  texto,
+  cor = PALETA.textoTerciario,
+}: {
+  readonly texto: string;
+  readonly cor?: string;
+}) {
   return (
     <span
       style={{
         display: "block",
         marginBottom: 4,
         font: `500 8.5px/1.2 ${TIPOGRAFIA.mono}`,
-        color: PALETA.textoTerciario,
+        color: cor,
         textTransform: "uppercase",
         letterSpacing: ".1em",
       }}

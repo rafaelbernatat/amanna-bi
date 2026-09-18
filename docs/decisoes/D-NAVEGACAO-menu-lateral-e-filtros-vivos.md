@@ -36,8 +36,11 @@ sem abrir a porta.
   `data-teste="tela-<slug>"`. Cada link leva o recorte (seção 6.2) e descarta
   o painel destacado, exatamente como a tira fazia: `painel=orc-desvio` nomeia
   um painel de outra tela.
-- **Recolhido** é uma faixa de 44 px só com o botão; **aberto** são 220 px
-  com o número e o nome do módulo e a lista. Começa aberto.
+- **Recolhido** é uma faixa de 44 px com o botão e os **ícones das telas**,
+  clicáveis, com o título no `aria-label` e no `title`; **aberto** são 220 px
+  com o número e o nome do módulo e a lista com ícone e título. Começa
+  aberto. (A primeira versão, do mesmo dia, deixava só o botão; Produto pediu
+  os ícones à tarde — T-442.)
 - **O estado vive num cookie** (`amanna-bi.menu`), gravado pelo navegador no
   clique e **lido pelo servidor** na página da tela. É isso que faz o
   primeiro quadro já sair com a largura certa: nada de menu aberto que fecha
@@ -127,6 +130,6 @@ de nenhum estado.
   invalidada pela chegada da primeira navegação e reaplicada pela segunda.
   Sair do controle aplica na hora e reduz o caso; se aparecer na prática,
   o remédio é enfileirar as pendências, não tirar o atraso.
-- No contêiner estreito o menu recolhe e o botão some: expandir num espaço
-  que não cabe seria um botão que não faz nada. Se Produto quiser abrir
-  sobre a tela nesse caso, é outra decisão.
+- No contêiner estreito o menu recolhe e o botão some, mas os ícones ficam:
+  expandir num espaço que não cabe seria um botão que não faz nada. Se
+  Produto quiser abrir sobre a tela nesse caso, é outra decisão.

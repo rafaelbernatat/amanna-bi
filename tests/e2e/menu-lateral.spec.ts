@@ -69,7 +69,16 @@ test.describe("o menu lateral de telas", () => {
     await page.locator('[data-teste="recolher-menu"]').click();
     await expect(menu).toHaveAttribute("data-recolhido", "1");
     expect((await menu.boundingBox())?.width).toBe(RECOLHIDO);
-    await expect(page.locator('[data-teste="tela-colab"]')).toHaveCount(0);
+    // Recolhido, cada tela vira um icone clicavel com o titulo acessivel
+    // (T-442): o link continua, o texto some.
+    const colab = page.locator('[data-teste="tela-colab"]');
+    await expect(colab).toBeVisible();
+    await expect(colab).toHaveAttribute("aria-label", "Colaboradores");
+    await expect(colab.locator('[data-parte="titulo"]')).toBeHidden();
+    await expect(colab.locator("svg[data-icone]")).toBeVisible();
+    expect((await colab.boundingBox())?.width ?? 0).toBeLessThanOrEqual(
+      RECOLHIDO,
+    );
     await expect(page.locator('[data-teste="recolher-menu"]')).toHaveAttribute(
       "aria-expanded",
       "false",
@@ -115,6 +124,8 @@ test.describe("o menu lateral de telas", () => {
       // 1280 menos a conversa: menos de 900 para a tela.
       expect(largura).toBe(RECOLHIDO);
       await expect(page.locator('[data-teste="recolher-menu"]')).toBeHidden();
+      // Os icones continuam la, clicaveis.
+      await expect(page.locator('[data-teste="tela-colab"]')).toBeVisible();
     } else {
       expect(largura).toBe(ABERTO);
     }
@@ -126,6 +137,23 @@ test.describe("o menu lateral de telas", () => {
       ).length;
     });
     expect(vazando).toBe(0);
+  });
+
+  test("recolhido por cookie, o icone da tela navega e o menu segue recolhido", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await context.addCookies([
+      { name: COOKIE, value: "recolhido", url: String(baseURL) },
+    ]);
+    await page.goto("/rh/visao?periodo=dezembro");
+    const menu = page.locator(MENU);
+    await expect(menu).toHaveAttribute("data-recolhido", "1");
+    await page.locator('[data-teste="tela-turnover"]').click();
+    await expect(page).toHaveURL(/\/rh\/turnover\?periodo=dezembro$/);
+    await expect(menu).toHaveAttribute("data-recolhido", "1");
+    expect((await menu.boundingBox())?.width).toBe(RECOLHIDO);
   });
 
   test("o botao e as telas estao na ordem de foco", async ({ page }) => {

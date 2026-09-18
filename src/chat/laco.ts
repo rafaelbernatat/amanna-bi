@@ -134,8 +134,9 @@ ${REGRAS_DE_NUMERO}
   R$ 12,0 mi". Nunca some pontos, nunca calcule média, diferença nem
   participação: as que existem já vêm calculadas nos resultados.
 - Cite o recorte (período, entidade, área) quando ele não for o padrão.
-- Dois ou três parágrafos curtos, até doze frases no total, sem título e
-  sem lista: abra com o número que responde à pergunta; depois o que as
+- Até três parágrafos curtos, separados por uma linha em branco, no máximo
+  oito frases no total, sem título e sem lista: abra com o número que
+  responde à pergunta; depois o que as
   leituras mostram (pico, vale, último ponto; os maiores itens e a
   participação deles; a variação); depois o que explica, só com o que as
   leituras trazem.
