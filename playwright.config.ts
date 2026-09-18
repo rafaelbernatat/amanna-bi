@@ -144,6 +144,13 @@ export default defineConfig({
       MARCA_ARMAZEM: "memoria",
       MARCA_SITE: "fixtures",
       /*
+       * Sem banco, de proposito: o cadastro de convidados vai para o Postgres
+       * sempre que `DATABASE_URL` existir (D-CONVIDADO-cadastro), e o
+       * `.env.local` de quem desenvolve tem a URL do Supabase. Vazia, o
+       * arnes cadastra em memoria, e cada subida comeca sem convidado.
+       */
+      DATABASE_URL: "",
+      /*
        * A apresentacao ligada, num modo de sessao aberto.
        *
        * E o arranjo que Produto pediu e que o arnes precisa cobrir: o painel

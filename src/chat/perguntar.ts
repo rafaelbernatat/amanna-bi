@@ -956,6 +956,7 @@ export function paraOModelo(r: Resolucao, contexto?: ContextoDaTela): unknown {
             titulo: contexto.tituloDaTela,
             filtros: rotularFiltros(contexto.filtros),
           },
+    quemPergunta: contexto?.primeiroNome ?? null,
     grafico:
       grafico === null
         ? null

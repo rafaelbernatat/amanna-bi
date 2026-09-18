@@ -29,6 +29,7 @@
       "@/seguranca/*": ["src/seguranca/*"],
       "@/chat/*": ["src/chat/*"],
       "@/marca/*": ["src/marca/*"],
+      "@/convidados/*": ["src/convidados/*"],
       "@/gateway/*": ["src/gateway/*"]
     },
     "plugins": [

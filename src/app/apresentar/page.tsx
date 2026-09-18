@@ -14,6 +14,7 @@ import {
   podeApresentar,
   segredoDoConvite,
   VERSAO_DO_ENVELOPE,
+  HORAS_DO_PUBLICO,
 } from "@/seguranca/convite";
 import { ROTULO_DO_FILTRO, rotuloDe } from "@/semantica/dimensoes";
 import { FILTROS } from "@/semantica/dimensoes";
@@ -227,7 +228,7 @@ export default async function Pagina({
           }}
         >
           O acesso vence às {horaDe(apresentacao.expira)} · sala{" "}
-          {apresentacao.sala}
+          {apresentacao.sala} · cada celular tem até {HORAS_DO_PUBLICO} h
         </p>
         {/*
           O endereço escrito, para quem não consegue escanear.

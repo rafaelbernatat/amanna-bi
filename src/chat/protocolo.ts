@@ -27,6 +27,17 @@ export const TAMANHO_MAXIMO_DA_PERGUNTA = 500;
 /** Quantos turnos anteriores viajam com a pergunta. */
 export const TURNOS_LEMBRADOS = 6;
 
+/** Quantas perguntas um convidado do QR pode fazer (D-CONVIDADO-cadastro). */
+export const PERGUNTAS_POR_CONVIDADO = 5;
+
+/** O cabeçalho que diz quantas perguntas restam, em toda resposta admitida. */
+export const CABECALHO_DE_PERGUNTAS_RESTANTES = "x-perguntas-restantes";
+
+/** Quantas restam, dado quantas já foram admitidas. Nunca negativo. */
+export function perguntasRestantes(usadas: number): number {
+  return Math.max(0, PERGUNTAS_POR_CONVIDADO - usadas);
+}
+
 /** O que o chat manda. */
 export type PedidoDeChat = {
   readonly pergunta: string;
@@ -68,7 +79,17 @@ export type MotivoDeFalha =
   /** O limite de uso da apresentação segurou a pergunta (D-CONVITE). */
   | "limite_de_uso"
   /** O convite venceu no meio da conversa. */
-  | "sessao_expirada";
+  | "sessao_expirada"
+  /** O convidado do QR já fez as suas perguntas (D-CONVIDADO-cadastro). */
+  | "limite_de_perguntas"
+  /** O convidado do QR ainda não disse quem é. */
+  | "sem_cadastro";
+
+/** O corpo de uma recusa por status, quando a conversa precisa distinguir. */
+export type CorpoDeRecusa = {
+  readonly erro: string;
+  readonly motivo?: MotivoDeFalha | string;
+};
 
 /**
  * Uma linha do fluxo NDJSON, na ordem em que podem chegar.

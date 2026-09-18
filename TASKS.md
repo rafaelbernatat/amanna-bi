@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 35 de 93 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 42 de 93 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **305** | **154** | **119** | **27** | **117 de 305** |
+| **Total** | **305** | **154** | **119** | **27** | **124 de 305** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -926,25 +926,25 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-422** `P1` `S` `paineis` Os graficos seguem o tema do sistema a partir da segunda tela
   · **Aceite:** um script embutido com nonce grava a cada pagina um segundo cookie (`amanna-bi.tema-do-sistema`) com o que `prefers-color-scheme` diz; `temaAtivo()` usa a escolha explicita, depois o observado, depois claro; `temaEscolhido()` continua so com a escolha explicita, entao a moldura segue o sistema sem ficar presa; a grade de paineis declara `data-pele` e o e2e prova que, em sistema escuro sem escolha, a segunda pagina ja desenha os graficos na pele escura e que a escolha explicita vence.
   · **PRD:** secao 5, secao 13 · **Depende de:** T-418
-- [ ] **T-423** `P0` `S` `seguranca` O publico do QR entra por cinco horas, no maximo
+- [X] **T-423** `P0` `S` `seguranca` O publico do QR entra por cinco horas, no maximo
   · **Aceite:** `decidirEntrada` limita o prazo da sessao de perfil `auditor` a `min(prazo do convite, agora + 5 h)` e o `maxAge` acompanha; um convite de 8 h para o publico vira sessao de 5 h, um de 1 h continua de 1 h, e um convite de perfil que apresenta herda o prazo inteiro; `/apresentar` diz que cada celular tem ate cinco horas.
   · **PRD:** secao 11, RF-23, D-CONVIDADO-cadastro · **Depende de:** T-355, T-369
-- [ ] **T-424** `P0` `M` `plataforma` O armazem de convidados: nome, e-mail, perguntas e interesse, em memoria e no Postgres
+- [X] **T-424** `P0` `M` `plataforma` O armazem de convidados: nome, e-mail, perguntas e interesse, em memoria e no Postgres
   · **Aceite:** `src/convidados/` declara `ArmazemDeConvidados` (`registrar`, `ler`, `admitirPergunta`, `registrarInteresse`) com adaptador em memoria (estado no escopo do processo) e em Postgres que recebe `ClientePostgres`, aplica o DDL uma vez por instancia antes da primeira gravacao e nunca concatena nome nem e-mail no texto da consulta; `registrar` e `INSERT ... ON CONFLICT (sala, dispositivo) DO UPDATE ... RETURNING id`; `admitirPergunta` e um unico `UPDATE ... WHERE perguntas < $n RETURNING`, atomico entre instancias; o erro do driver chega so com nome e SQLSTATE; `011_convidados.sql` e o DDL do modulo, byte a byte; o modo e Postgres quando ha `DATABASE_URL` e memoria quando nao ha; a suite de contrato roda nos dois, o de Postgres sobre o PGlite.
   · **PRD:** secao 11, secao 15, D-CONVIDADO-cadastro, D-DADOS-base-amanna · **Depende de:** T-274, T-266
-- [ ] **T-425** `P0` `M` `chat` A porta do cadastro em `/conversa`, o nome na conversa, e sem "Nova conversa" no celular
+- [X] **T-425** `P0` `M` `chat` A porta do cadastro em `/conversa`, o nome na conversa, e sem "Nova conversa" no celular
   · **Aceite:** quem chega a `/conversa` com sessao de convite de perfil `auditor` e sem cadastro ve um formulario sem JavaScript (nome, e-mail, frase de consentimento) que posta em `/api/convidado`; a rota confere origem, exige sessao do publico, valida (nome de 2 a 80 caracteres, e-mail em minusculas ate 120), grava e volta por 303 a URL de origem; erro volta com `erro=nome|email|gravacao` e a tela o mostra; quem apresenta e o modo `fixtures` sem convite nunca veem o formulario; a saudacao usa o primeiro nome; "Nova conversa" some do modo `cheio`; o e2e escaneia, erra o e-mail, acerta e conversa com o nome na tela.
   · **PRD:** secao 6.5, secao 11, RF-23, D-CONVIDADO-cadastro · **Depende de:** T-360, T-424
-- [ ] **T-426** `P0` `M` `chat` Cinco perguntas por convidado, contadas no servidor, e o convite da Dreamy na sexta
+- [X] **T-426** `P0` `M` `chat` Cinco perguntas por convidado, contadas no servidor, e o convite da Dreamy na sexta
   · **Aceite:** `/api/chat` so consome a cota depois de validar o corpo; a sexta pergunta responde 429 com `motivo: "limite_de_perguntas"` e sem `retry-after`; convidado sem cadastro responde 401 com `motivo: "sem_cadastro"`; toda resposta admitida leva `x-perguntas-restantes`; quem apresenta e o modo `fixtures` nao tem cota; o contador mostra "Restam N de 5"; a sexta tentativa abre o dialogo "Gostou desta solucao? Clique aqui e saiba como aplicar na sua empresa" com link para `https://www.dreamy.app.br`, e o clique grava interesse por `POST /api/interesse` (rota publica, identificada pelo id sorteado do cadastro, origem `limite`); fechar o dialogo tranca a conversa com o mesmo link; recarregar mantem a tranca.
   · **PRD:** secao 7.5, secao 13, RF-19, D-CONVIDADO-cadastro · **Depende de:** T-361, T-425
-- [ ] **T-427** `P1` `S` `chat` O relogio de cinco horas na conversa, e o mesmo convite ao vencer
+- [X] **T-427** `P1` `S` `chat` O relogio de cinco horas na conversa, e o mesmo convite ao vencer
   · **Aceite:** a conversa recebe o instante de vencimento da sessao e abre o mesmo dialogo (origem `expiracao`) quando o relogio do celular chega nele ou quando `/api/chat` responde 401; o clique grava interesse mesmo com a sessao vencida; o e2e adianta o relogio com `page.clock` e ve o dialogo sem esperar cinco horas.
   · **PRD:** secao 11, secao 13, D-CONVIDADO-cadastro · **Depende de:** T-423, T-426
-- [ ] **T-428** `P1` `S` `chat` O primeiro nome de quem pergunta chega ao modelo, e so ele
+- [X] **T-428** `P1` `S` `chat` O primeiro nome de quem pergunta chega ao modelo, e so ele
   · **Aceite:** `ContextoDaTela` ganha `primeiroNome`; laco e redacao o recebem na mensagem de usuario, nunca na de sistema (o inspetor continua exigindo a instrucao exata) e nunca com o e-mail; as instrucoes pedem o nome uma vez, sem sobrenome, cargo ou empresa inventados; o teste prova que a mensagem de sistema nao muda e que nenhuma mensagem leva `@`.
   · **PRD:** secao 7.3, secao 11, D-CONVIDADO-cadastro · **Depende de:** T-350, T-425
-- [ ] **T-429** `P0` `S` `seguranca` O convidado do QR fica no chat: tela do painel leva de volta a conversa
+- [X] **T-429** `P0` `S` `seguranca` O convidado do QR fica no chat: tela do painel leva de volta a conversa
   · **Aceite:** com sessao valida de perfil `auditor` entrada por convite, `decidirAcesso` redireciona pagina fora de `/conversa` (e do que ela precisa) para `/conversa` e nega `/api/*` fora da lista; o layout do painel confere a mesma coisa no servidor, porque prefetch pula o proxy e o arnes `fixtures` o deixa seguir; quem apresenta continua navegando; o e2e escaneia, cadastra, abre `/rh/visao` no celular e volta a conversa.
   · **PRD:** secao 11, D-CONVITE-apresentacao, D-CONVIDADO-cadastro · **Depende de:** T-357, T-425
 - [X] **T-430** `P0` `S` `chat` Registrar status e erro do gateway nos incidentes, e o caminho na linha de auditoria

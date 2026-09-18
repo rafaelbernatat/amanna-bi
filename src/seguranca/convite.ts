@@ -82,7 +82,34 @@ export const CAMINHOS_PUBLICOS: readonly string[] = [
   "/api/entrar",
   "/api/marca/logo",
   "/favicon.ico",
+  // O clique no convite da Dreamy depois de a sessao vencer: nao ha mais
+  // cookie, e e justamente esse clique que importa (D-CONVIDADO-cadastro).
+  "/api/interesse",
 ];
+
+/**
+ * Onde o publico do QR pode ir (D-CONVIDADO-cadastro, T-429).
+ *
+ * A conversa e o que ela precisa: a rota do chat, o cadastro, o interesse,
+ * o logo, o tema, e a propria entrada. Tela do painel leva de volta a
+ * conversa. E o mesmo valor de `ROTA_DA_CONVERSA` em `semantica/url`,
+ * escrito aqui para o proxy nao carregar aquele modulo; um teste confere.
+ */
+export const CAMINHO_DA_CONVERSA = "/conversa";
+
+export const CAMINHOS_DO_PUBLICO: readonly string[] = [
+  CAMINHO_DA_CONVERSA,
+  "/api/chat",
+  "/api/convidado",
+  "/api/tema",
+  ...CAMINHOS_PUBLICOS,
+];
+
+export function permitidoAoPublico(caminho: string): boolean {
+  return CAMINHOS_DO_PUBLICO.some(
+    (p) => caminho === p || caminho.startsWith(`${p}/`),
+  );
+}
 
 /** Quanto tempo um convite pode durar, no máximo. */
 export const HORAS_MAXIMAS = 24;
@@ -346,6 +373,19 @@ export function ehDispositivoDeApresentacao(sujeito: string): boolean {
   return sujeito.startsWith(PREFIXO_DO_CONVITE);
 }
 
+/**
+ * Esta sessao e do publico do QR?
+ *
+ * Pelo **perfil**, e nunca so pelo prefixo do sujeito: quem entra por senha
+ * tambem e `convite:<sala>:<dispositivo>`, com perfil que apresenta. O que
+ * separa a plateia de quem apresenta e o perfil de leitura do publico.
+ */
+export function ehSessaoDoPublico(
+  sessao: Pick<SessaoDeConvite, "perfil">,
+): boolean {
+  return sessao.perfil === PERFIL_DO_PUBLICO;
+}
+
 /* ------------------------------------------------------------------ *
  * O destino
  * ------------------------------------------------------------------ */
@@ -446,6 +486,23 @@ export const HORAS_DA_SALA_PADRAO = 4;
 /** Segundos numa hora, para as contas de prazo. */
 export const SEGUNDOS_POR_HORA = 3600;
 
+/** Milissegundos num segundo: os envelopes contam em segundos, o navegador em ms. */
+export const MILISSEGUNDOS_POR_SEGUNDO = 1000;
+
+/** Um instante em segundos desde a epoca, como o navegador o le. */
+export function emMilissegundos(segundos: number): number {
+  return segundos * MILISSEGUNDOS_POR_SEGUNDO;
+}
+
+/**
+ * Quanto o publico do QR fica, no maximo (D-CONVIDADO-cadastro, T-423).
+ *
+ * O convite pode valer as oito horas de quem apresenta; o celular da plateia
+ * nao precisa disso. Cinco horas depois de entrar, a sessao vence, e a
+ * conversa abre o convite da Dreamy.
+ */
+export const HORAS_DO_PUBLICO = 5;
+
 export type Acesso =
   | { readonly tipo: "seguir" }
   | { readonly tipo: "redirecionar"; readonly para: string }
@@ -488,7 +545,19 @@ export async function decidirAcesso(e: EntradaDaRequisicao): Promise<Acesso> {
     segredo === null || e.cookie === null
       ? null
       : await verificarSessao(e.cookie, segredo, e.agoraSegundos);
-  if (sessao !== null) return { tipo: "seguir" };
+  if (sessao !== null) {
+    /*
+     * O publico do QR fica no chat (T-429): tela do painel leva de volta a
+     * conversa, e rota de dados fora da lista e negada. Nao e o controle — o
+     * layout do painel confere de novo, porque o prefetch pula o proxy —, e a
+     * negacao cedo.
+     */
+    if (!ehSessaoDoPublico(sessao) || permitidoAoPublico(e.caminho)) {
+      return { tipo: "seguir" };
+    }
+    if (e.caminho.startsWith("/api/")) return { tipo: "negar" };
+    return { tipo: "redirecionar", para: CAMINHO_DA_CONVERSA };
+  }
 
   if (e.caminho.startsWith("/api/")) return { tipo: "negar" };
 
@@ -543,18 +612,27 @@ export async function decidirEntrada(e: {
   const convite = await verificarConvite(e.token, segredo, e.agoraSegundos);
   if (convite === null) return { tipo: "recusar", motivo: "invalido" };
 
+  /*
+   * O publico entra por cinco horas, no maximo (T-423). Quem apresenta,
+   * entrando por link, herda o prazo inteiro do convite.
+   */
+  const tetoDoPublico = e.agoraSegundos + HORAS_DO_PUBLICO * SEGUNDOS_POR_HORA;
+  const expira =
+    convite.perfil === PERFIL_DO_PUBLICO
+      ? Math.min(convite.expira, tetoDoPublico)
+      : convite.expira;
   const sessao: SessaoDeConvite = {
     v: VERSAO_DO_ENVELOPE,
     tipo: "sessao",
     sala: convite.sala,
     perfil: convite.perfil,
     dispositivo: gerarDispositivo(),
-    expira: convite.expira,
+    expira,
   };
   return {
     tipo: "entrar",
     cookie: await assinarSessao(sessao, segredo),
-    maxAge: Math.max(0, convite.expira - e.agoraSegundos),
+    maxAge: Math.max(0, expira - e.agoraSegundos),
     destino: destinoSeguro(e.ir),
   };
 }

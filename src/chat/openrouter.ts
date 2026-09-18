@@ -243,7 +243,10 @@ A tela e o gráfico:
   do rótulo do ponto, na mesma frase ("em mar/2026, 5,2%"). Nunca some
   pontos, nunca calcule média nem diferença entre eles.
 - Se houver "leituras", são leituras adicionais já feitas para esta pergunta;
-  cite-as pelo rótulo e pelo valor formatado, e nada além delas.`;
+  cite-as pelo rótulo e pelo valor formatado, e nada além delas.
+- Se houver "quemPergunta", é o primeiro nome de quem pergunta: use-o uma
+  vez, na abertura, e nunca invente sobrenome, cargo ou empresa. Sem ele,
+  sem saudação.`;
 
 /**
  * A única rodada de correção (T-433).

@@ -36,6 +36,7 @@ import "@/acesso/provedores";
 import { lerConvite } from "@/acesso/convite";
 import {
   apresentacaoLigada,
+  ehSessaoDoPublico,
   HORAS_DA_SALA_PADRAO,
   SALA_PADRAO,
   SEGUNDOS_POR_HORA,
@@ -117,6 +118,32 @@ export async function lerApresentacao(): Promise<{
   return {
     sala: SALA_PADRAO,
     expira: agora + HORAS_DA_SALA_PADRAO * SEGUNDOS_POR_HORA,
+  };
+}
+
+/** Quem entrou pelo QR como plateia: a chave do cadastro dessa pessoa. */
+export type Visitante = {
+  readonly sala: string;
+  readonly dispositivo: string;
+  /** Quando a sessão vence, em segundos desde a época. */
+  readonly expira: number;
+};
+
+/**
+ * Quem entrou pelo QR com o perfil do público, ou `null`
+ * (D-CONVIDADO-cadastro).
+ *
+ * Ao contrário de `lerApresentacao`, devolve o **dispositivo**: é a chave do
+ * cadastro dessa pessoa, e só dela. `null` para quem apresenta — mesmo
+ * entrando por link — e para o modo `fixtures` sem convite.
+ */
+export async function lerVisitante(): Promise<Visitante | null> {
+  const sessao = await lerConvite();
+  if (sessao === null || !ehSessaoDoPublico(sessao)) return null;
+  return {
+    sala: sessao.sala,
+    dispositivo: sessao.dispositivo,
+    expira: sessao.expira,
   };
 }
 

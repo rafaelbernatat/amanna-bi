@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [TASKS.md](TASKS.md), derivado de [PRD.md](PRD.md) |
-| **Total** | 70 itens (7 resolvidos), destravando 128 tarefas do backlog |
+| **Total** | 71 itens (7 resolvidos), destravando 130 tarefas do backlog |
 | **Quem usa** | Pessoas. O agente que executa [TASKS.md](TASKS.md) lê este arquivo, mas não consegue resolver nada aqui. |
 | **Protocolo** | [EXECUTE.md](EXECUTE.md) |
 
@@ -41,15 +41,15 @@ Mesmos três status de [TASKS.md](TASKS.md):
 |---|---:|---:|---:|
 | Fase 1 · Contrato | 28 (5 resolvidos) | 9 | 36 |
 | Fase 2 · Dado real | 23 (1 resolvidos) | 19 | 59 |
-| Fase 3 · Chat com IA | 12 (1 resolvidos) | 8 | 26 |
+| Fase 3 · Chat com IA | 13 (1 resolvidos) | 9 | 28 |
 | Fase 4 · Escala | 7 | 1 | 11 |
-| **Total** | **70** | **37** | **128** |
+| **Total** | **71** | **38** | **130** |
 
 **Por responsável**
 
 | Responsável | Itens |
 |---|---:|
-| Produto | 17 |
+| Produto | 18 |
 | TI do cliente | 13 |
 | Controladoria | 12 |
 | Engenharia | 11 |
@@ -1133,7 +1133,7 @@ segredos do GitHub ainda** — ver H-69.
 
 A Fase 3 pode correr em paralelo com a Fase 2, então estes itens não esperam a Fase 2 terminar.
 
-*12 itens · 8 P0 abertos · 3 P1 abertos · 1 resolvido*
+*13 itens · 9 P0 abertos · 3 P1 abertos · 1 resolvido*
 
 ### [ ] H-28 · Criar a conta na Anthropic e emitir as chaves de API
 
@@ -1312,6 +1312,22 @@ Uma senha compartilhada não é identidade: diz que alguém a conhece, não quem
 | **Resultado esperado** | `SENHA_DO_PAINEL` gravada em Production, novo deploy publicado, e o caminho conferido numa aba anônima |
 | **Onde o resultado vai** | Settings > Environment Variables na Vercel; este item |
 | **Destrava** | Quem apresenta entrar sem gerar link; a apresentação com dado real |
+
+### [ ] H-71 · Aprovar o texto de consentimento e rodar a migração dos convidados
+
+`P0` · **Responsável:** Produto
+
+**O que fazer**
+
+Com T-424 a T-426 quem escaneia o QR informa nome e e-mail antes de conversar, e os dois ficam em `amanna.convidado`, no Supabase — dado pessoal novo, guardado pela Dreamy para contato comercial (D-CONVIDADO-cadastro). Duas coisas antes da primeira apresentação com dado real. (1) Aprovar a frase sob o formulário: "Ao entrar, você autoriza a Dreamy a guardar seu nome e e-mail para falar com você sobre esta solução." Se mudar, mude em `src/apresentacao/convidados/CadastroDeConvidado.tsx`. (2) Conferir que `011_convidados.sql` rodou em produção: a Engenharia a aplicou da estação com `DATABASE_URL_CARGA` em 2026-09-18 (`npm run dados:carregar -- --so-migrar`); a aplicação criaria a tabela sozinha na primeira gravação, então isto é registro, não desbloqueio — mas índice por e-mail e RLS precisam existir antes de alguém exportar a lista. Não há variável nova: o cadastro vai ao Postgres sempre que `DATABASE_URL` existir, e à memória quando não existir (arnês, demonstração local). Anote aqui a data e a resposta de `SELECT count(*) FROM amanna.convidado`.
+
+A retenção — por quanto tempo a lista fica e quem a apaga — continua em T-324; até lá nada é expurgado. A lista de interessados é `SELECT nome, email, interesse_em FROM amanna.convidado WHERE interesse_em IS NOT NULL`.
+
+| | |
+|---|---|
+| **Resultado esperado** | Frase de consentimento aprovada (ou alterada no código); `amanna.convidado` em produção com índice e RLS; primeira apresentação com nomes gravados |
+| **Onde o resultado vai** | `src/apresentacao/convidados/CadastroDeConvidado.tsx`; o Postgres do Supabase; este item |
+| **Destrava** | O cadastro de convidados (T-425, T-426) em produção; a lista de interessados para Produto |
 
 ## Antes da Fase 4 · Escala
 
@@ -1553,6 +1569,8 @@ Use ao encontrar uma tarefa marcada `⛔` ou `⏸` em [TASKS.md](TASKS.md).
 | T-415 | H-39 |
 | T-416 | H-35, H-40 |
 | T-417 | H-41 |
+| T-425 | H-71 |
+| T-426 | H-71 |
 
 ---
 

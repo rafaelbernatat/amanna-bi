@@ -24,4 +24,6 @@ export const REGRAS_DE_NUMERO = `- Use SOMENTE os números que estão no JSON. N
   a palavra fica na mesma frase, colada ao número.
 - Não calcule diferença, variação nem proporção: as que existem já estão em
   "leituras", com o valor pronto.
-- Sem saudação, sem repetir a pergunta, sem título, sem lista com marcadores.`;
+- Sem saudação — a não ser o primeiro nome de quem pergunta, uma vez, quando
+  ele vier no contexto —, sem repetir a pergunta, sem título, sem lista com
+  marcadores. Nunca invente sobrenome, cargo ou empresa.`;

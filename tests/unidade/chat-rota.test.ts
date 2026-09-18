@@ -1,6 +1,47 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import { lerPedido } from "@/chat/pedido";
+import {
+  CABECALHO_DE_PERGUNTAS_RESTANTES,
+  PERGUNTAS_POR_CONVIDADO,
+} from "@/chat/protocolo";
+import { esquecerConvidadosEmMemoria } from "@/convidados/armazens/memoria";
+import { armazemDeConvidados } from "@/convidados/registrar";
+import {
+  assinarSessao,
+  PERFIL_DO_PUBLICO,
+  VERSAO_DO_ENVELOPE,
+} from "@/seguranca/convite";
+import type { Perfil } from "@/seguranca/identidade";
+
+/*
+ * O cookie da sessão, falsificável (D-CONVIDADO-cadastro).
+ *
+ * É o primeiro `vi.mock("next/headers")` do repositório: a rota lê a sessão
+ * pelo cookie, e a cota do convidado só existe para quem entrou pelo QR. Sem
+ * cookie (o padrão), tudo o que existia continua igual — o modo `fixtures`
+ * responde pelo provedor da instalação.
+ */
+const { cookieDeTeste } = vi.hoisted(() => ({
+  cookieDeTeste: { valor: null as string | null },
+}));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (nome: string) =>
+      cookieDeTeste.valor === null
+        ? undefined
+        : { name: nome, value: cookieDeTeste.valor },
+  }),
+  headers: async () => new Headers(),
+}));
 import {
   esquecerControleDoProcesso,
   PERGUNTAS_POR_MINUTO,
@@ -292,5 +333,94 @@ describe("as fases com o laço (T-434)", () => {
     expect(final.resposta.resolucao.painel?.id).toBe(
       "chat-ranking-receita_liquida-cliente",
     );
+  });
+});
+
+describe("a cota do convidado (T-426)", () => {
+  const SEGREDO = "um-segredo-de-teste-com-mais-de-32-caracteres";
+  const CHAVE = { sala: "demo", dispositivo: "dispositivo-de-teste" };
+  const UMA_HORA = 3600;
+
+  async function entrarComo(perfil: Perfil): Promise<void> {
+    const agora = Math.floor(Date.now() / 1000);
+    cookieDeTeste.valor = await assinarSessao(
+      {
+        v: VERSAO_DO_ENVELOPE,
+        tipo: "sessao",
+        ...CHAVE,
+        perfil,
+        expira: agora + UMA_HORA,
+      },
+      SEGREDO,
+    );
+  }
+
+  async function cadastrar(): Promise<void> {
+    const armazem = await armazemDeConvidados({});
+    await armazem.registrar({
+      ...CHAVE,
+      nome: "Ana Souza",
+      email: "ana@exemplo.com.br",
+      expiraEm: new Date().toISOString(),
+    });
+  }
+
+  beforeEach(() => {
+    vi.stubEnv("CONVITE_SEGREDO", SEGREDO);
+    vi.stubEnv("DATABASE_URL", "");
+    esquecerControleDoProcesso();
+    esquecerConvidadosEmMemoria();
+  });
+
+  afterEach(() => {
+    cookieDeTeste.valor = null;
+    vi.unstubAllEnvs();
+  });
+
+  it("sem cadastro, 401 com o motivo", async () => {
+    await entrarComo(PERFIL_DO_PUBLICO);
+    const resposta = await POST(pedido({ pergunta: "qual o turnover" }));
+    expect(resposta.status).toBe(401);
+    expect(((await resposta.json()) as { motivo: string }).motivo).toBe(
+      "sem_cadastro",
+    );
+  });
+
+  it("cinco perguntas levam o cabeçalho de restantes; a sexta é 429 sem retry-after", async () => {
+    await entrarComo(PERFIL_DO_PUBLICO);
+    await cadastrar();
+    for (let i = 1; i <= PERGUNTAS_POR_CONVIDADO; i += 1) {
+      const resposta = await POST(pedido({ pergunta: "qual o turnover" }));
+      expect(resposta.status, `pergunta ${String(i)}`).toBe(200);
+      expect(resposta.headers.get(CABECALHO_DE_PERGUNTAS_RESTANTES)).toBe(
+        String(PERGUNTAS_POR_CONVIDADO - i),
+      );
+      await resposta.text();
+    }
+    const sexta = await POST(pedido({ pergunta: "qual o turnover" }));
+    expect(sexta.status).toBe(429);
+    expect(sexta.headers.get("retry-after")).toBeNull();
+    expect(((await sexta.json()) as { motivo: string }).motivo).toBe(
+      "limite_de_perguntas",
+    );
+  });
+
+  it("um corpo malformado não consome a cota", async () => {
+    await entrarComo(PERFIL_DO_PUBLICO);
+    await cadastrar();
+    expect((await POST(pedido({ pergunta: "" }))).status).toBe(400);
+    const resposta = await POST(pedido({ pergunta: "qual o turnover" }));
+    expect(resposta.headers.get(CABECALHO_DE_PERGUNTAS_RESTANTES)).toBe(
+      String(PERGUNTAS_POR_CONVIDADO - 1),
+    );
+    await resposta.text();
+  });
+
+  it("quem apresenta não tem cota nem cabeçalho", async () => {
+    await entrarComo("diretoria");
+    const resposta = await POST(pedido({ pergunta: "qual o turnover" }));
+    expect(resposta.status).toBe(200);
+    expect(resposta.headers.get(CABECALHO_DE_PERGUNTAS_RESTANTES)).toBeNull();
+    await resposta.text();
   });
 });
