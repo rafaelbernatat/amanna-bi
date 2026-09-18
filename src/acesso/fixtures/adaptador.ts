@@ -115,7 +115,11 @@ export function criarFonteDeFixtures(): DataSource {
       return Promise.resolve(
         calcularMeta(
           BASE_DE_FIXTURES,
-          { sincronizadoEm: agora.toISOString() },
+          {
+            sincronizadoEm: agora.toISOString(),
+            fonte: "fixtures",
+            versao: null,
+          },
           agora,
         ),
       );

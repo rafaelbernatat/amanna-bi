@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 63 | 38 | 21 | 4 | 16 de 63 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 93 | 52 | 34 | 7 | 28 de 93 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **275** | **140** | **106** | **24** | **98 de 275** |
+| **Total** | **305** | **154** | **119** | **27** | **110 de 305** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -911,6 +911,69 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [ ] **T-363** `P2` `S` `plataforma` Contar o uso do chat no Postgres, quando o limite precisar ser exato
   · **Aceite:** `amanna.chat_uso` registra pergunta e tokens por sala e por dia, e o controle passa a ler dali em vez da memoria do processo; o limite deixa de ser por instancia; a escrita nao entra no caminho da resposta (fora do fluxo, sem segurar a previa); a retencao sai de T-324.
   · **PRD:** secao 13, RF-19, D-CONVITE-apresentacao · **Depende de:** T-361, T-267
+- [X] **T-418** `P0` `S` `paineis` O tema escolhido vence o do sistema: atributo e seletores nascem da mesma constante
+  · **Aceite:** `<html>` e `EstiloDoTema` leem o nome e os valores do atributo de uma constante so de `tema.ts`, e um teste de unidade reprova valor escrito a mao em qualquer dos dois; `color-scheme` acompanha a pele e o `<select>` nativo escurece; o botao de tema sao dois formularios e a folha mostra so o que corresponde a pele em vigor, sem JavaScript — num sistema escuro sem cookie o primeiro clique ja leva ao claro; a troca volta a mesma tela com recorte e painel destacado; e2e com `colorScheme` emulado prova as duas direcoes.
+  · **PRD:** secao 5, secao 13, RF-24 · **Depende de:** T-372
+- [X] **T-419** `P1` `S` `dados` O cabecalho diz de onde vem os numeros: base carregada ou demonstracao
+  · **Aceite:** `Meta` ganha `origem` (fonte e versao da carga), preenchida pelos dois adaptadores e copiada pelo motor, sem numero novo; a suite de contrato segue identica nos dois modos porque so le o que nao muda; sob o breadcrumb aparece "Base Amanna · carga de dd/mm/aaaa as hh:mm" no warehouse e "Dados de demonstracao" nas fixtures, formatado so por `formatarInstante`, com `data-fonte` para o e2e; fonte fora do ar nao derruba a tela.
+  · **PRD:** secao 10.2, RF-10, RF-20, RF-21 · **Depende de:** T-149, T-270
+- [ ] **T-420** `P1` `M` `paineis` Filtros vivos: trocar um controle aplica o recorte, sem botao Aplicar
+  · **Aceite:** trocar qualquer dos cinco controles navega para a URL canonica do novo recorte apos 300 ms de silencio, preservando o painel destacado; setas seguidas no mesmo `<select>` viram uma navegacao so e o foco continua no controle depois dela, medido no e2e; a barra indica que esta aplicando sem deslocar nada; sem JavaScript o formulario ainda envia por um botao em `noscript`; `marca.spec` le a cor da marca de um elemento que continua existindo; `BarraDeFiltros` entra na lista nomeada de fronteira de cliente e o README diz por que.
+  · **PRD:** secao 6.2, secao 6.6, secao 13, RF-01 · **Depende de:** T-128, T-372
+- [ ] **T-421** `P1` `M` `paineis` As telas do modulo num menu lateral recolhivel; os modulos continuam abas
+  · **Aceite:** um `nav` "Telas de ..." a esquerda lista as telas do modulo ativo com `aria-current`, links que carregam o recorte (6.2) e `data-teste` por tela; recolhido vira uma faixa de 44 px so com o botao, e o estado vive em cookie lido no servidor — o primeiro quadro ja sai certo e o CLS segue zero com e sem cookie; com menos de 900 px para a tela (conversa aberta em 1280) o menu recolhe por consulta de conteiner, sem medir nada em JS; a tira de telas sai do cabecalho; `shell.spec` e reescrito para a nova geometria e nada vaza da viewport em 1280 e 1440 com a conversa aberta; `MenuLateral` entra na lista nomeada de fronteira de cliente.
+  · **PRD:** secao 6.1, secao 6.2, secao 13 · **Depende de:** T-126, T-420
+- [X] **T-422** `P1` `S` `paineis` Os graficos seguem o tema do sistema a partir da segunda tela
+  · **Aceite:** um script embutido com nonce grava a cada pagina um segundo cookie (`amanna-bi.tema-do-sistema`) com o que `prefers-color-scheme` diz; `temaAtivo()` usa a escolha explicita, depois o observado, depois claro; `temaEscolhido()` continua so com a escolha explicita, entao a moldura segue o sistema sem ficar presa; a grade de paineis declara `data-pele` e o e2e prova que, em sistema escuro sem escolha, a segunda pagina ja desenha os graficos na pele escura e que a escolha explicita vence.
+  · **PRD:** secao 5, secao 13 · **Depende de:** T-418
+- [ ] **T-423** `P0` `S` `seguranca` O publico do QR entra por cinco horas, no maximo
+  · **Aceite:** `decidirEntrada` limita o prazo da sessao de perfil `auditor` a `min(prazo do convite, agora + 5 h)` e o `maxAge` acompanha; um convite de 8 h para o publico vira sessao de 5 h, um de 1 h continua de 1 h, e um convite de perfil que apresenta herda o prazo inteiro; `/apresentar` diz que cada celular tem ate cinco horas.
+  · **PRD:** secao 11, RF-23, D-CONVIDADO-cadastro · **Depende de:** T-355, T-369
+- [ ] **T-424** `P0` `M` `plataforma` O armazem de convidados: nome, e-mail, perguntas e interesse, em memoria e no Postgres
+  · **Aceite:** `src/convidados/` declara `ArmazemDeConvidados` (`registrar`, `ler`, `admitirPergunta`, `registrarInteresse`) com adaptador em memoria (estado no escopo do processo) e em Postgres que recebe `ClientePostgres`, aplica o DDL uma vez por instancia antes da primeira gravacao e nunca concatena nome nem e-mail no texto da consulta; `registrar` e `INSERT ... ON CONFLICT (sala, dispositivo) DO UPDATE ... RETURNING id`; `admitirPergunta` e um unico `UPDATE ... WHERE perguntas < $n RETURNING`, atomico entre instancias; o erro do driver chega so com nome e SQLSTATE; `011_convidados.sql` e o DDL do modulo, byte a byte; o modo e Postgres quando ha `DATABASE_URL` e memoria quando nao ha; a suite de contrato roda nos dois, o de Postgres sobre o PGlite.
+  · **PRD:** secao 11, secao 15, D-CONVIDADO-cadastro, D-DADOS-base-amanna · **Depende de:** T-274, T-266
+- [ ] **T-425** `P0` `M` `chat` A porta do cadastro em `/conversa`, o nome na conversa, e sem "Nova conversa" no celular
+  · **Aceite:** quem chega a `/conversa` com sessao de convite de perfil `auditor` e sem cadastro ve um formulario sem JavaScript (nome, e-mail, frase de consentimento) que posta em `/api/convidado`; a rota confere origem, exige sessao do publico, valida (nome de 2 a 80 caracteres, e-mail em minusculas ate 120), grava e volta por 303 a URL de origem; erro volta com `erro=nome|email|gravacao` e a tela o mostra; quem apresenta e o modo `fixtures` sem convite nunca veem o formulario; a saudacao usa o primeiro nome; "Nova conversa" some do modo `cheio`; o e2e escaneia, erra o e-mail, acerta e conversa com o nome na tela.
+  · **PRD:** secao 6.5, secao 11, RF-23, D-CONVIDADO-cadastro · **Depende de:** T-360, T-424
+- [ ] **T-426** `P0` `M` `chat` Cinco perguntas por convidado, contadas no servidor, e o convite da Dreamy na sexta
+  · **Aceite:** `/api/chat` so consome a cota depois de validar o corpo; a sexta pergunta responde 429 com `motivo: "limite_de_perguntas"` e sem `retry-after`; convidado sem cadastro responde 401 com `motivo: "sem_cadastro"`; toda resposta admitida leva `x-perguntas-restantes`; quem apresenta e o modo `fixtures` nao tem cota; o contador mostra "Restam N de 5"; a sexta tentativa abre o dialogo "Gostou desta solucao? Clique aqui e saiba como aplicar na sua empresa" com link para `https://www.dreamy.app.br`, e o clique grava interesse por `POST /api/interesse` (rota publica, identificada pelo id sorteado do cadastro, origem `limite`); fechar o dialogo tranca a conversa com o mesmo link; recarregar mantem a tranca.
+  · **PRD:** secao 7.5, secao 13, RF-19, D-CONVIDADO-cadastro · **Depende de:** T-361, T-425
+- [ ] **T-427** `P1` `S` `chat` O relogio de cinco horas na conversa, e o mesmo convite ao vencer
+  · **Aceite:** a conversa recebe o instante de vencimento da sessao e abre o mesmo dialogo (origem `expiracao`) quando o relogio do celular chega nele ou quando `/api/chat` responde 401; o clique grava interesse mesmo com a sessao vencida; o e2e adianta o relogio com `page.clock` e ve o dialogo sem esperar cinco horas.
+  · **PRD:** secao 11, secao 13, D-CONVIDADO-cadastro · **Depende de:** T-423, T-426
+- [ ] **T-428** `P1` `S` `chat` O primeiro nome de quem pergunta chega ao modelo, e so ele
+  · **Aceite:** `ContextoDaTela` ganha `primeiroNome`; laco e redacao o recebem na mensagem de usuario, nunca na de sistema (o inspetor continua exigindo a instrucao exata) e nunca com o e-mail; as instrucoes pedem o nome uma vez, sem sobrenome, cargo ou empresa inventados; o teste prova que a mensagem de sistema nao muda e que nenhuma mensagem leva `@`.
+  · **PRD:** secao 7.3, secao 11, D-CONVIDADO-cadastro · **Depende de:** T-350, T-425
+- [ ] **T-429** `P0` `S` `seguranca` O convidado do QR fica no chat: tela do painel leva de volta a conversa
+  · **Aceite:** com sessao valida de perfil `auditor` entrada por convite, `decidirAcesso` redireciona pagina fora de `/conversa` (e do que ela precisa) para `/conversa` e nega `/api/*` fora da lista; o layout do painel confere a mesma coisa no servidor, porque prefetch pula o proxy e o arnes `fixtures` o deixa seguir; quem apresenta continua navegando; o e2e escaneia, cadastra, abre `/rh/visao` no celular e volta a conversa.
+  · **PRD:** secao 11, D-CONVITE-apresentacao, D-CONVIDADO-cadastro · **Depende de:** T-357, T-425
+- [ ] **T-430** `P0` `S` `chat` Registrar status e erro do gateway nos incidentes, e o caminho na linha de auditoria
+  · **Aceite:** `chamarGateway` devolve falha com status e os primeiros 200 caracteres do erro, sem cabecalho nem chave; `gateway_falhou` sai com estagio, modelo, rodada e status; `laco_falhou` traz parada e rodadas; a linha de auditoria da bolha mostra o caminho (simples, composto, degradado); a rota declara `maxDuration`.
+  · **PRD:** secao 7.7, secao 13, secao 14, D-CHAT-ferramentas · **Depende de:** T-352
+- [ ] **T-431** `P0` `S` `plataforma` Escolher e gravar o modelo do laco (H-68) com o roteiro de seis perguntas
+  · **Aceite:** as seis perguntas do roteiro respondem em producao com autoria "modelo" e caminho "composto" onde compostas; `OPENROUTER_MODEL_FERRAMENTAS` gravado em Production e Preview; id, resultado e custo anotados em H-68.
+  · **PRD:** secao 7.3, secao 13, D-CHAT-ferramentas · **Depende de:** T-430
+- [ ] **T-432** `P0` `M` `chat` Um grafico para toda resposta: serie de 12 meses da propria metrica e precedencia no laco
+  · **Aceite:** metrica sem painel na tela responde com painel `chat-serie-<id>` montado de `MetricValue.serie` e `mesesDoRecorte`, 12 meses mesmo com periodo dezembro, nulo quando toda a serie e nula; no laco, `Resolucao.painel` segue grafico em foco > serie > ranking > metrica; os pontos so passam no verificador com o rotulo; e2e cobre "Qual o ROE?".
+  · **PRD:** secao 6.5, secao 7.2, RF-13, RF-15, D-CHAT-ferramentas · **Depende de:** T-351
+- [ ] **T-433** `P0` `M` `chat` Redacao com profundidade e uma rodada de correcao verificada
+  · **Aceite:** as instrucoes pedem abertura, o que o grafico mostra, o que explica e uma comparacao, ate doze frases; tetos `TETO_DE_SAIDA_REDACAO` 2000 e `TETO_DE_SAIDA_COMPOSTA` 2400; texto recusado ganha uma reescrita com a lista de permitidos e passa de novo pelo verificador; `modelo-corrigido` aparece na tela; recusa dupla cai no montado com dois incidentes; a taxa de recusa das 33 perguntas de CFO nao sobe.
+  · **PRD:** secao 7.1, secao 7.7, RF-15, D-CHAT-perguntas-cfo · **Depende de:** T-431
+- [ ] **T-434** `P1` `S` `chat` Andamento e previa cedo no laco
+  · **Aceite:** a rota emite `{fase: "andamento", passo}` por leitura do laco com frase deterministica, e a previa na primeira leitura que nomeia metrica; a bolha mostra o passo; sem gateway as fases continuam previa e resposta.
+  · **PRD:** secao 6.4, secao 13, D-CHAT-ferramentas · **Depende de:** T-430
+- [ ] **T-435** `P1` `S` `chat` Sinais a mais no classificador e a continuacao composta
+  · **Aceite:** decomposicao, concentracao e "ultimos N meses" levam ao laco; "E por cliente?" apos uma resposta com metrica vira ranking herdado; as 39 sugestoes e as continuacoes de recorte continuam simples por teste.
+  · **PRD:** secao 7.1, secao 7.5, D-CHAT-ferramentas · **Depende de:** T-350
+- [ ] **T-436** `P2` `M` `chat` Laco na duvida, atras de variavel, com a evidencia de T-431
+  · **Aceite:** com `CHAT_LACO_NA_DUVIDA=1`, pergunta sem palpite local confiante e sem continuacao vai ao laco com `listar_metricas`; desligada, nada muda; o conjunto de avaliacao compara recusa e acerto nos dois modos.
+  · **PRD:** secao 7.5, secao 7.7, RF-16 · **Depende de:** T-431, T-435
+- [ ] **T-437** `P1` `S` `chat` Teste vivo com chave, decisao D-CHAT-resposta-completa e H-68 resolvido
+  · **Aceite:** `chat-vivo.test.ts` pula sem chave e, com ela, afirma autoria modelo e painel presente em tres perguntas; a decisao registra laco por sinal, grafico para toda resposta, correcao unica, modelo e custo; H-68 marcado resolvido e `npm run instrucoes` verde.
+  · **PRD:** secao 7.7, secao 9.4, D-CHAT-ferramentas · **Depende de:** T-432, T-433, T-434
+- [ ] **T-438** `P2` `S` `chat` Cache de prompt para instrucao e ferramentas do laco
+  · **Aceite:** o corpo do laco marca instrucao e ferramentas com `cache_control` quando o modelo e Anthropic; o custo de entrada por pergunta composta cai, medido no contador de tokens da sala.
+  · **PRD:** secao 7.4, secao 13 · **Depende de:** T-431
 
 ---
 

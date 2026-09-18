@@ -53,7 +53,11 @@ export function criarFonteDeWarehouse(
       ]);
       return calcularMeta(
         base,
-        { sincronizadoEm: carga.concluidaEm },
+        {
+          sincronizadoEm: carga.concluidaEm,
+          fonte: "warehouse",
+          versao: carga.versao,
+        },
         new Date(),
       );
     },

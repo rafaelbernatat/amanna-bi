@@ -13,10 +13,15 @@
  * substituível sem que ninguém perceba.
  */
 
-import type { DataSource } from "@/semantica/contrato";
+import { ORIGENS_DE_DADO, type DataSource } from "@/semantica/contrato";
 
-/** Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação. */
-export const FONTES = ["fixtures", "warehouse"] as const;
+/**
+ * Os modos aceitos. Enum fechado: um valor novo é decisão, não digitação.
+ *
+ * É a mesma lista que `Meta.origem` declara (T-419): o nome que a variável de
+ * ambiente aceita é o nome que a tela mostra, por construção.
+ */
+export const FONTES = ORIGENS_DE_DADO;
 export type Fonte = (typeof FONTES)[number];
 
 export class FonteInvalida extends Error {

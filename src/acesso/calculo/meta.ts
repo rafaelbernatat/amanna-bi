@@ -38,7 +38,7 @@ import {
   CATALOGO_GERADO,
   VERSAO_DO_CATALOGO,
 } from "@/semantica/catalogo-gerado";
-import type { Meta } from "@/semantica/contrato";
+import type { Meta, OrigemDeDado } from "@/semantica/contrato";
 import { codigosDe } from "@/semantica/dimensoes";
 import { avaliarFrescor } from "@/semantica/frescor";
 
@@ -81,6 +81,10 @@ function ultimoDiaDoMes(mes: string): string {
 export type Carga = {
   /** Instante do último sync bem-sucedido, em ISO com fuso. */
   readonly sincronizadoEm: string;
+  /** Qual adaptador está falando (T-419). */
+  readonly fonte: OrigemDeDado;
+  /** A versão da carga, ou `null` quando não há carga (fixture). */
+  readonly versao: string | null;
 };
 
 /**
@@ -111,5 +115,6 @@ export function calcularMeta(base: Base, carga: Carga, agora: Date): Meta {
       sincronizadoEm: carga.sincronizadoEm,
       agora,
     }),
+    origem: { fonte: carga.fonte, versao: carga.versao },
   };
 }

@@ -24,7 +24,11 @@
  */
 
 import { obterFonteDeDados } from "@/acesso/fabrica";
-import { ultimoFrescorConhecido } from "@/acesso/meta";
+import {
+  lerMeta,
+  MetaIndisponivel,
+  ultimoFrescorConhecido,
+} from "@/acesso/meta";
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
 import { criarFronteira } from "@/acesso/fronteira";
 import "@/acesso/registrar";
@@ -41,6 +45,7 @@ import type { PedidoDeRankingExterno } from "@/acesso/fronteira";
 import type {
   Kpi,
   MetricValue,
+  OrigemDosDados,
   PanelResponse,
   Query,
   Ranking,
@@ -113,6 +118,26 @@ export async function lerApresentacao(): Promise<{
     sala: SALA_PADRAO,
     expira: agora + HORAS_DA_SALA_PADRAO * SEGUNDOS_POR_HORA,
   };
+}
+
+/**
+ * De onde vêm os números desta instalação, para o cabeçalho dizer (T-419).
+ *
+ * Passa por `lerMeta`, que guarda o último sucesso: uma fonte fora do ar não
+ * derruba a tela, devolve `null`, e o cabeçalho escreve que a fonte está
+ * indisponível. Qualquer outra falha é defeito e continua subindo.
+ *
+ * Não é dado do cliente — é o nome do modo e a hora da carga —, então não
+ * passa pelo escopo da seção 11.
+ */
+export async function lerOrigemDosDados(): Promise<OrigemDosDados | null> {
+  try {
+    const meta = await lerMeta();
+    return { ...meta.origem, sincronizadoEm: meta.frescor.sincronizadoEm };
+  } catch (erro) {
+    if (erro instanceof MetaIndisponivel) return null;
+    throw erro;
+  }
 }
 
 /**
