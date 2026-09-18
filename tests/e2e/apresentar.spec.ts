@@ -68,6 +68,16 @@ test.describe("a apresentação por QR, com o painel aberto", () => {
       .textContent();
 
     await page.goto(endereco ?? "");
+
+    // A plateia diz quem e antes de conversar (D-CONVIDADO-cadastro).
+    await expect(
+      page.locator('[data-teste="cadastro-de-convidado"]'),
+    ).toBeVisible();
+    await page.locator('[data-teste="cadastro-nome"]').fill("Plateia Um");
+    await page
+      .locator('[data-teste="cadastro-email"]')
+      .fill("plateia@exemplo.com.br");
+    await page.locator('[data-teste="entrar-na-conversa"]').click();
     await expect(page.locator('[data-teste="chat"]')).toHaveAttribute(
       "data-modo",
       "cheio",

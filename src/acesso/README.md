@@ -34,8 +34,10 @@ src/acesso/fixtures/    → Base { views, cadastros }  gerada em memória
 ```
 
 `postgres/cliente.ts` é **conexão**, não porta de leitura. `src/marca` escreve
-por ele porque marca é configuração da instalação, e a frase "o produto não
-escreve no dado do cliente" continua literalmente verdadeira.
+por ele porque marca é configuração da instalação, e `src/convidados` escreve
+por ele porque o cadastro de quem escaneou o QR é dado que o produto coleta
+(D-CONVIDADO-cadastro) — e a frase "o produto não escreve no dado do cliente"
+continua literalmente verdadeira.
 
 Ocupada por T-106, T-114 (fixtures), T-266 a T-272 (warehouse sobre a base
 Amanna, D-DADOS).

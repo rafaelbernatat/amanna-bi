@@ -1,12 +1,22 @@
 import { dimensoesProvisorias } from "@/acesso/dimensoes-provisorias";
-import { lerIdentidade } from "@/acesso/leitura";
+import { lerIdentidade, lerVisitante } from "@/acesso/leitura";
 import { contextoDe } from "@/chat/contexto";
 import { controleDoProcesso, type MotivoDeLimite } from "@/chat/limite";
 import { registrarIncidente } from "@/chat/incidente";
 import { lerPedido, previaDe } from "@/chat/pedido";
 import { redigirResposta, resolverPergunta } from "@/chat/perguntar";
-import type { LinhaDoFluxo, Previa } from "@/chat/protocolo";
+import {
+  CABECALHO_DE_PERGUNTAS_RESTANTES,
+  PERGUNTAS_POR_CONVIDADO,
+  perguntasRestantes,
+  type CorpoDeRecusa,
+  type LinhaDoFluxo,
+  type MotivoDeFalha,
+  type Previa,
+} from "@/chat/protocolo";
 import type { Resolucao } from "@/chat/resolver";
+import { primeiroNome } from "@/convidados/cadastro";
+import { armazemDeConvidados } from "@/convidados/registrar";
 import { tokensDoProcesso } from "@/gateway/openrouter";
 import { SessaoAusente } from "@/seguranca/convite";
 import { GraoProibido } from "@/seguranca/grao";
@@ -96,6 +106,16 @@ function recusarPorLimite(
   );
 }
 
+/** Uma recusa com o motivo que a conversa distingue (D-CONVIDADO-cadastro). */
+function recusarComMotivo(
+  status: number,
+  erro: string,
+  motivo: MotivoDeFalha,
+): Response {
+  const corpo: CorpoDeRecusa = { erro, motivo };
+  return Response.json(corpo, { status });
+}
+
 /** A sala de uma sessão de convite, ou a instalação quando não há convite. */
 function salaDe(sujeito: string): string {
   const partes = sujeito.split(":");
@@ -162,10 +182,47 @@ export async function POST(requisicao: Request): Promise<Response> {
     return recusar(400, "pedido malformado");
   }
 
+  /*
+   * A cota do convidado (T-426), depois do corpo: um pedido malformado não
+   * pode custar uma das cinco. Quem apresenta e o modo `fixtures` não têm
+   * cota — `lerVisitante` só devolve o público do QR. Contada no armazém, e
+   * não na memória do processo: na nuvem há mais de uma instância.
+   */
+  const visitante = await lerVisitante();
+  let restantes: number | null = null;
+  let quemPergunta: string | null = null;
+  if (visitante !== null) {
+    const cota = await (
+      await armazemDeConvidados()
+    ).admitirPergunta(visitante, PERGUNTAS_POR_CONVIDADO);
+    if (cota.tipo === "sem_cadastro") {
+      admissao.liberar();
+      return recusarComMotivo(401, "cadastro ausente", "sem_cadastro");
+    }
+    if (cota.tipo === "esgotada") {
+      admissao.liberar();
+      console.warn(
+        JSON.stringify({
+          evento: "chat.cota",
+          sala,
+          em: new Date().toISOString(),
+        }),
+      );
+      return recusarComMotivo(
+        429,
+        "limite de perguntas",
+        "limite_de_perguntas",
+      );
+    }
+    restantes = perguntasRestantes(cota.convidado.perguntas);
+    quemPergunta = primeiroNome(cota.convidado.nome);
+  }
+
   const contexto = contextoDe(
     pedido.tela,
     pedido.busca,
     dimensoesProvisorias().ano ?? [],
+    quemPergunta,
   );
 
   /*
@@ -266,6 +323,9 @@ export async function POST(requisicao: Request): Promise<Response> {
     headers: {
       "content-type": "application/x-ndjson; charset=utf-8",
       "cache-control": "no-store",
+      ...(restantes === null
+        ? {}
+        : { [CABECALHO_DE_PERGUNTAS_RESTANTES]: String(restantes) }),
     },
   });
 }

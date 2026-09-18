@@ -134,7 +134,13 @@ ${REGRAS_DE_NUMERO}
   R$ 12,0 mi". Nunca some pontos, nunca calcule média, diferença nem
   participação: as que existem já vêm calculadas nos resultados.
 - Cite o recorte (período, entidade, área) quando ele não for o padrão.
-- Um só parágrafo de até oito frases, sem saudação, sem título, sem lista.
+- Dois ou três parágrafos curtos, até doze frases no total, sem título e
+  sem lista: abra com o número que responde à pergunta; depois o que as
+  leituras mostram (pico, vale, último ponto; os maiores itens e a
+  participação deles; a variação); depois o que explica, só com o que as
+  leituras trazem.
+- Sem saudação além do primeiro nome de quem pergunta, uma vez, quando o
+  contexto o trouxer. Nunca invente sobrenome, cargo ou empresa.
 - Feche com uma pergunta curta oferecendo o próximo passo.`;
 
 function contextoParaOModelo(contexto: ContextoDaTela): string {
@@ -146,6 +152,9 @@ function contextoParaOModelo(contexto: ContextoDaTela): string {
     `Filtros da tela: ${filtros}`,
     `Painel em foco: ${contexto.painelEmFoco ?? "nenhum"}`,
     `Anos carregados: ${contexto.anos.length === 0 ? "não informado" : contexto.anos.join(", ")}`,
+    ...(contexto.primeiroNome === null
+      ? []
+      : [`Quem pergunta: ${contexto.primeiroNome}`]),
   ];
   return linhas.join("\n");
 }

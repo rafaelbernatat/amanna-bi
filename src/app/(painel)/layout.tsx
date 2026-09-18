@@ -1,8 +1,11 @@
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { lerCoresAplicadas } from "@/marca/tela";
 
+import { lerVisitante } from "@/acesso/leitura";
 import { Chat } from "@/apresentacao/chat/Chat";
 import { PALETA } from "@/apresentacao/tema/tema";
+import { ROTA_DA_CONVERSA } from "@/semantica/url";
 
 /**
  * O quadro das 13 telas: a tela à esquerda, a conversa à direita.
@@ -33,7 +36,17 @@ export default async function LayoutDoPainel({
    * Por propriedade, e nao por `var()`: o chat e componente de cliente e o
    * SVG nao resolve propriedade CSS (ver `DesenhoDePainel`).
    */
-  const cores = await lerCoresAplicadas();
+  const [cores, visitante] = await Promise.all([
+    lerCoresAplicadas(),
+    lerVisitante(),
+  ]);
+
+  /*
+   * O publico do QR fica no chat (D-CONVIDADO-cadastro, T-429). O proxy ja
+   * redireciona, mas o proxy nao e o controle: o prefetch o pula, e no arnes
+   * `fixtures` ele segue tudo. Esta e a conferencia que vale.
+   */
+  if (visitante !== null) redirect(ROTA_DA_CONVERSA);
 
   return (
     <div

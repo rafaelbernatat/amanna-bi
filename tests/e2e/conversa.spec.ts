@@ -1,5 +1,44 @@
 import { expect, test, type Page } from "@playwright/test";
 
+/** O segredo do arnês, o mesmo de `playwright.config.ts`. Não serve fora daqui. */
+const SEGREDO_DO_ARNES = "arnes-de-teste-do-amanna-bi-32-ou-mais";
+
+/** Assina um envelope como `src/seguranca/convite.ts`: base64url do JSON, ponto, HMAC. */
+async function assinarEnvelope(
+  objeto: Record<string, unknown>,
+  segredo: string,
+): Promise<string> {
+  const payload = Buffer.from(JSON.stringify(objeto)).toString("base64url");
+  const chave = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(segredo),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const assinatura = await crypto.subtle.sign(
+    "HMAC",
+    chave,
+    new TextEncoder().encode(payload),
+  );
+  return `${payload}.${Buffer.from(assinatura).toString("base64url")}`;
+}
+
+/** Escaneia o QR da tela de apresentação: chega ao cadastro (D-CONVIDADO). */
+async function entrarPeloQr(page: Page, tela: string): Promise<void> {
+  await page.goto(`/apresentar?tela=${tela}`);
+  const endereco = await page
+    .locator('[data-teste="endereco-do-convite"]')
+    .textContent();
+  await page.goto(endereco ?? "");
+}
+
+async function cadastrar(page: Page, nome: string, email: string) {
+  await page.locator('[data-teste="cadastro-nome"]').fill(nome);
+  await page.locator('[data-teste="cadastro-email"]').fill(email);
+  await page.locator('[data-teste="entrar-na-conversa"]').click();
+}
+
 /**
  * A conversa em tela cheia, no celular da apresentação
  * (D-CONVITE-apresentacao).
@@ -140,5 +179,146 @@ test.describe("perguntar pelo celular", () => {
       PERGUNTA,
     );
     await expect(page.locator('[data-teste="chat-resposta"]')).toHaveCount(1);
+  });
+});
+
+test.describe("o convidado do QR (D-CONVIDADO-cadastro)", () => {
+  test("escanear pede nome e e-mail; e-mail incompleto volta com erro; depois a conversa sabe o nome", async ({
+    page,
+  }) => {
+    await entrarPeloQr(page, "rh/turnover");
+    await expect(
+      page.locator('[data-teste="cadastro-de-convidado"]'),
+    ).toBeVisible();
+    await expect(page.locator('[data-teste="chat"]')).toHaveCount(0);
+    await expect(page.locator('[data-teste="consentimento"]')).toContainText(
+      "autoriza a Dreamy",
+    );
+
+    // Passa na validação do navegador, e não na nossa: o servidor devolve.
+    await cadastrar(page, "Ana Souza", "ana@dreamy");
+    await expect(page).toHaveURL(/erro=email/);
+    await expect(
+      page.locator('[data-teste="cadastro-de-convidado"]'),
+    ).toHaveAttribute("data-erro", "email");
+
+    await cadastrar(page, "Ana Souza", "ana@exemplo.com.br");
+    await expect(page.locator('[data-teste="chat"]')).toHaveAttribute(
+      "data-modo",
+      "cheio",
+    );
+    await expect(page).toHaveURL(/tela=rh%2Fturnover/);
+    await expect(page.locator('[data-teste="chat-saudacao"]')).toContainText(
+      "Olá, Ana!",
+    );
+    await expect(page.locator('[data-teste="chat-quem"]')).toContainText("Ana");
+    await expect(page.locator('[data-teste="chat-restantes"]')).toHaveText(
+      /Restam 5 de 5/,
+    );
+    await expect(page.locator('[data-teste="chat-nova"]')).toHaveCount(0);
+  });
+
+  test("cinco perguntas; a sexta abre o convite; o clique é gravado; fechar tranca; recarregar mantém", async ({
+    page,
+    context,
+  }) => {
+    await entrarPeloQr(page, "rh/visao");
+    await cadastrar(page, "Bruno Lima", "bruno@exemplo.com.br");
+    await expect(page.locator('[data-teste="chat"]')).toBeVisible();
+
+    const CINCO = 5;
+    for (let i = 1; i <= CINCO; i += 1) {
+      await perguntar(page, PERGUNTA);
+      await expect(page.locator('[data-teste="chat-resposta"]')).toHaveCount(
+        i,
+        { timeout: ESPERA },
+      );
+    }
+    await expect(page.locator('[data-teste="chat-restantes"]')).toHaveText(
+      /Restam 0 de 5/,
+    );
+
+    // A sexta tentativa nao vai ao servidor: abre o convite.
+    await perguntar(page, PERGUNTA);
+    const convite = page.locator('[data-teste="convite-dreamy"]');
+    await expect(convite).toBeVisible();
+    await expect(convite).toHaveAttribute("data-origem", "limite");
+    await expect(convite).toContainText("Gostou desta solução?");
+    await expect(convite).toContainText(
+      "Clique aqui e saiba como aplicar na sua empresa",
+    );
+    await expect(page.locator('[data-teste="chat-pergunta"]')).toHaveCount(
+      CINCO,
+    );
+
+    // O clique: o site abre noutra aba (interceptado) e o registro chega.
+    await context.route("**/dreamy.app.br/**", (rota) =>
+      rota.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<p>ok</p>",
+      }),
+    );
+    const [registro, aba] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().endsWith("/api/interesse") && r.status() === 204,
+      ),
+      context.waitForEvent("page"),
+      page.locator('[data-teste="ir-para-dreamy"]').click(),
+    ]);
+    expect(registro.status()).toBe(204);
+    await aba.close();
+
+    await page.locator('[data-teste="fechar-convite"]').click();
+    await expect(convite).toHaveCount(0);
+    await expect(page.locator('[data-teste="chat-trancado"]')).toBeVisible();
+    await expect(page.locator('[data-teste="chat-campo"]')).toBeDisabled();
+
+    // Recarregar: a cota vem do servidor, e a proxima tentativa reabre o convite.
+    await page.reload();
+    await expect(page.locator('[data-teste="chat-restantes"]')).toHaveText(
+      /Restam 0 de 5/,
+    );
+    await perguntar(page, PERGUNTA);
+    await expect(page.locator('[data-teste="convite-dreamy"]')).toBeVisible();
+  });
+
+  test("abrir uma tela do painel no celular volta a conversa", async ({
+    page,
+  }) => {
+    await entrarPeloQr(page, "rh/visao");
+    await cadastrar(page, "Carla Dias", "carla@exemplo.com.br");
+    await expect(page.locator('[data-teste="chat"]')).toBeVisible();
+
+    await page.goto("/rh/visao");
+    await expect(page).toHaveURL(/\/conversa\?/);
+    await expect(page.locator('[data-teste="chat"]')).toBeVisible();
+  });
+
+  test("quando a sessao vence, o mesmo convite abre pelo relogio", async ({
+    page,
+  }) => {
+    // Um convite curto, assinado com o segredo do arnes: vence em segundos.
+    const SEGUNDOS = 12;
+    const agora = Math.floor(Date.now() / 1000);
+    const token = await assinarEnvelope(
+      {
+        v: 1,
+        tipo: "convite",
+        sala: "demo",
+        perfil: "auditor",
+        expira: agora + SEGUNDOS,
+      },
+      SEGREDO_DO_ARNES,
+    );
+    await page.goto(
+      `/entrar?convite=${token}&ir=${encodeURIComponent("/conversa?tela=rh/visao")}`,
+    );
+    await cadastrar(page, "Davi Rocha", "davi@exemplo.com.br");
+    await expect(page.locator('[data-teste="chat"]')).toBeVisible();
+
+    const convite = page.locator('[data-teste="convite-dreamy"]');
+    await expect(convite).toBeVisible({ timeout: (SEGUNDOS + 5) * 1000 });
+    await expect(convite).toHaveAttribute("data-origem", "expiracao");
   });
 });

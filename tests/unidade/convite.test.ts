@@ -8,16 +8,21 @@ import { proxy } from "../../src/proxy";
 import {
   assinarConvite,
   assinarSessao,
+  CAMINHO_DA_CONVERSA,
+  CAMINHOS_DO_PUBLICO,
   CAMINHOS_PUBLICOS,
   decidirAcesso,
   decidirEntrada,
   destinoSeguro,
+  ehSessaoDoPublico,
   gerarDispositivo,
+  HORAS_DO_PUBLICO,
   NOME_DO_COOKIE,
   PERFIL_DO_PUBLICO,
   PERFIS_QUE_APRESENTAM,
   podeApresentar,
   salaValida,
+  SEGUNDOS_POR_HORA,
   sujeitoDe,
   TAMANHO_MINIMO_DO_SEGREDO,
   verificarConvite,
@@ -26,6 +31,7 @@ import {
   type Convite,
   type SessaoDeConvite,
 } from "@/seguranca/convite";
+import { ROTA_DA_CONVERSA } from "@/semantica/url";
 import { PERFIS } from "@/seguranca/identidade";
 import { conferirAmbiente } from "@/seguranca/configuracao";
 import { lerProvedor, ProvedorInvalido } from "@/acesso/sessao";
@@ -238,11 +244,22 @@ describe("decidirAcesso", () => {
     ).toEqual({ tipo: "seguir" });
   });
 
-  it("com cookie válido, segue", async () => {
-    const cookie = await assinarSessao(sessao(), SEGREDO);
+  it("com cookie válido de quem apresenta, segue", async () => {
+    // O público do QR não segue para /rh/visao: fica no chat (T-429, abaixo).
+    const cookie = await assinarSessao(
+      sessao({ perfil: "diretoria" }),
+      SEGREDO,
+    );
     expect(await decidirAcesso({ ...base, cookie })).toEqual({
       tipo: "seguir",
     });
+  });
+
+  it("com cookie válido do público, a conversa segue", async () => {
+    const cookie = await assinarSessao(sessao(), SEGREDO);
+    expect(
+      await decidirAcesso({ ...base, cookie, caminho: CAMINHO_DA_CONVERSA }),
+    ).toEqual({ tipo: "seguir" });
   });
 
   it("sem cookie, a página vai para /entrar levando o destino", async () => {
@@ -604,5 +621,88 @@ describe("os perfis da apresentação", () => {
   it("o perfil do público não configura a marca nem apresenta", () => {
     expect(podeConfigurarMarca(PERFIL_DO_PUBLICO)).toBe(false);
     expect(podeApresentar(PERFIL_DO_PUBLICO)).toBe(false);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * O público: cinco horas, e só o chat (D-CONVIDADO-cadastro)
+ * ------------------------------------------------------------------ */
+
+describe("o público entra por cinco horas e fica no chat (T-423, T-429)", () => {
+  const OITO_HORAS = 8 * SEGUNDOS_POR_HORA;
+  const CINCO_HORAS = HORAS_DO_PUBLICO * SEGUNDOS_POR_HORA;
+
+  it("um convite público de oito horas vira sessão de cinco", async () => {
+    const token = await assinarConvite(
+      convite({ expira: AGORA + OITO_HORAS }),
+      SEGREDO,
+    );
+    const decidida = await decidirEntrada({
+      token,
+      ir: null,
+      ambiente: CONVITE_LIGADO,
+      agoraSegundos: AGORA,
+    });
+    if (decidida.tipo !== "entrar") throw new Error("devia entrar");
+    expect(decidida.maxAge).toBe(CINCO_HORAS);
+    const aberta = await verificarSessao(decidida.cookie, SEGREDO, AGORA);
+    expect(aberta?.expira).toBe(AGORA + CINCO_HORAS);
+  });
+
+  it("um convite de quem apresenta herda o prazo inteiro", async () => {
+    const token = await assinarConvite(
+      convite({ perfil: "diretoria", expira: AGORA + OITO_HORAS }),
+      SEGREDO,
+    );
+    const decidida = await decidirEntrada({
+      token,
+      ir: null,
+      ambiente: CONVITE_LIGADO,
+      agoraSegundos: AGORA,
+    });
+    if (decidida.tipo !== "entrar") throw new Error("devia entrar");
+    expect(decidida.maxAge).toBe(OITO_HORAS);
+  });
+
+  it("é o perfil que diz quem é público, não o prefixo do sujeito", () => {
+    expect(ehSessaoDoPublico(sessao())).toBe(true);
+    expect(ehSessaoDoPublico(sessao({ perfil: "diretoria" }))).toBe(false);
+    expect(sujeitoDe(sessao({ perfil: "diretoria" }))).toMatch(/^convite:/);
+  });
+
+  it("o público fora da conversa volta para ela; /api fora da lista é negada", async () => {
+    const cookie = await assinarSessao(sessao(), SEGREDO);
+    const base = {
+      busca: "",
+      cookie,
+      ambiente: CONVITE_LIGADO,
+      agoraSegundos: AGORA,
+    };
+    expect(await decidirAcesso({ ...base, caminho: "/rh/visao" })).toEqual({
+      tipo: "redirecionar",
+      para: CAMINHO_DA_CONVERSA,
+    });
+    expect(await decidirAcesso({ ...base, caminho: "/apresentar" })).toEqual({
+      tipo: "redirecionar",
+      para: CAMINHO_DA_CONVERSA,
+    });
+    expect(
+      await decidirAcesso({ ...base, caminho: "/api/marca/extrair" }),
+    ).toEqual({ tipo: "negar" });
+    for (const caminho of CAMINHOS_DO_PUBLICO) {
+      expect(await decidirAcesso({ ...base, caminho }), caminho).toEqual({
+        tipo: "seguir",
+      });
+    }
+  });
+
+  it("o caminho da conversa escrito no proxy é o da semântica", () => {
+    expect(CAMINHO_DA_CONVERSA).toBe(ROTA_DA_CONVERSA);
+    expect(CAMINHOS_DO_PUBLICO).toContain("/api/chat");
+    expect(CAMINHOS_DO_PUBLICO).toContain("/api/convidado");
+  });
+
+  it("/api/interesse é pública: o clique depois de vencer não tem sessão", () => {
+    expect(CAMINHOS_PUBLICOS).toContain("/api/interesse");
   });
 });

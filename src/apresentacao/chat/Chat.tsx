@@ -27,7 +27,12 @@ import {
   separarLinhas,
   type Turno,
 } from "@/apresentacao/chat/conversa";
+import {
+  ConviteDaDreamy,
+  registrarInteresse,
+} from "@/apresentacao/chat/ConviteDaDreamy";
 import { rolarAte } from "@/apresentacao/chat/Destaque";
+import { px } from "@/apresentacao/chat/escala";
 import { GraficoNoChat } from "@/apresentacao/chat/GraficoNoChat";
 import {
   Atalhos,
@@ -42,8 +47,17 @@ import {
   PALETA,
   TIPOGRAFIA,
 } from "@/apresentacao/tema/tema";
-import type { LinhaDoFluxo, PedidoDeChat, Previa } from "@/chat/protocolo";
+import {
+  CABECALHO_DE_PERGUNTAS_RESTANTES,
+  PERGUNTAS_POR_CONVIDADO,
+  type CorpoDeRecusa,
+  type LinhaDoFluxo,
+  type PedidoDeChat,
+  type Previa,
+} from "@/chat/protocolo";
 import { sugestoesDaTela } from "@/chat/sugestoes";
+import { primeiroNome } from "@/convidados/cadastro";
+import { SITE_DA_DREAMY, type OrigemDoInteresse } from "@/convidados/interesse";
 import { QUERY_PADRAO } from "@/semantica/contrato";
 import { ROTULO_DO_FILTRO, rotuloDe } from "@/semantica/dimensoes";
 import { paraConversa } from "@/semantica/url";
@@ -100,29 +114,25 @@ const ROTA_DA_API = "/api/chat";
 export type ModoDoChat = "coluna" | "cheio";
 
 /**
- * Quanto a tipografia cresce no celular.
+ * O que a conversa sabe de quem se cadastrou pelo QR (D-CONVIDADO-cadastro).
  *
- * A escala da conversa foi desenhada para a coluna de 392 px ao lado do
- * painel, lida a meio metro de distancia. No celular a largura e quase a
- * mesma, mas a distancia de leitura e maior e a tela e menor — e ali 9,5 px
- * viram um texto que ninguem le numa plateia. Um quarto a mais resolve sem
- * refazer o desenho, e sem tocar o modo coluna, onde a escala continua a de
- * sempre.
- *
- * Um numero, e nao uma folha de estilo: os tamanhos moram em objetos de estilo
- * em linha (T-124), e um `!important` para vencê-los seria pior.
+ * Chega da pagina de `/conversa`, que le o cadastro pela chave da sessao.
+ * Nunca o e-mail: a tela nao precisa dele, e o que nao chega ao navegador
+ * nao vaza dele.
  */
-const ESCALA_NO_CELULAR = 1.28;
-
-/** O tamanho de fonte daquele papel, no modo em que o chat esta. */
-function px(base: number, cheio: boolean): string {
-  return `${cheio ? Math.round(base * ESCALA_NO_CELULAR * 10) / 10 : base}px`;
-}
+export type ConvidadoNoChat = {
+  readonly id: string;
+  readonly nome: string;
+  readonly perguntasRestantes: number;
+  /** Quando a sessao vence, em milissegundos desde a epoca. */
+  readonly expiraEm: number;
+};
 
 export function Chat({
   modo = "coluna",
   cores = null,
   tela,
+  convidado = null,
 }: {
   readonly modo?: ModoDoChat;
   /**
@@ -135,12 +145,19 @@ export function Chat({
   readonly cores?: CoresDaMarca | null;
   /** Em `cheio`, a tela de que a conversa fala, como `modulo/tela`. */
   readonly tela?: string;
+  /** Quem se cadastrou pelo QR; `null` para quem apresenta e no modo coluna. */
+  readonly convidado?: ConvidadoNoChat | null;
 } = {}) {
   // `useSearchParams` pede uma fronteira de Suspense acima (documentação do
   // Next desta versão). A tela é dinâmica, então o fallback nunca aparece.
   return (
     <Suspense fallback={null}>
-      <ChatNaTela modo={modo} tela={tela ?? null} cores={cores} />
+      <ChatNaTela
+        modo={modo}
+        tela={tela ?? null}
+        cores={cores}
+        convidado={convidado}
+      />
     </Suspense>
   );
 }
@@ -149,10 +166,12 @@ function ChatNaTela({
   modo,
   cores,
   tela,
+  convidado,
 }: {
   readonly modo: ModoDoChat;
   readonly cores: CoresDaMarca | null;
   readonly tela: string | null;
+  readonly convidado: ConvidadoNoChat | null;
 }) {
   const caminho = usePathname();
   const busca = useSearchParams();
@@ -177,6 +196,17 @@ function ChatNaTela({
     lerConversaNoServidor,
   );
   const [texto, setTexto] = useState("");
+  /*
+   * O convidado do QR (D-CONVIDADO-cadastro): quantas perguntas restam, se o
+   * convite da Dreamy esta aberto e por que, e se a conversa esta trancada.
+   * A cota de verdade e a do servidor — chega no cabecalho de cada resposta
+   * e como 429 na sexta; o contador aqui e o que a pessoa ve.
+   */
+  const [restantes, setRestantes] = useState<number | null>(
+    convidado?.perguntasRestantes ?? null,
+  );
+  const [convite, setConvite] = useState<OrigemDoInteresse | null>(null);
+  const [trancado, setTrancado] = useState(false);
   const emAndamento = useRef(false);
   const contador = useRef(0);
   const logRef = useRef<HTMLDivElement>(null);
@@ -293,6 +323,31 @@ function ChatNaTela({
          * venceu (401). Os dois chegam como status, e não como fluxo.
          */
         if (resposta.status === 429 || resposta.status === 401) {
+          /*
+           * O corpo diz o motivo quando ha um que a conversa distingue: a cota
+           * do convidado esgotada (429) e o cadastro ausente (401). O resto e
+           * o limite de uso e o convite vencido, como sempre.
+           */
+          const motivo = (await lerRecusa(resposta))?.motivo;
+          if (motivo === "limite_de_perguntas") {
+            setRestantes(0);
+            setConvite("limite");
+            atualizarTurno(id, {
+              estado: "falhou",
+              falha: "limite_de_perguntas",
+            });
+            return;
+          }
+          if (motivo === "sem_cadastro") {
+            atualizarTurno(id, { estado: "falhou", falha: "sem_cadastro" });
+            // A pagina relida mostra a porta do cadastro.
+            roteador.refresh();
+            return;
+          }
+          if (resposta.status === 401 && convidado !== null) {
+            setTrancado(true);
+            setConvite("expiracao");
+          }
           atualizarTurno(id, {
             estado: "falhou",
             falha:
@@ -302,6 +357,13 @@ function ChatNaTela({
         }
         if (!resposta.ok || resposta.body === null) {
           throw new Error(`HTTP ${String(resposta.status)}`);
+        }
+        const cabecalho = resposta.headers.get(
+          CABECALHO_DE_PERGUNTAS_RESTANTES,
+        );
+        if (cabecalho !== null) {
+          const lidas = Number(cabecalho);
+          if (Number.isInteger(lidas)) setRestantes(lidas);
         }
         const leitor = resposta.body.getReader();
         const decodificador = new TextDecoder();
@@ -331,16 +393,58 @@ function ChatNaTela({
         emAndamento.current = false;
       }
     },
-    [atualizarTurno, busca, caminho, cheio, rota, roteador],
+    [atualizarTurno, busca, caminho, cheio, convidado, rota, roteador],
   );
 
+  /**
+   * Da tela para `perguntar`: a sexta tentativa abre o convite em vez de
+   * enviar (T-426). Fica fora de `perguntar` de proposito — o efeito de
+   * `?pergunta=` chama `perguntar` direto, e um link que ja chega perguntando
+   * nao e tentativa da pessoa; o servidor recusa com 429, e o 429 abre o
+   * mesmo convite.
+   */
+  const tentar = (pergunta: string) => {
+    if (convidado !== null && (trancado || restantes === 0)) {
+      setConvite("limite");
+      return;
+    }
+    void perguntar(pergunta);
+  };
+
+  /*
+   * O relogio de cinco horas (T-427): quando a sessao vence, o convite abre e
+   * a conversa tranca. O relogio do celular basta — o servidor recusa com 401
+   * de qualquer jeito, e o 401 abre o mesmo convite.
+   */
+  useEffect(() => {
+    if (convidado === null) return;
+    // Sempre agendado, mesmo ja vencido: e o relogio quem muda o estado.
+    const alarme = setTimeout(
+      () => {
+        setTrancado(true);
+        setConvite("expiracao");
+      },
+      Math.max(0, convidado.expiraEm - Date.now()),
+    );
+    return () => {
+      clearTimeout(alarme);
+    };
+  }, [convidado]);
+
   // `?pergunta=` na URL: um link que já chega perguntando. Só uma vez por
-  // pergunta — a conversa guardada diz se ela já foi feita.
+  // pergunta — a conversa guardada diz se ela já foi feita. Agendado, e não
+  // chamado no corpo do efeito: `perguntar` muda estado, e estado não muda
+  // de forma síncrona dentro de um efeito.
   useEffect(() => {
     const pedida = busca.get("pergunta")?.trim() ?? "";
     if (pedida === "") return;
     if (lerConversa().turnos.at(-1)?.pergunta === pedida) return;
-    void perguntar(pedida);
+    const agendada = setTimeout(() => {
+      void perguntar(pedida);
+    }, 0);
+    return () => {
+      clearTimeout(agendada);
+    };
   }, [busca, perguntar]);
 
   if (rota === null) return null;
@@ -416,15 +520,25 @@ function ChatNaTela({
     ultimo !== undefined &&
     (ultimo.estado === "consultando" || ultimo.estado === "redigindo");
   const guia = sugestoesDaTela(rota.slice(1));
+  // Trancada, a conversa nao envia; o convite fechado deixa a tranca.
+  const bloqueado = ocupado || trancado;
+  const fecharConvite = () => {
+    setConvite(null);
+    setTrancado(true);
+  };
+  const motivoDoConvite: OrigemDoInteresse =
+    convidado !== null && convidado.expiraEm <= Date.now()
+      ? "expiracao"
+      : "limite";
 
   const enviar = (evento: FormEvent) => {
     evento.preventDefault();
-    void perguntar(texto);
+    tentar(texto);
   };
   const aoTeclar = (evento: KeyboardEvent<HTMLTextAreaElement>) => {
     if (evento.key === "Enter" && !evento.shiftKey) {
       evento.preventDefault();
-      void perguntar(texto);
+      tentar(texto);
     }
   };
 
@@ -457,6 +571,14 @@ function ChatNaTela({
             }
       }
     >
+      {convite !== null && convidado !== null ? (
+        <ConviteDaDreamy
+          origem={convite}
+          id={convidado.id}
+          cheio={cheio}
+          aoFechar={fecharConvite}
+        />
+      ) : null}
       <div
         style={{
           flex: "1 1 auto",
@@ -510,15 +632,34 @@ function ChatNaTela({
               Converse com os dados
             </div>
             <div
+              data-teste="chat-quem"
               style={{
                 font: `400 ${px(9.5, cheio)}/1.3 ${TIPOGRAFIA.texto}`,
                 color: PALETA.textoFraco,
               }}
             >
-              Responde, filtra e abre o gráfico
+              {convidado === null
+                ? "Responde, filtra e abre o gráfico"
+                : `Conversando com ${primeiroNome(convidado.nome)}`}
             </div>
           </div>
-          {conversa.turnos.length === 0 ? null : (
+          {convidado === null || restantes === null ? null : (
+            <span
+              data-teste="chat-restantes"
+              style={{
+                flex: "none",
+                font: `500 ${px(9.5, cheio)}/1.2 ${TIPOGRAFIA.mono}`,
+                color: restantes === 0 ? MARCA.destaque : PALETA.textoTerciario,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {restantes === 1
+                ? `Resta 1 de ${String(PERGUNTAS_POR_CONVIDADO)} perguntas`
+                : `Restam ${String(restantes)} de ${String(PERGUNTAS_POR_CONVIDADO)} perguntas`}
+            </span>
+          )}
+          {/* No celular a conversa e a apresentacao: nao se recomeca. */}
+          {cheio || conversa.turnos.length === 0 ? null : (
             <button
               type="button"
               onClick={limpar}
@@ -581,7 +722,10 @@ function ChatNaTela({
         >
           {conversa.turnos.length === 0 ? (
             <Bolha cheio={cheio}>
-              <p style={{ margin: 0 }}>
+              <p style={{ margin: 0 }} data-teste="chat-saudacao">
+                {convidado === null
+                  ? ""
+                  : `Olá, ${primeiroNome(convidado.nome)}! `}
                 Pergunte aos dados desta tela ou de qualquer outra. A resposta
                 traz o número, o que entrou na conta e a fórmula — e abre o
                 gráfico certo, no recorte da pergunta.
@@ -595,9 +739,7 @@ function ChatNaTela({
                 turno={turno}
                 rota={rota}
                 cheio={cheio}
-                aoPerguntar={(p) => {
-                  void perguntar(p);
-                }}
+                aoPerguntar={tentar}
               />
             ))
           )}
@@ -653,9 +795,9 @@ function ChatNaTela({
                     key={pergunta}
                     type="button"
                     data-teste="chat-guia"
-                    disabled={ocupado}
+                    disabled={bloqueado}
                     onClick={() => {
-                      void perguntar(pergunta);
+                      tentar(pergunta);
                     }}
                     style={{
                       border: `1px solid ${PALETA.bordaForte}`,
@@ -687,10 +829,15 @@ function ChatNaTela({
               }}
               onKeyDown={aoTeclar}
               rows={2}
-              placeholder="Ex.: qual o lucro apurado do ano?"
+              placeholder={
+                trancado
+                  ? "Suas perguntas nesta apresentação acabaram"
+                  : "Ex.: qual o lucro apurado do ano?"
+              }
               aria-label="Sua pergunta"
               data-teste="chat-campo"
-              readOnly={ocupado}
+              readOnly={bloqueado}
+              disabled={trancado}
               style={{
                 flex: "1 1 auto",
                 minWidth: 0,
@@ -706,7 +853,7 @@ function ChatNaTela({
             <button
               type="submit"
               data-teste="chat-enviar"
-              disabled={ocupado || texto.trim() === ""}
+              disabled={bloqueado || texto.trim() === ""}
               style={{
                 border: 0,
                 background: ocupado ? MARCA.destaque : MARCA.barraLateral,
@@ -722,16 +869,42 @@ function ChatNaTela({
               {ocupado ? "Consultando…" : "Enviar"}
             </button>
           </form>
-          <p
-            style={{
-              margin: "7px 0 0",
-              font: `400 ${px(9, cheio)}/1.4 ${TIPOGRAFIA.texto}`,
-              color: PALETA.textoFraco,
-            }}
-          >
-            Cada número da resposta é conferido contra o painel antes de
-            aparecer. Enter envia; Shift+Enter quebra a linha.
-          </p>
+          {trancado && convidado !== null ? (
+            <p
+              data-teste="chat-trancado"
+              style={{
+                margin: "9px 0 0",
+                font: `500 ${px(11, cheio)}/1.5 ${TIPOGRAFIA.texto}`,
+                color: PALETA.textoSecundario,
+              }}
+            >
+              Gostou desta solução?{" "}
+              <a
+                data-teste="ir-para-dreamy-rodape"
+                href={SITE_DA_DREAMY}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  registrarInteresse(convidado.id, motivoDoConvite);
+                }}
+                style={{ color: MARCA.marca }}
+              >
+                Saiba como aplicar na sua empresa
+              </a>
+              .
+            </p>
+          ) : (
+            <p
+              style={{
+                margin: "7px 0 0",
+                font: `400 ${px(9, cheio)}/1.4 ${TIPOGRAFIA.texto}`,
+                color: PALETA.textoFraco,
+              }}
+            >
+              Cada número da resposta é conferido contra o painel antes de
+              aparecer. Enter envia; Shift+Enter quebra a linha.
+            </p>
+          )}
         </footer>
       </div>
     </Moldura>
@@ -912,6 +1085,15 @@ function CorpoDoTurno({
   }
 }
 
+/** O corpo de uma recusa por status, ou `null` quando não é JSON. */
+async function lerRecusa(resposta: Response): Promise<CorpoDeRecusa | null> {
+  try {
+    return (await resposta.json()) as CorpoDeRecusa;
+  } catch {
+    return null;
+  }
+}
+
 /** As frases da seção 6.4, na voz do chat. Nenhuma traz número. */
 function fraseDaFalha(falha: Turno["falha"]): string {
   switch (falha) {
@@ -923,6 +1105,10 @@ function fraseDaFalha(falha: Turno["falha"]): string {
       return "Muita gente perguntando ao mesmo tempo. Espere alguns segundos e tente de novo.";
     case "sessao_expirada":
       return "Seu acesso venceu. Peça um novo QR code a quem está apresentando.";
+    case "limite_de_perguntas":
+      return `Suas ${String(PERGUNTAS_POR_CONVIDADO)} perguntas nesta apresentação acabaram.`;
+    case "sem_cadastro":
+      return "Precisamos do seu nome e e-mail antes de continuar.";
     default:
       return "Não consegui falar com o servidor. Quer tentar de novo?";
   }

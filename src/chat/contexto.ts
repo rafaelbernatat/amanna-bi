@@ -26,6 +26,14 @@ export type ContextoDaTela = {
   readonly painelEmFoco: string | null;
   /** Os anos que a fonte tem. Vazio quando quem chama não sabe. */
   readonly anos: readonly string[];
+  /**
+   * O primeiro nome de quem pergunta, quando se cadastrou (D-CONVIDADO).
+   *
+   * Só o primeiro nome, só na mensagem de usuário, nunca o e-mail: é o que
+   * atravessa para o modelo. O inspetor do laço continua exigindo a instrução
+   * de sistema exata.
+   */
+  readonly primeiroNome: string | null;
 };
 
 /** Distingue o contexto de uma `Query` crua, nos pontos que aceitam os dois. */
@@ -38,7 +46,14 @@ export function contextoDeQuery(
   filtros: Query,
   anos: readonly string[] = [],
 ): ContextoDaTela {
-  return { tela: null, tituloDaTela: null, filtros, painelEmFoco: null, anos };
+  return {
+    tela: null,
+    tituloDaTela: null,
+    filtros,
+    painelEmFoco: null,
+    anos,
+    primeiroNome: null,
+  };
 }
 
 /**
@@ -51,6 +66,7 @@ export function contextoDe(
   telaBruta: string | null | undefined,
   busca: string,
   anos: readonly string[],
+  primeiroNome: string | null = null,
 ): ContextoDaTela {
   const lida = buscaParaQuery(busca, anos.length === 0 ? undefined : anos);
 
@@ -74,7 +90,14 @@ export function contextoDe(
       ? painel.id
       : null;
 
-  return { tela, tituloDaTela, filtros: lida.query, painelEmFoco, anos };
+  return {
+    tela,
+    tituloDaTela,
+    filtros: lida.query,
+    painelEmFoco,
+    anos,
+    primeiroNome,
+  };
 }
 
 /** Os filtros como a pessoa os lê: "Período: Dezembro", "Área: Tecnologia". */

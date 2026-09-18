@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { contextoDe } from "@/chat/contexto";
+import { inspecionarSaida } from "@/chat/ferramentas/inspetor";
 import { PASSO_DE_REDACAO } from "@/chat/ferramentas/passos";
 import {
   INSTRUCAO_DO_LACO,
@@ -505,5 +506,55 @@ describe("o que o laço desenha e conta", () => {
     expect(typeof registro["modelo"]).toBe("string");
     expect(String(registro["erro"])).toContain("No endpoints found");
     aviso.mockRestore();
+  });
+});
+
+describe("o primeiro nome de quem pergunta (T-428)", () => {
+  it("vai na mensagem de usuário; a de sistema não muda; nenhuma leva e-mail", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    const pedidos: { messages: { role: string; content: string }[] }[] = [];
+    vi.stubGlobal("fetch", async (_u: string, init: { body: string }) => {
+      const corpo = JSON.parse(init.body) as {
+        messages: { role: string; content: string }[];
+      };
+      pedidos.push(corpo);
+      const message = corpo.messages.some((m) => m.role === "tool")
+        ? { content: "Ana, os maiores clientes estão listados." }
+        : {
+            content: null,
+            tool_calls: [
+              {
+                id: "r1",
+                type: "function",
+                function: {
+                  name: "ranking",
+                  arguments: JSON.stringify({
+                    metrica: "receita_liquida",
+                    dimensao: "cliente",
+                  }),
+                },
+              },
+            ],
+          };
+      return new Response(JSON.stringify({ choices: [{ message }] }), {
+        status: 200,
+      });
+    });
+
+    const contexto = contextoDe("fin/visao", "", ["2026"], "Ana");
+    const r = await resolverComposta("Top clientes por receita", contexto, []);
+    expect(r?.tipo).toBe("composta");
+
+    const primeiro = pedidos[0]?.messages ?? [];
+    expect(primeiro[0]?.content).toBe(INSTRUCAO_DO_LACO);
+    expect(primeiro[1]?.content).toContain("Quem pergunta: Ana");
+    for (const pedidoFeito of pedidos) {
+      for (const mensagem of pedidoFeito.messages) {
+        expect(mensagem.content ?? "").not.toContain("@");
+      }
+      expect(
+        inspecionarSaida(pedidoFeito.messages as Mensagem[], INSTRUCAO_DO_LACO),
+      ).toBeNull();
+    }
   });
 });
