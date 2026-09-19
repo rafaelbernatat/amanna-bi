@@ -1,7 +1,16 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import type { PontoDoResumo } from "@/chat/grafico";
-import { mesDaPergunta, pontoDoMes } from "@/chat/mes";
+import type { TurnoAnterior } from "@/chat/interpretar";
+import {
+  mesDaPergunta,
+  mesDoRotulo,
+  mesValido,
+  pedeOPeriodoInteiro,
+  pontoDoMes,
+  rotuloDoMes,
+  semMes,
+} from "@/chat/mes";
 import {
   comOMesPedido,
   montarTexto,
@@ -143,5 +152,108 @@ describe("a resolução com o mês pedido", () => {
     expect(montarTexto(r, "Qual a receita líquida?")).not.toContain(
       "Retorno sobre a receita",
     );
+  });
+});
+
+describe("a conversa herda o mês (T-443)", () => {
+  const ABRIL: readonly TurnoAnterior[] = [
+    {
+      pergunta: "Qual a receita líquida em abril?",
+      metrica: "receita_liquida",
+      mes: { mes: 4, ano: 2026 },
+      filtros: QUERY_PADRAO,
+    },
+  ];
+
+  it("o rótulo do ponto diz o mês, e o mês vira rótulo", () => {
+    expect(mesDoRotulo("abr/2026")).toEqual({ mes: 4, ano: 2026 });
+    expect(mesDoRotulo("abr/2026 · Ano atual")).toEqual({ mes: 4, ano: 2026 });
+    expect(mesDoRotulo("Total")).toBeNull();
+    expect(rotuloDoMes({ mes: 4, ano: 2026 })).toBe("abr/2026");
+    expect(rotuloDoMes({ mes: 3, ano: null })).toBe("março");
+  });
+
+  it("o mês que chega do navegador é conferido campo a campo", () => {
+    expect(mesValido({ mes: 4, ano: 2026 })).toBe(true);
+    expect(mesValido({ mes: 4, ano: null })).toBe(true);
+    expect(mesValido({ mes: 13, ano: 2026 })).toBe(false);
+    expect(mesValido({ mes: "4", ano: 2026 })).toBe(false);
+    expect(mesValido({ mes: 4, ano: 1999 })).toBe(false);
+    expect(mesValido(null)).toBe(false);
+  });
+
+  it("sem o mês sobra o resto; e o período inteiro é reconhecido", () => {
+    expect(semMes("e em maio?").replace(/\s+/g, " ").trim()).toBe("e em ?");
+    expect(semMes("e a receita bruta em abr/2026?")).toContain("receita bruta");
+    expect(pedeOPeriodoInteiro("E no ano todo?")).toBe(true);
+    expect(pedeOPeriodoInteiro("e nos 12 meses?")).toBe(true);
+    expect(pedeOPeriodoInteiro("qual o turnover?")).toBe(false);
+  });
+
+  it("'E a receita bruta?' depois de abril é a receita bruta de abril, dita como herdada", async () => {
+    const resolvida = await resolverPergunta(
+      "E a receita bruta?",
+      QUERY_PADRAO,
+      ABRIL,
+    );
+    expect(resolvida.tipo).toBe("resolvida");
+    if (resolvida.tipo !== "resolvida") return;
+    const r = resolvida.resolucao;
+    expect(r.metrica).toBe("receita_bruta");
+    expect(r.pontoPedido?.rotulo).toMatch(/^abr\/20\d{2}$/);
+    expect(r.pontoPedido?.herdado).toBe(true);
+    expect(montarTexto(r, "E a receita bruta?")).toContain(
+      "como na pergunta anterior",
+    );
+    const envelope = paraOModelo(r) as {
+      pontoPedido: { herdado: boolean } | null;
+    };
+    expect(envelope.pontoPedido?.herdado).toBe(true);
+  });
+
+  it("'E em maio?' herda a métrica e troca o mês; o mês próprio não é herdado", async () => {
+    const resolvida = await resolverPergunta("E em maio?", QUERY_PADRAO, ABRIL);
+    expect(resolvida.tipo).toBe("resolvida");
+    if (resolvida.tipo !== "resolvida") return;
+    expect(resolvida.resolucao.metrica).toBe("receita_liquida");
+    expect(resolvida.resolucao.pontoPedido?.rotulo).toMatch(/^mai\//);
+    expect(resolvida.resolucao.pontoPedido?.herdado).toBeUndefined();
+  });
+
+  it("'E no ano todo?' herda a métrica, volta aos doze meses e solta o mês", async () => {
+    const resolvida = await resolverPergunta(
+      "E no ano todo?",
+      QUERY_PADRAO,
+      ABRIL,
+    );
+    expect(resolvida.tipo).toBe("resolvida");
+    if (resolvida.tipo !== "resolvida") return;
+    expect(resolvida.resolucao.metrica).toBe("receita_liquida");
+    expect(resolvida.resolucao.acoes.filtros.periodo).toBe("12-meses");
+    expect(resolvida.resolucao.pontoPedido).toBeNull();
+  });
+
+  it("'E em dezembro?' é período do vocabulário: sem mês herdado", async () => {
+    const resolvida = await resolverPergunta(
+      "E em dezembro?",
+      QUERY_PADRAO,
+      ABRIL,
+    );
+    expect(resolvida.tipo).toBe("resolvida");
+    if (resolvida.tipo !== "resolvida") return;
+    expect(resolvida.resolucao.metrica).toBe("receita_liquida");
+    expect(resolvida.resolucao.acoes.filtros.periodo).toBe("dezembro");
+    expect(resolvida.resolucao.pontoPedido?.herdado).toBeUndefined();
+  });
+
+  it("sem resposta anterior com mês, nada é herdado", async () => {
+    const resolvida = await resolverPergunta(
+      "E a receita bruta?",
+      QUERY_PADRAO,
+      [{ pergunta: "Qual a receita líquida?", metrica: "receita_liquida" }],
+    );
+    expect(resolvida.tipo).toBe("resolvida");
+    if (resolvida.tipo !== "resolvida") return;
+    expect(resolvida.resolucao.pontoPedido).toBeNull();
   });
 });

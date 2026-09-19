@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Origem** | [PRD.md](PRD.md) v2.0 |
-| **Total** | 309 tarefas: 178 pendentes e 131 já concluídas (5 no protótipo) |
+| **Total** | 310 tarefas: 178 pendentes e 132 já concluídas (5 no protótipo) |
 | **Ordem** | Fase, depois dependência, depois prioridade. A lista é executável de cima para baixo: nenhuma tarefa aparece antes de algo de que ela dependa. |
 | **Verificado** | Zero ciclos de dependência; nenhuma tarefa depende de outra que venha depois na lista, nem de fase posterior. |
 
@@ -39,9 +39,9 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
 | [Fase 0 · Decisões e bootstrap](#fase-0--decisões-e-bootstrap) | 14 | 6 | 8 | 0 | 6 de 14 |
 | [Fase 1 · Contrato](#fase-1--contrato) | 101 | 60 | 37 | 4 | 54 de 101 |
 | [Fase 2 · Dado real](#fase-2--dado-real) | 75 | 35 | 33 | 7 | 17 de 75 |
-| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 97 | 53 | 37 | 7 | 49 de 97 |
+| [Fase 3 · Chat com IA](#fase-3--chat-com-ia) | 98 | 54 | 37 | 7 | 50 de 98 |
 | [Fase 4 · Escala](#fase-4--escala) | 17 | 1 | 7 | 9 | 0 de 17 |
-| **Total** | **309** | **155** | **122** | **27** | **131 de 309** |
+| **Total** | **310** | **156** | **122** | **27** | **132 de 310** |
 
 > As cinco tarefas da Fase 0 · Protótipo aparecem concluídas porque o protótipo existe e roda: `public/design/Dashboard BI v2.dc.html`. Ficam na lista como marco, não como trabalho pendente.
 
@@ -57,7 +57,7 @@ Cada tarefa cita a seção do PRD que a origina. Tarefas marcadas `auditoria` n�
          |               |          (F2 e F3 correm em paralelo)
          v               v
    F2 · Dado real   F3 · Chat com IA
-    75 tarefas         97 tarefas
+    75 tarefas         98 tarefas
          |               |
          +-------+-------+
                  |
@@ -693,7 +693,7 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 
 > **Critério de saída:** O conjunto de 100 perguntas atinge as metas da seção 7.7, com zero número inventado.
 
-*97 tarefas · 53 P0 · 37 P1 · 7 P2*
+*98 tarefas · 54 P0 · 37 P1 · 7 P2*
 
 - [ ] **T-301** `P0` `M` `chat` Definir os contratos Intent e Answer com JSON Schema gerado
   · **Aceite:** Existem os tipos Intent e Answer da seção 7.2 e schemas derivados com additionalProperties false e required completo; o teste rejeita 10 payloads inválidos (métrica ausente, breakdown fora do enum, confidence fora de 0..1, undo sem view) e aceita 5 válidos.
@@ -986,6 +986,9 @@ Substitui o casamento de *substring* do protótipo pelos três estágios da seç
 - [X] **T-442** `P1` `S` `paineis` Icones no menu lateral: recolhido, ficam so os icones clicaveis
   · **Aceite:** cada tela do registro tem um `icone` de um conjunto fechado, sem repeticao (teste); `IconeDaTela` desenha vetores em `currentColor`; aberto, o link mostra icone e titulo; recolhido (por clique ou por consulta de conteiner), so o icone, com o titulo em `aria-label` e `title`, e o clique navega com o recorte; o e2e prova os dois estados e o clique recolhido.
   · **PRD:** secao 6.1, secao 13 · **Depende de:** T-421
+- [X] **T-443** `P0` `M` `chat` A conversa herda o contexto: o mes, a metrica e o recorte seguem de um turno para o outro
+  · **Aceite:** o turno anterior leva ao servidor o mes que a resposta respondeu e o recorte em que foi lida (conferidos em `lerPedido`); "E a receita bruta?" depois de "quanto faturamos em abril?" responde a receita bruta de abril, dita como herdada ("como na pergunta anterior"), no texto do modelo e no montado; "e em maio?" e "e no ano todo?" herdam a metrica anterior (regra deterministica em `herdar`); "e em dezembro?" e "nos 12 meses" soltam o mes; o interpretador do modelo e o laco leem a mesma conversa, linha a linha com mes e recorte; e2e cobre a heranca no arnes.
+  · **PRD:** secao 7.6, RF-16 · **Depende de:** T-439
 
 ---
 

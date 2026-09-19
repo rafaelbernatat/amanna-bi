@@ -60,6 +60,7 @@ import {
   interpretarLocalmente,
   type Intencao,
   type TurnoAnterior,
+  linhaDaConversa,
 } from "@/chat/interpretar";
 import { REGRAS_DE_NUMERO } from "@/chat/regras";
 import { resolver, type Resolucao } from "@/chat/resolver";
@@ -140,6 +141,9 @@ ${REGRAS_DE_NUMERO}
   leituras mostram (pico, vale, último ponto; os maiores itens e a
   participação deles; a variação); depois o que explica, só com o que as
   leituras trazem.
+- A conversa até aqui diz de que assunto se fala: "e quanto eles custam?"
+  depois do headcount é a folha; "e por área?" é o mesmo número por área.
+  Resolva pronomes e elipses por ela antes de escolher o que ler.
 - Sem saudação além do primeiro nome de quem pergunta, uma vez, quando o
   contexto o trouxer. Nunca invente sobrenome, cargo ou empresa.
 - Feche com uma pergunta curta oferecendo o próximo passo.`;
@@ -162,10 +166,7 @@ function contextoParaOModelo(contexto: ContextoDaTela): string {
 
 function conversaParaOModelo(historico: readonly TurnoAnterior[]): string {
   if (historico.length === 0) return "";
-  const linhas = historico.map(
-    (t, i) =>
-      `${String(i + 1)}. "${t.pergunta}" → ${t.metrica ?? "sem métrica"}`,
-  );
+  const linhas = historico.map(linhaDaConversa);
   return `\n\nConversa até aqui:\n${linhas.join("\n")}`;
 }
 

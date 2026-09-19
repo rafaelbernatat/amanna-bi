@@ -7,6 +7,10 @@
  */
 
 import type { TurnoAnterior } from "@/chat/interpretar";
+import { mesValido } from "@/chat/mes";
+import type { Query } from "@/semantica/contrato";
+import { FILTROS } from "@/semantica/dimensoes";
+import { buscaParaQuery } from "@/semantica/url";
 import {
   TAMANHO_MAXIMO_DA_PERGUNTA,
   TURNOS_LEMBRADOS,
@@ -31,6 +35,27 @@ function ehObjeto(x: unknown): x is Record<string, unknown> {
  * contra o catálogo: o que não existe vira `null` antes de chegar ao estágio
  * 1, e só os últimos `TURNOS_LEMBRADOS` seguem.
  */
+/** Até onde um valor de filtro vindo do navegador é lido. */
+const TAMANHO_MAXIMO_DE_FILTRO = 40;
+
+/**
+ * O recorte da resposta anterior, se for um recorte de verdade: cada campo
+ * passa pelo leitor da URL, e um valor fora do vocabulário derruba o todo —
+ * antes herdar errado, melhor não herdar.
+ */
+function filtrosValidos(bruto: unknown): Query | null {
+  if (!ehObjeto(bruto)) return null;
+  const busca = new URLSearchParams();
+  for (const campo of FILTROS) {
+    const valor = bruto[campo];
+    if (typeof valor !== "string") return null;
+    if (campo === "ano" && !/^20\d{2}$/.test(valor)) return null;
+    busca.set(campo, valor.slice(0, TAMANHO_MAXIMO_DE_FILTRO));
+  }
+  const { query, avisos } = buscaParaQuery(busca);
+  return avisos.length === 0 ? query : null;
+}
+
 export function lerPedido(bruto: unknown): PedidoDeChat | null {
   if (!ehObjeto(bruto)) return null;
 
@@ -56,12 +81,19 @@ export function lerPedido(bruto: unknown): PedidoDeChat | null {
     for (const turno of historicoBruto) {
       if (!ehObjeto(turno) || typeof turno["pergunta"] !== "string") continue;
       const metrica = turno["metrica"];
+      const mes = turno["mes"];
+      const filtros = filtrosValidos(turno["filtros"]);
       historico.push({
         pergunta: turno["pergunta"].slice(0, TAMANHO_MAXIMO_DA_PERGUNTA),
         metrica:
           typeof metrica === "string" && CATALOGO_GERADO[metrica] !== undefined
             ? metrica
             : null,
+        // O contexto da resposta anterior (T-443), só na forma — um mês do
+        // calendário e um recorte que o mesmo leitor da URL aceita — e só
+        // quando existe: turno sem contexto não ganha chave nenhuma.
+        ...(mesValido(mes) ? { mes: { mes: mes.mes, ano: mes.ano } } : {}),
+        ...(filtros === null ? {} : { filtros }),
       });
     }
   }

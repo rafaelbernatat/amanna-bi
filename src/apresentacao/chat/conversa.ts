@@ -18,6 +18,7 @@
  */
 
 import type { TurnoAnterior } from "@/chat/interpretar";
+import { mesDoRotulo } from "@/chat/mes";
 import type { Resposta } from "@/chat/perguntar";
 import type { MotivoDeFalha, Previa } from "@/chat/protocolo";
 import { TURNOS_LEMBRADOS } from "@/chat/protocolo";
@@ -71,11 +72,21 @@ export function historicoDe(
 ): readonly TurnoAnterior[] {
   return turnos
     .filter((t) => t.resposta !== null)
-    .map((t) => ({
-      pergunta: t.pergunta,
-      metrica:
-        t.resposta?.tipo === "resposta" ? t.resposta.resolucao.metrica : null,
-    }))
+    .map((t) => {
+      const resolucao =
+        t.resposta?.tipo === "resposta" ? t.resposta.resolucao : null;
+      // O contexto que a resposta carregava, para a próxima pergunta herdar
+      // (T-443). Turno guardado antes disto não tem ponto pedido: `undefined`.
+      const rotuloDoPonto = resolucao?.pontoPedido?.rotulo;
+      const mes =
+        rotuloDoPonto === undefined ? null : mesDoRotulo(rotuloDoPonto);
+      return {
+        pergunta: t.pergunta,
+        metrica: resolucao?.metrica ?? null,
+        ...(mes === null ? {} : { mes }),
+        ...(resolucao === null ? {} : { filtros: resolucao.acoes.filtros }),
+      };
+    })
     .slice(-TURNOS_LEMBRADOS);
 }
 

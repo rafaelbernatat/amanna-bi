@@ -42,7 +42,13 @@ import {
   type ContextoDaTela,
 } from "@/chat/contexto";
 import { paraOModeloLeitura } from "@/chat/ferramentas/executar";
-import { mesDaPergunta, pontoDoMes } from "@/chat/mes";
+import {
+  mesDaPergunta,
+  pedeOPeriodoInteiro,
+  pontoDoMes,
+  semMes,
+  type MesPedido,
+} from "@/chat/mes";
 import { RAIO_DO_ROTULO } from "@/chat/ferramentas/limites";
 import {
   fraseDe,
@@ -431,8 +437,10 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
     linhas.push(`${r.rotulo}: ${valor}.`);
   } else {
     // O mês perguntado abre; o recorte inteiro vem como contexto (T-439).
+    const deOnde =
+      r.pontoPedido.herdado === true ? ", como na pergunta anterior" : "";
     linhas.push(
-      `${r.rotulo} em ${r.pontoPedido.rotulo}: ${r.pontoPedido.formatado ?? "sem dado"}.`,
+      `${r.rotulo} em ${r.pontoPedido.rotulo}${deOnde}: ${r.pontoPedido.formatado ?? "sem dado"}.`,
     );
     linhas.push(`${r.rotulo} no recorte inteiro: ${valor}.`);
   }
@@ -618,11 +626,21 @@ function herdar(
 ): Intencao | null {
   const anterior = [...historico].reverse().find((t) => t.metrica !== null);
   if (anterior?.metrica === undefined || anterior.metrica === null) return null;
-  if (!mudaRecorte(pergunta, atuais)) return null;
-  if (interpretarLocalmente(semRecorte(pergunta), atuais) !== null) return null;
+  /*
+   * Continuação também quando a pergunta só troca o mês ("e em maio?") ou
+   * pede o período inteiro ("e no ano todo?"): o calendário não é filtro da
+   * URL, mas é recorte da conversa (T-443).
+   */
+  const trocaOMes = mesDaPergunta(pergunta) !== null;
+  const pedeOAno = pedeOPeriodoInteiro(pergunta);
+  if (!mudaRecorte(pergunta, atuais) && !trocaOMes && !pedeOAno) return null;
+  if (interpretarLocalmente(semRecorte(semMes(pergunta)), atuais) !== null) {
+    return null;
+  }
+  const filtros = filtrosDaPergunta(pergunta, atuais);
   return {
     metrica: anterior.metrica,
-    filtros: filtrosDaPergunta(pergunta, atuais),
+    filtros: pedeOAno ? { ...filtros, periodo: "12-meses" } : filtros,
     confianca: CONFIANCA_DA_HERANCA,
     alternativas: [],
   };
@@ -776,8 +794,15 @@ export async function resolverPergunta(
     pergunta,
     interpretarLocalmente(pergunta, atuais),
   );
+  /*
+   * Uma continuação herdada ("e no ano todo?", "e em maio?") fica no caminho
+   * da resposta anterior, ainda que carregue um sinal de série ou ranking:
+   * "no ano todo" é sinal de série numa pergunta nova, e recorte numa
+   * continuação (T-443). "E por área?" não herda — segue ao laço.
+   */
+  const continuacao = herdar(pergunta, atuais, historico);
   let degradada = false;
-  if (classe === "composta") {
+  if (classe === "composta" && continuacao === null) {
     const composta = await resolverComposta(
       pergunta,
       contexto,
@@ -846,7 +871,11 @@ export async function resolverPergunta(
         detalhe: { modelo: modeloEmUso("ferramentas"), concluiu },
       });
       if (tentativa !== null && tentativa.tipo !== "recusa") {
-        const resolucao = comOMesPedido(tentativa.resolucao, pergunta);
+        const resolucao = comOMesPedido(
+          tentativa.resolucao,
+          pergunta,
+          historico,
+        );
         return tentativa.texto === null
           ? { tipo: "resolvida", resolucao }
           : {
@@ -886,6 +915,7 @@ export async function resolverPergunta(
     const resolucao = comOMesPedido(
       await resolver(intencao.metrica, intencao.filtros),
       pergunta,
+      historico,
     );
     return {
       tipo: "resolvida",
@@ -930,13 +960,57 @@ export function lacoNaDuvidaLigado(
 }
 
 /**
- * A resolução com o ponto do mês que a pergunta nomeou, quando nomeou um e
- * a série o tem (T-439). Sem mês, a resolução volta como veio.
+ * A resolução com o ponto do mês que a pergunta nomeou (T-439) — ou, quando
+ * ela não nomeia mês nem período, o mês da resposta anterior da conversa
+ * (T-443), marcado como herdado. Sem mês de lado nenhum, volta como veio.
  */
-export function comOMesPedido(r: Resolucao, pergunta: string): Resolucao {
-  const pedido = mesDaPergunta(pergunta);
+export function comOMesPedido(
+  r: Resolucao,
+  pergunta: string,
+  historico: readonly TurnoAnterior[] = [],
+): Resolucao {
+  const proprio = mesDaPergunta(pergunta);
+  const pedido = proprio ?? mesHerdado(pergunta, historico);
   if (pedido === null) return r;
-  return { ...r, pontoPedido: pontoDoMes(r.serieMensal, pedido) };
+  const ponto = pontoDoMes(r.serieMensal, pedido);
+  if (ponto === null) return { ...r, pontoPedido: null };
+  return {
+    ...r,
+    pontoPedido: proprio === null ? { ...ponto, herdado: true } : ponto,
+  };
+}
+
+/**
+ * O mês herdado da conversa: o da resposta imediatamente anterior, quando a
+ * pergunta atual não nomeia mês nem período (T-443). "E a receita bruta?"
+ * depois de "quanto faturamos em abril?" é sobre abril; "e no ano todo?" ou
+ * "e em dezembro?" fecham o assunto do mês.
+ */
+export function mesHerdado(
+  pergunta: string,
+  historico: readonly TurnoAnterior[],
+): MesPedido | null {
+  const anterior = historico.at(-1);
+  if (anterior?.mes === undefined || anterior.mes === null) return null;
+  if (pedeOPeriodoInteiro(pergunta) || mencionaPeriodo(pergunta)) return null;
+  return anterior.mes;
+}
+
+/**
+ * A pergunta nomeia um período do vocabulário? `filtrosDaPergunta` lê o
+ * período sobre uma base; lido sobre duas bases diferentes, o resultado só
+ * coincide quando a própria pergunta o diz.
+ */
+function mencionaPeriodo(pergunta: string): boolean {
+  const sobreDoze = filtrosDaPergunta(pergunta, {
+    ...QUERY_PADRAO,
+    periodo: "12-meses",
+  }).periodo;
+  const sobreSeis = filtrosDaPergunta(pergunta, {
+    ...QUERY_PADRAO,
+    periodo: "6-meses",
+  }).periodo;
+  return sobreDoze === sobreSeis;
 }
 
 /**
@@ -1091,7 +1165,11 @@ export function paraOModelo(r: Resolucao, contexto?: ContextoDaTela): unknown {
     pontoPedido:
       r.pontoPedido === null
         ? null
-        : { rotulo: r.pontoPedido.rotulo, valor: r.pontoPedido.formatado },
+        : {
+            rotulo: r.pontoPedido.rotulo,
+            valor: r.pontoPedido.formatado,
+            herdado: r.pontoPedido.herdado === true,
+          },
     serieMensal: r.serieMensal.map((ponto) => ({
       rotulo: ponto.rotulo,
       valor: ponto.formatado,
