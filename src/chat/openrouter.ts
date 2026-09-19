@@ -41,7 +41,7 @@ import {
   type AoFalhar,
 } from "@/gateway/openrouter";
 import { registrarIncidente } from "@/chat/incidente";
-import type { TurnoAnterior } from "@/chat/interpretar";
+import { linhaDaConversa, type TurnoAnterior } from "@/chat/interpretar";
 import { REGRAS_DE_NUMERO } from "@/chat/regras";
 
 export { gatewayConfigurado, modeloEmUso } from "@/gateway/openrouter";
@@ -105,7 +105,17 @@ Regras:
   continuação da anterior — só troca o recorte ("e em dezembro?", "e na
   Unidade SP?", "e no consolidado?", "e na área de tecnologia?") ou pede o
   mesmo número de outro jeito —, devolva a métrica da última resposta com
-  confiança alta. Se a pergunta nomear outra métrica, escolha essa.`;
+  confiança alta. Se a pergunta nomear outra métrica, escolha essa.
+- Também é continuação a pergunta que só troca o mês ("e em maio?", "e em
+  abril de 2025?") ou pede o ano inteiro ("e no ano todo?"): devolva a
+  métrica da última resposta. Cada linha da conversa traz, depois da
+  métrica, o mês e o recorte que a resposta usou.
+- A pergunta pode se referir ao assunto anterior por pronome ou elipse: "e
+  quanto eles custam?" depois de "quantos colaboradores temos?" pede o custo
+  dos colaboradores (a folha); "e a margem disso?" depois da receita pede a
+  margem. Resolva a referência pela conversa e escolha a métrica que
+  responde ao que a pessoa quer saber agora, com confiança alta quando a
+  referência for clara.`;
 
 /** O que o modelo vê de cada métrica no estágio 1. */
 export type MetricaParaOModelo = {
@@ -128,10 +138,7 @@ export type MetricaParaOModelo = {
  */
 function conversaParaOModelo(historico: readonly TurnoAnterior[]): string {
   if (historico.length === 0) return "";
-  const linhas = historico.map(
-    (t, i) =>
-      `${String(i + 1)}. "${t.pergunta}" → ${t.metrica ?? "sem métrica"}`,
-  );
+  const linhas = historico.map(linhaDaConversa);
   return `Conversa até aqui:\n${linhas.join("\n")}\n\nPergunta atual: `;
 }
 
@@ -201,7 +208,10 @@ parágrafo diz uma coisa, em frases curtas, sem repetir o parágrafo anterior:
    {fechamento}". Se houver "pontoPedido", a pessoa perguntou por um mês, e a
    PRIMEIRA frase é sobre ele — "{metrica} em {pontoPedido.rotulo} foi
    {pontoPedido.valor}" —; o número do período inteiro vem na frase seguinte,
-   como contexto, nunca antes. Se "formatado" for nulo, diga que não há dado
+   como contexto, nunca antes. Se "pontoPedido.herdado" for verdadeiro, o
+   mês veio da pergunta anterior da conversa: diga-o na primeira frase
+   ("{metrica} em {pontoPedido.rotulo}, como na pergunta anterior, foi
+   {pontoPedido.valor}"). Se "formatado" for nulo, diga que não há dado
    neste recorte e pare.
 2. Um parágrafo próprio, que começa exatamente com "Traduzindo:" — uma ou
    duas frases sobre o que o número quer dizer para o negócio. Se

@@ -92,6 +92,36 @@ async function linhasDe(resposta: Response): Promise<readonly LinhaDoFluxo[]> {
 }
 
 describe("lerPedido", () => {
+  it("o contexto do turno anterior entra conferido: mês certo, recorte do vocabulário", () => {
+    const pedido = lerPedido({
+      pergunta: "e a receita bruta?",
+      historico: [
+        {
+          pergunta: "quanto faturamos em abril?",
+          metrica: "receita_liquida",
+          mes: { mes: 4, ano: 2026 },
+          filtros: {
+            periodo: "dezembro",
+            ano: "2026",
+            entidade: "consolidado",
+            area: "todas",
+            modalidade: "todas",
+          },
+        },
+        {
+          pergunta: "lixo",
+          metrica: "receita_liquida",
+          mes: { mes: 13, ano: 2026 },
+          filtros: { periodo: "decada", ano: "2026" },
+        },
+      ],
+    });
+    expect(pedido?.historico[0]?.mes).toEqual({ mes: 4, ano: 2026 });
+    expect(pedido?.historico[0]?.filtros?.periodo).toBe("dezembro");
+    expect(pedido?.historico[1]?.mes).toBeUndefined();
+    expect(pedido?.historico[1]?.filtros).toBeUndefined();
+  });
+
   it("aceita pergunta, busca e histórico", () => {
     expect(
       lerPedido({

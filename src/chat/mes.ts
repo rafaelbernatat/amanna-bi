@@ -107,3 +107,57 @@ export function pontoDoMes(
   );
   return candidatos.at(-1) ?? null;
 }
+
+/** O rótulo do mês pedido, como a série o escreve: "abr/2026", ou "abril" sem ano. */
+export function rotuloDoMes(pedido: MesPedido): string {
+  const nome = MESES[pedido.mes - 1] ?? "";
+  if (pedido.ano === null) return nome;
+  return `${semAcento(nome).slice(0, LETRAS_DA_ABREVIACAO)}/${String(pedido.ano)}`;
+}
+
+const ROTULO_DE_MES = /^([a-z]{3})\/(20\d{2})\b/;
+
+/**
+ * O mês que um rótulo de ponto nomeia — "abr/2026", "abr/2026 · Ano atual" —,
+ * para a conversa lembrar de que mês a resposta anterior falou (T-443).
+ */
+export function mesDoRotulo(rotulo: string): MesPedido | null {
+  const m = ROTULO_DE_MES.exec(semAcento(rotulo));
+  if (m === null) return null;
+  const mes =
+    MESES.findIndex(
+      (nome) => semAcento(nome).slice(0, LETRAS_DA_ABREVIACAO) === m[1],
+    ) + 1;
+  return mes === 0 ? null : { mes, ano: Number(m[2]) };
+}
+
+/** É um mês pedido? A forma que chega do navegador, conferida campo a campo. */
+export function mesValido(candidato: unknown): candidato is MesPedido {
+  if (typeof candidato !== "object" || candidato === null) return false;
+  const { mes, ano } = candidato as { mes?: unknown; ano?: unknown };
+  const mesCerto =
+    Number.isInteger(mes) && Number(mes) >= 1 && Number(mes) <= 12;
+  const anoCerto =
+    ano === null ||
+    (Number.isInteger(ano) && Number(ano) >= 2000 && Number(ano) <= 2100);
+  return mesCerto && anoCerto;
+}
+
+/** A pergunta sem o mês que nomeia, para ver se sobra métrica nela. */
+export function semMes(pergunta: string): string {
+  return pergunta
+    .replace(new RegExp(POR_EXTENSO.source, "gi"), " ")
+    .replace(new RegExp(ABREVIADO.source, "gi"), " ")
+    .replace(/\s{2,}/g, " ");
+}
+
+const PERIODO_INTEIRO =
+  /\b(?:no ano (?:todo|inteiro)|o ano (?:todo|inteiro)|anual|acumulad[oa]|nos? (?:ultimos )?(?:12|doze) meses|12 meses|doze meses)\b/;
+
+/**
+ * A pergunta pede o período inteiro ("e no ano todo?", "nos 12 meses?"): é
+ * o que fecha o assunto do mês herdado e volta ao recorte de doze meses.
+ */
+export function pedeOPeriodoInteiro(pergunta: string): boolean {
+  return PERIODO_INTEIRO.test(semAcento(pergunta));
+}

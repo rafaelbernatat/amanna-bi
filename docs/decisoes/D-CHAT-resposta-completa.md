@@ -193,3 +193,10 @@ correções, cada uma com tarefa:
   e barra de destaque. A pergunta que nada tem a ver com os dados recebe "não
   consigo responder a isso com os dados do painel" e o guia da tela como
   atalhos, em vez de uma lista vazia.
+- **A conversa herda o contexto (T-443).** Produto: "se pergunto o
+  faturamento de abril e depois 'e a receita bruta?', é sobre abril". O turno
+  anterior passa a levar o mês respondido e o recorte lido; a pergunta sem mês
+  nem período herda o mês da resposta anterior e o texto diz "como na pergunta
+  anterior"; "e em maio?" e "e no ano todo?" viram continuação determinística
+  da métrica anterior; o modelo, no interpretador e no laço, vê cada linha da
+  conversa com métrica, mês e recorte.

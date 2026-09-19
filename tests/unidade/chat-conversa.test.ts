@@ -85,10 +85,15 @@ describe("historicoDe", () => {
       turno("2", { resposta: RECUSA }),
       turno("3", { resposta: respondida("roe") }),
     ];
+    // O turno respondido leva o recorte da resposta (T-443); a recusa, nada.
     expect(historicoDe(turnos)).toEqual([
-      { pergunta: "pergunta 1", metrica: "turnover_12m" },
+      {
+        pergunta: "pergunta 1",
+        metrica: "turnover_12m",
+        filtros: QUERY_PADRAO,
+      },
       { pergunta: "pergunta 2", metrica: null },
-      { pergunta: "pergunta 3", metrica: "roe" },
+      { pergunta: "pergunta 3", metrica: "roe", filtros: QUERY_PADRAO },
     ]);
   });
 
@@ -209,5 +214,40 @@ describe("serializar e desserializar", () => {
 
   it("a conversa vazia sobrevive como vazia", () => {
     expect(desserializar(serializar(CONVERSA_VAZIA))).toEqual(CONVERSA_VAZIA);
+  });
+});
+
+describe("o histórico leva o contexto da resposta anterior (T-443)", () => {
+  it("o mês do ponto pedido e o recorte da resposta viajam com a pergunta", () => {
+    const r = resolucao("receita_liquida");
+    const comMes: Resposta = {
+      tipo: "resposta",
+      texto: "x",
+      autoria: "montado",
+      resolucao: {
+        ...r,
+        pontoPedido: {
+          rotulo: "abr/2026",
+          valor: 1,
+          unidade: "BRL_mi",
+          formatado: "R$ 1,0 mi",
+        },
+      },
+      sugestoes: [],
+    };
+    const [h] = historicoDe([turno("1", { resposta: comMes })]);
+    expect(h?.mes).toEqual({ mes: 4, ano: 2026 });
+    expect(h?.filtros).toEqual(r.acoes.filtros);
+  });
+
+  it("resposta sem mês e turno recusado não levam mês", () => {
+    const [semMes, recusado] = historicoDe([
+      turno("1", { resposta: respondida("receita_liquida") }),
+      turno("2", { resposta: RECUSA }),
+    ]);
+    expect(semMes?.mes).toBeUndefined();
+    expect(semMes?.filtros).toEqual(QUERY_PADRAO);
+    expect(recusado?.mes).toBeUndefined();
+    expect(recusado?.filtros).toBeUndefined();
   });
 });

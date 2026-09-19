@@ -215,6 +215,29 @@ test.describe("a conversa continua", () => {
     await expect(page).toHaveURL(/\/fin\/visao$/);
   });
 
+  test("a conversa herda o mes: 'E a receita bruta?' depois de abril fala de abril (T-443)", async ({
+    page,
+  }) => {
+    await page.goto("/fin/visao");
+    const chat = await abrirChat(page);
+    await perguntar(page, "Qual a receita líquida em abril?");
+    await expect(chat.locator('[data-teste="chat-resposta"]')).toHaveCount(1, {
+      timeout: ESPERA,
+    });
+    await expect(
+      chat.locator('[data-teste="chat-resposta"]').last(),
+    ).toContainText("abr/2026");
+
+    await perguntar(page, "E a receita bruta?");
+    await expect(chat.locator('[data-teste="chat-resposta"]')).toHaveCount(2, {
+      timeout: ESPERA,
+    });
+    // No arnes nao ha gateway: e o texto montado, com o mes herdado dito.
+    await expect(
+      chat.locator('[data-teste="chat-resposta"]').last(),
+    ).toContainText(/Receita bruta em abr\/2026, como na pergunta anterior/);
+  });
+
   test("um link com ?pergunta= abre a conversa ja perguntando", async ({
     page,
   }) => {

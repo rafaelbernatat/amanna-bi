@@ -68,6 +68,9 @@ export type Consideracao = {
  */
 export type Caminho = "simples" | "composto" | "degradado";
 
+/** O ponto do mês pedido; `herdado` quando o mês veio da conversa (T-443). */
+export type PontoPedido = PontoDoResumo & { readonly herdado?: boolean };
+
 /** O que o estágio 2 entrega ao estágio 3. */
 export type Resolucao = {
   readonly metrica: string;
@@ -100,8 +103,11 @@ export type Resolucao = {
    * verificador aceita cada ponto junto do rótulo.
    */
   readonly serieMensal: readonly PontoDoResumo[];
-  /** O ponto do mês que a pergunta nomeou, quando nomeou um e ele existe. */
-  readonly pontoPedido: PontoDoResumo | null;
+  /**
+   * O ponto do mês que a pergunta nomeou, quando nomeou um e ele existe —
+   * ou o mês herdado da pergunta anterior da conversa (`herdado`, T-443).
+   */
+  readonly pontoPedido: PontoPedido | null;
   /** O envelope do painel citado, que a tela desenha sem reler. */
   readonly painel: PanelResponse | null;
   /**

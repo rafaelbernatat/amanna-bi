@@ -28,6 +28,7 @@
  * o que permite recusar com utilidade em vez de chutar.
  */
 
+import { rotuloDoMes, type MesPedido } from "@/chat/mes";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 import { QUERY_PADRAO, type Query } from "@/semantica/contrato";
 import {
@@ -49,7 +50,37 @@ import {
 export type TurnoAnterior = {
   readonly pergunta: string;
   readonly metrica: string | null;
+  /**
+   * O contexto que a resposta anterior carregava (T-443): o mês de
+   * calendário que ela respondeu e o recorte em que foi lida. Opcionais
+   * porque turnos guardados antes disto não os têm.
+   */
+  readonly mes?: MesPedido | null;
+  readonly filtros?: Query | null;
 };
+
+/**
+ * Uma linha da conversa como o modelo a vê: a pergunta, a métrica, e o que a
+ * resposta carregava de contexto — o mês e o recorte fora do padrão (T-443).
+ * Serve ao interpretador e ao laço, para os dois lerem a mesma conversa.
+ */
+export function linhaDaConversa(t: TurnoAnterior, indice: number): string {
+  const partes = [
+    t.metrica === null
+      ? "sem métrica"
+      : `${t.metrica} (${CATALOGO_GERADO[t.metrica]?.rotulo ?? t.metrica})`,
+  ];
+  if (t.mes !== undefined && t.mes !== null) partes.push(rotuloDoMes(t.mes));
+  if (t.filtros !== undefined && t.filtros !== null) {
+    for (const campo of FILTROS) {
+      if (t.filtros[campo] === QUERY_PADRAO[campo]) continue;
+      partes.push(
+        campo === "ano" ? t.filtros.ano : rotuloDe(campo, t.filtros[campo]),
+      );
+    }
+  }
+  return `${String(indice + 1)}. "${t.pergunta}" → ${partes.join(" · ")}`;
+}
 
 /** O que o estágio 1 devolve, com ou sem modelo (seção 7.2). */
 export type Intencao = {
