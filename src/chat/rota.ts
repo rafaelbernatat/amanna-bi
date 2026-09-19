@@ -58,7 +58,7 @@ import {
   semRecorte,
   type Intencao,
 } from "@/chat/interpretar";
-import { semMes } from "@/chat/mes";
+import { mesesDaPergunta, semMes } from "@/chat/mes";
 
 export type CaminhoEscolhido = "atalho" | "laco";
 
@@ -77,7 +77,9 @@ export type MotivoDaRota =
   /** Sobrou pergunta depois de tirar métrica, mês, recorte e o resto. */
   | "resto_aberto"
   /** Nada casou no catálogo, ou casou por palavra solta. */
-  | "sem_casamento";
+  | "sem_casamento"
+  /** A pergunta nomeia mais de um mês: o atalho só sabe responder um. */
+  | "varios_meses";
 
 export type Rota = {
   readonly caminho: CaminhoEscolhido;
@@ -317,6 +319,18 @@ export function decidirCaminho(
    */
   if (continuacao !== null) {
     return { caminho: "atalho", porque: "continuacao", sinais };
+  }
+
+  /*
+   * Mais de um mês nomeado (T-457).
+   *
+   * O atalho responde uma métrica num recorte, e carrega **um** ponto de mês
+   * (`pontoPedido`). "Qual o faturamento de abril e agosto?" pede dois valores
+   * e o total, e ali saía com um só. O laço lê os dois e deixa o banco somar.
+   */
+  const MAIS_DE_UM = 1;
+  if (mesesDaPergunta(pergunta).length > MAIS_DE_UM) {
+    return { caminho: "laco", porque: "varios_meses", sinais };
   }
 
   if (!temGateway || porSinais()) {

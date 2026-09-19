@@ -53,6 +53,44 @@ variável**, e não mexendo em código: provisiona-se o papel (a migração já 
 cria) e monta-se `DATABASE_URL_CHAT`. O desenho abaixo continua valendo
 inteiro, e é por isso que ele foi mantido.
 
+## Adendo 2 (2026-09-19, tarde): por que o chat quebrou, medido
+
+Produto mandou prints com **"caminho degradado"**. Não era o modelo escolhendo
+mal: era o laço falhando. Três hipóteses foram testadas contra o gateway e o
+banco reais, e as duas primeiras caíram.
+
+| Hipótese                               | Medida                                 | Veredito   |
+| -------------------------------------- | -------------------------------------- | ---------- |
+| O corpo com `cache_control` é recusado | quatro corpos, todos **200**           | refutada   |
+| O teto de 20 s por rodada estoura      | rodada 1 em **3,2 s**                  | refutada   |
+| **A consulta do modelo falha**         | `relation "lancamento" does not exist` | **é esta** |
+
+A instrução manda o modelo escrever `FROM lancamento`, sem o esquema. Isso
+funcionava porque `ALTER ROLE amanna_chat_ro SET search_path` punha
+`amanna_chat` no caminho — e **só vale quando a conexão entra por aquele
+papel**. Quando `DATABASE_URL_CHAT` virou opcional (adendo 1), a conexão passou
+a ser a de sempre, com `search_path = public`, e **toda** consulta morreu. O
+modelo tentava de novo, queimava as rodadas e o laço terminava sem texto.
+
+O conserto é uma linha em `consulta-livre.ts`: `SET LOCAL search_path` dentro da
+própria transação. Vale para as duas conexões, e o papel deixa de ser a única
+coisa que sustenta a sintaxe que o prompt ensina.
+
+### E três coisas que a medida revelou de quebra
+
+1. **Qualquer falha descartava tudo.** O registro mostrou `laco_falhou` com
+   `leituras: 3` — três leituras boas no lixo, e a tela dizendo que a pergunta
+   não pôde ser respondida. Agora o laço devolve o que leu, e o estágio 3
+   redige a partir dele. `laco_sem_texto` mede a frequência.
+2. **A carga estava em 27 mil caracteres de ferramenta**, dos quais 23 mil eram
+   o enum dos 145 ids repetido seis vezes. Virou texto com a lista uma vez no
+   contexto: **6.772 caracteres**. A garantia não sumiu — o validador já
+   recusava id inexistente, e com as métricas próximas, que corrige melhor.
+3. **Faltavam os agregados mensais.** O esquema tinha o detalhe e não a DRE
+   fechada, e por isso "quanto faturamos em abril?" obrigava o modelo a somar o
+   razão por linha da DRE. A migração 013 abre `fin_mes`, `rh_mes`,
+   `dre_conta_mes` e mais dez.
+
 ## A defesa é o papel, e isso foi medido
 
 `SET LOCAL ROLE` na conexão do produto **não** serve, e a razão não é teórica.

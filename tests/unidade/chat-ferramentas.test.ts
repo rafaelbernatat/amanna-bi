@@ -4,6 +4,7 @@ import { contextoDe, contextoDeQuery } from "@/chat/contexto";
 import {
   esquemaDeFiltros,
   ferramentas,
+  metricasParaOModelo,
   NOMES_DE_FERRAMENTA,
 } from "@/chat/ferramentas/catalogo";
 import {
@@ -79,17 +80,40 @@ describe("o catálogo de ferramentas", () => {
     expect(nona?.descricao).not.toMatch(/ÚLTIMA opção/);
   });
 
-  it("o enum de métrica é o catálogo inteiro, e o de ano é o da fonte", () => {
+  /**
+   * A métrica deixou de ser enum no esquema (T-457).
+   *
+   * O enum dos 145 ids custava ~3.900 caracteres por ferramenta, e seis o
+   * carregavam: 23 mil dos 27 mil caracteres de `tools`. A lista vai uma vez
+   * no contexto, e o validador continua sendo quem recusa id inexistente — com
+   * as métricas próximas, que é correção melhor que a recusa do esquema.
+   */
+  it("a métrica é texto no esquema, e a lista vai uma vez no contexto", () => {
     const lista = ferramentas(CONTEXTO);
     const ler = lista.find((f) => f.nome === "ler_metrica");
     const props = ler?.parametros["properties"] as Record<string, unknown>;
-    const metrica = props["metrica"] as { enum: string[] };
-    expect(metrica.enum).toContain("receita_liquida");
-    expect(metrica.enum.length).toBeGreaterThan(100);
+    const metrica = props["metrica"] as { type: string; enum?: unknown };
+    expect(metrica.type).toBe("string");
+    expect(metrica.enum).toBeUndefined();
+
+    const contexto = metricasParaOModelo();
+    expect(contexto).toContain("receita_liquida");
+    expect(contexto).toContain("turnover_12m");
+
+    // O ano continua fechado: são poucos, e o erro sai caro.
     const filtros = props["filtros"] as {
       properties: { ano: { enum: string[] } };
     };
     expect(filtros.properties.ano.enum).toEqual(["2026"]);
+  });
+
+  it("as ferramentas encolheram: o corpo do laço cabe no tempo", () => {
+    const tamanho = ferramentas(CONTEXTO, true)
+      .map((f) => JSON.stringify(f.parametros).length)
+      .reduce((a, b) => a + b, 0);
+    // Eram 27.483 caracteres com os seis enums; hoje são 6.772. O teto guarda
+    // a economia, e reprova quem devolver um enum grande ao esquema.
+    expect(tamanho).toBeLessThan(8_000);
   });
 });
 

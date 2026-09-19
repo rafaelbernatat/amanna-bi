@@ -69,9 +69,17 @@ export type Ferramenta = {
   readonly parametros: Readonly<Record<string, unknown>>;
 };
 
-/** Os ids do catálogo, em ordem, para o enum ser byte-estável. */
-function idsDoCatalogo(): readonly string[] {
-  return Object.keys(CATALOGO_GERADO).sort();
+/**
+ * As métricas do catálogo, como o modelo precisa vê-las uma vez.
+ *
+ * Substitui o enum que seis esquemas de ferramenta repetiam. Ordenado, para o
+ * prefixo do prompt ser byte-estável — a seção 7.4 depende disso.
+ */
+export function metricasParaOModelo(): string {
+  const linhas = Object.keys(CATALOGO_GERADO)
+    .sort()
+    .map((id) => `${id} (${CATALOGO_GERADO[id]?.rotulo ?? id})`);
+  return `\n\nMétricas do catálogo, para ler_metrica, serie_da_metrica, ranking, decompor, comparar_metricas e variacao:\n${linhas.join(" · ")}`;
 }
 
 /** O esquema de `filtros`: os quatro fechados mais o ano, todos opcionais. */
@@ -96,8 +104,25 @@ export function esquemaDeFiltros(
   };
 }
 
+/**
+ * O id da métrica, como texto — e não mais como enum (T-457).
+ *
+ * O enum dos 145 ids custava ~3.900 caracteres **por ferramenta**, e seis
+ * delas o carregavam: 23 mil dos 27 mil caracteres de `tools`, medidos. Isso é
+ * o grosso dos 17,6 mil tokens de entrada de cada rodada, pagos em toda
+ * pergunta composta, e o laço virou o caminho padrão.
+ *
+ * A garantia não se perde, **muda de lugar**: `validar.ts` já recusa id que
+ * não existe no catálogo e devolve as métricas próximas, que é uma correção
+ * melhor que a recusa do esquema — o modelo lê o erro e acerta na rodada
+ * seguinte. A lista de ids vai uma vez no contexto, e não seis vezes no
+ * esquema.
+ */
 function metrica(descricao: string): Readonly<Record<string, unknown>> {
-  return { type: "string", enum: idsDoCatalogo(), description: descricao };
+  return {
+    type: "string",
+    description: `${descricao} Use um id da lista de métricas do contexto; id inexistente volta com as próximas.`,
+  };
 }
 
 /**
@@ -138,9 +163,13 @@ const DESCRICAO_DA_CONSULTA =
   "ou a decomposição quando eles respondem exatamente o que se pediu, porque " +
   "desenham o gráfico; fora isso, consulte. " +
   "Só SELECT, uma consulta por vez, até 25 linhas e 6 colunas — escolha as " +
-  "colunas, nunca 'SELECT *'. Dê apelido claro a cada coluna, e ponha o nome " +
-  "(a conta, o colaborador, o mês) como PRIMEIRA coluna: é ele que rotula a " +
-  "linha na resposta.";
+  "colunas, nunca 'SELECT *'. Ponha o nome (a conta, o colaborador, o mês) " +
+  "como PRIMEIRA coluna: é ele que rotula a linha na resposta. " +
+  "APELIDE a coluna calculada com uma destas palavras, porque é por elas que " +
+  "o valor ganha a unidade certa na tela: 'total', 'valor', 'soma', 'custo', " +
+  "'despesa', 'receita', 'saldo' e 'media' saem em reais; 'quantidade' e " +
+  "'pessoas' saem como contagem; 'dias', 'horas' e 'percentual' saem na " +
+  "unidade do nome.";
 
 /** As ferramentas, com os enums do contexto desta pergunta. */
 export function ferramentas(
