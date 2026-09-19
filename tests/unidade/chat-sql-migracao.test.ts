@@ -28,27 +28,34 @@ import { criarClientePglite } from "../apoio/pglite";
 
 const PASTA = join(process.cwd(), "ferramentas", "dados", "sql");
 
-/** As colunas que nunca podem aparecer em `amanna_chat`, por decisão. */
+/**
+ * As colunas que nunca podem aparecer em `amanna_chat`.
+ *
+ * A lista encolheu em 2026-09-19, por decisão de Produto: a base é de
+ * protótipo, inteiramente fictícia, e o chat responde **tudo** sobre ela. O
+ * que ficou não ficou por política, e sim por duas razões concretas:
+ *
+ * - **CPF** — o inspetor de saída (`src/chat/ferramentas/inspetor.ts`) barra
+ *   qualquer resultado de ferramenta com forma de CPF, e por boa razão. Expor
+ *   a coluna mataria o laço em silêncio na primeira pergunta que a tocasse:
+ *   não é uma proibição, é um defeito esperando acontecer.
+ * - **CNPJ e chave de NF-e** — identificadores longos que nenhuma pergunta de
+ *   painel quer, e que só gastariam coluna e token. O nome do cliente já
+ *   nomeia a empresa.
+ *
+ * Nome, cargo, salário, data de nascimento, gênero, escolaridade, sindicato,
+ * motivo de desligamento, CID de atestado, comentário de pesquisa e pretensão
+ * salarial de candidato **estão expostos**, de propósito. Num banco de cliente
+ * real essa lista volta a crescer, e é isso que `DATABASE_URL_CHAT` com o
+ * papel restrito existe para permitir sem mexer em código.
+ */
 const PROIBIDAS: readonly string[] = [
   "cpf_ficticio",
   "cpf",
-  "data_nascimento",
-  "banco",
-  "sindicato",
-  "gestor_matricula",
-  "motivo_desligamento",
-  "tipo_desligamento",
-  "cid",
-  "comentario_aberto",
   "cnpj",
+  "cnpj_cliente",
+  "cnpj_fornecedor",
   "chave_acesso",
-  "aprovado_por",
-  "aprovador",
-  "usuario",
-  "pretensao_salarial",
-  "motivo_reprova",
-  "genero",
-  "escolaridade",
 ];
 
 let cliente: ClientePostgres;

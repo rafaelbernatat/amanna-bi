@@ -21,7 +21,7 @@
  * piso de área × mês, e continuam sendo o caminho preferido — mais rápidas, já
  * conferidas, e são elas que acendem o painel na conversa.
  *
- * A nona só é oferecida quando a instalação a tem. Em `fixtures` o modelo nem
+ * A nona só é oferecida quando há banco. Em `fixtures` não há, e o modelo nem
  * a enxerga.
  *
  * ## Por que enums, e não `pattern`
@@ -127,15 +127,20 @@ const MES: Readonly<Record<string, unknown>> = {
  * estiver entre os maiores.
  */
 const DESCRICAO_DA_CONSULTA =
-  "Uma consulta SQL de leitura ao banco, para o que as outras ferramentas " +
-  "não alcançam: um fornecedor, cliente ou conta pelo nome quando ele não " +
-  "está no ranking; um recorte por mês que o ranking não abre; um cruzamento " +
-  "que não existe como métrica; os lançamentos um a um; as pessoas por custo. " +
-  "É a ÚLTIMA opção: tente antes o ranking ou a decomposição da dimensão, que " +
-  "são mais rápidos e desenham o gráfico. Só SELECT, uma consulta por vez, " +
-  "até 25 linhas e 6 colunas — escolha as colunas, nunca 'SELECT *'. Dê " +
-  "apelido claro a cada coluna, e ponha o nome (a conta, o colaborador, o " +
-  "mês) como primeira coluna: é ele que rotula a linha na resposta.";
+  "Uma consulta SQL de leitura ao banco. Alcança TUDO que existe nos dados, " +
+  "linha a linha: os lançamentos do razão com histórico e parceiro, as " +
+  "pessoas com nome, cargo e custo, as ausências, a pesquisa de engajamento, " +
+  "as vagas e candidaturas, os treinamentos, as horas por projeto, as notas " +
+  "fiscais, o orçamento contra o realizado, os projetos, os empréstimos e as " +
+  "dimensões. Use sempre que a pergunta pedir algo que as outras ferramentas " +
+  "não devolvem — um nome, uma lista de itens concretos, um recorte por mês " +
+  "por dimensão, um cruzamento que não existe como métrica. Prefira o ranking " +
+  "ou a decomposição quando eles respondem exatamente o que se pediu, porque " +
+  "desenham o gráfico; fora isso, consulte. " +
+  "Só SELECT, uma consulta por vez, até 25 linhas e 6 colunas — escolha as " +
+  "colunas, nunca 'SELECT *'. Dê apelido claro a cada coluna, e ponha o nome " +
+  "(a conta, o colaborador, o mês) como PRIMEIRA coluna: é ele que rotula a " +
+  "linha na resposta.";
 
 /** As ferramentas, com os enums do contexto desta pergunta. */
 export function ferramentas(

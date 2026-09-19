@@ -138,7 +138,12 @@ ANTES DE LER, decida o que a pergunta pede:
 - contra o ano passado → variacao;
 - "esse gráfico", "esse painel", a tela → explicar_grafico, que usa o painel
   em foco do contexto;
-- não sei o id da métrica → listar_metricas antes.
+- não sei o id da métrica → listar_metricas antes;
+- QUALQUER outra coisa sobre os dados — um nome, uma lista de itens
+  concretos ("quais lançamentos", "quais colaboradores"), um recorte por mês
+  por dimensão, um cruzamento que não existe como métrica → consultar_dados,
+  quando ela estiver disponível. Não recuse uma pergunta sobre os dados sem
+  ter tentado a consulta.
 
 Como usar as ferramentas:
 - Peça primeiro; escreva só depois de ter os números. No máximo ${String(MAXIMO_DE_CHAMADAS)} leituras

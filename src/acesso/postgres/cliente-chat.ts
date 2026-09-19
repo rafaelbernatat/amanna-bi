@@ -31,26 +31,44 @@ type Portador = {
 };
 
 /**
- * A consulta livre está configurada nesta instalação?
+ * A URL que a consulta livre usa.
  *
- * Sem `DATABASE_URL_CHAT` a capacidade fica desligada, e a ferramenta nem é
- * oferecida ao modelo — que é o que faz `fixtures` e o arnês de e2e nunca a
- * alcançarem.
+ * `DATABASE_URL_CHAT` quando existe — é a conexão do papel restrito, e é o que
+ * se quer com dado real. Senão, a conexão de sempre: Produto decidiu em
+ * 2026-09-19 que no protótipo, com base fictícia, a consulta vale sem
+ * provisionar papel nenhum. A tranca que resta é a do esquema `amanna_chat`
+ * (as views, o recorte por perfil) mais a transação somente-leitura — o
+ * suficiente para nada ser escrito, e não o suficiente para conter quem
+ * escrever `FROM amanna.…` de propósito.
+ */
+function urlDoChat(
+  ambiente: Record<string, string | undefined>,
+): string | null {
+  const propria = ambiente["DATABASE_URL_CHAT"];
+  if (propria !== undefined && propria.trim() !== "") return propria;
+  const padrao = ambiente["DATABASE_URL"];
+  return padrao !== undefined && padrao.trim() !== "" ? padrao : null;
+}
+
+/**
+ * A consulta livre está disponível nesta instalação?
+ *
+ * Basta haver banco. Em `fixtures` não há, e por isso a ferramenta nem é
+ * oferecida ao modelo — que é o que faz o arnês de e2e nunca a alcançar.
  */
 export function consultaLivreConfigurada(
   ambiente: Record<string, string | undefined> = process.env,
 ): boolean {
-  const url = ambiente["DATABASE_URL_CHAT"];
-  return url !== undefined && url.trim() !== "";
+  return urlDoChat(ambiente) !== null;
 }
 
 /** O cliente do chat, um por processo e por URL. */
 export function clienteDoChat(
   ambiente: Record<string, string | undefined> = process.env,
 ): ClientePostgres {
-  const url = ambiente["DATABASE_URL_CHAT"];
-  if (url === undefined || url.trim() === "") {
-    throw new Error("DATABASE_URL_CHAT não configurada");
+  const url = urlDoChat(ambiente);
+  if (url === null) {
+    throw new Error("sem banco configurado para a consulta do chat");
   }
   const portador = globalThis as unknown as Portador;
   const atual = portador[GUARDADO];

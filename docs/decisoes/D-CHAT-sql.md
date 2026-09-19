@@ -19,6 +19,40 @@
 | Verificador                            | Mantém. O resultado da consulta vira o envelope.                                                                    |
 | Formato da resposta                    | Livre, guiado pela pergunta (ver D-CHAT-pergunta-primeiro).                                                         |
 
+## Adendo do mesmo dia: no protótipo, sem provisionar papel
+
+Produto, depois de ler o roteiro de provisionamento: _"não precisa disso, pode
+deixar todos consultarem os dados do banco, é só um protótipo e os dados são
+falsos de mockup. Apenas garanta que o chat responda tudo sobre os dados, da
+forma que o usuário quiser perguntar."_
+
+Duas consequências, e as duas estão no código:
+
+1. **`DATABASE_URL_CHAT` vira opcional.** Sem ela, a consulta usa a
+   `DATABASE_URL` de sempre, e a capacidade liga sozinha com
+   `DATA_SOURCE=warehouse`. O que se perde é a contenção: pela conexão de
+   sempre, uma consulta que escreva `FROM amanna.…` alcança as tabelas cruas.
+   O que **permanece** é o que impede estrago — só SELECT, transação
+   somente-leitura, teto de linhas e de colunas, e o recorte por perfil.
+2. **O esquema abre o resto do dado.** Ausências (com CID), engajamento (com o
+   comentário aberto), vagas, candidaturas (com pretensão salarial),
+   treinamento, horas por projeto, movimentação, notas de saída, orçamento,
+   projetos, empréstimos, metas e as dimensões de cliente, fornecedor e cargo.
+   O cadastro de pessoa passa a levar nascimento, gênero, escolaridade,
+   sindicato, banco e motivo de desligamento.
+
+**Uma exclusão ficou, e ela é funcional antes de ser política:** o
+`cpf_ficticio` não sai em view nenhuma porque o inspetor de saída barra
+qualquer resultado com forma de CPF — expor a coluna mataria o laço em
+silêncio na primeira pergunta que a tocasse. CNPJ e chave de NF-e também
+ficam fora, por serem identificadores longos que nenhuma pergunta de painel
+quer e que só gastariam coluna e token.
+
+**Quando o banco for de cliente real, isto se reverte preenchendo uma
+variável**, e não mexendo em código: provisiona-se o papel (a migração já o
+cria) e monta-se `DATABASE_URL_CHAT`. O desenho abaixo continua valendo
+inteiro, e é por isso que ele foi mantido.
+
 ## A defesa é o papel, e isso foi medido
 
 `SET LOCAL ROLE` na conexão do produto **não** serve, e a razão não é teórica.

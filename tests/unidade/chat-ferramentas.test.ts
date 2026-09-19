@@ -72,7 +72,11 @@ describe("o catálogo de ferramentas", () => {
     expect(comConsulta.map((f) => f.nome)).toEqual([...NOMES_DE_FERRAMENTA]);
     const nona = comConsulta.find((f) => f.nome === "consultar_dados");
     expect(nona?.parametros["additionalProperties"]).toBe(false);
-    expect(nona?.descricao).toMatch(/ÚLTIMA opção/);
+    // A descrição diz ao modelo que a consulta alcança tudo, e não que ela é
+    // um último recurso: a base é de protótipo, e o pedido de Produto é que
+    // o chat responda qualquer pergunta sobre os dados (2026-09-19).
+    expect(nona?.descricao).toMatch(/Alcança TUDO/);
+    expect(nona?.descricao).not.toMatch(/ÚLTIMA opção/);
   });
 
   it("o enum de métrica é o catálogo inteiro, e o de ano é o da fonte", () => {

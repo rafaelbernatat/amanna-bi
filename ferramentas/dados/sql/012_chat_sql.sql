@@ -30,6 +30,29 @@
 
 CREATE SCHEMA IF NOT EXISTS amanna_chat;
 
+/*
+ * As views são derrubadas antes de serem recriadas.
+ *
+ * `CREATE OR REPLACE VIEW` só aceita **acrescentar** coluna no fim: mudar a
+ * ordem, o nome ou o tipo de uma coluna existente dá "cannot change name of
+ * view column". Uma migração que evolui — e esta vai evoluir, cada vez que o
+ * chat precisar alcançar mais um pedaço do dado — não pode depender disso.
+ *
+ * Derrubar é seguro aqui: view não guarda dado, e nada fora deste esquema
+ * depende dela. O GRANT é reaplicado no fim do arquivo.
+ */
+DO $$
+DECLARE v record;
+BEGIN
+  FOR v IN
+    SELECT table_name FROM information_schema.views
+    WHERE table_schema = 'amanna_chat'
+  LOOP
+    EXECUTE format('DROP VIEW IF EXISTS amanna_chat.%I CASCADE', v.table_name);
+  END LOOP;
+END
+$$;
+
 -- ------------------------------------------------------------------
 -- O papel
 -- ------------------------------------------------------------------
@@ -347,8 +370,19 @@ SELECT co.matricula,
        co.jornada_semanal,
        co.fte,
        co.salario_base,
+       co.data_nascimento,
+       co.faixa_etaria,
+       co.genero,
+       co.escolaridade,
+       co.uf,
+       co.cidade,
+       co.sindicato,
+       co.banco,
+       co.gestor_matricula,
        co.data_admissao,
        co.data_desligamento,
+       co.motivo_desligamento,
+       co.tipo_desligamento,
        co.status
 FROM amanna.colaboradores co
 JOIN amanna.v_entidade e USING (id_entidade)
@@ -388,12 +422,148 @@ JOIN amanna.v_entidade e USING (id_entidade)
 WHERE amanna_chat.no_escopo(e.entidade, NULL, 'fin');
 
 -- ------------------------------------------------------------------
+-- RH em detalhe
+-- ------------------------------------------------------------------
+--
+-- Produto decidiu em 2026-09-19 que a base é de protótipo, fictícia, e que o
+-- chat responde **tudo** sobre ela: ausências, engajamento, recrutamento,
+-- treinamento e horas entram, com as colunas que a pergunta pode querer.
+--
+-- Uma exclusão permanece, e ela é funcional antes de ser política: o
+-- `cpf_ficticio` não sai em view nenhuma porque o inspetor de saída
+-- (`src/chat/ferramentas/inspetor.ts`) barra qualquer resultado com forma de
+-- CPF — expor a coluna mataria o laço em silêncio na primeira pergunta que a
+-- tocasse.
+
+CREATE OR REPLACE VIEW amanna_chat.ausencia AS
+SELECT a.id_ausencia, a.competencia AS mes, a.matricula, a.nome,
+       e.entidade, a.area, a.modalidade, a.tipo, a.data_inicio, a.data_fim,
+       a.dias, a.horas_perdidas, a.abonado, a.cid, a.observacao
+FROM amanna.ponto_ausencias a
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, a.area, 'rh');
+
+CREATE OR REPLACE VIEW amanna_chat.engajamento AS
+SELECT p.id_resposta, p.onda, p.competencia AS mes, p.data_resposta,
+       p.matricula, e.entidade, p.area, p.modalidade, p.genero, p.faixa_etaria,
+       p.tempo_casa_meses, p.enps_nota, p.enps_classificacao,
+       p.dim_lideranca, p.dim_reconhecimento, p.dim_carreira,
+       p.dim_remuneracao, p.dim_ambiente, p.dim_carga, p.dim_comunicacao,
+       p.dim_autonomia, p.dim_proposito, p.dim_ferramentas, p.comentario_aberto
+FROM amanna.pesquisa_engajamento p
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, p.area, 'rh');
+
+CREATE OR REPLACE VIEW amanna_chat.vaga AS
+SELECT v.id_vaga, v.competencia_abertura AS mes, v.data_abertura,
+       v.data_fechamento, v.status, e.entidade, v.area, v.cargo, v.nivel,
+       v.modalidade, v.motivo, v.salario_ofertado, v.fonte_principal,
+       v.candidaturas, v.triagem, v.entrevistas, v.propostas, v.contratacoes,
+       v.dias_para_fechar, v.sla_dias, v.custo_total
+FROM amanna.vagas_recrutamento v
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, v.area, 'rh');
+
+CREATE OR REPLACE VIEW amanna_chat.candidatura AS
+SELECT c.id_candidatura, c.id_vaga, c.competencia AS mes, c.data_candidatura,
+       c.candidato, c.uf, c.fonte, c.etapa_final, c.pretensao_salarial,
+       c.nota_triagem, c.reprovado_em, c.motivo_reprova
+FROM amanna.candidaturas c
+WHERE amanna_chat.no_escopo(NULL, NULL, 'rh');
+
+CREATE OR REPLACE VIEW amanna_chat.treinamento AS
+SELECT t.id_participacao, t.competencia AS mes, t.treinamento, t.categoria,
+       t.matricula, t.nome, e.entidade, t.area, t.horas_previstas,
+       t.horas_realizadas, t.conclusao_pct, t.status, t.nota_avaliacao,
+       t.custo, t.certificado
+FROM amanna.treinamento_participacoes t
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, t.area, 'rh');
+
+CREATE OR REPLACE VIEW amanna_chat.hora_apontada AS
+SELECT h.competencia AS mes, h.matricula, h.nome, h.area, h.projeto,
+       h.horas_apontadas, h.horas_faturaveis, h.custo_hora, h.custo_apontado
+FROM amanna.apontamento_horas h
+WHERE amanna_chat.no_escopo(NULL, h.area, 'rh');
+
+CREATE OR REPLACE VIEW amanna_chat.movimentacao AS
+SELECT m.competencia AS mes, m.data, m.matricula, c.nome, c.area, c.cargo,
+       m.evento, m.motivo, m.tipo
+FROM amanna.movimentacao_pessoal m
+LEFT JOIN amanna.colaboradores c USING (matricula)
+WHERE amanna_chat.no_escopo(NULL, c.area, 'rh');
+
+-- ------------------------------------------------------------------
+-- Mais financeiro
+-- ------------------------------------------------------------------
+
+CREATE OR REPLACE VIEW amanna_chat.nota_saida AS
+SELECT n.id_nf, n.numero, n.competencia AS mes, n.data_emissao, e.entidade,
+       n.cliente, n.uf_destino, n.segmento, n.canal, n.rating_credito,
+       n.natureza_operacao, n.valor_produtos, n.desconto, n.valor_total,
+       n.icms, n.pis, n.cofins, n.iss, n.valor_liquido,
+       n.condicao_pagamento, n.prazo_dias, n.status
+FROM amanna.notas_fiscais_saida n
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, NULL, 'fin');
+
+CREATE OR REPLACE VIEW amanna_chat.orcamento AS
+SELECT o.competencia AS mes, e.entidade, o.area, o.centro_custo, o.conta,
+       o.conta_descricao, o.linha_dre, o.versao, o.valor_orcado,
+       o.valor_realizado, o.desvio_valor, o.desvio_pct, o.justificativa
+FROM amanna.orcamento o
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, o.area, 'fin');
+
+CREATE OR REPLACE VIEW amanna_chat.projeto AS
+SELECT p.id_projeto, p.projeto, p.cliente, e.entidade, p.data_inicio,
+       p.data_fim_prevista, p.data_fim_real, p.status, p.receita_contratada,
+       p.custo_material, p.custo_mao_de_obra, p.horas_previstas,
+       p.horas_realizadas, p.margem_bruta, p.margem_bruta_pct
+FROM amanna.projetos p
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, NULL, 'int');
+
+CREATE OR REPLACE VIEW amanna_chat.emprestimo AS
+SELECT l.id_contrato, l.banco, l.modalidade, l.indexador, l.taxa_efetiva_aa,
+       l.principal, l.saldo_devedor_2026_12, l.data_contratacao,
+       l.data_vencimento, l.carencia_meses, l.parcelas, l.garantia,
+       e.entidade, l.covenant
+FROM amanna.emprestimos l
+LEFT JOIN amanna.v_entidade e USING (id_entidade)
+WHERE amanna_chat.no_escopo(e.entidade, NULL, 'fin');
+
+CREATE OR REPLACE VIEW amanna_chat.meta AS
+SELECT modulo, indicador, unidade, meta, sentido, periodicidade
+FROM amanna.metas
+WHERE amanna_chat.no_escopo(NULL, NULL, 'fin')
+   OR amanna_chat.no_escopo(NULL, NULL, 'rh');
+
+-- ------------------------------------------------------------------
 -- As dimensões
 -- ------------------------------------------------------------------
 
 CREATE OR REPLACE VIEW amanna_chat.dim_conta AS
-SELECT conta, conta_descricao, linha_dre, demonstrativo, natureza
+SELECT conta, conta_descricao, classe, grupo, natureza, demonstrativo, linha_dre
 FROM amanna.dim_conta_contabil;
+
+-- O CNPJ fica de fora das duas dimensões de parceiro: é identificador, e não
+-- diz nada que a pergunta queira saber — o nome já nomeia a empresa.
+CREATE OR REPLACE VIEW amanna_chat.dim_cliente AS
+SELECT id_cliente, cliente, segmento, porte, uf, cidade, rating_credito,
+       limite_credito, prazo_medio_contratado, cliente_desde, canal, status
+FROM amanna.dim_cliente;
+
+CREATE OR REPLACE VIEW amanna_chat.dim_fornecedor AS
+SELECT id_fornecedor, fornecedor, categoria, uf, cidade, prazo_pagamento,
+       condicao, critico, status
+FROM amanna.dim_fornecedor;
+
+CREATE OR REPLACE VIEW amanna_chat.dim_cargo AS
+SELECT id_cargo, cargo, familia, area, nivel, salario_min, salario_medio,
+       salario_max, cbo, elegivel_bonus, elegivel_comissao
+FROM amanna.dim_cargo
+WHERE amanna_chat.no_escopo(NULL, area, NULL);
 
 CREATE OR REPLACE VIEW amanna_chat.dim_centro_custo AS
 SELECT id_centro_custo, centro_custo, area_slug AS area
@@ -472,7 +642,76 @@ INSERT INTO amanna_chat.dicionario (objeto, coluna, ordem, unidade, descricao) V
   ('movimento_caixa', 'classe_fluxo', 1, NULL, 'Operacional, investimento ou financiamento'),
   ('movimento_caixa', 'natureza', 2, NULL, 'Natureza do movimento'),
   ('movimento_caixa', 'entrada', 3, 'reais', 'Entrada de caixa'),
-  ('movimento_caixa', 'saida', 4, 'reais', 'Saída de caixa')
+  ('movimento_caixa', 'saida', 4, 'reais', 'Saída de caixa'),
+  ('ausencia', 'mes', 1, NULL, 'Competência, AAAA-MM'),
+  ('ausencia', 'nome', 2, NULL, 'Nome do colaborador'),
+  ('ausencia', 'tipo', 3, NULL, 'Tipo de ausência'),
+  ('ausencia', 'dias', 4, 'dias', 'Dias de ausência'),
+  ('ausencia', 'horas_perdidas', 5, 'horas', 'Horas perdidas'),
+  ('ausencia', 'cid', 6, NULL, 'Código do diagnóstico, quando houve atestado'),
+  ('engajamento', 'mes', 1, NULL, 'Competência, AAAA-MM'),
+  ('engajamento', 'onda', 2, NULL, 'Onda da pesquisa'),
+  ('engajamento', 'enps_nota', 3, 'pontos', 'Nota de 0 a 10 do eNPS'),
+  ('engajamento', 'enps_classificacao', 4, NULL, 'Promotor, neutro ou detrator'),
+  ('engajamento', 'comentario_aberto', 5, NULL, 'Comentário livre da resposta'),
+  ('vaga', 'mes', 1, NULL, 'Competência de abertura'),
+  ('vaga', 'cargo', 2, NULL, 'Cargo da vaga'),
+  ('vaga', 'status', 3, NULL, 'Aberta, fechada ou cancelada'),
+  ('vaga', 'dias_para_fechar', 4, 'dias', 'Dias entre abertura e fechamento'),
+  ('vaga', 'custo_total', 5, 'reais', 'Custo total da vaga'),
+  ('vaga', 'salario_ofertado', 6, 'reais', 'Salário ofertado'),
+  ('candidatura', 'mes', 1, NULL, 'Competência da candidatura'),
+  ('candidatura', 'candidato', 2, NULL, 'Nome do candidato'),
+  ('candidatura', 'fonte', 3, NULL, 'Por onde o candidato chegou'),
+  ('candidatura', 'etapa_final', 4, NULL, 'Até onde o candidato foi'),
+  ('candidatura', 'pretensao_salarial', 5, 'reais', 'Pretensão salarial'),
+  ('treinamento', 'mes', 1, NULL, 'Competência'),
+  ('treinamento', 'nome', 2, NULL, 'Nome do colaborador'),
+  ('treinamento', 'treinamento', 3, NULL, 'Nome do treinamento'),
+  ('treinamento', 'horas_realizadas', 4, 'horas', 'Horas realizadas'),
+  ('treinamento', 'conclusao_pct', 5, 'pct', 'Percentual de conclusão'),
+  ('treinamento', 'custo', 6, 'reais', 'Custo da participação'),
+  ('hora_apontada', 'mes', 1, NULL, 'Competência'),
+  ('hora_apontada', 'nome', 2, NULL, 'Nome do colaborador'),
+  ('hora_apontada', 'projeto', 3, NULL, 'Projeto'),
+  ('hora_apontada', 'horas_apontadas', 4, 'horas', 'Horas apontadas'),
+  ('hora_apontada', 'horas_faturaveis', 5, 'horas', 'Horas faturáveis'),
+  ('hora_apontada', 'custo_apontado', 6, 'reais', 'Custo das horas'),
+  ('movimentacao', 'mes', 1, NULL, 'Competência'),
+  ('movimentacao', 'nome', 2, NULL, 'Nome do colaborador'),
+  ('movimentacao', 'evento', 3, NULL, 'Admissão, desligamento, promoção…'),
+  ('movimentacao', 'motivo', 4, NULL, 'Motivo do evento'),
+  ('nota_saida', 'mes', 1, NULL, 'Competência'),
+  ('nota_saida', 'cliente', 2, NULL, 'Cliente'),
+  ('nota_saida', 'segmento', 3, NULL, 'Segmento do cliente'),
+  ('nota_saida', 'valor_total', 4, 'reais', 'Valor total da nota'),
+  ('nota_saida', 'valor_liquido', 5, 'reais', 'Valor líquido, sem impostos'),
+  ('orcamento', 'mes', 1, NULL, 'Competência'),
+  ('orcamento', 'conta_descricao', 2, NULL, 'Conta orçada'),
+  ('orcamento', 'centro_custo', 3, NULL, 'Centro de custo'),
+  ('orcamento', 'valor_orcado', 4, 'reais', 'Valor orçado'),
+  ('orcamento', 'valor_realizado', 5, 'reais', 'Valor realizado'),
+  ('orcamento', 'desvio_pct', 6, 'pct', 'Desvio sobre o orçado'),
+  ('projeto', 'projeto', 1, NULL, 'Nome do projeto'),
+  ('projeto', 'cliente', 2, NULL, 'Cliente'),
+  ('projeto', 'status', 3, NULL, 'Situação do projeto'),
+  ('projeto', 'receita_contratada', 4, 'reais', 'Receita contratada'),
+  ('projeto', 'margem_bruta', 5, 'reais', 'Margem bruta'),
+  ('projeto', 'margem_bruta_pct', 6, 'pct', 'Margem bruta percentual'),
+  ('emprestimo', 'banco', 1, NULL, 'Banco credor'),
+  ('emprestimo', 'modalidade', 2, NULL, 'Modalidade do contrato'),
+  ('emprestimo', 'taxa_efetiva_aa', 3, 'pct', 'Taxa efetiva ao ano'),
+  ('emprestimo', 'principal', 4, 'reais', 'Principal contratado'),
+  ('emprestimo', 'saldo_devedor_2026_12', 5, 'reais', 'Saldo devedor em dez/2026'),
+  ('meta', 'indicador', 1, NULL, 'Indicador com meta declarada'),
+  ('meta', 'meta', 2, NULL, 'Valor da meta, na unidade do indicador'),
+  ('dim_cliente', 'cliente', 1, NULL, 'Nome do cliente'),
+  ('dim_cliente', 'segmento', 2, NULL, 'Segmento'),
+  ('dim_cliente', 'limite_credito', 3, 'reais', 'Limite de crédito'),
+  ('dim_fornecedor', 'fornecedor', 1, NULL, 'Nome do fornecedor'),
+  ('dim_fornecedor', 'categoria', 2, NULL, 'Categoria de compra'),
+  ('dim_cargo', 'cargo', 1, NULL, 'Nome do cargo'),
+  ('dim_cargo', 'salario_medio', 2, 'reais', 'Salário médio da faixa')
 ON CONFLICT (objeto, coluna) DO NOTHING;
 
 -- Por último, e idempotente: as views precisam existir para o GRANT pegá-las.
