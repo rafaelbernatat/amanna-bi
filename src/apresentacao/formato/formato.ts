@@ -138,6 +138,40 @@ export function formatarValor(valor: number, unidade: Unidade): string {
   }
 }
 
+/** Quantas casas decimais um valor em reais com centavos tem. */
+const CASAS_DOS_CENTAVOS = 2;
+
+/**
+ * Reais com centavos: `4329.15` vira `R$ 4.329,15` (T-451).
+ *
+ * `BRL_mi`, a unidade do contrato, é para painel — em milhoes, uma casa. Uma
+ * linha de razao ou de folha e outra coisa: `R$ 0,0 mi` para o salario de
+ * alguem seria numero certo e resposta inutil. Nao vira unidade do contrato
+ * porque `Unidade` alimenta o esquema de painel (`npm run schema:check`), e a
+ * unidade de uma coluna de consulta nao e uma unidade de contrato.
+ *
+ * Mora aqui, e nao no chat, porque a regra declarada deste modulo e que
+ * arredondamento nao acontece em outro lugar.
+ */
+export function formatarReais(valor: number): string {
+  const { sinal, corpo } = arredondar(valor, CASAS_DOS_CENTAVOS);
+  return `${sinal}R$ ${corpo}`;
+}
+
+/**
+ * Um numero sem unidade, com as casas pedidas: `1518` vira `1.518` (T-451).
+ *
+ * E o que sai da coluna de consulta cuja unidade o dicionario nao declara — o
+ * modelo escreveu `salario_base * 12 AS anual`, e ninguem sabe o que aquilo e.
+ * Sair sem simbolo e o lado seguro: o verificador so examina numero com
+ * unidade, e um `R$` posto por conta propria nao estaria na lista de
+ * permitidos.
+ */
+export function formatarNumero(valor: number, casas = 0): string {
+  const { sinal, corpo } = arredondar(valor, casas);
+  return `${sinal}${corpo}`;
+}
+
 /**
  * Data de fechamento em mes/ano abreviado: `2026-12-31` vira `dez/2026`.
  *

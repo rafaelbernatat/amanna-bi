@@ -191,6 +191,22 @@ export const ESQUEMA: readonly RegraDeVariavel[] = [
     conferir: urlComEsquema(["postgres", "postgresql"]),
   },
   {
+    /*
+     * A conexão do chat, autenticada como `amanna_chat_ro` (T-450).
+     *
+     * É a defesa da consulta livre: o papel tem GRANT só no esquema
+     * `amanna_chat`, e nenhum em `amanna`. Sem esta variável a capacidade fica
+     * desligada e a ferramenta não é oferecida ao modelo — o que é o estado
+     * certo de qualquer instalação que não a queira.
+     */
+    nome: "DATABASE_URL_CHAT",
+    proposito:
+      "conexão somente-leitura do chat, como amanna_chat_ro (D-CHAT-sql); sem ela a consulta livre fica desligada",
+    obrigatoria: false,
+    segredo: true,
+    conferir: urlComEsquema(["postgres", "postgresql"]),
+  },
+  {
     nome: "DATABASE_SSL_CA",
     proposito:
       "autoridade certificadora em PEM, só quando a cadeia do banco exigir (D-DADOS)",

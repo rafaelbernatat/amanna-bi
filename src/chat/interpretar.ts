@@ -57,6 +57,16 @@ export type TurnoAnterior = {
    */
   readonly mes?: MesPedido | null;
   readonly filtros?: Query | null;
+  /**
+   * De que a resposta anterior falou, quando ela não veio do catálogo (T-454).
+   *
+   * Uma resposta de consulta não tem `metrica`, e sem isto "E esses
+   * lançamentos são o que?" perderia o fio pela mesma razão de sempre: o
+   * modelo veria "sem métrica" e nada mais. São os rótulos das colunas e das
+   * linhas, curtos e **sem número** — o histórico nunca leva número, porque
+   * cada valor renasce e é conferido de novo a cada turno (RF-15).
+   */
+  readonly assunto?: string | null;
 };
 
 /**
@@ -67,7 +77,7 @@ export type TurnoAnterior = {
 export function linhaDaConversa(t: TurnoAnterior, indice: number): string {
   const partes = [
     t.metrica === null
-      ? "sem métrica"
+      ? (t.assunto ?? "sem métrica")
       : `${t.metrica} (${CATALOGO_GERADO[t.metrica]?.rotulo ?? t.metrica})`,
   ];
   if (t.mes !== undefined && t.mes !== null) partes.push(rotuloDoMes(t.mes));
@@ -98,6 +108,16 @@ export type Intencao = {
   readonly confianca: number;
   /** Métricas próximas, para quando a confiança é baixa. */
   readonly alternativas: readonly string[];
+  /**
+   * A pergunta nomeou a métrica por termo inteiro, e não por palavra solta.
+   *
+   * É o que separa "como está o turnover?" de "qual foi a maior despesa de
+   * junho?": as duas casam alguma coisa, mas só a primeira nomeia a métrica.
+   * O roteamento (`rota.ts`) usa esta diferença para decidir quem fica no
+   * atalho — confiança sozinha não bastava, porque ela mede distância para o
+   * segundo colocado, e uma palavra solta sem concorrente é confiante.
+   */
+  readonly inteiro: boolean;
 };
 
 /** Abaixo disto, o chat pergunta em vez de responder (seção 7.2). */
@@ -407,5 +427,6 @@ export function interpretarLocalmente(
     filtros: filtrosDaPergunta(pergunta, atuais),
     confianca,
     alternativas: ranking.slice(1, 1 + QUANTAS_ALTERNATIVAS).map((x) => x.id),
+    inteiro: primeiro.inteiro,
   };
 }

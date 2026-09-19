@@ -32,10 +32,11 @@ beforeAll(() => {
   process.env["AUTH_PROVIDER"] = "fixtures";
 });
 
-// O laco na duvida (T-436) e de chat-laco-na-duvida.test.ts; aqui a recusa
-// continua sendo recusa, sem ir ao laco.
+// O laco e de chat-laco.test.ts e de chat-rota-sem-metrica.test.ts; aqui o
+// roteamento por sinais (T-446) mantem a conversa no caminho de uma metrica,
+// que e o que este arquivo encadeia.
 beforeEach(() => {
-  vi.stubEnv("CHAT_LACO_NA_DUVIDA", "0");
+  vi.stubEnv("CHAT_ROTA", "sinais");
 });
 
 vi.mock("@/chat/openrouter", () => ({

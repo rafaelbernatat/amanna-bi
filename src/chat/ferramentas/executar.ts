@@ -22,8 +22,17 @@
  * que a pessoa pode ver.
  */
 
+import {
+  consultar,
+  ConsultaRecusada,
+  dicionarioDoChat,
+} from "@/acesso/consulta";
 import { lerMetrica, lerPainel, lerRanking } from "@/acesso/leitura";
 import type { PedidoDeRankingExterno } from "@/acesso/fronteira";
+import {
+  leituraDaConsulta,
+  type UnidadeDeColuna,
+} from "@/chat/ferramentas/consulta";
 import type { ContextoDaTela } from "@/chat/contexto";
 import {
   diferenca,
@@ -48,6 +57,8 @@ import {
   validarChamada,
   type PedidoValidado,
 } from "@/chat/ferramentas/validar";
+import { pontoDoMes, type MesPedido } from "@/chat/mes";
+import { pontosDaSerie } from "@/chat/serie";
 import { resumirPainel } from "@/chat/grafico";
 import { destinoDaMetrica } from "@/chat/roteamento";
 import { painelDoRanking } from "@/chat/serie";
@@ -99,6 +110,7 @@ async function metricaLida(
   id: string,
   filtros: Query,
   portas: Portas,
+  mes: MesPedido | null = null,
 ): Promise<LeituraDeMetrica> {
   const lida = await portas.lerMetrica(id, filtros);
   return {
@@ -111,6 +123,9 @@ async function metricaLida(
     formula: lida.formula,
     asOf: lida.asOf,
     filtros,
+    // A série já vem no valor lido: o mês é escolha, não consulta nova.
+    pontoDoMes:
+      mes === null ? null : pontoDoMes(pontosDaSerie(lida, filtros), mes),
   };
 }
 
@@ -119,6 +134,7 @@ async function serieLida(
   id: string,
   filtros: Query,
   portas: Portas,
+  mes: MesPedido | null = null,
 ): Promise<LeituraDeFerramenta> {
   const destino = destinoDaMetrica(id);
   if (destino?.painel === null || destino === null) {
@@ -148,6 +164,7 @@ async function serieLida(
     destaques: resumo.destaques,
     filtros,
     desenho: painel,
+    pontoDoMes: mes === null ? null : pontoDoMes(resumo.pontos, mes),
   };
 }
 
@@ -312,6 +329,41 @@ function catalogoBuscado(busca: string): LeituraDeFerramenta {
   return { tipo: "catalogo", busca, metricas };
 }
 
+/**
+ * A consulta livre, lida pela porta de `acesso/consulta.ts` (T-453).
+ *
+ * As unidades saem do dicionário do esquema, e é por elas que a célula é
+ * escrita **aqui**, e não pelo modelo: o verificador compara texto, e um
+ * número que o modelo formatou sozinho não estaria na lista de permitidos.
+ *
+ * `ConsultaRecusada` vira `LeituraRecusada`, que o laço devolve como
+ * `{ "erro": … }` — o modelo lê, corrige a consulta e tenta de novo dentro das
+ * quatro chamadas.
+ */
+async function consultaLida(sql: string): Promise<LeituraDeFerramenta> {
+  const [resultado, dicionario] = await Promise.all([
+    consultar(sql).catch((erro: unknown) => {
+      throw new LeituraRecusada(
+        erro instanceof ConsultaRecusada
+          ? erro.motivo
+          : "a consulta não pôde ser executada; simplifique e tente de novo",
+      );
+    }),
+    dicionarioDoChat(),
+  ]);
+  const unidades: Record<string, UnidadeDeColuna> = {};
+  for (const c of dicionario) {
+    unidades[c.coluna] ??= (c.unidade as UnidadeDeColuna | null) ?? null;
+  }
+  return leituraDaConsulta(
+    sql,
+    resultado,
+    unidades,
+    ["amanna_chat"],
+    new Date().toISOString().slice(0, 10),
+  );
+}
+
 /** Executa um pedido já validado. Lança `LeituraRecusada` no que não dá. */
 export async function executarPedido(
   pedido: PedidoValidado,
@@ -320,9 +372,9 @@ export async function executarPedido(
 ): Promise<LeituraDeFerramenta> {
   switch (pedido.nome) {
     case "ler_metrica":
-      return metricaLida(pedido.metrica, pedido.filtros, portas);
+      return metricaLida(pedido.metrica, pedido.filtros, portas, pedido.mes);
     case "serie_da_metrica":
-      return serieLida(pedido.metrica, pedido.filtros, portas);
+      return serieLida(pedido.metrica, pedido.filtros, portas, pedido.mes);
     case "comparar_metricas":
       return comparacaoLida(pedido.metricas, pedido.filtros, portas);
     case "variacao":
@@ -341,6 +393,8 @@ export async function executarPedido(
     }
     case "listar_metricas":
       return catalogoBuscado(pedido.busca);
+    case "consultar_dados":
+      return consultaLida(pedido.consulta);
   }
 }
 
@@ -360,6 +414,14 @@ export function paraOModeloLeitura(l: LeituraDeFerramenta): unknown {
         tipo: l.tipo,
         metrica: l.rotulo,
         valor: l.formatado,
+        ...(l.pontoDoMes === null
+          ? {}
+          : {
+              mes: {
+                rotulo: l.pontoDoMes.rotulo,
+                valor: l.pontoDoMes.formatado,
+              },
+            }),
         formula: l.formula,
         fechamento: l.asOf,
       };
@@ -367,6 +429,14 @@ export function paraOModeloLeitura(l: LeituraDeFerramenta): unknown {
       return {
         tipo: l.tipo,
         metrica: l.rotulo,
+        ...(l.pontoDoMes === null
+          ? {}
+          : {
+              mes: {
+                rotulo: l.pontoDoMes.rotulo,
+                valor: l.pontoDoMes.formatado,
+              },
+            }),
         pontos: l.pontos.map((p) => ({ rotulo: p.rotulo, valor: p.formatado })),
         destaques: l.destaques.map((d) => ({
           tipo: d.tipo,
@@ -430,6 +500,19 @@ export function paraOModeloLeitura(l: LeituraDeFerramenta): unknown {
       };
     case "catalogo":
       return { tipo: l.tipo, metricas: l.metricas };
+    /*
+     * A tabela, só com as células escritas. Sem bruto ao lado: o módulo
+     * inteiro existe para o modelo copiar em vez de reescrever, e um número
+     * cru aqui seria convite para arredondar de outro jeito.
+     */
+    case "consulta":
+      return {
+        tipo: l.tipo,
+        colunas: l.colunas.map((c) => c.nome),
+        linhas: l.linhas.map((linha) => linha.celulas),
+        linhasDevolvidas: l.linhas.length,
+        truncado: l.truncado,
+      };
   }
 }
 

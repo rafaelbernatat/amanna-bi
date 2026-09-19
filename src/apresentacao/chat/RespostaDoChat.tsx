@@ -1,5 +1,8 @@
 import { formatarValor } from "@/apresentacao/formato/formato";
-import { paragrafosDaResposta } from "@/apresentacao/chat/paragrafos";
+import {
+  blocosDaResposta,
+  type ItemDaLista,
+} from "@/apresentacao/chat/paragrafos";
 import { MARCA, PALETA, TIPOGRAFIA } from "@/apresentacao/tema/tema";
 import type {
   LeituraDeFerramenta,
@@ -197,12 +200,56 @@ export function RespostaDoChat({
           overflowWrap: "anywhere",
         }}
       >
-        {r.formula} · fechamento {r.asOf} · fonte {r.fontes.join(", ")} ·{" "}
-        {autoriaEmTexto(resposta.autoria)} · caminho {r.caminho}
+        {r.metrica === "" ? (
+          <>
+            consulta ao banco · {String(linhasConsultadas(r.leituras))} linhas ·
+            fonte {r.fontes.join(", ")}
+          </>
+        ) : (
+          <>
+            {r.formula} · fechamento {r.asOf} · fonte {r.fontes.join(", ")}
+          </>
+        )}{" "}
+        · {autoriaEmTexto(resposta.autoria)} · caminho {r.caminho}
         {r.leituras.length === 0
           ? ""
           : ` · leituras: ${r.leituras.map((l) => l.ferramenta).join(", ")}`}
       </p>
+
+      {/*
+        A consulta executada, recolhida (T-454).
+
+        O princípio P3 diz que todo número declara a fórmula. Numa resposta de
+        consulta, o SELECT **é** a fórmula: sem ele, o número da tela não teria
+        como ser auditado, e é isso que a linha de fórmula dá a toda outra
+        resposta.
+      */}
+      {sqlDaResposta(r.leituras) === null ? null : (
+        <details data-teste="chat-consulta-registrada">
+          <summary
+            style={{
+              font: `500 9.5px/1.3 ${TIPOGRAFIA.mono}`,
+              color: PALETA.textoTerciario,
+              textTransform: "uppercase",
+              letterSpacing: ".1em",
+              cursor: "pointer",
+            }}
+          >
+            consulta registrada
+          </summary>
+          <pre
+            style={{
+              margin: "6px 0 0",
+              whiteSpace: "pre-wrap",
+              overflowWrap: "anywhere",
+              font: `400 10px/1.5 ${TIPOGRAFIA.mono}`,
+              color: PALETA.textoSecundario,
+            }}
+          >
+            {sqlDaResposta(r.leituras)}
+          </pre>
+        </details>
+      )}
 
       {r.decisao === null ? null : (
         <details>
@@ -238,6 +285,25 @@ export function RespostaDoChat({
       )}
     </div>
   );
+}
+
+/** Quantas linhas a consulta devolveu, para o rodapé de uma resposta sem métrica. */
+function linhasConsultadas(leituras: readonly ResultadoDeFerramenta[]): number {
+  let total = 0;
+  for (const { leitura } of leituras) {
+    if (leitura.tipo === "consulta") total += leitura.linhas.length;
+  }
+  return total;
+}
+
+/** O SELECT executado, quando houve um. É a fórmula de uma resposta de consulta. */
+function sqlDaResposta(
+  leituras: readonly ResultadoDeFerramenta[],
+): string | null {
+  for (const { leitura } of leituras) {
+    if (leitura.tipo === "consulta") return leitura.sql;
+  }
+  return null;
 }
 
 const ESTILO_DO_TEXTO = {
@@ -296,6 +362,7 @@ const TITULO_DA_LEITURA: Readonly<Record<LeituraDeFerramenta["tipo"], string>> =
     decomposicao: "decomposição",
     grafico: "o gráfico",
     catalogo: "métricas próximas",
+    consulta: "consulta ao banco",
   };
 
 /**
@@ -435,6 +502,29 @@ function CorpoDaLeitura({
           ))}
         </>
       );
+    /*
+     * A tabela da consulta, uma linha por linha. Só cópia do que o servidor
+     * escreveu: a célula já veio formatada pela unidade que o dicionário
+     * declara, e esta camada não deriva nada.
+     */
+    case "consulta":
+      return (
+        <>
+          {l.linhas.map((linha, i) => (
+            <Linha
+              key={`${linha.rotulo}-${String(i)}`}
+              rotulo={
+                linha.rotulo === "" ? `linha ${String(i + 1)}` : linha.rotulo
+              }
+              valor={linha.celulas
+                .filter((_, c) => l.colunas[c]?.papel === "numero")
+                .map((celula) => celula ?? "sem dado")
+                .join(" · ")}
+            />
+          ))}
+          {l.truncado ? <Linha rotulo="lista cortada" valor={null} /> : null}
+        </>
+      );
   }
 }
 
@@ -484,13 +574,28 @@ export function Atalhos({
   );
 }
 
+/** Um item da lista da resposta, com o mesmo par rótulo–valor do ranking. */
+function ItemNaTela({ item }: { readonly item: ItemDaLista }) {
+  return (
+    <li style={ESTILO_DA_LINHA}>
+      <span style={{ minWidth: 0 }}>{item.rotulo}</span>
+      {item.valor === null ? null : (
+        <span style={ESTILO_DO_NUMERO}>{item.valor}</span>
+      )}
+    </li>
+  );
+}
+
 /**
- * O texto da resposta em parágrafos, com o "Traduzindo" em destaque (T-441).
+ * O texto da resposta em blocos, com o "Traduzindo" em destaque (T-441) e a
+ * lista desenhada como lista (T-444).
  *
  * O modelo escreve até três parágrafos separados por linha em branco; a
  * bolha os desenha um a um. O que começa com "Traduzindo:" ganha o rótulo e
  * uma barra na cor de destaque — é a frase que diz o que o número significa
- * para o negócio. O texto montado, sem marca nenhuma, é um parágrafo só.
+ * para o negócio. Quem pediu uma lista recebe uma lista, no mesmo desenho do
+ * mini-quadro do ranking. O texto montado, sem marca nenhuma, é um parágrafo
+ * só.
  */
 function TextoDaResposta({ texto }: { readonly texto: string }) {
   return (
@@ -498,25 +603,38 @@ function TextoDaResposta({ texto }: { readonly texto: string }) {
       data-teste="chat-texto"
       style={{ display: "flex", flexDirection: "column", gap: 8 }}
     >
-      {paragrafosDaResposta(texto).map((p) =>
-        p.rotulo === null ? (
-          <p key={p.texto} data-teste="chat-paragrafo" style={ESTILO_DO_TEXTO}>
-            {p.texto}
+      {blocosDaResposta(texto).map((b) => {
+        if (b.tipo === "lista") {
+          return (
+            <ul
+              key={b.itens.map((i) => i.rotulo).join("|")}
+              data-teste="chat-lista"
+              style={ESTILO_DA_LISTA}
+            >
+              {b.itens.map((item) => (
+                <ItemNaTela key={item.rotulo} item={item} />
+              ))}
+            </ul>
+          );
+        }
+        return b.rotulo === null ? (
+          <p key={b.texto} data-teste="chat-paragrafo" style={ESTILO_DO_TEXTO}>
+            {b.texto}
           </p>
         ) : (
           <div
-            key={`${p.rotulo}:${p.texto}`}
+            key={`${b.rotulo}:${b.texto}`}
             data-teste="chat-traduzindo"
             style={{
               borderLeft: `2px solid ${MARCA.destaqueSuave}`,
               padding: "2px 0 2px 10px",
             }}
           >
-            <Rotulo texto={p.rotulo} cor={MARCA.destaque} />
-            <p style={ESTILO_DO_TEXTO}>{p.texto}</p>
+            <Rotulo texto={b.rotulo} cor={MARCA.destaque} />
+            <p style={ESTILO_DO_TEXTO}>{b.texto}</p>
           </div>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }

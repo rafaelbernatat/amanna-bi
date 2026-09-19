@@ -150,6 +150,17 @@ nome da exceção, a mensagem curta e três quadros da pilha. `laco_degradou` e
 - Só tipos atravessam de `semantica` para a fábrica de fonte em tempo de
   execução (teste de arquitetura em `camada-de-dados`).
 
+## Alterado por
+
+- **[D-CHAT-pergunta-primeiro](D-CHAT-pergunta-primeiro.md)** (2026-09-19): o
+  "laço por sinal, não por padrão" decidido aqui virou o contrário — com
+  gateway, o laço é o padrão, e o cache de prompt (T-438, que aqui ficava
+  pendente) é o que o paga: uma apresentação de 250 perguntas cai de ≈US$ 8
+  para ≈US$ 4. T-436 é absorvido pelo roteamento. A estrutura de redação
+  decidida aqui deixa de ser fixa: a forma segue a pergunta.
+- **[D-CHAT-sql](D-CHAT-sql.md)** (2026-09-19): o chat ganha uma porta de
+  consulta ao banco, e a resposta que vem só dela não tem métrica do catálogo.
+
 ## O que fica pendente
 
 - **T-436** — laço na dúvida atrás de `CHAT_LACO_NA_DUVIDA`, decidido com o

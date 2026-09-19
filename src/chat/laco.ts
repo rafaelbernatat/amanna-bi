@@ -33,6 +33,7 @@
  * ao caminho simples e **diz** no texto que a parte composta não foi feita.
  */
 
+import { consultaDisponivel, dicionarioDoChat } from "@/acesso/consulta";
 import { classificar, type Sinal } from "@/chat/classificar";
 import type { ContextoDaTela } from "@/chat/contexto";
 import { rotularFiltros } from "@/chat/contexto";
@@ -62,7 +63,7 @@ import {
   type TurnoAnterior,
   linhaDaConversa,
 } from "@/chat/interpretar";
-import { REGRAS_DE_NUMERO } from "@/chat/regras";
+import { REGRAS_DE_FORMA, REGRAS_DE_NUMERO } from "@/chat/regras";
 import { resolver, type Resolucao } from "@/chat/resolver";
 import { destinoDaMetrica, metricasComDestino } from "@/chat/roteamento";
 import {
@@ -98,10 +99,19 @@ export type EventosDoLaco = {
   readonly aoPrevia?: (resolucao: Resolucao) => void;
 };
 
-/** A recusa útil de uma pergunta composta sem modelo. */
+/** A recusa útil de uma pergunta que o laço não respondeu. */
 export type CompostaRecusada = {
   readonly tipo: "recusa";
   readonly texto: string;
+  /**
+   * Por que não houve resposta, que é o que decide o texto na tela.
+   *
+   * `sem_gateway`: não há chave, e o laço só sabe as duas leituras
+   * determinísticas. `sem_leitura`: o laço correu, com modelo, e nenhuma
+   * leitura nomeou métrica — dizer "sem o modelo configurado" aqui seria
+   * mentira, e era o que saía antes de T-446.
+   */
+  readonly motivo: "sem_gateway" | "sem_leitura";
   readonly alternativas: readonly {
     readonly id: string;
     readonly rotulo: string;
@@ -119,34 +129,60 @@ Você NÃO calcula nem estima número nenhum. Para saber qualquer número, chame
 uma ferramenta: cada uma lê o dado pela mesma regra do painel e devolve os
 números já formatados. Use SOMENTE os números devolvidos pelas ferramentas.
 
+ANTES DE LER, decida o que a pergunta pede:
+- um número → ler_metrica (com "mes" quando a pergunta nomeia um mês);
+- o maior, o menor, os maiores, "o que mais" → ranking;
+- como se divide, a composição, "por área", "por conta" → decompor;
+- a evolução, o pior mês, o melhor mês → serie_da_metrica;
+- uma métrica ao lado da outra → comparar_metricas;
+- contra o ano passado → variacao;
+- "esse gráfico", "esse painel", a tela → explicar_grafico, que usa o painel
+  em foco do contexto;
+- não sei o id da métrica → listar_metricas antes;
+- QUALQUER outra coisa sobre os dados — um nome, uma lista de itens
+  concretos ("quais lançamentos", "quais colaboradores"), um recorte por mês
+  por dimensão, um cruzamento que não existe como métrica → consultar_dados,
+  quando ela estiver disponível. Não recuse uma pergunta sobre os dados sem
+  ter tentado a consulta.
+
 Como usar as ferramentas:
 - Peça primeiro; escreva só depois de ter os números. No máximo ${String(MAXIMO_DE_CHAMADAS)} leituras
   por pergunta — escolha as que respondem à pergunta.
-- Se a pergunta fala da tela, de "esse gráfico" ou de "esse painel", use
-  explicar_grafico: o painel em foco vem no contexto.
-- Se não souber o id da métrica, use listar_metricas antes.
 - Um erro devolvido por uma ferramenta é resposta: ajuste o pedido ou diga que
   não há esse dado. Nunca preencha com estimativa.
+- A pergunta que exclui alguma coisa ("fora a despesa com pessoal, o que
+  mais…") pede a lista sem aquele item: leia a lista e deixe o item de fora
+  da resposta.
 
 Como escrever (regras que não se negociam):
 ${REGRAS_DE_NUMERO}
+${REGRAS_DE_FORMA}
 - Ao citar um ponto de série, de gráfico ou de ranking, escreva o rótulo do
   ponto na mesma frase, colado ao número: "em mar/2026, 5,2%"; "Cliente Alfa,
   R$ 12,0 mi". Nunca some pontos, nunca calcule média, diferença nem
   participação: as que existem já vêm calculadas nos resultados.
-- Cite o recorte (período, entidade, área) quando ele não for o padrão.
-- Até três parágrafos curtos, separados por uma linha em branco, no máximo
-  oito frases no total, sem título e sem lista: abra com o número que
-  responde à pergunta; depois o que as
-  leituras mostram (pico, vale, último ponto; os maiores itens e a
-  participação deles; a variação); depois o que explica, só com o que as
-  leituras trazem.
+- Cite o recorte (período, mês, entidade, área) quando ele não for o padrão.
+
+A FORMA SEGUE A PERGUNTA. Não existe estrutura fixa.
+- A primeira frase responde a pergunta, com as palavras dela. Sem abertura de
+  contexto, sem repetir a pergunta.
+- Pediu uma lista ("quais", "os maiores", "me mostra") → escreva uma LISTA, um
+  item por linha começando com "- ", rótulo e valor ao lado, na ordem em que a
+  leitura os devolveu.
+- Pediu um número → de uma a três frases.
+- Perguntou o que uma coisa é ("esses lançamentos são o que?") → nomeie os
+  itens concretos que a leitura trouxe; a definição da métrica não responde.
+- No máximo três parágrafos, separados por uma linha em branco.
+- NUNCA escreva o que falta ("não há comparação disponível", "o recorte não
+  traz", "o envelope não mostra"). O que não existe simplesmente não aparece
+  — a menos que a coisa que falta seja a própria resposta, e aí é uma frase
+  só.
 - A conversa até aqui diz de que assunto se fala: "e quanto eles custam?"
-  depois do headcount é a folha; "e por área?" é o mesmo número por área.
-  Resolva pronomes e elipses por ela antes de escolher o que ler.
-- Sem saudação além do primeiro nome de quem pergunta, uma vez, quando o
-  contexto o trouxer. Nunca invente sobrenome, cargo ou empresa.
-- Feche com uma pergunta curta oferecendo o próximo passo.`;
+  depois do headcount é a folha; "e esses lançamentos são o que?" pede os
+  lançamentos que a resposta anterior contou. Resolva pronomes e elipses por
+  ela antes de escolher o que ler.
+- Feche com uma pergunta curta de próximo passo só quando houver um passo de
+  verdade a oferecer.`;
 
 function contextoParaOModelo(contexto: ContextoDaTela): string {
   const filtros = Object.entries(rotularFiltros(contexto.filtros))
@@ -164,10 +200,82 @@ function contextoParaOModelo(contexto: ContextoDaTela): string {
   return linhas.join("\n");
 }
 
+/**
+ * O esquema de `amanna_chat`, como o modelo precisa vê-lo para escrever SQL.
+ *
+ * Sai do dicionário semeado na migração 012 — objeto, coluna, unidade e uma
+ * descrição curta —, e não de `information_schema`: a ordem do catálogo do
+ * Postgres muda, e a seção 7.4 chama isso de defeito, não de variação.
+ */
+async function esquemaParaOModelo(): Promise<string> {
+  const dicionario = await dicionarioDoChat();
+  if (dicionario.length === 0) return "";
+  const porObjeto = new Map<string, string[]>();
+  for (const c of dicionario) {
+    const unidade = c.unidade === null ? "" : ` (${c.unidade})`;
+    const descricao = c.descricao === null ? "" : ` — ${c.descricao}`;
+    porObjeto.set(c.objeto, [
+      ...(porObjeto.get(c.objeto) ?? []),
+      `${c.coluna}${unidade}${descricao}`,
+    ]);
+  }
+  const linhas = [...porObjeto].map(
+    ([objeto, colunas]) => `${objeto}: ${colunas.join("; ")}`,
+  );
+  return (
+    "\n\nViews de consultar_dados (esquema amanna_chat; escreva sem o nome do " +
+    "esquema). Cada uma já vem recortada pelo perfil de quem pergunta:\n" +
+    linhas.join("\n")
+  );
+}
+
 function conversaParaOModelo(historico: readonly TurnoAnterior[]): string {
   if (historico.length === 0) return "";
   const linhas = historico.map(linhaDaConversa);
   return `\n\nConversa até aqui:\n${linhas.join("\n")}`;
+}
+
+/**
+ * A resolução de uma resposta que não tem métrica do catálogo (T-454).
+ *
+ * **Sentinela, e não tipo novo.** Tornar `Resolucao.metrica` anulável se
+ * espalharia por `Previa`, `previaDe`, `conversa.ts` e todos os literais de
+ * `Resolucao` dos testes; a sentinela custa quatro guardas — a prévia, as
+ * sugestões, a saída do laço e o rodapé — e elas estão nomeadas nos três
+ * arquivos que as têm.
+ *
+ * `metrica: ""` é o que os leitores já toleram: `PROXIMO_PASSO[""]` é
+ * `undefined`, `rotuloDaMetrica("")` devolve `""`, e o verificador lê os
+ * permitidos das leituras, que é onde eles estão.
+ */
+function resolucaoSemMetrica(
+  leituras: readonly ResultadoDeFerramenta[],
+  daConsulta: ResultadoDeFerramenta,
+  contexto: ContextoDaTela,
+): Resolucao {
+  const l = daConsulta.leitura;
+  const consulta = l.tipo === "consulta" ? l : null;
+  return {
+    metrica: "",
+    rotulo: "",
+    valor: null,
+    unidade: "contagem",
+    formula: "",
+    decisao: null,
+    asOf: consulta?.asOf ?? "",
+    consideracoes: [],
+    familia: null,
+    referencias: [],
+    comparacao: null,
+    comparacaoIndisponivelPorque: null,
+    acoes: { filtros: contexto.filtros, tela: null, painel: null },
+    fontes: consulta?.fontes ?? [],
+    serieMensal: [],
+    pontoPedido: null,
+    painel: painelDaComposta(leituras),
+    leituras,
+    caminho: "composto",
+  };
 }
 
 /* ------------------------------------------------------------------ *
@@ -288,7 +396,14 @@ export function dimensaoNaPergunta(pergunta: string): DimensaoDeRanking | null {
 const SEM_GATEWAY =
   "Sem o modelo configurado, respondo uma métrica por vez. Pergunte por uma métrica, ou escolha uma destas:";
 
-function recusaUtil(palpite: Intencao | null): CompostaRecusada {
+/** O laço correu com modelo e nada nomeou métrica: não há o que oferecer. */
+const SEM_LEITURA =
+  "Não consigo responder a isso com os dados do painel. Posso responder perguntas sobre as métricas de RH e financeiro.";
+
+function recusaUtil(
+  palpite: Intencao | null,
+  motivo: CompostaRecusada["motivo"] = "sem_gateway",
+): CompostaRecusada {
   const ids = [
     ...(palpite === null || palpite.metrica === "" ? [] : [palpite.metrica]),
     ...(palpite?.alternativas ?? []),
@@ -296,7 +411,8 @@ function recusaUtil(palpite: Intencao | null): CompostaRecusada {
   const QUANTAS = 3;
   return {
     tipo: "recusa",
-    texto: SEM_GATEWAY,
+    texto: motivo === "sem_gateway" ? SEM_GATEWAY : SEM_LEITURA,
+    motivo,
     alternativas: [...new Set(ids)].slice(0, QUANTAS).map((id) => ({
       id,
       rotulo: CATALOGO_GERADO[id]?.rotulo ?? id,
@@ -374,17 +490,27 @@ export async function resolverComposta(
     },
   });
   const modelo = modeloEmUso("ferramentas");
+  /*
+   * O esquema vai na mensagem do **usuário**, e não na de sistema.
+   *
+   * A de sistema é conferida byte a byte pelo inspetor antes de cada rodada, e
+   * é onde mora o ponto de corte do cache (T-438): mexer nela por instalação
+   * custaria as duas coisas. O esquema é estável dentro de uma instalação, e
+   * caber no sufixo é o preço de manter a instrução intocada.
+   */
+  const comConsulta = consultaDisponivel();
+  const esquema = comConsulta ? await esquemaParaOModelo() : "";
   const mensagens: readonly Mensagem[] = [
     { role: "system", content: INSTRUCAO_DO_LACO },
     {
       role: "user",
-      content: `${contextoParaOModelo(contexto)}${conversaParaOModelo(historico)}\n\nPergunta: ${pergunta}`,
+      content: `${contextoParaOModelo(contexto)}${esquema}${conversaParaOModelo(historico)}\n\nPergunta: ${pergunta}`,
     },
   ];
 
   const resultado = await conversarComFerramentas(
     mensagens,
-    ferramentas(contexto),
+    ferramentas(contexto, comConsulta),
     executor.executar,
     {
       maximoDeRodadas: MAXIMO_DE_RODADAS,
@@ -435,7 +561,23 @@ export async function resolverComposta(
 
   const leituras = executor.leituras();
   const principal = metricaPrincipal(leituras, palpite, contexto.filtros);
-  if (principal === null) return recusaUtil(palpite);
+  if (principal === null) {
+    /*
+     * O laço leu, mas nada do que leu é métrica do catálogo (T-454).
+     *
+     * É o caso normal de uma resposta que veio só da consulta: "quais os
+     * colaboradores mais caros" não deriva de métrica nenhuma. Antes disto o
+     * código caía em `recusaUtil`, cujo texto diz "sem o modelo configurado" —
+     * numa resposta bem-sucedida, com o modelo presente.
+     */
+    const daConsulta = leituras.find((l) => l.leitura.tipo === "consulta");
+    if (daConsulta === undefined) return recusaUtil(palpite, "sem_leitura");
+    return {
+      tipo: "composta",
+      resolucao: resolucaoSemMetrica(leituras, daConsulta, contexto),
+      texto: resultado.texto,
+    };
+  }
 
   const resolucao =
     guardada.previa !== null && guardada.previa.chave === chaveDe(principal)

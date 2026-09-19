@@ -249,6 +249,13 @@ export async function POST(requisicao: Request): Promise<Response> {
          */
         let previaEmitida: Previa | null = null;
         const emitirPrevia = (resolucao: Resolucao) => {
+          /*
+           * Resolução sem métrica do catálogo não tem prévia (T-454): a bolha
+           * de prévia desenha "{rótulo}: {valor}", e sem os dois ela sairia
+           * como ": sem dado neste recorte". O andamento já narra a espera
+           * ("Consultando o banco…").
+           */
+          if (resolucao.metrica === "") return;
           const previa = previaDe(resolucao);
           if (
             previaEmitida !== null &&

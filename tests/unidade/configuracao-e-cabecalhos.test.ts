@@ -181,15 +181,19 @@ describe("a mensagem de erro nunca carrega o valor do segredo", () => {
      * apresentação, e cuja rotação derruba todas as sessões de uma vez. A sexta
      * entrou com T-369: a senha de quem apresenta, que é segredo de natureza
      * diferente das outras — uma pessoa a escolhe e a digita —, mas segredo do
-     * mesmo jeito, e por isso nunca sai numa mensagem de erro. A lista escrita
-     * é o que obriga uma chave nova a passar por aqui: uma variável que vira
-     * segredo sem revisão é uma que pode acabar num log.
+     * mesmo jeito, e por isso nunca sai numa mensagem de erro. A sétima entrou
+     * com D-CHAT-sql: a conexão do chat, autenticada como `amanna_chat_ro`, e
+     * que é **a** defesa da consulta livre — uma senha dela num log seria a
+     * tranca inteira. A lista escrita é o que obriga uma chave nova a passar
+     * por aqui: uma variável que vira segredo sem revisão é uma que pode
+     * acabar num log.
      */
     expect([...NOMES_DE_SEGREDO].sort()).toEqual([
       "ANTHROPIC_API_KEY",
       "CONVITE_SEGREDO",
       "DATABASE_URL",
       "DATABASE_URL_CARGA",
+      "DATABASE_URL_CHAT",
       "OPENROUTER_API_KEY",
       "SENHA_DO_PAINEL",
     ]);

@@ -55,7 +55,8 @@ const COMPOSTOS: ReadonlySet<Sinal> = new Set<Sinal>([
   "decomposicao",
 ]);
 
-function normalizar(texto: string): string {
+/** Minúsculas, sem acento e com um espaço só. A mesma em toda comparação. */
+export function normalizar(texto: string): string {
   return texto
     .toLowerCase()
     .normalize("NFD")
@@ -83,7 +84,7 @@ const PADROES: Readonly<Record<Sinal, RegExp>> = {
 };
 
 /** O vocabulário de uma métrica, para descontar sinal que está no nome dela. */
-function vocabularioDe(metrica: string): string {
+export function vocabularioDe(metrica: string): string {
   const entrada = CATALOGO_GERADO[metrica];
   if (entrada === undefined) return "";
   return normalizar(

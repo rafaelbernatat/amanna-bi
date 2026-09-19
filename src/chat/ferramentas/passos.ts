@@ -48,5 +48,9 @@ export function fraseDePasso(pedido: PedidoValidado): string {
       return "Lendo o gráfico em foco…";
     case "listar_metricas":
       return "Procurando a métrica no catálogo…";
+    // Determinística e sem número, como as outras: o SQL não vai para a tela
+    // aqui — ele aparece depois, em "consulta registrada", junto da resposta.
+    case "consultar_dados":
+      return "Consultando o banco…";
   }
 }

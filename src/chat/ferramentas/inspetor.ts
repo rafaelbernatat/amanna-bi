@@ -21,9 +21,22 @@ import type { Mensagem } from "@/gateway/openrouter";
 const CPF = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/;
 /** Um e-mail. */
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
-/** Campos que nomeiam pessoa: nunca deveriam estar num agregado. */
+/**
+ * Os campos que continuam proibidos, por nome (T-452).
+ *
+ * Produto liberou o dado de pessoa em 2026-09-19 — nome, cargo, área, centro
+ * de custo e custo —, e o que ficou de fora é o que identifica alguém fora da
+ * empresa ou diz dela algo que o trabalho não pede: CPF, matrícula, data de
+ * nascimento, conta bancária, PIX, sindicato. Antes desta lista o inspetor
+ * barrava `"colaborador":` e `"nome_do_colaborador":`, o que mataria em
+ * silêncio toda consulta com uma coluna de gente — inclusive a que Produto
+ * pediu por escrito ("os nomes dos colaboradores mais caros").
+ *
+ * CPF e e-mail continuam barrados **por forma**, em qualquer campo: é a
+ * defesa que não depende de alguém ter nomeado a coluna direito.
+ */
 const CAMPO_DE_PESSOA =
-  /"(?:cpf|matricula|matrícula|nome_do_colaborador|nomeDoColaborador|colaborador|funcionario|funcionário|email|e-mail|data_nascimento|dataDeNascimento)"\s*:/i;
+  /"(?:cpf|cpf_ficticio|matricula|matrícula|email|e-mail|data_nascimento|dataDeNascimento|nascimento|banco|agencia|agência|conta_bancaria|pix|sindicato|rg|pis|titulo_eleitor)"\s*:/i;
 
 /** Por que uma saída foi bloqueada. Sem o conteúdo: só a razão. */
 export type Bloqueio = {

@@ -23,6 +23,7 @@ import {
   TOP_N_MAXIMO,
   TOP_N_PADRAO,
 } from "@/chat/ferramentas/limites";
+import type { MesPedido } from "@/chat/mes";
 import { proximasDe } from "@/chat/resolver";
 import type { Chamada } from "@/gateway/openrouter";
 import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
@@ -39,11 +40,13 @@ export type PedidoValidado =
   | {
       readonly nome: "ler_metrica";
       readonly metrica: string;
+      readonly mes: MesPedido | null;
       readonly filtros: Query;
     }
   | {
       readonly nome: "serie_da_metrica";
       readonly metrica: string;
+      readonly mes: MesPedido | null;
       readonly filtros: Query;
     }
   | {
@@ -71,6 +74,7 @@ export type PedidoValidado =
       readonly dimensao: DimensaoDeRanking;
       readonly filtros: Query;
     }
+  | { readonly nome: "consultar_dados"; readonly consulta: string }
   | {
       readonly nome: "explicar_grafico";
       readonly painel: string;
@@ -167,8 +171,43 @@ function semChavesExtras(
   return extra === undefined ? null : `argumento desconhecido: '${extra}'`;
 }
 
-function ehValidacao(x: Validacao | string | Query): x is Validacao {
-  return typeof x === "object" && "ok" in x;
+function ehValidacao(
+  x: Validacao | string | Query | MesPedido | null,
+): x is Validacao {
+  return typeof x === "object" && x !== null && "ok" in x;
+}
+
+/** O mês pedido, `MM/AAAA`. Ausente é `null`, e não erro. */
+const FORMA_DE_MES = /^(0[1-9]|1[0-2])\/(20\d{2})$/;
+
+/**
+ * Lê o mês de uma chamada (T-447).
+ *
+ * O ano é conferido contra os anos que a fonte carregou, como o filtro de ano
+ * já é: um mês de 2024 não é um mês vazio, é um mês que não existe, e dizer
+ * isso ao modelo vale mais que devolver uma série sem o ponto.
+ */
+function lerMes(
+  bruto: unknown,
+  contexto: ContextoDaTela,
+): Validacao | MesPedido | null {
+  if (bruto === undefined || bruto === null) return null;
+  if (typeof bruto !== "string") {
+    return recusar("'mes' precisa ser um texto no formato MM/AAAA");
+  }
+  const casado = FORMA_DE_MES.exec(bruto);
+  if (casado === null) {
+    return recusar(
+      `'mes' precisa ser MM/AAAA, com o mês entre 01 e 12; veio '${bruto}'`,
+    );
+  }
+  const ano = casado[2] ?? "";
+  if (contexto.anos.length > 0 && !contexto.anos.includes(ano)) {
+    return recusar(
+      `o ano ${ano} não está carregado; a fonte tem ${contexto.anos.join(", ")}`,
+    );
+  }
+  return { mes: Number(casado[1]), ano: Number(ano) };
 }
 
 /** Valida uma chamada do modelo contra o vocabulário e o contexto. */
@@ -188,13 +227,15 @@ export function validarChamada(
   switch (nome) {
     case "ler_metrica":
     case "serie_da_metrica": {
-      const extra = semChavesExtras(args, ["metrica", "filtros"]);
+      const extra = semChavesExtras(args, ["metrica", "mes", "filtros"]);
       if (extra !== null) return recusar(extra);
       const metrica = lerMetrica(args["metrica"]);
       if (ehValidacao(metrica)) return metrica;
+      const mes = lerMes(args["mes"], contexto);
+      if (ehValidacao(mes)) return mes;
       const filtros = lerFiltros(args["filtros"], contexto);
       if (ehValidacao(filtros)) return filtros;
-      return { ok: true, pedido: { nome, metrica, filtros } };
+      return { ok: true, pedido: { nome, metrica, mes, filtros } };
     }
 
     case "comparar_metricas": {
@@ -316,6 +357,25 @@ export function validarChamada(
         return recusar("'busca' precisa ser um texto com ao menos duas letras");
       }
       return { ok: true, pedido: { nome, busca: busca.trim() } };
+    }
+
+    /*
+     * A consulta livre (T-453).
+     *
+     * O validador confere só a **forma** — texto, e não vazio. O que pode ser
+     * lido é decidido pelo papel do banco e pelo esquema `amanna_chat`; o lint
+     * de `sql-guarda.ts` recusa cedo o que não é SELECT, para o modelo ter uma
+     * mensagem com que se corrigir. Recusar aqui por conteúdo seria a terceira
+     * cópia da mesma regra, e a que sairia de sincronia primeiro.
+     */
+    case "consultar_dados": {
+      const extra = semChavesExtras(args, ["consulta"]);
+      if (extra !== null) return recusar(extra);
+      const consulta = args["consulta"];
+      if (typeof consulta !== "string" || consulta.trim() === "") {
+        return recusar("'consulta' precisa ser um SELECT em texto");
+      }
+      return { ok: true, pedido: { nome, consulta: consulta.trim() } };
     }
   }
 }
