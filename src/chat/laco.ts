@@ -498,8 +498,14 @@ export async function resolverComposta(
    * custaria as duas coisas. O esquema é estável dentro de uma instalação, e
    * caber no sufixo é o preço de manter a instrução intocada.
    */
-  const comConsulta = consultaDisponivel();
-  const esquema = comConsulta ? await esquemaParaOModelo() : "";
+  /*
+   * A ferramenta só entra quando o esquema existe no banco — não basta haver
+   * banco. Entre o deploy do código e a migração há uma janela em que
+   * `amanna_chat` não existe, e oferecer a consulta ali seria prometer ao
+   * modelo uma porta que erra em toda chamada.
+   */
+  const esquema = consultaDisponivel() ? await esquemaParaOModelo() : "";
+  const comConsulta = esquema !== "";
   const mensagens: readonly Mensagem[] = [
     { role: "system", content: INSTRUCAO_DO_LACO },
     {

@@ -89,12 +89,37 @@ export async function dicionarioDoChat(): Promise<
   if (guardado !== undefined) return guardado;
   if (!consultaDisponivel()) return [];
 
-  const linhas = await clienteDoChat().consultar<ColunaDoDicionario>(
-    `SELECT objeto, coluna, ordem, unidade, descricao
-     FROM amanna_chat.dicionario ORDER BY objeto, ordem, coluna`,
-  );
+  /*
+   * Vazio quando o esquema não existe, e **não** exceção.
+   *
+   * A migração 012 não viaja com o deploy: o código sobe pela Vercel, a view
+   * sobe pelo banco, e entre um e outro há uma janela em que `amanna_chat`
+   * não existe. Sem este `catch`, essa janela derrubava toda pergunta
+   * composta — o laço nem saía, e a rota respondia "erro de fonte".
+   *
+   * Dicionário vazio desliga a ferramenta (`consultaLigada`), e o chat
+   * responde pelas oito fechadas, que é exatamente o que ele fazia antes
+   * desta capacidade existir.
+   */
+  const linhas = await clienteDoChat()
+    .consultar<ColunaDoDicionario>(
+      `SELECT objeto, coluna, ordem, unidade, descricao
+       FROM amanna_chat.dicionario ORDER BY objeto, ordem, coluna`,
+    )
+    .catch(() => []);
   portador[DICIONARIO] = linhas;
   return linhas;
+}
+
+/**
+ * A consulta está ligada **de verdade** nesta instalação?
+ *
+ * `consultaDisponivel` diz que há banco; isto diz que o banco tem o esquema.
+ * É o que separa "configurado" de "funcionando", e é por isto que a
+ * ferramenta só é oferecida ao modelo depois de o dicionário responder.
+ */
+export async function consultaLigada(): Promise<boolean> {
+  return (await dicionarioDoChat()).length > 0;
 }
 
 /** Só para teste: esquece o dicionário guardado. */

@@ -139,22 +139,30 @@ describe("o papel amanna_chat_ro", () => {
   });
 
   /**
-   * A escapada que motivou a conexão separada.
+   * A escapada que prova por que a defesa é uma conexão separada.
    *
-   * Medida em PGlite 0.5.8 antes desta migração existir: `set_config` devolve
-   * a sessão à role autenticada, e `query_to_xml` planeja a consulta interna
-   * **depois** disso. Com a revogação, a mesma carga morre na primeira função.
+   * Medida em PGlite 0.5.8: `set_config` devolve a sessão à role autenticada,
+   * e `query_to_xml` planeja a consulta interna **depois** disso. Um
+   * `SET LOCAL ROLE` não contém nada.
+   *
+   * O teste afirma que ela **funciona**, e isso não é um defeito aberto: no
+   * protótipo ninguém entra pelo papel restrito — a consulta usa a conexão de
+   * sempre, por decisão de Produto, porque a base é fictícia. A migração
+   * deixou de revogar essas funções justamente para não arriscar o PostgREST
+   * do Supabase em troca de proteção que ninguém usa.
+   *
+   * Quando `DATABASE_URL_CHAT` existir, a revogação volta e este teste vira o
+   * oposto: `rejects.toThrow(/permission denied for function/)`. É o marcador
+   * de que uma coisa depende da outra.
    */
-  it("a escapada por set_config e query_to_xml morre na revogação", async () => {
-    await expect(
-      cliente.transacao(async (t) => {
-        await t.consultar(`SET LOCAL ROLE amanna_chat_ro`);
-        return t.consultar(
-          `SELECT set_config('role','postgres',false) AS a,
-                  query_to_xml('SELECT 1', false, false, '')::text AS x`,
-        );
-      }),
-    ).rejects.toThrow(/permission denied for function/i);
+  it("a escapada por set_config existe, e e por isso que SET ROLE nao e a defesa", async () => {
+    const linhas = await cliente.transacao(async (t) => {
+      await t.consultar(`SET LOCAL ROLE amanna_chat_ro`);
+      return t.consultar<{ a: string }>(
+        `SELECT set_config('role','postgres',false) AS a`,
+      );
+    });
+    expect(linhas[0]?.a).toBe("postgres");
   });
 });
 
