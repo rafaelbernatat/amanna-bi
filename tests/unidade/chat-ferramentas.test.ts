@@ -1,7 +1,11 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { contextoDe, contextoDeQuery } from "@/chat/contexto";
-import { ferramentas, NOMES_DE_FERRAMENTA } from "@/chat/ferramentas/catalogo";
+import {
+  esquemaDeFiltros,
+  ferramentas,
+  NOMES_DE_FERRAMENTA,
+} from "@/chat/ferramentas/catalogo";
 import {
   criarExecutor,
   executarPedido,
@@ -43,12 +47,32 @@ function chamada(nome: string, argumentos: unknown) {
  * ------------------------------------------------------------------ */
 
 describe("o catálogo de ferramentas", () => {
-  it("tem oito ferramentas, todas com esquema fechado", () => {
+  it("tem oito ferramentas fechadas, todas com esquema fechado", () => {
     const lista = ferramentas(CONTEXTO);
-    expect(lista.map((f) => f.nome)).toEqual([...NOMES_DE_FERRAMENTA]);
+    expect(lista.map((f) => f.nome)).toEqual(
+      NOMES_DE_FERRAMENTA.filter((n) => n !== "consultar_dados"),
+    );
     for (const f of lista) {
       expect(f.parametros["additionalProperties"]).toBe(false);
     }
+  });
+
+  /**
+   * A nona ferramenta só existe onde a instalação a tem (T-453).
+   *
+   * Em `fixtures` — e, portanto, no arnês de e2e — o modelo nem a enxerga:
+   * não há motor de SQL ali, e um motor falso faria "funciona com fixtures"
+   * significar outra coisa.
+   */
+  it("a consulta livre entra só quando a instalação a oferece", () => {
+    expect(ferramentas(CONTEXTO).map((f) => f.nome)).not.toContain(
+      "consultar_dados",
+    );
+    const comConsulta = ferramentas(CONTEXTO, true);
+    expect(comConsulta.map((f) => f.nome)).toEqual([...NOMES_DE_FERRAMENTA]);
+    const nona = comConsulta.find((f) => f.nome === "consultar_dados");
+    expect(nona?.parametros["additionalProperties"]).toBe(false);
+    expect(nona?.descricao).toMatch(/ÚLTIMA opção/);
   });
 
   it("o enum de métrica é o catálogo inteiro, e o de ano é o da fonte", () => {
@@ -248,6 +272,7 @@ describe("o executor", () => {
       {
         nome: "serie_da_metrica",
         metrica: "turnover_12m",
+        mes: null,
         filtros: QUERY_PADRAO,
       },
       CONTEXTO,
@@ -257,6 +282,117 @@ describe("o executor", () => {
     expect(leitura.painel).toBe("rh-turnover");
     expect(leitura.pontos.length).toBeGreaterThan(1);
     expect(leitura.destaques.map((d) => d.tipo)).toContain("maior");
+  });
+
+  /**
+   * O mês pedido (T-447).
+   *
+   * Sai da série que a própria métrica já traz: nenhuma porta nova, nenhum
+   * grão novo. O valor do recorte continua ali — quem perguntou junho quer
+   * junho na abertura, e o período como contexto.
+   */
+  describe("o mês pedido", () => {
+    it("ler_metrica com mês traz o ponto do mês além do valor do recorte", async () => {
+      const leitura = await executarPedido(
+        {
+          nome: "ler_metrica",
+          metrica: "receita_liquida",
+          mes: { mes: 6, ano: 2026 },
+          filtros: QUERY_PADRAO,
+        },
+        CONTEXTO,
+      );
+      expect(leitura.tipo).toBe("metrica");
+      if (leitura.tipo !== "metrica") return;
+      expect(leitura.pontoDoMes?.rotulo).toBe("jun/2026");
+      expect(leitura.pontoDoMes?.formatado).toMatch(/^R\$ /);
+      // O recorte não mudou: o valor do período continua sendo o do período.
+      expect(leitura.formatado).not.toBe(leitura.pontoDoMes?.formatado);
+      expect(leitura.filtros).toEqual(QUERY_PADRAO);
+    });
+
+    it("sem mês, o ponto é nulo e nada mais muda", async () => {
+      const leitura = await executarPedido(
+        {
+          nome: "ler_metrica",
+          metrica: "receita_liquida",
+          mes: null,
+          filtros: QUERY_PADRAO,
+        },
+        CONTEXTO,
+      );
+      expect(leitura.tipo).toBe("metrica");
+      if (leitura.tipo !== "metrica") return;
+      expect(leitura.pontoDoMes).toBeNull();
+    });
+
+    it("o ponto do mês é livre no verificador, como o valor da métrica", async () => {
+      const leitura = await executarPedido(
+        {
+          nome: "ler_metrica",
+          metrica: "receita_liquida",
+          mes: { mes: 6, ano: 2026 },
+          filtros: QUERY_PADRAO,
+        },
+        CONTEXTO,
+      );
+      if (leitura.tipo !== "metrica") return;
+      const permitido = numerosDe(leitura).find(
+        (n) => n.texto === leitura.pontoDoMes?.formatado,
+      );
+      expect(permitido).toBeDefined();
+      expect(permitido?.rotulos).toBeNull();
+    });
+
+    it.each([
+      ["13/2026", /entre 01 e 12/],
+      ["6/2026", /MM\/AAAA/],
+      ["junho", /MM\/AAAA/],
+      ["06/2024", /não está carregado/],
+    ])("o validador recusa o mês '%s'", (mes, esperado) => {
+      const v = validarChamada(
+        chamada("ler_metrica", { metrica: "receita_liquida", mes }),
+        CONTEXTO,
+      );
+      expect(v.ok).toBe(false);
+      if (v.ok) return;
+      expect(v.erro).toMatch(esperado);
+    });
+
+    it("o validador aceita o mês bem formado de um ano carregado", () => {
+      const v = validarChamada(
+        chamada("ler_metrica", {
+          metrica: "receita_liquida",
+          mes: "06/2026",
+        }),
+        CONTEXTO,
+      );
+      expect(v.ok).toBe(true);
+      if (!v.ok) return;
+      expect(v.pedido).toMatchObject({ mes: { mes: 6, ano: 2026 } });
+    });
+
+    it("as duas ferramentas de métrica declaram o mês; o esquema de filtros não muda", () => {
+      const lista = ferramentas(CONTEXTO);
+      for (const nome of ["ler_metrica", "serie_da_metrica"] as const) {
+        const f = lista.find((x) => x.nome === nome);
+        const props = (
+          f?.parametros as { properties: Record<string, unknown> } | undefined
+        )?.properties;
+        expect(props?.["mes"]).toBeDefined();
+      }
+      // O mês fica ao nível da ferramenta: `filtros` continua sendo o Query.
+      const filtros = esquemaDeFiltros(["2026"]) as {
+        properties: Record<string, unknown>;
+      };
+      expect(Object.keys(filtros.properties).sort()).toEqual([
+        "ano",
+        "area",
+        "entidade",
+        "modalidade",
+        "periodo",
+      ]);
+    });
   });
 
   it("ranking por cliente traz itens com participação, e o total é o da métrica", async () => {
@@ -453,12 +589,51 @@ describe("o inspetor de saída", () => {
     ["um CPF", '{"cpf":"123.456.789-01"}', "cpf_no_resultado"],
     ["um e-mail", '{"contato":"ana@empresa.com"}', "email_no_resultado"],
     ["um campo de pessoa", '{"matricula":"A123"}', "campo_de_pessoa"],
+    [
+      "a data de nascimento",
+      '{"data_nascimento":"1991-12-10"}',
+      "campo_de_pessoa",
+    ],
+    ["a conta bancária", '{"banco":"001 Banco do Brasil"}', "campo_de_pessoa"],
+    ["o sindicato", '{"sindicato":"SINTRAIND"}', "campo_de_pessoa"],
+    [
+      "um CPF escondido num campo de outro nome",
+      '{"documento":"123.456.789-01"}',
+      "cpf_no_resultado",
+    ],
   ])("bloqueia %s", (_, content, motivo) => {
     const b = inspecionarSaida(
       [...base, { role: "tool", tool_call_id: "1", content }],
       INSTRUCAO,
     );
     expect(b?.motivo).toBe(motivo);
+  });
+
+  /**
+   * O que passa desde T-452: Produto liberou nome, cargo, área e custo
+   * (2026-09-19). Antes disto o inspetor barrava `"colaborador":` e a
+   * consulta que Produto pediu morria em silêncio.
+   */
+  it.each([
+    [
+      "o nome e o custo de um colaborador",
+      '{"nome":"Paula Barbosa","custo_total_empresa":"R$ 8.679,49"}',
+    ],
+    [
+      "o cargo e a área",
+      '{"colaborador":"Paula","cargo":"Analista Pl","area":"Operações"}',
+    ],
+    [
+      "o campo funcionario",
+      '{"funcionario":"Rui Alves","salario_base":"R$ 4.329,15"}',
+    ],
+  ])("deixa passar %s", (_, content) => {
+    expect(
+      inspecionarSaida(
+        [...base, { role: "tool", tool_call_id: "1", content }],
+        INSTRUCAO,
+      ),
+    ).toBeNull();
   });
 
   it("bloqueia instrução de sistema trocada", () => {

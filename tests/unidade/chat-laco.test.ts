@@ -36,6 +36,32 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+/**
+ * O texto de uma mensagem como ela foi para o fio.
+ *
+ * Desde T-438 a mensagem de sistema sai no formato de partes, com o ponto de
+ * corte do cache de prompt, quando o modelo é da Anthropic. O que os testes
+ * provam — que a instrução que sai é a nossa — não muda; muda o lugar de onde
+ * se lê o texto.
+ */
+function textoDa(mensagem: { readonly content?: unknown }): string {
+  const conteudo = mensagem.content;
+  if (typeof conteudo === "string") return conteudo;
+  if (!Array.isArray(conteudo)) return "";
+  return (conteudo as { readonly text?: unknown }[])
+    .map((parte) => (typeof parte.text === "string" ? parte.text : ""))
+    .join("");
+}
+
+/** As mensagens do fio de volta ao formato de texto, para o inspetor. */
+function comoTexto(
+  mensagens: readonly { readonly role: string; readonly content?: unknown }[],
+): Mensagem[] {
+  return mensagens.map(
+    (m) => ({ ...m, content: textoDa(m) }) as unknown as Mensagem,
+  );
+}
+
 type Rodada = {
   readonly content?: string | null;
   readonly tool_calls?: readonly {
@@ -124,7 +150,7 @@ describe("conversarComFerramentas", () => {
     expect(r?.parada).toBe("texto");
     expect(r?.rodadas).toBe(2);
     expect(executadas.map((c) => c.id)).toEqual(["a", "b"]);
-    expect(r?.tokens).toEqual({ entrada: 20, saida: 10 });
+    expect(r?.tokens).toEqual({ entrada: 20, saida: 10, cacheLido: 0 });
 
     // A primeira rodada exige ferramenta; a segunda deixa o modelo escolher.
     expect(pedidos[0]?.["tool_choice"]).toBe("required");
@@ -282,9 +308,9 @@ describe("resolverComposta", () => {
       let message: unknown;
       if (resultado === undefined) {
         expect(corpo.tools.length).toBe(8);
-        expect(corpo.messages[0]?.content.startsWith(INSTRUCAO_DO_LACO)).toBe(
-          true,
-        );
+        expect(
+          textoDa(corpo.messages[0] ?? {}).startsWith(INSTRUCAO_DO_LACO),
+        ).toBe(true);
         message = {
           content: null,
           tool_calls: [
@@ -546,15 +572,83 @@ describe("o primeiro nome de quem pergunta (T-428)", () => {
     expect(r?.tipo).toBe("composta");
 
     const primeiro = pedidos[0]?.messages ?? [];
-    expect(primeiro[0]?.content).toBe(INSTRUCAO_DO_LACO);
-    expect(primeiro[1]?.content).toContain("Quem pergunta: Ana");
+    expect(textoDa(primeiro[0] ?? {})).toBe(INSTRUCAO_DO_LACO);
+    expect(textoDa(primeiro[1] ?? {})).toContain("Quem pergunta: Ana");
     for (const pedidoFeito of pedidos) {
       for (const mensagem of pedidoFeito.messages) {
-        expect(mensagem.content ?? "").not.toContain("@");
+        expect(textoDa(mensagem)).not.toContain("@");
       }
       expect(
-        inspecionarSaida(pedidoFeito.messages as Mensagem[], INSTRUCAO_DO_LACO),
+        inspecionarSaida(comoTexto(pedidoFeito.messages), INSTRUCAO_DO_LACO),
       ).toBeNull();
     }
+  });
+});
+
+/**
+ * O cache de prompt do laço (T-438, PRD 7.4).
+ *
+ * O prefixo estável do laço são as ferramentas e a instrução — seis esquemas
+ * carregando o enum dos 145 ids, mais o texto de sistema. Um corte na
+ * mensagem de sistema cacheia os dois, porque a ordem de renderização é
+ * `tools`, `system`, `messages`. É isso que faz o laço por padrão custar
+ * menos que o roteamento por sinais.
+ */
+describe("o corte de cache de prompt", () => {
+  const CORTE = { type: "ephemeral" };
+
+  it("marca a instrução de sistema quando o modelo é da Anthropic", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    const { pedidos } = gatewayFalso([{ content: "pronto" }]);
+    await conversarComFerramentas(MENSAGENS, FERRAMENTAS, async () => "{}", {
+      ...LIMITES,
+      maximoDeRodadas: 1,
+    });
+    const sistema = (pedidos[0]?.["messages"] as { content: unknown }[])[0];
+    expect(sistema?.content).toEqual([
+      { type: "text", text: "sistema", cache_control: CORTE },
+    ]);
+    // O resto da conversa não muda de formato: só o prefixo é cacheável.
+    const usuario = (pedidos[0]?.["messages"] as { content: unknown }[])[1];
+    expect(usuario?.content).toBe("pergunta");
+  });
+
+  it("não marca nada quando o modelo não é da Anthropic", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    const { pedidos } = gatewayFalso([{ content: "pronto" }]);
+    await conversarComFerramentas(
+      MENSAGENS,
+      FERRAMENTAS,
+      async () => "{}",
+      { ...LIMITES, maximoDeRodadas: 1 },
+      { modelo: "openai/gpt-4o" },
+    );
+    const sistema = (pedidos[0]?.["messages"] as { content: unknown }[])[0];
+    expect(sistema?.content).toBe("sistema");
+  });
+
+  it.each([
+    ["o nome da Anthropic", { cache_read_input_tokens: 23_000 }],
+    ["o nome da OpenAI", { prompt_tokens_details: { cached_tokens: 23_000 } }],
+  ])("conta o que voltou do cache por %s", async (_, uso) => {
+    vi.stubEnv("OPENROUTER_API_KEY", "k");
+    vi.stubGlobal(
+      "fetch",
+      async () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "pronto" } }],
+            usage: { prompt_tokens: 25_000, completion_tokens: 800, ...uso },
+          }),
+          { status: 200 },
+        ),
+    );
+    const r = await conversarComFerramentas(
+      MENSAGENS,
+      FERRAMENTAS,
+      async () => "{}",
+      LIMITES,
+    );
+    expect(r?.tokens.cacheLido).toBe(23_000);
   });
 });

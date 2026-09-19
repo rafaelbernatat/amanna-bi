@@ -35,6 +35,17 @@ describe.skipIf(!VIVO)("o chat com o gateway real (T-437)", () => {
     ["Top 5 clientes por receita", "composto"],
     ["Como a receita evoluiu nos últimos 12 meses?", "composto"],
     ["Compare a margem líquida com o turnover", "composto"],
+    /*
+     * As duas do print de Produto (2026-09-19), que antes de T-446 caíam no
+     * atalho e saíam como a métrica mais próxima. Em fixtures não há consulta
+     * livre; o que elas provam aqui é o **roteamento** — que vão ao laço e
+     * voltam com leitura, e não com "Despesa de pessoal: 16,5%".
+     */
+    ["Qual foi a maior despesa de junho?", "composto"],
+    [
+      "Fora a despesa com pessoal, o que mais eu gastei que foi fora do normal?",
+      "composto",
+    ],
   ] as const)(
     "%s responde pelo modelo, com gráfico, pelo caminho %s",
     async (pergunta, caminho) => {
@@ -51,7 +62,37 @@ describe.skipIf(!VIVO)("o chat com o gateway real (T-437)", () => {
       expect(["modelo", "modelo-corrigido"]).toContain(resposta.autoria);
       expect(resposta.resolucao.caminho).toBe(caminho);
       expect(resposta.resolucao.painel).not.toBeNull();
+      // Uma resposta composta leu alguma coisa: é o que a distingue do
+      // atalho que respondia a métrica mais próxima (T-446).
+      expect(resposta.resolucao.leituras.length).toBeGreaterThan(0);
       expect(Date.now() - inicio).toBeLessThan(ESPERA_MS);
+    },
+    ESPERA_MS,
+  );
+
+  /**
+   * A frase que Produto mandou tirar (T-445).
+   *
+   * "não há comparação disponível com taxas de juros" era a instrução sendo
+   * obedecida: o formulário mandava dizer o que faltava. Com a forma livre,
+   * nenhuma resposta anuncia o que não existe.
+   */
+  it(
+    "nenhuma resposta anuncia o que falta",
+    async () => {
+      const pergunta = "Quantos lançamentos fora do padrão tivemos?";
+      const resolvida = await resolverPergunta(pergunta, CONTEXTO, []);
+      if (resolvida.tipo !== "resolvida") throw new Error("esperava resolvida");
+      const resposta = await redigirResposta(
+        pergunta,
+        resolvida.resolucao,
+        resolvida.redacao,
+        CONTEXTO,
+      );
+      if (resposta.tipo !== "resposta") throw new Error("esperava resposta");
+      expect(resposta.texto).not.toMatch(/não há compara\w+ dispon/i);
+      expect(resposta.texto).not.toMatch(/sem comparação com juros/i);
+      expect(resposta.texto).not.toMatch(/o envelope não/i);
     },
     ESPERA_MS,
   );

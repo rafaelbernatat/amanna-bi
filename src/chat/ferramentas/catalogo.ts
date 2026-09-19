@@ -2,13 +2,27 @@
  * O vocabulário fechado de ferramentas que o modelo pode pedir
  * (D-CHAT-ferramentas, T-348).
  *
- * Oito ferramentas, cada uma um `JSON Schema` com `additionalProperties:
- * false` e enums derivados do que o produto já declara: os ids do catálogo, os
- * códigos dos filtros, as oito dimensões de ranking, os anos que a fonte tem.
- * O modelo **pede** leituras por este vocabulário; quem executa é o nosso
- * código, pela mesma fronteira de perfil das telas. Nenhuma ferramenta recebe
- * texto livre que vire consulta: não há SQL, não há expressão, não há campo
- * aberto além da busca no catálogo — que é busca, e não leitura.
+ * Oito ferramentas fechadas, cada uma um `JSON Schema` com
+ * `additionalProperties: false` e enums derivados do que o produto já declara:
+ * os ids do catálogo, os códigos dos filtros, as oito dimensões de ranking, os
+ * anos que a fonte tem. O modelo **pede** leituras por este vocabulário; quem
+ * executa é o nosso código, pela mesma fronteira de perfil das telas.
+ *
+ * ## E uma nona, que recebe SQL
+ *
+ * Até 2026-09-19 este cabeçalho dizia "não há SQL, não há expressão, não há
+ * campo aberto". Produto reverteu: o chat responde qualquer pergunta sobre os
+ * dados, e as oito ferramentas partem todas de um id do catálogo — esse era o
+ * teto. `consultar_dados` recebe um SELECT.
+ *
+ * O que sustenta a reversão **não** é este arquivo: é o papel `amanna_chat_ro`,
+ * que tem GRANT só no esquema `amanna_chat` e nenhum em `amanna`, numa conexão
+ * própria (migração 012). As oito continuam fechadas, continuam mantendo o
+ * piso de área × mês, e continuam sendo o caminho preferido — mais rápidas, já
+ * conferidas, e são elas que acendem o painel na conversa.
+ *
+ * A nona só é oferecida quando a instalação a tem. Em `fixtures` o modelo nem
+ * a enxerga.
  *
  * ## Por que enums, e não `pattern`
  *
@@ -38,6 +52,7 @@ export const NOMES_DE_FERRAMENTA = [
   "decompor",
   "explicar_grafico",
   "listar_metricas",
+  "consultar_dados",
 ] as const;
 export type NomeDeFerramenta = (typeof NOMES_DE_FERRAMENTA)[number];
 
@@ -85,21 +100,83 @@ function metrica(descricao: string): Readonly<Record<string, unknown>> {
   return { type: "string", enum: idsDoCatalogo(), description: descricao };
 }
 
-/** As oito ferramentas, com os enums do contexto desta pergunta. */
-export function ferramentas(contexto: ContextoDaTela): readonly Ferramenta[] {
+/**
+ * O mês pedido, ao nível da ferramenta e não dentro de `filtros` (T-447).
+ *
+ * O vocabulário de `filtros` é o `Query` das telas, e ele não tem mês: os
+ * períodos são "12-meses", "6-meses", "4-trimestre" e "dezembro". Pôr um mês
+ * ali seria mentir sobre o que o recorte da URL alcança. Aqui é outra coisa —
+ * o valor lido continua sendo o do recorte, e o mês escolhe um ponto da série
+ * que a métrica já traz.
+ */
+const MES: Readonly<Record<string, unknown>> = {
+  type: "string",
+  pattern: "^(0[1-9]|1[0-2])/20\\d{2}$",
+  description:
+    "Um mês específico, como MM/AAAA ('06/2026'). Use quando a pergunta " +
+    "nomeia um mês: a resposta abre por ele, e o valor do período inteiro " +
+    "vira contexto. O recorte não muda.",
+};
+
+/**
+ * A descrição da nona ferramenta.
+ *
+ * Diz ao modelo **quando não usá-la**, que é o que mantém o caminho barato no
+ * caso comum: o ranking de uma dimensão já devolve cada item com rótulo, valor
+ * e participação, e responde "quanto gastamos com o fornecedor X" sempre que X
+ * estiver entre os maiores.
+ */
+const DESCRICAO_DA_CONSULTA =
+  "Uma consulta SQL de leitura ao banco, para o que as outras ferramentas " +
+  "não alcançam: um fornecedor, cliente ou conta pelo nome quando ele não " +
+  "está no ranking; um recorte por mês que o ranking não abre; um cruzamento " +
+  "que não existe como métrica; os lançamentos um a um; as pessoas por custo. " +
+  "É a ÚLTIMA opção: tente antes o ranking ou a decomposição da dimensão, que " +
+  "são mais rápidos e desenham o gráfico. Só SELECT, uma consulta por vez, " +
+  "até 25 linhas e 6 colunas — escolha as colunas, nunca 'SELECT *'. Dê " +
+  "apelido claro a cada coluna, e ponha o nome (a conta, o colaborador, o " +
+  "mês) como primeira coluna: é ele que rotula a linha na resposta.";
+
+/** As ferramentas, com os enums do contexto desta pergunta. */
+export function ferramentas(
+  contexto: ContextoDaTela,
+  comConsulta = false,
+): readonly Ferramenta[] {
   const filtros = esquemaDeFiltros(contexto.anos);
+  const consulta: readonly Ferramenta[] = comConsulta
+    ? [
+        {
+          nome: "consultar_dados",
+          descricao: DESCRICAO_DA_CONSULTA,
+          parametros: {
+            type: "object",
+            additionalProperties: false,
+            required: ["consulta"],
+            properties: {
+              consulta: {
+                type: "string",
+                minLength: 10,
+                description:
+                  "O SELECT, sobre as views do esquema amanna_chat. Sem " +
+                  "ponto e vírgula, sem esquema no nome da tabela.",
+              },
+            },
+          },
+        },
+      ]
+    : [];
   return [
     {
       nome: "ler_metrica",
       descricao:
         "Lê o valor de uma métrica do catálogo no recorte pedido. Use para " +
         "qualquer número simples. Devolve o valor formatado, a fórmula e a data " +
-        "de fechamento.",
+        "de fechamento. Com 'mes', devolve também o valor desse mês.",
       parametros: {
         type: "object",
         additionalProperties: false,
         required: ["metrica"],
-        properties: { metrica: metrica("Id da métrica."), filtros },
+        properties: { metrica: metrica("Id da métrica."), mes: MES, filtros },
       },
     },
     {
@@ -112,7 +189,7 @@ export function ferramentas(contexto: ContextoDaTela): readonly Ferramenta[] {
         type: "object",
         additionalProperties: false,
         required: ["metrica"],
-        properties: { metrica: metrica("Id da métrica."), filtros },
+        properties: { metrica: metrica("Id da métrica."), mes: MES, filtros },
       },
     },
     {
@@ -219,5 +296,6 @@ export function ferramentas(contexto: ContextoDaTela): readonly Ferramenta[] {
         properties: { busca: { type: "string", minLength: 2 } },
       },
     },
+    ...consulta,
   ];
 }

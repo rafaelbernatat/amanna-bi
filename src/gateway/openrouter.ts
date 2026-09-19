@@ -124,13 +124,28 @@ type RespostaDoGateway = {
   readonly usage?: {
     readonly prompt_tokens?: unknown;
     readonly completion_tokens?: unknown;
+    /** O nome da Anthropic para o que voltou do cache. */
+    readonly cache_read_input_tokens?: unknown;
+    /** O nome da OpenAI para a mesma coisa, que o OpenRouter também usa. */
+    readonly prompt_tokens_details?: { readonly cached_tokens?: unknown };
   };
 };
 
-/** Quantos tokens uma chamada consumiu, quando o gateway conta. */
-export type Tokens = { readonly entrada: number; readonly saida: number };
+/**
+ * Quantos tokens uma chamada consumiu, quando o gateway conta.
+ *
+ * `cacheLido` é a parte da entrada que voltou do cache de prompt — cobrada a
+ * um décimo. Fica separada porque é o critério de aceite da seção 7.4: se ela
+ * vier zero em pergunta repetida, existe um invalidador silencioso, e isso é
+ * defeito, não variação de custo.
+ */
+export type Tokens = {
+  readonly entrada: number;
+  readonly saida: number;
+  readonly cacheLido: number;
+};
 
-const SEM_TOKENS: Tokens = { entrada: 0, saida: 0 };
+const SEM_TOKENS: Tokens = { entrada: 0, saida: 0, cacheLido: 0 };
 
 /**
  * O que o processo já gastou, somando todas as chamadas.
@@ -145,18 +160,23 @@ const SEM_TOKENS: Tokens = { entrada: 0, saida: 0 };
  * um contador por pedaço empacotado.
  */
 const GASTO = Symbol.for("amanna-bi.gateway.tokens");
-type PortadorDeTokens = { [GASTO]?: { entrada: number; saida: number } };
+type ContaDeTokens = { entrada: number; saida: number; cacheLido: number };
+type PortadorDeTokens = { [GASTO]?: ContaDeTokens };
 
-function acumulador(): { entrada: number; saida: number } {
+function acumulador(): ContaDeTokens {
   const portador = globalThis as unknown as PortadorDeTokens;
-  portador[GASTO] ??= { entrada: 0, saida: 0 };
+  portador[GASTO] ??= { entrada: 0, saida: 0, cacheLido: 0 };
   return portador[GASTO];
 }
 
 /** O total gasto por este processo até agora. */
 export function tokensDoProcesso(): Tokens {
   const atual = acumulador();
-  return { entrada: atual.entrada, saida: atual.saida };
+  return {
+    entrada: atual.entrada,
+    saida: atual.saida,
+    cacheLido: atual.cacheLido,
+  };
 }
 
 /** Só para teste: devolve o contador ao zero. */
@@ -164,16 +184,29 @@ export function esquecerTokensDoProcesso(): void {
   delete (globalThis as unknown as PortadorDeTokens)[GASTO];
 }
 
+function numeroOuZero(valor: unknown): number {
+  return typeof valor === "number" ? valor : 0;
+}
+
 function tokensDe(corpo: RespostaDoGateway): Tokens {
-  const entrada = corpo.usage?.prompt_tokens;
-  const saida = corpo.usage?.completion_tokens;
+  const uso = corpo.usage;
+  /*
+   * Os dois nomes do mesmo número. A Anthropic chama de
+   * `cache_read_input_tokens`; o OpenRouter, que fala o formato da OpenAI,
+   * devolve `prompt_tokens_details.cached_tokens`. Ler os dois evita que a
+   * medida da seção 7.4 dependa de qual formato o provedor escolheu hoje.
+   */
   const lidos: Tokens = {
-    entrada: typeof entrada === "number" ? entrada : 0,
-    saida: typeof saida === "number" ? saida : 0,
+    entrada: numeroOuZero(uso?.prompt_tokens),
+    saida: numeroOuZero(uso?.completion_tokens),
+    cacheLido:
+      numeroOuZero(uso?.cache_read_input_tokens) ||
+      numeroOuZero(uso?.prompt_tokens_details?.cached_tokens),
   };
   const total = acumulador();
   total.entrada += lidos.entrada;
   total.saida += lidos.saida;
+  total.cacheLido += lidos.cacheLido;
   return lidos;
 }
 
@@ -361,7 +394,57 @@ function argumentosDe(texto: string): unknown {
 }
 
 function somar(a: Tokens, b: Tokens): Tokens {
-  return { entrada: a.entrada + b.entrada, saida: a.saida + b.saida };
+  return {
+    entrada: a.entrada + b.entrada,
+    saida: a.saida + b.saida,
+    cacheLido: a.cacheLido + b.cacheLido,
+  };
+}
+
+/** O prefixo do laço só é cacheável na família que cobra o cache à parte. */
+function cobraCacheDePrompt(modelo: string): boolean {
+  return modelo.startsWith("anthropic/");
+}
+
+/**
+ * As mensagens com o ponto de corte do cache de prompt (T-438, PRD 7.4).
+ *
+ * A ordem de renderização da Anthropic é `tools`, depois `system`, depois
+ * `messages`, e o cache cobre **tudo que vem antes do corte**. Um único corte
+ * na mensagem de sistema, portanto, cacheia as ferramentas junto — que é onde
+ * moram os ~23 mil tokens estáveis do laço, seis esquemas carregando o enum
+ * dos 145 ids do catálogo.
+ *
+ * A troca acontece só aqui, na saída para o fio: o resto do produto — o
+ * inspetor, o laço, os testes — continua vendo `content` como texto. Mudar o
+ * tipo de `Mensagem` para o formato de partes espalharia o formato do
+ * provedor por camadas que não têm nada com ele.
+ *
+ * Nada volátil entra na mensagem de sistema: o contexto da tela viaja na
+ * mensagem do usuário, e a instrução é constante de módulo. Um carimbo de
+ * hora ali invalidaria o prefixo a cada pergunta, em silêncio.
+ */
+function comCorteDeCache(
+  mensagens: readonly Mensagem[],
+  modelo: string,
+): readonly unknown[] {
+  const primeira = mensagens[0];
+  if (!cobraCacheDePrompt(modelo) || primeira?.role !== "system") {
+    return mensagens;
+  }
+  return [
+    {
+      role: "system",
+      content: [
+        {
+          type: "text",
+          text: primeira.content,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+    },
+    ...mensagens.slice(1),
+  ];
 }
 
 /**
@@ -421,7 +504,7 @@ export async function conversarComFerramentas(
       {
         model: modelo,
         max_tokens: limites.tetoDeSaida,
-        messages: conversa,
+        messages: comCorteDeCache(conversa, modelo),
         tools,
         tool_choice: escolha,
         /*

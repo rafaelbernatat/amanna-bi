@@ -9,6 +9,10 @@
  */
 
 import { formatarValor } from "@/apresentacao/formato/formato";
+import {
+  fraseDaConsulta,
+  numerosDaConsulta,
+} from "@/chat/ferramentas/consulta";
 import type { Derivada } from "@/chat/ferramentas/derivar";
 import type { NomeDeFerramenta } from "@/chat/ferramentas/catalogo";
 import {
@@ -39,6 +43,15 @@ export type LeituraDeMetrica = {
   readonly formula: string;
   readonly asOf: string;
   readonly filtros: Query;
+  /**
+   * O mês que a pergunta nomeou, quando nomeou (T-447).
+   *
+   * Sai da série da própria métrica, calculada sobre os mesmos meses do
+   * recorte — não é leitura nova, e por isso não custa porta nenhuma. O valor
+   * do recorte inteiro continua em `valor`: quem perguntou junho quer junho
+   * na primeira frase, e o período como contexto.
+   */
+  readonly pontoDoMes: PontoDoResumo | null;
 };
 
 export type LeituraDeSerie = {
@@ -53,6 +66,46 @@ export type LeituraDeSerie = {
   readonly filtros: Query;
   /** O envelope lido, para a conversa desenhar sem reler (T-432). */
   readonly desenho: PanelResponse;
+  /** O mês que a pergunta nomeou, escolhido entre os pontos (T-447). */
+  readonly pontoDoMes: PontoDoResumo | null;
+};
+
+// A leitura de consulta é montada e lida em `consulta.ts`, que é quem conhece
+// a formatação por unidade; aqui ficam o tipo e as duas pontas do contrato.
+
+/** Uma linha de uma consulta, com as células já escritas. */
+export type LinhaDeConsulta = {
+  /** O que dá nome à linha: o nome, a conta, o mês. Vazio quando não há. */
+  readonly rotulo: string;
+  /** Uma por coluna, na ordem de `colunas`. `null` é sem dado. */
+  readonly celulas: readonly (string | null)[];
+};
+
+/** Uma coluna de uma consulta, com o papel que ela faz na linha. */
+export type ColunaDeConsulta = {
+  readonly nome: string;
+  readonly papel: "rotulo" | "numero";
+  /** "reais", uma unidade do contrato, ou `null` quando ninguém declarou. */
+  readonly unidade: string | null;
+};
+
+/**
+ * O que uma consulta livre devolveu (T-451, T-453).
+ *
+ * Os números chegam **já formatados**: o verificador compara texto, e um
+ * bruto ao lado seria convite para o modelo arredondar de outro jeito. O SQL
+ * executado viaja junto porque é ele que a bolha mostra em "consulta
+ * registrada" — para uma resposta de consulta, o SELECT **é** a fórmula que o
+ * princípio P3 exige de todo número.
+ */
+export type LeituraDeConsulta = {
+  readonly tipo: "consulta";
+  readonly sql: string;
+  readonly colunas: readonly ColunaDeConsulta[];
+  readonly linhas: readonly LinhaDeConsulta[];
+  readonly truncado: boolean;
+  readonly fontes: readonly string[];
+  readonly asOf: string;
 };
 
 export type LeituraDeComparacao = {
@@ -127,7 +180,8 @@ export type LeituraDeFerramenta =
   | LeituraDeVariacao
   | LeituraDeRanking
   | LeituraDeGrafico
-  | LeituraDeCatalogo;
+  | LeituraDeCatalogo
+  | LeituraDeConsulta;
 
 /** Uma leitura, com a ferramenta que a produziu, como fica na `Resolucao`. */
 export type ResultadoDeFerramenta = {
@@ -171,11 +225,20 @@ export function numerosDoResumo(r: ResumoDoPainel): NumeroPermitido[] {
 /** Os números que uma leitura autoriza o texto a citar. */
 export function numerosDe(l: LeituraDeFerramenta): readonly NumeroPermitido[] {
   switch (l.tipo) {
+    /*
+     * O ponto do mês pedido é livre, como o valor da métrica (T-447).
+     *
+     * É o que a pergunta pediu, e a resposta abre por ele: exigir o rótulo
+     * por perto obrigaria a escrever "em jun/2026" na frase em que já se diz
+     * junho. O verificador já trata `pontoPedido` do caminho simples assim,
+     * pela mesma razão.
+     */
     case "metrica":
-      return livre(l.formatado);
+      return [...livre(l.formatado), ...livre(l.pontoDoMes?.formatado ?? null)];
     case "serie":
       return [
         ...l.destaques.flatMap((d) => livre(d.ponto.formatado)),
+        ...livre(l.pontoDoMes?.formatado ?? null),
         ...l.pontos.flatMap(comRotulo),
       ];
     case "comparacao":
@@ -215,6 +278,8 @@ export function numerosDe(l: LeituraDeFerramenta): readonly NumeroPermitido[] {
       return numerosDoResumo(l.resumo);
     case "catalogo":
       return [];
+    case "consulta":
+      return numerosDaConsulta(l);
   }
 }
 
@@ -236,8 +301,13 @@ function ouSemDado(formatado: string | null): string {
  */
 export function fraseDe(l: LeituraDeFerramenta): string {
   switch (l.tipo) {
-    case "metrica":
-      return `${l.rotulo}: ${ouSemDado(l.formatado)}.`;
+    case "metrica": {
+      const doMes =
+        l.pontoDoMes === null
+          ? ""
+          : `${l.rotulo} em ${l.pontoDoMes.rotulo}: ${ouSemDado(l.pontoDoMes.formatado)}. `;
+      return `${doMes}${l.rotulo}: ${ouSemDado(l.formatado)}.`;
+    }
     case "serie": {
       const partes = l.destaques.map(
         (d) =>
@@ -304,6 +374,8 @@ export function fraseDe(l: LeituraDeFerramenta): string {
       return l.metricas.length === 0
         ? `Nenhuma métrica do catálogo casa com "${l.busca}".`
         : `Métricas próximas de "${l.busca}": ${l.metricas.map((m) => m.rotulo).join("; ")}.`;
+    case "consulta":
+      return fraseDaConsulta(l);
   }
 }
 

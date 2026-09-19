@@ -20,6 +20,7 @@
 import type { TurnoAnterior } from "@/chat/interpretar";
 import { mesDoRotulo } from "@/chat/mes";
 import type { Resposta } from "@/chat/perguntar";
+import type { Resolucao } from "@/chat/resolver";
 import type { MotivoDeFalha, Previa } from "@/chat/protocolo";
 import { TURNOS_LEMBRADOS } from "@/chat/protocolo";
 import type { Query } from "@/semantica/contrato";
@@ -67,6 +68,32 @@ export const CHAVE_DE_ARMAZENAMENTO = "amanna-bi.chat.v1";
  * precisa saber que aquela pergunta não teve métrica, senão "e em dezembro?"
  * depois de uma recusa herdaria a resposta de antes dela.
  */
+/** Quantos rótulos de linha bastam para dizer de que a resposta falou. */
+const ROTULOS_NO_ASSUNTO = 3;
+
+/**
+ * De que a resposta falou, para o próximo turno herdar o fio (T-454).
+ *
+ * Só rótulos: as colunas da consulta e os primeiros nomes de linha. **Nunca
+ * número** — o histórico não leva valor, porque cada um renasce e é conferido
+ * de novo a cada turno (RF-15). `null` quando a resposta tem métrica, que é o
+ * caso em que a métrica já diz o assunto.
+ */
+function assuntoDe(resolucao: Resolucao): string | null {
+  if (resolucao.metrica !== "") return null;
+  for (const { leitura } of resolucao.leituras) {
+    if (leitura.tipo !== "consulta") continue;
+    const colunas = leitura.colunas.map((c) => c.nome).join(", ");
+    const rotulos = leitura.linhas
+      .slice(0, ROTULOS_NO_ASSUNTO)
+      .map((l) => l.rotulo)
+      .filter((r) => r !== "");
+    const exemplos = rotulos.length === 0 ? "" : ` (${rotulos.join(", ")}…)`;
+    return `consulta ao banco: ${colunas}${exemplos}`;
+  }
+  return null;
+}
+
 export function historicoDe(
   turnos: readonly Turno[],
 ): readonly TurnoAnterior[] {
@@ -80,11 +107,18 @@ export function historicoDe(
       const rotuloDoPonto = resolucao?.pontoPedido?.rotulo;
       const mes =
         rotuloDoPonto === undefined ? null : mesDoRotulo(rotuloDoPonto);
+      const assunto = resolucao === null ? null : assuntoDe(resolucao);
       return {
         pergunta: t.pergunta,
-        metrica: resolucao?.metrica ?? null,
+        // Resolução sem métrica (T-454) vem de consulta: `metrica` é "".
+        metrica:
+          resolucao === null || resolucao.metrica === ""
+            ? null
+            : resolucao.metrica,
         ...(mes === null ? {} : { mes }),
         ...(resolucao === null ? {} : { filtros: resolucao.acoes.filtros }),
+        // Só quando há: uma resposta do catálogo já diz o assunto na métrica.
+        ...(assunto === null ? {} : { assunto }),
       };
     })
     .slice(-TURNOS_LEMBRADOS);

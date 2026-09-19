@@ -22,8 +22,13 @@ export type TipoDeIncidente =
   | "gateway_falhou"
   /** A leitura do dado lançou: o nome da exceção e a mensagem, curta (T-430). */
   | "fonte_falhou"
-  /** Pergunta sem métrica no catálogo foi ao laço antes da recusa (T-436). */
-  | "laco_na_duvida";
+  /**
+   * A resposta não respondeu a pergunta (T-448).
+   *
+   * No atalho isto escala a pergunta ao laço; no laço fica registrado, sem
+   * bloquear o texto — RF-15 já é quem bloqueia.
+   */
+  | "resposta_irrelevante";
 
 export type Incidente = {
   readonly tipo: TipoDeIncidente;

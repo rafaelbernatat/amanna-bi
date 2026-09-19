@@ -22,6 +22,8 @@ import { CATALOGO_GERADO } from "@/semantica/catalogo-gerado";
 
 /** `modulo/tela` cabe nisto; mais que isto não é rota do inventário. */
 const TAMANHO_MAXIMO_DA_TELA = 40;
+/** O assunto de um turno de consulta: rótulos, e só (T-454). */
+const TAMANHO_MAXIMO_DO_ASSUNTO = 200;
 
 function ehObjeto(x: unknown): x is Record<string, unknown> {
   return typeof x === "object" && x !== null;
@@ -82,6 +84,7 @@ export function lerPedido(bruto: unknown): PedidoDeChat | null {
       if (!ehObjeto(turno) || typeof turno["pergunta"] !== "string") continue;
       const metrica = turno["metrica"];
       const mes = turno["mes"];
+      const assunto = turno["assunto"];
       const filtros = filtrosValidos(turno["filtros"]);
       historico.push({
         pergunta: turno["pergunta"].slice(0, TAMANHO_MAXIMO_DA_PERGUNTA),
@@ -94,6 +97,19 @@ export function lerPedido(bruto: unknown): PedidoDeChat | null {
         // quando existe: turno sem contexto não ganha chave nenhuma.
         ...(mesValido(mes) ? { mes: { mes: mes.mes, ano: mes.ano } } : {}),
         ...(filtros === null ? {} : { filtros }),
+        /*
+         * O assunto de uma resposta de consulta (T-454). Vem do cliente, como
+         * o resto do histórico, e por isso é cortado: texto curto, e **sem
+         * dígito** — o histórico nunca leva número, e recortar aqui impede que
+         * um cliente adulterado ponha um valor na boca do modelo.
+         */
+        ...(typeof assunto === "string" && assunto.trim() !== ""
+          ? {
+              assunto: assunto
+                .replace(/\d/g, "")
+                .slice(0, TAMANHO_MAXIMO_DO_ASSUNTO),
+            }
+          : {}),
       });
     }
   }

@@ -37,10 +37,15 @@ vi.hoisted(() => {
   process.env["AUTH_PROVIDER"] = "fixtures";
 });
 
-// O laco na duvida (T-436) e de chat-laco-na-duvida.test.ts; aqui a recusa
-// continua sendo recusa, sem ir ao laco.
+/*
+ * Este arquivo prova o estagio 1, e so ele. Com o roteamento de T-446, a
+ * pergunta que nao nomeia metrica vai ao laco antes do estagio 1 — o que
+ * acontece la e de chat-rota-sem-metrica.test.ts. `CHAT_ROTA=sinais` devolve
+ * o roteamento por sinais, que e o que poe o interpretador de volta no
+ * caminho e mantem estes casos falando do que dizem falar.
+ */
 beforeEach(() => {
-  vi.stubEnv("CHAT_LACO_NA_DUVIDA", "0");
+  vi.stubEnv("CHAT_ROTA", "sinais");
 });
 
 vi.mock("@/chat/openrouter", () => ({

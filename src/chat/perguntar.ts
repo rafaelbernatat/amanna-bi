@@ -34,7 +34,8 @@
  */
 
 import { formatarMesAno, formatarValor } from "@/apresentacao/formato/formato";
-import { classificar } from "@/chat/classificar";
+import { relevancia } from "@/chat/relevancia";
+import { decidirCaminho } from "@/chat/rota";
 import {
   contextoDeQuery,
   ehContexto,
@@ -433,6 +434,15 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
   if (r.caminho === "degradado") linhas.push(AVISO_DE_DEGRADACAO);
   // As leituras do laço vêm primeiro: são o que a pergunta composta pediu.
   for (const { leitura } of r.leituras) linhas.push(fraseDe(leitura));
+  /*
+   * Sem métrica do catálogo (T-454) não há "{rótulo}: {valor}" para escrever:
+   * a resposta é a leitura, e ela já está acima. O resto do montado — o que
+   * entrou na conta, a comparação, o próximo passo — também não existe.
+   */
+  if (r.metrica === "") {
+    void pergunta;
+    return linhas.join("\n\n");
+  }
   if (r.pontoPedido === null) {
     linhas.push(`${r.rotulo}: ${valor}.`);
   } else {
@@ -478,8 +488,14 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
     linhas.push(`O que explica: ${itens}.`);
   }
 
-  linhas.push(`Fórmula: ${r.formula}.`);
-
+  /*
+   * A fórmula e as referências saíram daqui em T-445.
+   *
+   * As duas já aparecem no rodapé técnico da bolha, palavra por palavra, e
+   * repeti-las no corpo é a versão montada do formulário que Produto pediu
+   * para tirar. A frase "Sem comparação com juros: …" saiu pela mesma razão,
+   * e é a mais direta das três: anunciar o que não existe.
+   */
   if (r.comparacao !== null) {
     const c = r.comparacao;
     if (c.base !== null) {
@@ -494,17 +510,6 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
           `(${l.referencia.fonte}, desde ${l.referencia.vigenteDesde}). ${l.formula}.`,
       );
     }
-  } else if (r.comparacaoIndisponivelPorque !== null) {
-    linhas.push(`Sem comparação com juros: ${r.comparacaoIndisponivelPorque}.`);
-  }
-
-  if (r.comparacao === null && r.referencias.length > 0) {
-    const taxas = r.referencias
-      .map(
-        (t) => `${t.nome} ${formatarValor(t.valor, "pct")} ${t.periodicidade}`,
-      )
-      .join("; ");
-    linhas.push(`Referências: ${taxas}.`);
   }
 
   const proximo = PROXIMO_PASSO[r.metrica];
@@ -522,7 +527,13 @@ export function montarTexto(r: Resolucao, pergunta: string): string {
    * quem quer auditar a definição encontra; quem quer o número lê o número.
    */
   void pergunta;
-  return linhas.join(" ");
+  /*
+   * Blocos, e não uma linha só (T-454). A bolha quebra por linha em branco
+   * desde T-441, e o montado passa a se beneficiar disso: o número, o que
+   * explica, a comparação e o próximo passo deixam de ser um parágrafo de
+   * oito frases.
+   */
+  return linhas.join("\n\n");
 }
 
 /* ------------------------------------------------------------------ *
@@ -565,8 +576,20 @@ function minusculaInicial(rotulo: string): string {
  * toda resposta. A fixture só tem 2026 (D-CHAT-perguntas-cfo), então o atalho
  * levava sempre a "sem dado" — uma sugestão que não leva a lugar nenhum.
  */
-export function sugestoesApos(r: Resolucao): readonly string[] {
+export function sugestoesApos(
+  r: Resolucao,
+  contexto: ContextoDaTela | null = null,
+): readonly string[] {
   const filtros = r.acoes.filtros;
+  /*
+   * Sem métrica do catálogo (T-454) não há apoio para oferecer nem métrica
+   * para recortar: a resposta veio de uma consulta. O guia da tela é o que
+   * sobra, e é melhor que uma lista vazia — é a mesma escolha de T-441 para a
+   * recusa.
+   */
+  if (r.metrica === "") {
+    return contexto === null ? [] : sugestoesParaRecusa(contexto);
+  }
 
   const deApoio = r.consideracoes
     .flatMap((c) =>
@@ -643,6 +666,8 @@ function herdar(
     filtros: pedeOAno ? { ...filtros, periodo: "12-meses" } : filtros,
     confianca: CONFIANCA_DA_HERANCA,
     alternativas: [],
+    // A métrica veio do turno anterior, e não de palavra casada nesta pergunta.
+    inteiro: true,
   };
 }
 
@@ -711,6 +736,7 @@ async function interpretar(
       filtros,
       confianca: SEM_CONFIANCA,
       alternativas: doModelo.alternativas,
+      inteiro: false,
     };
   }
 
@@ -723,6 +749,9 @@ async function interpretar(
     filtros,
     confianca: doModelo.confianca,
     alternativas: doModelo.alternativas,
+    // O modelo escolheu; "inteiro" é propriedade do casamento local, e o
+    // roteamento (`rota.ts`) só consulta o palpite local.
+    inteiro: false,
   };
 }
 
@@ -786,23 +815,21 @@ export async function resolverPergunta(
   const atuais = contexto.filtros;
 
   /*
-   * Composta vai ao laço (D-CHAT-ferramentas). A classificação é nossa e
-   * determinística: os sinais da pergunta, descontados os que estão no nome
-   * da métrica que o interpretador local escolheu com confiança.
-   */
-  const { classe } = classificar(
-    pergunta,
-    interpretarLocalmente(pergunta, atuais),
-  );
-  /*
-   * Uma continuação herdada ("e no ano todo?", "e em maio?") fica no caminho
-   * da resposta anterior, ainda que carregue um sinal de série ou ranking:
-   * "no ano todo" é sinal de série numa pergunta nova, e recorte numa
-   * continuação (T-443). "E por área?" não herda — segue ao laço.
+   * Por onde a pergunta é respondida (T-446, `rota.ts`). Com gateway, o laço
+   * é o padrão: o atalho de uma métrica só fica com a continuação herdada, a
+   * causa, e a pergunta que não pede nada além de nomear a métrica. Sem
+   * gateway, vale a classificação por sinais de sempre — o laço sem modelo só
+   * responde duas formas.
    */
   const continuacao = herdar(pergunta, atuais, historico);
+  const rota = decidirCaminho(
+    pergunta,
+    interpretarLocalmente(pergunta, atuais),
+    continuacao,
+    gatewayConfigurado(),
+  );
   let degradada = false;
-  if (classe === "composta" && continuacao === null) {
+  if (rota.caminho === "laco") {
     const composta = await resolverComposta(
       pergunta,
       contexto,
@@ -818,6 +845,25 @@ export async function resolverPergunta(
           alternativas: composta.alternativas,
           sugestoes: sugestoesParaRecusa(contexto),
         };
+      }
+      /*
+       * No laço a pertinência **não bloqueia** (T-448): RF-15 já é quem
+       * bloqueia, e um segundo bloqueador só produziria mais recusa. Fica o
+       * registro, e a frequência medida diz se o vocabulário de leitura
+       * precisa crescer.
+       */
+      const pertinencia = relevancia(pergunta, composta.resolucao);
+      if (!pertinencia.ok) {
+        registrarIncidente({
+          tipo: "resposta_irrelevante",
+          detalhe: {
+            motivo: pertinencia.motivo,
+            forma: pertinencia.forma,
+            caminho: "composto",
+            metrica: composta.resolucao.metrica,
+            escalou: false,
+          },
+        });
       }
       return composta.texto === null
         ? { tipo: "resolvida", resolucao: composta.resolucao }
@@ -840,52 +886,12 @@ export async function resolverPergunta(
 
   if (intencao === null || intencao.confianca < CONFIANCA_MINIMA) {
     /*
-     * O laço na dúvida (T-436). Nada casou de primeira, mas a pergunta pode
-     * ser sobre o dado com outras palavras — "quanto entrou de caixa em
-     * março?", "quantos clientes novos?". Com gateway, o laço de ferramentas
-     * busca no catálogo (`listar_metricas`) e lê antes de qualquer recusa; a
-     * recusa útil continua sendo o que sai quando nem ele conclui.
+     * Chegar aqui com gateway quer dizer que o laço já correu e não concluiu
+     * — o roteamento de T-446 manda ao laço toda pergunta que não nomeia a
+     * métrica, antes do estágio 1. O ramo "laço na dúvida" de T-436, que
+     * tentava o laço **depois** da interpretação, foi absorvido por ele: uma
+     * ida a menos ao modelo, e uma decisão em vez de duas.
      */
-    // O interpretador do modelo disse que a pergunta não é sobre os dados
-    // (métrica vazia e nenhuma próxima): o laço não tem o que buscar.
-    const foraDosDados =
-      intencao !== null &&
-      intencao.metrica === "" &&
-      intencao.alternativas.length === 0;
-    if (
-      !degradada &&
-      !foraDosDados &&
-      lacoNaDuvidaLigado(process.env) &&
-      gatewayConfigurado()
-    ) {
-      const tentativa = await resolverComposta(
-        pergunta,
-        contexto,
-        historico,
-        undefined,
-        eventos,
-      );
-      const concluiu = tentativa !== null && tentativa.tipo !== "recusa";
-      registrarIncidente({
-        tipo: "laco_na_duvida",
-        detalhe: { modelo: modeloEmUso("ferramentas"), concluiu },
-      });
-      if (tentativa !== null && tentativa.tipo !== "recusa") {
-        const resolucao = comOMesPedido(
-          tentativa.resolucao,
-          pergunta,
-          historico,
-        );
-        return tentativa.texto === null
-          ? { tipo: "resolvida", resolucao }
-          : {
-              tipo: "resolvida",
-              resolucao,
-              redacao: { texto: tentativa.texto, autoria: "modelo" },
-            };
-      }
-    }
-
     // Nada casou (local) ou o modelo recusou: não há métrica para oferecer.
     const recusou = intencao === null || intencao.metrica === "";
     const propria: readonly string[] =
@@ -917,6 +923,51 @@ export async function resolverPergunta(
       pergunta,
       historico,
     );
+
+    /*
+     * A rede de segurança do roteamento (T-448).
+     *
+     * O atalho respondeu, e a resposta não responde a pergunta — pediram os
+     * maiores e veio um número só, ou pediram reais e veio uma taxa. É a
+     * regra do resto (`rota.ts`) tendo errado, e a correção é de rota:
+     * escala ao laço, uma ida ao modelo, registrada. Só depois se desiste.
+     */
+    const pertinencia = relevancia(pergunta, resolucao);
+    if (
+      !pertinencia.ok &&
+      rota.caminho === "atalho" &&
+      !degradada &&
+      gatewayConfigurado()
+    ) {
+      registrarIncidente({
+        tipo: "resposta_irrelevante",
+        detalhe: {
+          motivo: pertinencia.motivo,
+          forma: pertinencia.forma,
+          caminho: "simples",
+          metrica: intencao.metrica,
+          escalou: true,
+        },
+      });
+      const tentativa = await resolverComposta(
+        pergunta,
+        contexto,
+        historico,
+        undefined,
+        eventos,
+      );
+      if (tentativa !== null && tentativa.tipo !== "recusa") {
+        const doLaco = comOMesPedido(tentativa.resolucao, pergunta, historico);
+        return tentativa.texto === null
+          ? { tipo: "resolvida", resolucao: doLaco }
+          : {
+              tipo: "resolvida",
+              resolucao: doLaco,
+              redacao: { texto: tentativa.texto, autoria: "modelo" },
+            };
+      }
+    }
+
     return {
       tipo: "resolvida",
       resolucao: degradada ? { ...resolucao, caminho: "degradado" } : resolucao,
@@ -946,17 +997,6 @@ function sugestoesParaRecusa(contexto: ContextoDaTela): readonly string[] {
   return contexto.tela === null
     ? []
     : sugestoesDaTela(contexto.tela.replace(/^\//, ""));
-}
-
-/**
- * O laço na dúvida vale por padrão quando há gateway; `CHAT_LACO_NA_DUVIDA=0`
- * desliga, e a pergunta sem métrica recebe a recusa útil direto (T-436).
- */
-export function lacoNaDuvidaLigado(
-  ambiente: Record<string, string | undefined>,
-): boolean {
-  const valor = ambiente["CHAT_LACO_NA_DUVIDA"]?.trim().toLowerCase();
-  return valor !== "0" && valor !== "nao" && valor !== "false";
 }
 
 /**
@@ -1109,7 +1149,7 @@ export async function redigirResposta(
     texto,
     autoria,
     resolucao,
-    sugestoes: sugestoesApos(resolucao),
+    sugestoes: sugestoesApos(resolucao, contexto ?? null),
   };
 }
 

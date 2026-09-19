@@ -250,9 +250,10 @@ Regras:
 
 ### 7.5 · Limites de segurança
 
-- Sem SQL gerado por modelo, em nenhuma circunstância.
-- Sem acesso a linha individual. O menor grão exposto é **área × mês**.
-- A consulta herda o perfil de acesso de quem perguntou. O modelo nunca vê dado fora do escopo dessa pessoa.
+- **Pelas oito ferramentas fechadas:** sem SQL gerado por modelo, e sem acesso a linha individual — o menor grão exposto é **área × mês**. Continua valendo, e `src/seguranca/grao.ts` continua sendo a trava.
+- **Por uma nona porta, desde 2026-09-19 ([D-CHAT-sql](docs/decisoes/D-CHAT-sql.md)):** o chat pode escrever um SELECT, e o detalhe — o razão lançamento a lançamento, a folha por pessoa com nome, cargo e custo — é alcançável. Produto reverteu as duas frases acima para esta porta, e a reversão vem com outra tranca: um papel de banco (`amanna_chat_ro`) numa conexão própria, com GRANT só num esquema de views onde as colunas proibidas **não existem**. Duas portas com duas trancas; nunca uma porta com a tranca frouxa.
+- **Fora, nas duas portas:** CPF, data de nascimento, conta bancária, sindicato, o CID de um atestado, o comentário de uma pesquisa prometida como anônima e os dados de quem só se candidatou.
+- A consulta herda o perfil de acesso de quem perguntou. O modelo nunca vê dado fora do escopo dessa pessoa — nas ferramentas pela fronteira de perfil, na consulta por um predicado que toda view carrega e que é *fail-closed*.
 - Pergunta sem métrica correspondente recebe recusa útil — "não tenho essa métrica; tenho estas três próximas" — nunca uma estimativa.
 - Toda resposta é registrada com pergunta, intenção, métricas lidas, recorte e custo em *tokens*.
 
@@ -578,12 +579,12 @@ A suíte roda também com **dados deliberadamente incompletos** (área nula, mê
 | Tema | Requisito |
 |---|---|
 | **Recorte por perfil** | Aplicado **no servidor**, nunca no cliente. O perfil define entidades e áreas visíveis; a `Query` é interceptada e restringida antes de chegar ao adaptador. |
-| **Grão mínimo** | Área × mês. Nenhuma superfície do produto — painel, chat, exportação — expõe linha individual de pessoa. |
-| **Dado de pessoa** | Sempre agregado. Faixas etárias, faixas salariais e faixas de tempo de casa nunca descem a um grupo com menos de 5 pessoas; abaixo disso o painel mostra "grupo pequeno demais para exibir". |
-| **Chat** | Herda o perfil de quem pergunta. Um recorte fora do perfil é recusado no estágio 2, antes de qualquer leitura. |
+| **Grão mínimo** | Área × mês **no painel e nas oito ferramentas do chat**. A nona porta do chat ([D-CHAT-sql](docs/decisoes/D-CHAT-sql.md)) alcança o detalhe, por decisão de Produto de 2026-09-19. |
+| **Dado de pessoa** | No painel, sempre agregado: faixas etárias, salariais e de tempo de casa nunca descem a um grupo com menos de 5 pessoas. No chat, pela nona porta, **nome, cargo, área, centro de custo e custo** são respondíveis. Continuam fora, em toda superfície: CPF, data de nascimento, conta bancária, sindicato, o CID de um atestado, o comentário de uma pesquisa anônima e os dados de candidatos. |
+| **Chat** | Herda o perfil de quem pergunta. Um recorte fora do perfil é recusado no estágio 2, antes de qualquer leitura; na consulta livre, o escopo é um predicado que toda view carrega, *fail-closed* — sem escopo posto, nenhuma linha sai. |
 | **Auditoria** | Toda consulta do chat registra: quem, quando, pergunta, intenção interpretada, métricas lidas, recorte aplicado, custo em *tokens*. Retenção acordada com o cliente. |
 | **Segredos** | Credencial do banco e chave da API nunca no código nem na imagem. Injetadas por ambiente; rotacionáveis sem *rebuild*. |
-| **Trânsito para a API** | Só o **catálogo de métricas, a pergunta e os números já agregados** saem do ambiente. Nunca dado bruto, nunca linha de pessoa, nunca credencial. Isso precisa estar escrito no contrato com o cliente, não só no código. |
+| **Trânsito para a API** | Saem do ambiente: o catálogo de métricas, a pergunta, os números já agregados, o resumo do gráfico, o contexto da tela por rótulo e — desde D-CHAT-sql — o dicionário do esquema de consulta e as linhas que a consulta devolveu, já formatadas, com nome de pessoa quando a pergunta o pede. Nunca credencial, nunca coluna proibida. Isso precisa estar escrito no contrato com o cliente, não só no código. |
 | **Perfis previstos** | `diretoria` (tudo) · `controller` (Financeiro + Integração) · `rh` (RH + Integração) · `area` (recorte fixo à sua área) · `auditor` (leitura + trilha de auditoria) |
 
 ---

@@ -126,6 +126,21 @@ quando T-324 decidir a retenção.
 - O verificador bloqueia; nunca corrige.
 - O caminho simples é idêntico ao de antes para toda pergunta simples.
 
+## Alterado por
+
+- **[D-CHAT-sql](D-CHAT-sql.md)** (2026-09-19): a opção 1 rejeitada acima —
+  "SQL gerado pelo modelo" — foi adotada como **nona** porta, ao lado das oito,
+  e não no lugar delas. As três garantias que a rejeição citava continuam de
+  pé: o número da métrica nasce no estágio 2, o grão mínimo das oito não muda,
+  e o verificador ganhou envelope — o próprio conjunto de linhas devolvido. O
+  que sustenta a porta nova não é prompt, é um papel de banco sem GRANT no
+  esquema do detalhe.
+- **[D-CHAT-pergunta-primeiro](D-CHAT-pergunta-primeiro.md)** (2026-09-19): o
+  estágio 0 deixa de decidir por sinais. Com gateway, o laço é o padrão, e o
+  atalho fica com a continuação, com "por que" e com a pergunta que só nomeia a
+  métrica. A invariante "a classificação é a mesma com ou sem chave" é quebrada
+  de propósito.
+
 ## O que fica pendente
 
 - ~~**H-68**: o modelo do laço.~~ Resolvido em D-CHAT-resposta-completa
