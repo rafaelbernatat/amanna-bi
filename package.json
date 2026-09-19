@@ -31,6 +31,8 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "dados:carregar": "tsx ferramentas/dados/carregar.mts",
+    "dados:migrar": "tsx ferramentas/dados/migrar.mts",
+    "dados:esquema-chat": "tsx ferramentas/dados/conferir-esquema-chat.mts",
     "dados:conferir": "tsx ferramentas/dados/conferir.mts",
     "dados:ensaio": "tsx ferramentas/dados/ensaio.mts",
     "convite": "tsx ferramentas/convite/gerar.mts"

@@ -80,50 +80,25 @@ REVOKE ALL ON SCHEMA public FROM amanna_chat_ro;
 GRANT USAGE ON SCHEMA amanna_chat TO amanna_chat_ro;
 
 -- ------------------------------------------------------------------
--- As funções que derrubam a tranca
+-- As funções que derrubam a tranca: revogação pendente, e de propósito
 -- ------------------------------------------------------------------
 --
 -- `set_config` devolve a sessão à role autenticada; `query_to_xml` e a família
--- planejam uma consulta em tempo de execução, depois da escalada; `pg_sleep`
--- queima o tempo da transação. Revogadas de PUBLIC e **devolvidas** às roles
--- do Supabase que precisam delas — o PostgREST usa `set_config` a cada pedido,
--- e sem a devolução a Data API para de funcionar de um jeito que parecerá não
--- ter relação com este arquivo.
-
-DO $$
-DECLARE
-  f text;
-  r text;
-BEGIN
-  FOREACH f IN ARRAY ARRAY[
-    'pg_catalog.set_config(text,text,boolean)',
-    'pg_catalog.query_to_xml(text,boolean,boolean,text)',
-    'pg_catalog.query_to_json(text,boolean,boolean,text)',
-    'pg_catalog.query_to_xmlschema(text,boolean,boolean,text)',
-    'pg_catalog.pg_sleep(double precision)',
-    'pg_catalog.pg_sleep_for(interval)',
-    'pg_catalog.pg_sleep_until(timestamp with time zone)'
-  ] LOOP
-    BEGIN
-      EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC', f);
-    EXCEPTION WHEN undefined_function THEN
-      NULL;  -- a versão do Postgres não tem essa assinatura
-    END;
-    FOREACH r IN ARRAY ARRAY[
-      'postgres', 'authenticator', 'anon', 'authenticated', 'service_role',
-      'supabase_admin', 'supabase_auth_admin', 'supabase_storage_admin'
-    ] LOOP
-      IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
-        BEGIN
-          EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO %I', f, r);
-        EXCEPTION WHEN undefined_function THEN
-          NULL;
-        END;
-      END IF;
-    END LOOP;
-  END LOOP;
-END
-$$;
+-- planejam uma consulta em tempo de execução, **depois** da escalada. É a
+-- escapada medida em PGlite, e a razão de a defesa ser uma conexão separada.
+--
+-- Esta migração **não** as revoga, e a razão é de risco, não de descuido: a
+-- revogação só protege quem entra pelo papel restrito, e no protótipo ninguém
+-- entra — Produto decidiu em 2026-09-19 que a consulta usa a conexão de
+-- sempre, porque a base é fictícia. Revogar `set_config` de PUBLIC num projeto
+-- Supabase vivo, sem ninguém para proteger, arrisca o PostgREST (ele a usa a
+-- cada pedido) em troca de nada.
+--
+-- Quando `DATABASE_URL_CHAT` passar a existir — banco de cliente, dado real —,
+-- as revogações voltam, com os GRANTs devolvidos a `postgres`,
+-- `authenticator`, `anon`, `authenticated` e `service_role` num bloco `DO`
+-- guardado por `pg_roles`. O teste `chat-sql-migracao` prova hoje que a
+-- escapada existe; é ele que vai provar que ela morre.
 
 -- ------------------------------------------------------------------
 -- O escopo de perfil, como predicado
