@@ -61,24 +61,41 @@ const ABREVIADO = new RegExp(
  * A abreviação só vale com o ano: "mar" e "set" são palavras comuns demais.
  */
 export function mesDaPergunta(pergunta: string): MesPedido | null {
+  return mesesDaPergunta(pergunta)[0] ?? null;
+}
+
+/**
+ * **Todos** os meses que a pergunta nomeia, na ordem em que aparecem (T-457).
+ *
+ * "Qual o faturamento de abril e agosto?" nomeia dois, e o produto enxergava
+ * um: `mesDaPergunta` devolvia abril e agosto sumia — a resposta saía com um
+ * mês só, e ninguém via que faltava. Quem precisa de um usa o primeiro; quem
+ * precisa saber que há mais de um — o roteamento — pergunta o tamanho.
+ */
+export function mesesDaPergunta(pergunta: string): readonly MesPedido[] {
   const texto = semAcento(pergunta);
-  const extenso = POR_EXTENSO.exec(texto);
-  if (extenso !== null) {
-    const nome = extenso[1] ?? "";
+  const achados: MesPedido[] = [];
+
+  // `g` para varrer o texto inteiro, e não só o primeiro casamento.
+  for (const casado of texto.matchAll(new RegExp(POR_EXTENSO, "g"))) {
+    const nome = casado[1] ?? "";
     const mes = MESES.findIndex((m) => semAcento(m) === nome) + 1;
-    const ano = extenso[2] === undefined ? null : Number(extenso[2]);
-    return { mes, ano };
+    achados.push({
+      mes,
+      ano: casado[2] === undefined ? null : Number(casado[2]),
+    });
   }
-  const abreviado = ABREVIADO.exec(texto);
-  if (abreviado !== null) {
-    const nome = abreviado[1] ?? "";
+  for (const casado of texto.matchAll(new RegExp(ABREVIADO, "g"))) {
+    const nome = casado[1] ?? "";
     const mes =
       MESES.findIndex(
         (m) => semAcento(m).slice(0, LETRAS_DA_ABREVIACAO) === nome,
       ) + 1;
-    return { mes, ano: Number(abreviado[2]) };
+    // Sem repetir o que o padrão por extenso já achou no mesmo lugar.
+    if (achados.some((a) => a.mes === mes)) continue;
+    achados.push({ mes, ano: Number(casado[2]) });
   }
-  return null;
+  return achados;
 }
 
 /** O começo do rótulo que corresponde ao mês pedido: "abr/2026" ou "abr/". */

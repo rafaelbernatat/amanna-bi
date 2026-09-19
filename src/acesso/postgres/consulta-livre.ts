@@ -88,6 +88,22 @@ export async function consultarLivre(
   const linhas = await clienteDoChat().transacao(async (t) => {
     // Primeiro a transação somente-leitura: depois dela, nada escreve.
     await t.consultar("SET TRANSACTION READ ONLY");
+    /*
+     * O `search_path`, e não é detalhe: é a linha que faz a consulta funcionar.
+     *
+     * A instrução manda o modelo escrever `FROM lancamento`, sem o nome do
+     * esquema. Isso dependia do `ALTER ROLE amanna_chat_ro SET search_path`,
+     * que só vale quando a conexão entra por aquele papel. Quando
+     * `DATABASE_URL_CHAT` virou opcional (protótipo, base fictícia), a conexão
+     * passou a ser a de sempre — `search_path = public` —, e **toda** consulta
+     * do modelo passou a morrer com "relation does not exist". O laço tentava
+     * de novo, queimava as rodadas e degradava sem texto: era este o "não pôde
+     * ser respondida" dos prints de Produto.
+     *
+     * Posto aqui, vale para as duas conexões, e o papel deixa de ser a única
+     * coisa que sustenta a sintaxe que o prompt ensina.
+     */
+    await t.consultar("SET LOCAL search_path = amanna_chat, pg_catalog");
     await t.consultar(
       `SET LOCAL statement_timeout = ${String(TEMPO_MAXIMO_MS)}`,
     );

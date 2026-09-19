@@ -23,6 +23,13 @@ export type TipoDeIncidente =
   /** A leitura do dado lançou: o nome da exceção e a mensagem, curta (T-430). */
   | "fonte_falhou"
   /**
+   * O laço leu mas não escreveu; o estágio 3 redige do envelope (T-457).
+   *
+   * Não é falha — é o laço sendo resiliente. Vale medir a frequência: se ela
+   * for alta, o que precisa mudar é a instrução, e não o número de rodadas.
+   */
+  | "laco_sem_texto"
+  /**
    * A resposta não respondeu a pergunta (T-448).
    *
    * No atalho isto escala a pergunta ao laço; no laço fica registrado, sem

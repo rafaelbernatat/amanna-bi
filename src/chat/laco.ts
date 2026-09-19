@@ -37,7 +37,7 @@ import { consultaDisponivel, dicionarioDoChat } from "@/acesso/consulta";
 import { classificar, type Sinal } from "@/chat/classificar";
 import type { ContextoDaTela } from "@/chat/contexto";
 import { rotularFiltros } from "@/chat/contexto";
-import { ferramentas } from "@/chat/ferramentas/catalogo";
+import { ferramentas, metricasParaOModelo } from "@/chat/ferramentas/catalogo";
 import {
   criarExecutor,
   executarPedido,
@@ -145,9 +145,41 @@ ANTES DE LER, decida o que a pergunta pede:
   quando ela estiver disponível. Não recuse uma pergunta sobre os dados sem
   ter tentado a consulta.
 
+QUASE TODA PERGUNTA TEM RESPOSTA NOS DADOS. O razão está lançamento a
+lançamento, as pessoas estão com nome e custo, os títulos, as notas, o
+orçamento, os projetos. Antes de dizer que não sabe, CONSULTE.
+
+Exemplos de consulta, para os padrões que mais aparecem:
+
+- "Qual a maior despesa em junho?" — abra por conta, e diga a que linha da DRE
+  ela pertence, porque CMV e despesa operacional são coisas diferentes:
+  SELECT conta_descricao AS conta, linha_dre, SUM(valor) AS total
+  FROM lancamento WHERE mes = '2026-06' AND demonstrativo = 'DRE'
+  GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 5
+
+- "Qual o faturamento de abril e agosto?" — dois períodos pedem os dois E o
+  total, e quem soma é o banco:
+  SELECT 'abr/2026' AS mes, SUM(receita_liquida) AS total FROM fin_mes
+  WHERE mes = '2026-04' UNION ALL SELECT 'ago/2026', SUM(receita_liquida)
+  FROM fin_mes WHERE mes = '2026-08' UNION ALL SELECT 'total',
+  SUM(receita_liquida) FROM fin_mes WHERE mes IN ('2026-04','2026-08')
+
+- "Quais os colaboradores mais caros?" — nome e custo, do mês mais recente:
+  SELECT nome, cargo, SUM(custo_total_empresa) AS custo FROM folha
+  WHERE mes = (SELECT MAX(mes) FROM folha) GROUP BY 1, 2
+  ORDER BY 3 DESC LIMIT 10
+
+- "Quanto gastamos com o fornecedor Embaúba?" — procure pelo nome, sem exigir
+  que ele seja exato:
+  SELECT fornecedor, SUM(valor_titulo) AS total FROM titulo_a_pagar
+  WHERE fornecedor ILIKE '%embauba%' GROUP BY 1 ORDER BY 2 DESC
+
 Como usar as ferramentas:
 - Peça primeiro; escreva só depois de ter os números. No máximo ${String(MAXIMO_DE_CHAMADAS)} leituras
   por pergunta — escolha as que respondem à pergunta.
+- Uma consulta que volta vazia ou com erro é resposta parcial: **corrija e
+  tente de novo**, não desista. Nome sem acento? Use ILIKE. Mês errado? A base
+  vai de 2025-01 a 2026-12.
 - Um erro devolvido por uma ferramenta é resposta: ajuste o pedido ou diga que
   não há esse dado. Nunca preencha com estimativa.
 - A pergunta que exclui alguma coisa ("fora a despesa com pessoal, o que
@@ -170,8 +202,11 @@ A FORMA SEGUE A PERGUNTA. Não existe estrutura fixa.
   item por linha começando com "- ", rótulo e valor ao lado, na ordem em que a
   leitura os devolveu.
 - Pediu um número → de uma a três frases.
+- Pediu dois ou mais períodos → diga cada um E o total, nessa ordem.
 - Perguntou o que uma coisa é ("esses lançamentos são o que?") → nomeie os
   itens concretos que a leitura trouxe; a definição da métrica não responde.
+- Nomeie a coisa concreta: "Salários e ordenados", e não "despesa de pessoal";
+  "Zênite Distribuição", e não "o maior cliente".
 - No máximo três parágrafos, separados por uma linha em branco.
 - NUNCA escreva o que falta ("não há comparação disponível", "o recorte não
   traz", "o envelope não mostra"). O que não existe simplesmente não aparece
@@ -212,6 +247,8 @@ async function esquemaParaOModelo(): Promise<string> {
   if (dicionario.length === 0) return "";
   const porObjeto = new Map<string, string[]>();
   for (const c of dicionario) {
+    // `*` são os apelidos de coluna calculada, e não um objeto consultável.
+    if (c.objeto === "*") continue;
     const unidade = c.unidade === null ? "" : ` (${c.unidade})`;
     const descricao = c.descricao === null ? "" : ` — ${c.descricao}`;
     porObjeto.set(c.objeto, [
@@ -510,7 +547,7 @@ export async function resolverComposta(
     { role: "system", content: INSTRUCAO_DO_LACO },
     {
       role: "user",
-      content: `${contextoParaOModelo(contexto)}${esquema}${conversaParaOModelo(historico)}\n\nPergunta: ${pergunta}`,
+      content: `${contextoParaOModelo(contexto)}${metricasParaOModelo()}${esquema}${conversaParaOModelo(historico)}\n\nPergunta: ${pergunta}`,
     },
   ];
 
@@ -563,6 +600,26 @@ export async function resolverComposta(
       },
     });
     return null;
+  }
+
+  /*
+   * O laço leu e não escreveu (T-457).
+   *
+   * `texto: null` não é falha: a resolução vai com as leituras, e o estágio 3
+   * redige a partir do envelope — com uma chance a mais de escrever bem, e com
+   * o texto montado como piso se o verificador recusar. O que antes acontecia
+   * era o oposto: três leituras boas iam para o lixo e a tela dizia que a
+   * pergunta não pôde ser respondida.
+   */
+  if (resultado.texto === null) {
+    registrarIncidente({
+      tipo: "laco_sem_texto",
+      detalhe: {
+        modelo,
+        rodadas: resultado.rodadas,
+        leituras: executor.leituras().length,
+      },
+    });
   }
 
   const leituras = executor.leituras();

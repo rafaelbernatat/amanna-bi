@@ -686,7 +686,29 @@ INSERT INTO amanna_chat.dicionario (objeto, coluna, ordem, unidade, descricao) V
   ('dim_fornecedor', 'fornecedor', 1, NULL, 'Nome do fornecedor'),
   ('dim_fornecedor', 'categoria', 2, NULL, 'Categoria de compra'),
   ('dim_cargo', 'cargo', 1, NULL, 'Nome do cargo'),
-  ('dim_cargo', 'salario_medio', 2, 'reais', 'Salário médio da faixa')
+  ('dim_cargo', 'salario_medio', 2, 'reais', 'Salário médio da faixa'),
+  /*
+   * Os apelidos que o modelo dá a uma coluna calculada.
+   *
+   * A unidade é procurada pelo **nome da coluna do resultado**, e o modelo
+   * escreve `SUM(valor) AS total`. Sem uma linha para `total`, o número sai
+   * sem "R$" — medido em 2026-09-19: "a maior despesa em junho foi
+   * 26.918.435,87". O objeto `*` vale para qualquer consulta, e a instrução
+   * pede estes apelidos de propósito.
+   */
+  ('*', 'total', 1, 'reais', 'Apelido convencional de uma soma em reais'),
+  ('*', 'valor', 2, 'reais', 'Apelido convencional de um valor em reais'),
+  ('*', 'soma', 3, 'reais', 'Apelido convencional de uma soma em reais'),
+  ('*', 'custo', 4, 'reais', 'Apelido convencional de um custo em reais'),
+  ('*', 'despesa', 5, 'reais', 'Apelido convencional de uma despesa em reais'),
+  ('*', 'receita', 6, 'reais', 'Apelido convencional de uma receita em reais'),
+  ('*', 'saldo', 7, 'reais', 'Apelido convencional de um saldo em reais'),
+  ('*', 'media', 8, 'reais', 'Apelido convencional de uma média em reais'),
+  ('*', 'quantidade', 9, 'contagem', 'Apelido convencional de uma contagem'),
+  ('*', 'pessoas', 10, 'contagem', 'Apelido convencional de uma contagem de gente'),
+  ('*', 'dias', 11, 'dias', 'Apelido convencional de um prazo em dias'),
+  ('*', 'horas', 12, 'horas', 'Apelido convencional de horas'),
+  ('*', 'percentual', 13, 'pct', 'Apelido convencional de uma porcentagem')
 ON CONFLICT (objeto, coluna) DO NOTHING;
 
 -- Por último, e idempotente: as views precisam existir para o GRANT pegá-las.

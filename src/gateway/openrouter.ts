@@ -360,10 +360,27 @@ export type LimitesDoLaco = {
 };
 
 /** Por que o laço parou. */
-export type Parada = "texto" | "rodadas_esgotadas" | "bloqueado";
+export type Parada =
+  | "texto"
+  | "rodadas_esgotadas"
+  | "bloqueado"
+  /**
+   * O laço não chegou ao texto, mas **leu alguma coisa** (T-457).
+   *
+   * Antes disto qualquer tropeço numa rodada devolvia `null`, e quem chamava
+   * jogava fora até as leituras que já tinham voltado certas. Medido em
+   * 2026-09-19 contra o banco real: três leituras boas descartadas porque o
+   * modelo não escreveu o texto na última rodada — e a tela dizia "a parte
+   * composta da pergunta não pôde ser respondida agora".
+   *
+   * Agora o resultado volta com `texto: null`, e quem chama monta a resposta
+   * com o que foi lido. Só volta `null` quando não há nada.
+   */
+  | "falhou";
 
 export type ResultadoDoLaco = {
-  readonly texto: string;
+  /** `null` quando o laço leu mas não escreveu: quem chama monta o texto. */
+  readonly texto: string | null;
   readonly chamadas: readonly Chamada[];
   readonly rodadas: number;
   readonly parada: Parada;
@@ -391,6 +408,21 @@ function argumentosDe(texto: string): unknown {
   } catch {
     return null;
   }
+}
+
+/**
+ * O resultado de um laço que leu mas não escreveu (T-457).
+ *
+ * `null` continua sendo "não deu para nada": sem uma leitura sequer, não há o
+ * que montar, e quem chama degrada como sempre degradou.
+ */
+function semTexto(
+  chamadas: readonly Chamada[],
+  rodada: number,
+  tokens: Tokens,
+): ResultadoDoLaco | null {
+  if (chamadas.length === 0) return null;
+  return { texto: null, chamadas, rodadas: rodada, parada: "falhou", tokens };
 }
 
 function somar(a: Tokens, b: Tokens): Tokens {
@@ -496,7 +528,7 @@ export async function conversarComFerramentas(
     const escolha = ultima ? "none" : rodada === 1 ? "required" : "auto";
 
     if (opcoes.inspetor !== undefined && opcoes.inspetor(conversa) !== null) {
-      return null;
+      return semTexto(chamadas, rodada, tokens);
     }
     opcoes.aoRodada?.(rodada);
 
@@ -521,7 +553,7 @@ export async function conversarComFerramentas(
     );
     if (!ida.ok) {
       opcoes.aoFalhar?.(ida.falha, rodada);
-      return null;
+      return semTexto(chamadas, rodada, tokens);
     }
     const corpo = ida.corpo;
     tokens = somar(tokens, tokensDe(corpo));
@@ -532,7 +564,7 @@ export async function conversarComFerramentas(
         { status: null, erro: "resposta sem mensagem" },
         rodada,
       );
-      return null;
+      return semTexto(chamadas, rodada, tokens);
     }
     const pedidas = lerChamadas(mensagem.tool_calls);
     const texto =
@@ -541,7 +573,8 @@ export async function conversarComFerramentas(
     if (pedidas.length === 0 || ultima) {
       if (texto === null || texto.trim() === "") {
         opcoes.aoFalhar?.({ status: null, erro: "texto vazio" }, rodada);
-        return null;
+        // Leu e não escreveu: quem chama monta o texto do que foi lido.
+        return semTexto(chamadas, rodada, tokens);
       }
       return {
         texto,
